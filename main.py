@@ -133,14 +133,14 @@ def master_ecosystem_dashboard():
             </header>
 
             <!-- डायनेमिक रंग बदलने वाली और अक्षर/गिनती दिखाने वाली एआई चिड़िया -->
-            <div id="birdWrapper" class="flying-bird-anim flex flex-col items-center justify-center space-y-3 my-4">
-                <div id="birdCircle" class="w-24 h-24 sm:w-28 sm:h-28 bg-red-600 rounded-full flex flex-col items-center justify-center text-3xl sm:text-4xl shadow-2xl bird-bounce border-4 border-white/20 cursor-pointer transition-all duration-500" onclick="activateTalkingBird()" title="क्लिक करके चिड़िया से बात करें!">
-                    <span id="birdIconSymbol" class="text-white font-extrabold text-2xl sm:text-3xl">🔴</span>
-                </div>
-                <div class="bg-slate-950/95 border border-cyan-400/60 px-4 sm:px-6 py-2.5 rounded-2xl max-w-lg shadow-2xl text-center">
-                    <p id="birdDialogue" class="text-cyan-200 text-xs sm:text-sm font-bold" data-hi="\"चूं-चूं! यह लाल रंग है! NC से कक्षा 5 के बच्चे मेरे साथ दोहराओ!\"" data-en="\"Chun-Chun! This is Red color! NC to Class 5 kids repeat with me!\"">"चूं-चूं! यह लाल रंग है! NC से कक्षा 5 के बच्चे मेरे साथ दोहराओ!"</p>
-                </div>
-            </div>
+<div id="birdWrapper" class="flying-bird-anim flex flex-col items-center justify-center space-y-3 my-4">
+    <div id="birdCircle" class="w-24 h-24 sm:w-28 sm:h-28 bg-red-600 rounded-full flex flex-col items-center justify-center text-2xl sm:text-3xl">
+        <span id="birdIconSymbol" class="text-white font-extrabold text-2xl sm:text-3xl">🐦</span>
+    </div>
+    <div class="bg-slate-950/95 border border-cyan-400/60 px-4 sm:px-6 py-2.5 rounded-2xl shadow-2xl text-center">
+        <p id="birdDialogue" class="text-cyan-200 text-xs sm:text-sm font-bold" data-hi="\"चूँ-चूँ! यह लाल रंग है! एक, दो, तीन, चार, पाँच! NC से कक्षा 5 के बच्चे मेरे साथ दोहराओ!\"" data-en="\"Chun-Chun! This is Red color! Kids from Nursery to Class 5, repeat with me!\"">"चूँ-चूँ! यह लाल रंग है! एक, दो, तीन, चार, पाँच! NC से कक्षा 5 के बच्चे मेरे साथ दोहराओ!"</p>
+    </div>
+</div>
 
             <!-- नेबुला बैनर और प्राइसिंग गेटवे -->
             <div class="nebula-master-glow p-6 sm:p-12 rounded-3xl border border-cyan-500/40 text-center space-y-6 shadow-2xl relative overflow-hidden">
