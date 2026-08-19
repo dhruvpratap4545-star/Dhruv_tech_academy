@@ -122,7 +122,7 @@ def master_ecosystem_dashboard():
                 </div>
                 
                 <!-- 3. हिंदी/इंग्लिश भाषा बदलने का स्लाइडर -->
-                <div class="flex items-center gap-2">
+                <div class="flex items-center gap-3">
                     <span class="text-xs font-bold opacity-90">Lang:</span>
                     <div class="lang-switch-container" onclick="toggleLanguage()">
                         <div id="sliderThumb" class="lang-slider-btn"></div>
