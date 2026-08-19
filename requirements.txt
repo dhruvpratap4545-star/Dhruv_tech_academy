@@ -1,2 +1,4 @@
-gunicorn
-flask
+fastapi
+uvicorn
+sqlalchemy
+pydantic
