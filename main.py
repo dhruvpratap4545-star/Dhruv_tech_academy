@@ -496,6 +496,12 @@ async def master_upload_endpoint(module_name: str = Form(...), file: UploadFile 
     </body>
     </html>
     """)
+    from fastapi.responses import HTMLResponse
+
+@app.get("/kids-zone", response_class=HTMLResponse)
+async def kids_zone():
+    with open("kids-zone.html", "r", encoding="utf-8") as f:
+        return f.read()
     import os
 
 if __name__ == "__main__":
