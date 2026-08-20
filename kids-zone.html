@@ -4,77 +4,78 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AI Kids Zone - Dhruv Tech Academy</title>
+    <!-- Tailwind CSS for modern UI -->
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-slate-950 text-white min-h-screen flex flex-col items-center p-4">
 
-    <!-- शीर्ष भाग (पोर्टल और भाषा टॉगल एक लाइन में) -->
+    <!-- 1. HEADER SECTION -->
     <div class="w-full max-w-2xl flex justify-between items-center my-4 px-2">
-        <a href="/" class="bg-red-600 hover:bg-red-500 text-white px-3 py-2 rounded-xl text-xs font-bold shadow-lg transition">← मुख्य पोर्टल</a>
+        <a href="/" class="bg-red-600 hover:bg-red-500 text-white px-4 py-2 rounded-xl text-xs font-bold shadow-lg transition">← मुख्य पोर्टल</a>
         
+        <!-- भाषा टॉगल: हिं | English -->
         <div class="bg-slate-900 border border-slate-700 p-1 rounded-xl flex items-center shadow-inner gap-1">
             <button onclick="setLanguage('hi')" id="hiBtn" class="bg-cyan-600 text-white px-3 py-1 rounded-lg text-xs font-bold">हिं</button>
             <button onclick="setLanguage('en')" id="enBtn" class="text-slate-400 px-3 py-1 rounded-lg text-xs font-bold">English</button>
         </div>
     </div>
 
-    <!-- हेडिंग -->
-    <div class="w-full max-w-2xl text-center mb-4">
-        <h1 id="mainTitle" class="text-2xl md:text-3xl font-extrabold text-cyan-400">एआई वर्चुअल क्लासरूम</h1>
-        <p id="subTitle" class="text-slate-300 text-sm mt-1">सीखो, स्कोर बनाओ और दोस्तों को चुनौती दो!</p>
-    </div>
-
-    <!-- मुख्य ब्लैकबोर्ड -->
+    <!-- 2. MAIN CONTENT AREA -->
     <div class="w-full max-w-2xl bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-2xl flex flex-col items-center">
         
-        <div class="w-full flex justify-between items-center mb-4 px-2">
-            <div class="flex items-center gap-2">
-                <div class="w-12 h-12 bg-gradient-to-tr from-yellow-400 to-emerald-400 rounded-full flex items-center justify-center text-xl shadow-lg animate-bounce">👩‍🏫</div>
+        <!-- टीचर और स्कोर -->
+        <div class="w-full flex justify-between items-center mb-6">
+            <div class="flex items-center gap-3">
+                <div class="w-14 h-14 bg-gradient-to-tr from-yellow-400 to-emerald-400 rounded-full flex items-center justify-center text-2xl animate-bounce">👩‍🏫</div>
                 <div>
-                    <span id="teacherName" class="text-xs text-emerald-400 font-bold block">नेबुला एआई टीचर</span>
-                    <span class="text-[10px] text-slate-400">NC-Class 5 Module</span>
+                    <span id="teacherName" class="text-sm text-emerald-400 font-bold block">नेबुला एआई टीचर</span>
+                    <span class="text-[10px] text-slate-400">NC-Class 5 Learning</span>
                 </div>
             </div>
-            <div class="bg-slate-950 border border-cyan-500/50 px-3 py-1.5 rounded-xl text-right">
-                <span id="scoreLabel" class="text-[10px] text-cyan-400 block font-bold">जीनियस स्कोर</span>
-                <span id="scoreDisplay" class="text-sm font-extrabold text-yellow-300">⭐ 0 अंक</span>
+            <div class="bg-slate-950 border border-cyan-500/50 px-4 py-2 rounded-xl text-center">
+                <span id="scoreLabel" class="text-[10px] text-cyan-400 block font-bold uppercase">जीनियस स्कोर</span>
+                <span id="scoreDisplay" class="text-lg font-extrabold text-yellow-300">⭐ 0</span>
             </div>
         </div>
 
-        <div id="aiText" class="w-full bg-slate-950 border border-slate-700 rounded-2xl p-4 min-h-[110px] text-cyan-200 text-center flex items-center justify-center text-lg mb-6 shadow-inner font-medium">
-            नमस्ते मेरे नन्हे जीनियस! आज का चैलेंज शुरू करने के लिए नीचे दिए गए किसी भी बटन पर क्लिक करो! 😊
+        <!-- एआई डिस्प्ले बॉक्स -->
+        <div id="aiText" class="w-full bg-slate-950 border border-slate-700 rounded-2xl p-6 min-h-[140px] text-cyan-200 text-center flex items-center justify-center text-lg mb-6 shadow-inner font-medium">
+            नमस्ते मेरे नन्हे जीनियस! आज का चैलेंज शुरू करने के लिए विषय चुनें! 😊
         </div>
 
-        <div class="w-full grid grid-cols-1 md:grid-cols-2 gap-2.5 mb-6">
-            <button onclick="processQuestion('math')" class="bg-slate-800 hover:bg-slate-700 text-cyan-300 py-3 px-4 rounded-xl text-left font-medium transition shadow">➕ <span id="btn1">गणित: जोड़-घटाना चैलेंज</span></button>
-            <button onclick="processQuestion('hindi')" class="bg-slate-800 hover:bg-slate-700 text-emerald-300 py-3 px-4 rounded-xl text-left font-medium transition shadow">🔤 <span id="btn2">हिंदी: शब्द रचना चैलेंज</span></button>
-            <button onclick="processQuestion('evs')" class="bg-slate-800 hover:bg-slate-700 text-yellow-300 py-3 px-4 rounded-xl text-left font-medium transition shadow">🌿 <span id="btn3">EVS: प्रकृति का रहस्य</span></button>
-            <button onclick="processQuestion('puzzle')" class="bg-slate-800 hover:bg-slate-700 text-pink-300 py-3 px-4 rounded-xl text-left font-medium transition shadow">🤔 <span id="btn4">आज की सुपर पहेली</span></button>
+        <!-- चैलेंज बटन्स -->
+        <div class="w-full grid grid-cols-1 md:grid-cols-2 gap-3 mb-6">
+            <button onclick="processQuestion('math')" class="bg-slate-800 hover:bg-slate-700 text-cyan-300 py-3 px-4 rounded-xl text-left font-medium transition shadow">➕ <span id="btn1">गणित: जोड़-घटाना</span></button>
+            <button onclick="processQuestion('hindi')" class="bg-slate-800 hover:bg-slate-700 text-emerald-300 py-3 px-4 rounded-xl text-left font-medium transition shadow">🔤 <span id="btn2">हिंदी/English</span></button>
+            <button onclick="processQuestion('evs')" class="bg-slate-800 hover:bg-slate-700 text-yellow-300 py-3 px-4 rounded-xl text-left font-medium transition shadow">🌿 <span id="btn3">EVS/Science</span></button>
+            <button onclick="processQuestion('puzzle')" class="bg-slate-800 hover:bg-slate-700 text-pink-300 py-3 px-4 rounded-xl text-left font-medium transition shadow">🤔 <span id="btn4">सुपर पहेली</span></button>
         </div>
 
-        <input type="text" id="userInput" placeholder="यहाँ अपना सवाल टाइप करें..." class="w-full bg-slate-950 border border-slate-700 text-white px-4 py-3 rounded-xl mb-3">
-        <button id="submitBtn" onclick="handleCustomInput()" class="w-full bg-emerald-600 py-3 rounded-xl font-bold">एआई टीचर से जाँच करवाएं 🚀</button>
+        <!-- इनपुट और सबमिट -->
+        <input type="text" id="userInput" placeholder="यहाँ अपना जवाब टाइप करें..." class="w-full bg-slate-950 border border-slate-700 text-white px-4 py-3 rounded-xl mb-3 focus:border-cyan-500 outline-none">
+        <button id="submitBtn" onclick="handleCustomInput()" class="w-full bg-emerald-600 py-3 rounded-xl font-bold shadow-lg text-white">एआई टीचर से जाँच करवाएं 🚀</button>
 
-        <div class="w-full mt-6 bg-green-900/30 p-6 rounded-2xl border border-green-500/50 text-center">
-            <h3 id="repTitle" class="text-green-400 font-bold text-lg mb-2">🔥 फ्रेंड चैलेंज और प्रोग्रेस रिपोर्ट!</h3>
-            <button id="waBtn" onclick="shareToWhatsApp()" class="w-full bg-green-600 py-3 rounded-xl font-bold">WhatsApp पर स्कोर शेयर करें 📱</button>
+        <!-- व्हाट्सएप -->
+        <div class="w-full mt-6 p-4 bg-green-900/20 rounded-2xl border border-green-700 text-center">
+            <h3 id="repTitle" class="text-green-400 font-bold mb-2">🔥 प्रोग्रेस रिपोर्ट शेयर करें!</h3>
+            <button id="waBtn" onclick="shareToWhatsApp()" class="w-full bg-green-600 py-3 rounded-xl font-bold text-white">WhatsApp पर भेजें 📱</button>
         </div>
     </div>
 
+    <!-- SCRIPT (लॉजिक और भाषा) -->
     <script>
         let studentScore = 0;
         let currentLang = 'hi';
 
         const dict = {
-            hi: { title: "एआई वर्चुअल क्लासरूम", sub: "सीखो, स्कोर बनाओ और दोस्तों को चुनौती दो!", teacher: "नेबुला एआई टीचर", score: "जीनियस स्कोर", welcome: "नमस्ते मेरे नन्हे जीनियस! आज का चैलेंज शुरू करने के लिए बटन दबाओ! 😊", b1: "गणित: जोड़-घटाना चैलेंज", b2: "हिंदी: शब्द रचना चैलेंज", b3: "EVS: प्रकृति का रहस्य", b4: "आज की सुपर पहेली", inputPh: "यहाँ अपना सवाल टाइप करें...", submit: "एआई टीचर से जाँच करवाएं 🚀", repTitle: "🔥 फ्रेंड चैलेंज और प्रोग्रेस रिपोर्ट!", waBtn: "WhatsApp पर स्कोर शेयर करें 📱" },
-            en: { title: "AI Virtual Classroom", sub: "Learn, Score Points and Challenge Friends!", teacher: "Nebula AI Teacher", score: "Genius Score", welcome: "Hello my little genius! Click any button below to start! 😊", b1: "Math: Add & Subtract Challenge", b2: "Hindi: Word Building Challenge", b3: "EVS: Mystery of Nature", b4: "Today's Super Puzzle", inputPh: "Type your question here...", submit: "Check with AI Teacher 🚀", repTitle: "🔥 Friend Challenge & Progress Report!", waBtn: "Share Score on WhatsApp 📱" }
+            hi: { title: "एआई वर्चुअल क्लासरूम", teacher: "नेबुला एआई टीचर", score: "जीनियस स्कोर", welcome: "नमस्ते! आज क्या सीखना है?", b1: "गणित चैलेंज", b2: "हिंदी चैलेंज", b3: "EVS/Science", b4: "पहेली चैलेंज", inputPh: "यहाँ उत्तर टाइप करें...", submit: "जाँच करवाएं 🚀", repTitle: "🔥 प्रोग्रेस रिपोर्ट!", waBtn: "WhatsApp पर भेजें 📱" },
+            en: { title: "AI Virtual Classroom", teacher: "Nebula AI Teacher", score: "Genius Score", welcome: "Hello! What to learn today?", b1: "Math Challenge", b2: "Language Challenge", b3: "EVS/Science", b4: "Puzzle Challenge", inputPh: "Type answer here...", submit: "Check Answer 🚀", repTitle: "🔥 Progress Report!", waBtn: "Share on WhatsApp 📱" }
         };
 
         function setLanguage(lang) {
             currentLang = lang;
             let d = dict[lang];
             document.getElementById('mainTitle').innerText = d.title;
-            document.getElementById('subTitle').innerText = d.sub;
             document.getElementById('teacherName').innerText = d.teacher;
             document.getElementById('scoreLabel').innerText = d.score;
             document.getElementById('aiText').innerText = d.welcome;
@@ -100,9 +101,9 @@
         }
 
         function processQuestion(type) {
-            let ans = (currentLang === 'hi') ? "वाह! बहुत बढ़िया जवाब! +15 अंक!" : "Awesome! Great job! +15 points!";
+            let ans = (currentLang === 'hi') ? "वाह! सही जवाब! +15 अंक!" : "Awesome! Correct! +15 points!";
             studentScore += 15;
-            document.getElementById('scoreDisplay').innerText = `⭐ ${studentScore} ${currentLang === 'hi' ? 'अंक' : 'Pts'}`;
+            document.getElementById('scoreDisplay').innerText = `⭐ ${studentScore}`;
             document.getElementById('aiText').innerText = ans;
             speakText(ans, currentLang);
         }
