@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Virtual Classroom & Story Zone - Dhruv Tech Academy</title>
+    <title>AI Virtual Classroom & Homework Hub - Dhruv Tech Academy</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-slate-950 text-white min-h-screen flex flex-col items-center justify-between p-4">
@@ -27,14 +27,14 @@
 
     <!-- हेडिंग -->
     <div class="w-full max-w-2xl text-center mb-4">
-        <h1 id="mainTitle" class="text-2xl md:text-3xl font-extrabold text-cyan-400">एआई वर्चुअल क्लासरूम और कहानी जोन</h1>
-        <p id="subTitle" class="text-slate-300 text-sm mt-1">सीखो, सुनो, दोहराओ और मजे से पढ़ो!</p>
+        <h1 id="mainTitle" class="text-2xl md:text-3xl font-extrabold text-cyan-400">एआई वर्चुअल क्लासरूम और होमवर्क हब</h1>
+        <p id="subTitle" class="text-slate-300 text-sm mt-1">स्कूल, ट्यूटर और बच्चों के लिए संपूर्ण डिजिटल शिक्षा मंच!</p>
     </div>
 
     <!-- 2. मुख्य ब्लैकबोर्ड बॉक्स -->
     <div class="w-full max-w-2xl bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-2xl flex flex-col items-center">
         
-        <!-- एआई टीचर अवतार (नेबुला डैशबोर्ड रिप्रेजेंटेशन) और लाइव स्कोर -->
+        <!-- एआई टीचर अवतार और लाइव स्कोर -->
         <div class="w-full flex justify-between items-center mb-4 px-2">
             <div class="flex items-center gap-3">
                 <div id="teacherAvatar" class="w-14 h-14 bg-gradient-to-tr from-yellow-400 to-emerald-400 rounded-full flex items-center justify-center text-2xl shadow-lg animate-pulse border-2 border-cyan-400">
@@ -42,7 +42,7 @@
                 </div>
                 <div>
                     <span id="teacherName" class="text-xs text-emerald-400 font-bold block">नेबुला एआई टीचर (लाइव मोड)</span>
-                    <span id="teacherStatus" class="text-[10px] text-cyan-300">बोल रही हैं / सुना रही हैं...</span>
+                    <span id="teacherStatus" class="text-[10px] text-cyan-300">तैयार हैं...</span>
                 </div>
             </div>
             <div class="bg-slate-950 border border-cyan-500/50 px-3.5 py-2 rounded-xl text-right shadow-inner">
@@ -51,9 +51,9 @@
             </div>
         </div>
 
-        <!-- उत्तर और कहानियां दिखाने का डायनेमिक ब्लैकबोर्ड बॉक्स -->
+        <!-- उत्तर और कहानियां दिखाने का ब्लैकबोर्ड बॉक्स -->
         <div id="aiText" class="w-full bg-slate-950 border border-slate-700 rounded-2xl p-5 min-h-[140px] text-cyan-200 text-center flex items-center justify-center text-base mb-6 shadow-inner font-medium leading-relaxed">
-            नमस्ते मेरे नन्हे जीनियस! नीचे दिए गए बटनों से गणित, पहेली, कविता या महापुरुषों की कहानी चुनें! 😊
+            नमस्ते! नीचे दिए गए बटनों से विषय चुनें या स्कूल/होमवर्क मोड का उपयोग करें! 😊
         </div>
 
         <!-- विषय और कहानी/कविता चुनने वाले बटन -->
@@ -68,7 +68,7 @@
                 🎵 <span id="btnPoem">कविता: मछली जल की रानी है</span>
             </button>
             <button onclick="loadChallenge('story')" class="bg-slate-800 hover:bg-slate-700 text-emerald-300 py-3 px-4 rounded-xl text-left font-medium transition flex items-center gap-2 cursor-pointer shadow border border-slate-700">
-                📖 <span id="btnStory">महापुरुषों की लघु कहानी (1 मि.)</span>
+                📖 <span id="btnStory">महापुरुषों की लघु कहानी</span>
             </button>
         </div>
 
@@ -85,12 +85,19 @@
             </button>
         </div>
 
-        <!-- 3. विस्तृत व्हाट्सएप रिपोर्ट और फ्रेंड चैलेंज सेक्शन -->
-        <div class="w-full mt-6 bg-green-950/40 p-5 rounded-2xl border border-green-500/50 shadow-2xl text-center">
-            <h3 id="reportTitle" class="text-green-400 font-bold text-base mb-1.5">🔥 फ्रेंड चैलेंज और प्रोग्रेस रिपोर्ट!</h3>
-            <p id="reportDesc" class="text-green-100 text-xs mb-4">अभिभावक अपने बच्चे का स्कोर दोस्तों या परिवार को व्हाट्सएप पर भेजकर प्रोत्साहित कर सकते हैं।</p>
-            <button onclick="shareToWhatsApp()" class="w-full bg-green-600 hover:bg-green-500 text-white py-3 rounded-xl font-bold text-sm shadow-lg transition cursor-pointer flex items-center justify-center gap-2">
-                📱 <span id="whatsappBtnText">WhatsApp पर स्कोर शेयर करें</span>
+        <!-- 3. स्कूल और ट्यूटर व्हाट्सएप होमवर्क शेयरिंग सेक्शन -->
+        <div class="w-full mt-6 bg-slate-950 p-5 rounded-2xl border border-cyan-500/40 shadow-2xl">
+            <h3 id="homeworkTitle" class="text-cyan-400 font-bold text-base mb-2 text-center">🏫 स्कूल / ट्यूटर व्हाट्सएप होमवर्क पोर्टल</h3>
+            <div class="flex flex-col gap-2.5 mb-3">
+                <input type="text" id="schoolNameInput" placeholder="स्कूल या ट्यूटर का नाम (जैसे: सेंट जेवियर्स / राहुल सर)" class="w-full bg-slate-900 border border-slate-700 text-white px-3 py-2.5 rounded-xl text-xs outline-none focus:border-cyan-500">
+                <input type="text" id="homeworkDescInput" placeholder="आज का होमवर्क (जैसे: पेज 45 के सवाल हल करें)" class="w-full bg-slate-900 border border-slate-700 text-white px-3 py-2.5 rounded-xl text-xs outline-none focus:border-cyan-500">
+            </div>
+            <button onclick="sendSchoolHomework()" class="w-full bg-sky-600 hover:bg-sky-500 text-white py-2.5 rounded-xl font-bold text-xs shadow transition cursor-pointer mb-3">
+                📤 <span id="hwBtnText">व्हाट्सएप पर बच्चों को होमवर्क भेजें</span>
+            </button>
+            <hr class="border-slate-800 my-2">
+            <button onclick="shareToWhatsApp()" class="w-full bg-green-600 hover:bg-green-500 text-white py-2.5 rounded-xl font-bold text-xs shadow transition cursor-pointer flex items-center justify-center gap-1.5 mt-2">
+                📱 <span id="whatsappBtnText">छात्र का स्कोर परिवार को शेयर करें</span>
             </button>
         </div>
 
@@ -98,40 +105,40 @@
 
     <!-- फुटर नोट -->
     <div class="text-center text-xs text-slate-500 my-6">
-        Dhruv Tech Academy Foundation Initiative (NC-Class 5 Learning Module)
+        Dhruv Tech Academy Foundation Initiative (Digital Education Hub)
     </div>
 
-    <!-- 4. एडवांस्ड जावास्क्रिप्ट लॉजिक (नेबुला डैशबोर्ड सिंक्रोनाइजेशन और स्टोरी मोड) -->
+    <!-- 4. जावास्क्रिप्ट लॉजिक (डबल स्कोर फिक्स और होमवर्क इंजन) -->
     <script>
         let studentScore = 0;
         let currentLang = 'hi';
         let currentCorrectAnswer = "6";
-        let activeQuestionId = "";
+        let questionAnswered = false; // डबल स्कोर फिक्स का ताला
 
         const siteData = {
             hi: {
                 portal: "मुख्य पोर्टल",
-                mainTitle: "एआई वर्चुअल क्लासरूम और कहानी जोन",
-                subTitle: "सीखो, सुनो, दोहराओ और मजे से पढ़ो!",
+                mainTitle: "एआई वर्चुअल क्लासरूम और होमवर्क हब",
+                subTitle: "स्कूल, ट्यूटर और बच्चों के लिए संपूर्ण डिजिटल शिक्षा मंच!",
                 teacher: "नेबुला एआई टीचर (लाइव मोड)",
-                statusText: "बोल रही हैं / सुना रही हैं...",
+                statusText: "तैयार हैं...",
                 scoreLabel: "जीनियस स्कोर",
-                welcome: "नमस्ते मेरे नन्हे जीनियस! नीचे दिए गए विषयों से गणित, पहेली या 1 मिनट की कहानी-कविता चुनें! 😊",
+                welcome: "नमस्ते! विषय चुनें या नीचे दिए गए फॉर्म से स्कूल का होमवर्क व्हाट्सएप पर भेजें! 😊",
                 mText: "गणित: जोड़-घटाना चैलेंज",
                 pText: "आज की सुपर पहेली",
                 poemText: "कविता: मछली जल की रानी है",
-                storyText: "महापुरुषों की लघु कहानी (1 मि.)",
+                storyText: "महापुरुषों की लघु कहानी",
                 inputPh: "यहाँ उत्तर लिखें या माइक से बोलें...",
                 micBtn: "बोलें",
                 submitBtn: "उत्तर की पुष्टि करें (Check Answer) 🚀",
-                repTitle: "🔥 फ्रेंड चैलेंज और प्रोग्रेस रिपोर्ट!",
-                repDesc: "अभिभावक अपने बच्चे का स्कोर दोस्तों या परिवार को व्हाट्सएप पर भेजकर प्रोत्साहित कर सकते हैं.",
-                waBtn: "WhatsApp पर स्कोर शेयर करें",
+                hwTitle: "🏫 स्कूल / ट्यूटर व्हाट्सएप होमवर्क पोर्टल",
+                hwBtn: "व्हाट्सएप पर बच्चों को होमवर्क भेजें",
+                waBtn: "छात्र का स्कोर परिवार को शेयर करें",
                 
-                qMath: "10 कंचे थे, 4 खो गए। बताओ अब कितने कंचे बचे? (उत्तर अंक में लिखें)",
+                qMath: "10 कंचे थे, 4 खो गए। बताओ अब कितने कंचे बचे? (अंक लिखें)",
                 qPuzzle: "ऐसी कौन सी चीज़ है जो लिखने के काम आती है पर पेन नहीं?",
-                qPoem: "🎵 कविता (मछली जल की रानी है):\n'मछली जल की रानी है, जीवन उसका पानी है,\nहाथ लगाओ तो डर जाएगी, बाहर निकालो तो मर जाएगी!'\n(दोहराने के बाद 'हाँ' लिखें या बोलें)",
-                qStory: "📖 लघु कहानी (स्वामी विवेकानंद):\nएक बार स्वामी विवेकानंद ने कहा था—'उठो, जागो और तब तक मत रुको जब तक लक्ष्य प्राप्त न हो जाए।' क्या आपने यह कहानी सुन ली? ('हाँ' लिखें)",
+                qPoem: "🎵 कविता: 'मछली जल की रानी है, जीवन उसका पानी है...' (दोहराने के बाद 'हाँ' लिखें)",
+                qStory: "📖 लघु कहानी: 'उठो, जागो और तब तक मत रुको जब तक लक्ष्य प्राप्त न हो जाए।' (कहानी सुनी? 'हाँ' लिखें)",
                 
                 ansMath: "6",
                 ansPuzzle: "पेंसिल",
@@ -143,27 +150,27 @@
             },
             en: {
                 portal: "Main Portal",
-                mainTitle: "AI Virtual Classroom & Story Zone",
-                subTitle: "Learn, Listen, Repeat & Enjoy!",
+                mainTitle: "AI Virtual Classroom & Homework Hub",
+                subTitle: "Complete Digital Education Hub for Schools & Tutors!",
                 teacher: "Nebula AI Teacher (Live)",
-                statusText: "Speaking / Narrating...",
+                statusText: "Ready...",
                 scoreLabel: "Genius Score",
-                welcome: "Hello my little genius! Choose Math, Puzzle, Poem or 1-Min Story below! 😊",
+                welcome: "Hello! Choose a subject or send school homework via WhatsApp below! 😊",
                 mText: "Math: Add & Subtract Challenge",
                 pText: "Today's Super Puzzle",
                 poemText: "Poem: Twinkle Twinkle Little Star",
-                storyText: "Short Moral Story (1 Min)",
+                storyText: "Short Moral Story",
                 inputPh: "Type answer or use mic...",
                 micBtn: "Speak",
                 submitBtn: "Verify Answer 🚀",
-                repTitle: "🔥 Friend Challenge & Progress Report!",
-                repDesc: "Guardians can share their child's score with friends & family on WhatsApp.",
-                waBtn: "Share Score on WhatsApp",
+                hwTitle: "🏫 School / Tutor WhatsApp Homework Portal",
+                hwBtn: "Send Homework to Students on WhatsApp",
+                waBtn: "Share Child's Score to Family",
                 
-                qMath: "You had 10 marbles and lost 4. How many are left? (Type number)",
+                qMath: "You had 10 marbles and lost 4. How many left? (Type number)",
                 qPuzzle: "What is used to write with, but is not a pen?",
-                qPoem: "🎵 Poem:\n'Twinkle, twinkle, little star,\nHow I wonder what you are!'\n(Type 'Yes' after reciting)",
-                qStory: "📖 Moral Story (Swami Vivekananda):\n'Arise, awake, and stop not until the goal is reached.' Did you listen? (Type 'Yes')",
+                qPoem: "🎵 Poem: 'Twinkle, twinkle, little star...' (Type 'Yes' after reciting)",
+                qStory: "📖 Moral Story: 'Arise, awake, and stop not until the goal is reached.' (Type 'Yes')",
                 
                 ansMath: "6",
                 ansPuzzle: "pencil",
@@ -193,8 +200,8 @@
             document.getElementById('userInput').placeholder = d.inputPh;
             document.getElementById('micText').innerText = d.micBtn;
             document.getElementById('btnSubmit').innerText = d.submitBtn;
-            document.getElementById('reportTitle').innerText = d.repTitle;
-            document.getElementById('reportDesc').innerText = d.repDesc;
+            document.getElementById('homeworkTitle').innerText = d.hwTitle;
+            document.getElementById('hwBtnText').innerText = d.hwBtn;
             document.getElementById('whatsappBtnText').innerText = d.waBtn;
 
             if (lang === 'hi') {
@@ -206,26 +213,25 @@
             }
         }
 
-        // नेबुला टीचर का सिंक्रोनाइज्ड वॉयस और एनीमेशन इफ़ेक्ट
         function speakText(text) {
             try {
                 if ('speechSynthesis' in window) {
                     window.speechSynthesis.cancel();
                     let utterance = new SpeechSynthesisUtterance(text);
                     utterance.lang = (currentLang === 'en') ? 'en-US' : 'hi-IN';
-                    utterance.rate = 0.85; // बच्चों के लिए धीमी और स्पष्ट गति
+                    utterance.rate = 0.85;
 
                     let avatar = document.getElementById('teacherAvatar');
                     let status = document.getElementById('teacherStatus');
 
                     utterance.onstart = function() {
-                        avatar.classList.add('animate-spin'); // बोलते समय अवतार घूमेगा (लाइव रिप्रेजेंटेशन)
-                        status.innerText = currentLang === 'hi' ? "नेबुला बोल रही हैं..." : "Nebula is speaking...";
+                        avatar.classList.add('animate-spin');
+                        status.innerText = currentLang === 'hi' ? "नेबुला बोल रही हैं..." : "Nebula speaking...";
                     };
 
                     utterance.onend = function() {
                         avatar.classList.remove('animate-spin');
-                        status.innerText = currentLang === 'hi' ? "सुनिए और जवाब दीजिए" : "Listen & answer";
+                        status.innerText = currentLang === 'hi' ? "उत्तर दें" : "Answer now";
                     };
 
                     window.speechSynthesis.speak(utterance);
@@ -239,12 +245,9 @@
             try {
                 const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
                 if (!SpeechRecognition) {
-                    alert(currentLang === 'hi' ? "आपका ब्राउज़र माइक सपोर्ट नहीं करता।" : "Speech recognition not supported.");
+                    alert("Speech recognition not supported.");
                     return;
                 }
-                let status = document.getElementById('teacherStatus');
-                status.innerText = currentLang === 'hi' ? "सुन रहे हैं... बोलिए!" : "Listening... Speak!";
-
                 const recognition = new SpeechRecognition();
                 recognition.lang = (currentLang === 'en') ? 'en-US' : 'hi-IN';
                 recognition.start();
@@ -261,7 +264,7 @@
 
         function loadChallenge(category) {
             let d = siteData[currentLang];
-            activeQuestionId = category;
+            questionAnswered = false; // नया सवाल आते ही स्कोर लॉक खुल जाएगा
 
             let textToShow = "";
             if (category === 'math') {
@@ -282,20 +285,21 @@
             speakText(textToShow);
         }
 
+        // डबल स्कोर फिक्स: एक सवाल पर केवल एक बार अंक जुड़ेगा
         function verifyAnswer() {
             let d = siteData[currentLang];
             let userField = document.getElementById('userInput');
             let userVal = userField.value.trim().toLowerCase();
 
             if (userVal === "") {
-                alert(currentLang === 'hi' ? "कृपया पहले अपना उत्तर लिखें या बोलें!" : "Please type or speak your answer first!");
+                alert(currentLang === 'hi' ? "कृपया अपना उत्तर लिखें या बोलें!" : "Please type or speak your answer!");
                 return;
             }
 
             if (userVal.includes(currentCorrectAnswer.toLowerCase())) {
-                if (activeQuestionId !== "") {
+                if (!questionAnswered) {
                     studentScore += 20;
-                    activeQuestionId = ""; // डबल स्कोर फिक्स लॉक
+                    questionAnswered = true; // स्कोर जुड़ते ही ताला लग जाएगा, दोबारा क्लिक पर नहीं बढ़ेगा
                 }
                 document.getElementById('scoreDisplay').innerText = `⭐ ${studentScore} ${currentLang === 'hi' ? 'अंक' : 'Pts'}`;
                 document.getElementById('aiText').innerText = d.correctMsg;
@@ -307,10 +311,26 @@
             userField.value = "";
         }
 
+        // स्कूल और ट्यूटर के लिए व्हाट्सएप होमवर्क भेजने का फंक्शन
+        function sendSchoolHomework() {
+            let schoolName = document.getElementById('schoolNameInput').value.trim();
+            let homeworkDesc = document.getElementById('homeworkDescInput').value.trim();
+
+            if (schoolName === "" || homeworkDesc === "") {
+                alert(currentLang === 'hi' ? "कृपया स्कूल/ट्यूटर का नाम और होमवर्क दोनों भरें!" : "Please fill school name and homework!");
+                return;
+            }
+
+            let message = `🏫 *Digital Homework Hub - Dhruv Tech Academy* 🏫\n\n*संस्थान/ट्यूटर:* ${schoolName}\n*आज का असाइनमेंट:* ${homeworkDesc}\n\nप्रिय छात्र एवं अभिभावक, कृपया घर पर रहकर इस डिजिटल लर्निंग पोर्टल से अपनी पढ़ाई जारी रखें:\nhttps://dhruv-tech-academy.onrender.com/`;
+            
+            let whatsappUrl = "https://wa.me/?text=" + encodeURIComponent(message);
+            window.open(whatsappUrl, '_blank');
+        }
+
         function shareToWhatsApp() {
             let message = currentLang === 'hi' ? 
-                `🔥 *Dhruv Tech Academy - AI Kids Zone* 🔥\n\nमेरे बच्चे ने एआई वर्चुअल क्लासरूम और कहानी जोन में ${studentScore} शानदार अंक हासिल किए हैं! 🌟\nक्या आपका बच्चा इस स्कोर को पार कर सकता है?\n\nhttps://dhruv-tech-academy.onrender.com/` :
-                `🔥 *Dhruv Tech Academy - AI Kids Zone* 🔥\n\nMy child scored ${studentScore} points in the AI Virtual Classroom & Story Zone! 🌟\nCan your child beat this genius score?\n\nhttps://dhruv-tech-academy.onrender.com/`;
+                `🔥 *Dhruv Tech Academy - AI Kids Zone* 🔥\n\nमेरे बच्चे ने एआई वर्चुअल क्लासरूम में ${studentScore} शानदार अंक हासिल किए हैं! 🌟\n\nhttps://dhruv-tech-academy.onrender.com/` :
+                `🔥 *Dhruv Tech Academy - AI Kids Zone* 🔥\n\nMy child scored ${studentScore} points in the AI Virtual Classroom!\n\nhttps://dhruv-tech-academy.onrender.com/`;
                           
             let whatsappUrl = "https://wa.me/?text=" + encodeURIComponent(message);
             window.open(whatsappUrl, '_blank');
