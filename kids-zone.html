@@ -13,53 +13,66 @@
         <a href="/" class="bg-red-600 hover:bg-red-500 text-white px-4 py-2 rounded-xl text-sm font-bold inline-block shadow-lg">
             ← मुख्य पोर्टल पर लौटें
         </a>
-        <h1 class="text-2xl md:text-3xl font-extrabold text-cyan-400 mt-3">एआई ज्ञान (NC-5)</h1>
-        <p class="text-slate-300 text-sm">पूछो बच्चों! जो मन में आए, हमारी एआई बताएगी!</p>
+        <h1 class="text-2xl md:text-3xl font-extrabold text-cyan-400 mt-3">एआई वर्चुअल क्लासरूम & चैलेंज जोन</h1>
+        <p class="text-slate-300 text-sm">सीखो, स्कोर बनाओ और दोस्तों को चुनौती दो!</p>
     </div>
 
     <!-- मुख्य ब्लैकबोर्ड बॉक्स -->
     <div class="w-full max-w-2xl bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-2xl flex flex-col items-center">
         
-        <!-- एआई अवतार -->
-        <div class="w-20 h-20 bg-gradient-to-tr from-yellow-400 to-emerald-400 rounded-full flex items-center justify-center text-3xl shadow-lg mb-4 animate-bounce">
-            🐥
+        <!-- एआई टीचर अवतार और लाइव स्कोर कार्ड -->
+        <div class="w-full flex justify-between items-center mb-4 px-2">
+            <div class="flex items-center gap-2">
+                <div class="w-12 h-12 bg-gradient-to-tr from-yellow-400 to-emerald-400 rounded-full flex items-center justify-center text-xl shadow-lg animate-bounce">
+                    👩‍🏫
+                </div>
+                <div>
+                    <span class="text-xs text-emerald-400 font-bold block">नेबुला एआई टीचर</span>
+                    <span class="text-[10px] text-slate-400">NC-Class 5 Module</span>
+                </div>
+            </div>
+            <!-- लाइव स्कोर बैज -->
+            <div class="bg-slate-950 border border-cyan-500/50 px-3 py-1.5 rounded-xl text-right">
+                <span class="text-[10px] text-cyan-400 block font-bold">जीनियस स्कोर</span>
+                <span id="scoreDisplay" class="text-sm font-extrabold text-yellow-300">⭐ 0 अंक</span>
+            </div>
         </div>
 
         <!-- उत्तर दिखाने का बॉक्स -->
-        <div id="aiText" class="w-full bg-slate-950 border border-slate-700 rounded-2xl p-4 min-h-[100px] text-cyan-200 text-center flex items-center justify-center text-lg mb-6 shadow-inner">
-            नमस्ते मेरे नन्हे जीनियस! आज मुझसे जो चाहो पूछो। 😊
+        <div id="aiText" class="w-full bg-slate-950 border border-slate-700 rounded-2xl p-4 min-h-[110px] text-cyan-200 text-center flex items-center justify-center text-lg mb-6 shadow-inner">
+            नमस्ते मेरे नन्हे जीनियस! आज का चैलेंज शुरू करने के लिए नीचे दिए गए बटन पर क्लिक करो! 😊
         </div>
 
-        <!-- सुझाव वाले बटन -->
-        <div class="w-full flex flex-col gap-2.5 mb-6">
-            <button onclick="askQuestion('आसमान नीला क्यों है?')" class="w-full bg-slate-800 hover:bg-slate-700 text-cyan-300 py-3 px-4 rounded-xl text-left font-medium transition flex items-center gap-2 cursor-pointer">
-                ✨ आसमान नीला क्यों है?
+        <!-- पाठ्यक्रम आधारित सुझाव वाले बटन -->
+        <div class="w-full grid grid-cols-1 md:grid-cols-2 gap-2.5 mb-6">
+            <button onclick="askQuestion('गणित का जादुई सवाल')" class="bg-slate-800 hover:bg-slate-700 text-cyan-300 py-3 px-4 rounded-xl text-left font-medium transition flex items-center gap-2 cursor-pointer">
+                ➕ गणित: जोड़-घटाना चैलेंज
             </button>
-            <button onclick="askQuestion('पौधे सांस कैसे लेते हैं?')" class="w-full bg-slate-800 hover:bg-slate-700 text-emerald-300 py-3 px-4 rounded-xl text-left font-medium transition flex items-center gap-2 cursor-pointer">
-                🌿 पौधे सांस कैसे लेते हैं?
+            <button onclick="askQuestion('हिंदी वर्णमाला और शब्द')" class="bg-slate-800 hover:bg-slate-700 text-emerald-300 py-3 px-4 rounded-xl text-left font-medium transition flex items-center gap-2 cursor-pointer">
+                🔤 हिंदी: शब्द रचना चैलेंज
             </button>
-            <button onclick="askQuestion('तारे रात में क्यों चमकते हैं?')" class="w-full bg-slate-800 hover:bg-slate-700 text-yellow-300 py-3 px-4 rounded-xl text-left font-medium transition flex items-center gap-2 cursor-pointer">
-                ⭐ तारे रात में क्यों चमकते हैं?
+            <button onclick="askQuestion('पर्यावरण विज्ञान पहेली')" class="bg-slate-800 hover:bg-slate-700 text-yellow-300 py-3 px-4 rounded-xl text-left font-medium transition flex items-center gap-2 cursor-pointer">
+                🌿 EVS: प्रकृति का रहस्य
             </button>
-            <button onclick="askQuestion('इंद्रधनुष कैसे बनता है?')" class="w-full bg-slate-800 hover:bg-slate-700 text-pink-300 py-3 px-4 rounded-xl text-left font-medium transition flex items-center gap-2 cursor-pointer">
-                🌈 इंद्रधनुष कैसे बनता है?
+            <button onclick="askQuestion('दिमाग की मजेदार पहेली')" class="bg-slate-800 hover:bg-slate-700 text-pink-300 py-3 px-4 rounded-xl text-left font-medium transition flex items-center gap-2 cursor-pointer">
+                🤔 आज की सुपर पहेली
             </button>
         </div>
 
         <!-- यूजर इनपुट एरिया -->
         <div class="w-full flex flex-col gap-3">
-            <input type="text" id="userInput" placeholder="यहाँ अपना सवाल टाइप करो बच्चे..." class="w-full bg-slate-950 border border-slate-700 text-white px-4 py-3 rounded-xl focus:outline-none focus:border-cyan-500">
+            <input type="text" id="userInput" placeholder="यहाँ अपना सवाल या उत्तर टाइप करें..." class="w-full bg-slate-950 border border-slate-700 text-white px-4 py-3 rounded-xl focus:outline-none focus:border-cyan-500">
             <button onclick="handleUserQuestion()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white py-3 rounded-xl font-bold shadow-lg transition cursor-pointer">
-                पूछो 🚀
+                एआई टीचर से जाँच करवाएं 🚀
             </button>
         </div>
 
-        <!-- व्हाट्सएप रिपोर्ट सेक्शन -->
+        <!-- व्हाट्सएप रिपोर्ट और फ्रेंड चैलेंज सेक्शन -->
         <div id="reportSection" class="w-full mt-6 bg-green-900/30 p-6 rounded-2xl border border-green-500/50 shadow-2xl text-center">
-            <h3 class="text-green-400 font-bold text-lg mb-2">🎉 शानदार काम, नन्हे जीनियस!</h3>
-            <p class="text-green-100 text-sm mb-4">आज के सवाल पूरे हो गए। अपनी प्रोग्रेस व्हाट्सएप पर भेजें!</p>
+            <h3 class="text-green-400 font-bold text-lg mb-2">🔥 फ्रेंड चैलेंज और प्रोग्रेस रिपोर्ट!</h3>
+            <p class="text-green-100 text-sm mb-4">अपना स्कोर अपने दोस्तों और गार्जियन को व्हाट्सएप पर भेजकर चुनौती दें!</p>
             <button onclick="shareToWhatsApp()" class="w-full bg-green-600 hover:bg-green-500 text-white py-3 rounded-xl font-bold shadow-lg transition cursor-pointer">
-                WhatsApp पर रिपोर्ट भेजें 📱
+                WhatsApp पर स्कोर शेयर करें 📱
             </button>
         </div>
 
@@ -70,8 +83,10 @@
         Dhruv Tech Academy Foundation Initiative (NC-Class 5 Learning Module)
     </div>
 
-    <!-- जावास्क्रिप्ट लॉजिक -->
+    <!-- एडवांस्ड स्कोरिंग और वॉयस लॉजिक -->
     <script>
+        let studentScore = 0;
+
         function speakText(text) {
             if ('speechSynthesis' in window) {
                 window.speechSynthesis.cancel();
@@ -97,30 +112,36 @@
 
             let answer = "";
             let q = input.toLowerCase();
+            let earnedPoints = 15; // हर सही सवाल पर अंक
 
-            if (q.includes('नीला') || q.includes('आसमान')) {
-                answer = "वाह! बहुत अच्छा सवाल है बच्चे! सूरज की रोशनी जब धरती के वायुमंडल से टकराती है, तो नीला रंग चारों तरफ बिखर जाता है, इसलिए हमें आसमान नीला दिखाई देता है!";
-            } else if (q.includes('पौधे') || q.includes('सांस')) {
-                answer = "अरे वाह! पौधे हमारी तरह नाक से सांस नहीं लेते बेटा, वे अपनी पत्तियों पर बने नन्हे छिद्रों से हवा लेते हैं और सूरज की धूप से अपना खाना बनाते हैं!";
-            } else if (q.includes('तारे') || q.includes('चमकते')) {
-                answer = "तारे दिन में भी आसमान में रहते हैं मेरे बच्चे! लेकिन सूरज की तेज धूप की वजह से वे हमें दिन में दिखाई नहीं देते, रात को अंधेरा होने पर वे जगमगाने लगते हैं!";
-            } else if (q.includes('इंद्रधनुष') || q.includes('रंग')) {
-                answer = "इंद्रधनुष में 7 प्यारे-प्यारे रंग होते हैं! लाल, नारंगी, पीला, हरा, नीला, जामुनी और बैंगनी! यह बारिश के बाद सूरज की किरणों से बनता है!";
+            if (q.includes('गणित') || q.includes('जोड़') || q.includes('घटाना')) {
+                answer = "वाह भाई वाह! गणित के इस चैलेंज में तुमने बिल्कुल सही दिमाग लगाया। मान लो 10 कंचे थे, 4 खो गए तो 6 बचे! शाबाश!";
+            } else if (q.includes('हिंदी') || q.includes('वर्णमाला') || q.includes('शब्द')) {
+                answer = "बहुत बढ़िया! हिंदी भाषा का तुम्हारा यह ज्ञान देखकर नेबुला टीचर बहुत खुश हुई। ऐसे ही सुंदर शब्द रोज लिखा करो!";
+            } else if (q.includes('पर्यावरण') || q.includes('evs') || q.includes('प्रकृति')) {
+                answer = "शाबाश! पर्यावरण का यह पाठ तुमने एकदम पक्का कर लिया है। पौधे हमारे सबसे अच्छे दोस्त हैं!";
+            } else if (q.includes('पहेली')) {
+                answer = "अरे वाह! इस कठिन पहेली का तुमने एकदम सही जवाब खोज निकाला! तुम्हारी बुद्धिमत्ता कमाल की है!";
             } else {
-                answer = "यह तो बहुत ही प्यारा और नया सवाल है बच्चे! तुम्हारी जिज्ञासा बहुत अच्छी है। इसका मतलब है कि तुम बहुत समझदार हो, ऐसे ही नए-नए सवाल पूछते रहो!";
+                answer = "नेबुला टीचर की तरफ से आपको इस यूनिक सवाल के लिए पूरे अंक मिलते हैं! तुम्हारी जिज्ञासा बहुत जबरदस्त है!";
             }
 
-            aiText.innerText = answer;
+            // स्कोर बढ़ाना
+            studentScore += earnedPoints;
+            document.getElementById('scoreDisplay').innerText = ⭐ ${studentScore} अंक;
+
+            aiText.innerText = ${answer} (+${earnedPoints} अंक मिले!);
             speakText(answer);
             inputField.value = "";
         }
 
         function shareToWhatsApp() {
-            let message = "नमस्ते! आज मैंने 'Dhruv Tech Academy' के AI Kids Zone में बहुत ही रोचक सवाल हल किए और नई चीजें सीखीं! 😊\n\n" +
-                          "मेरी सीखने की गति और जिज्ञासा बढ़ रही है! \n" +
-                          "क्या आप मुझे अगले एडवांस्ड लेवल के लिए रजिस्टर कर सकते हैं?\n\n" +
-                          "यहाँ देखें: [https://dhruv-tech-academy.onrender.com/]\n" +
-                          "आने वाला भविष्य, Dhruv Tech Academy के साथ!";
+            let message = 🔥 *Dhruv Tech Academy - AI Challenge* 🔥\n\n +
+                          मैंने आज एआई वर्चुअल क्लासरूम में ${studentScore} शानदार अंक हासिल किए हैं! 🌟\n +
+                          क्या तुम्हारा दिमाग इतना तेज है कि तुम मेरा यह स्कोर पार कर सको?\n\n +
+                          अभी खेलें और अपना स्कोर चेक करें:\n +
+                          https://dhruv-tech-academy.onrender.com/\n\n +
+                          आने वाला भविष्य - Dhruv Tech Academy के साथ!;
                           
             let whatsappUrl = "https://wa.me/?text=" + encodeURIComponent(message);
             window.open(whatsappUrl, '_blank');
