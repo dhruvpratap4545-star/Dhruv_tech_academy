@@ -6,228 +6,115 @@
     <title>AI Kids Zone - Dhruv Tech Academy</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-slate-950 text-white min-h-screen flex flex-col items-center justify-between p-4">
+<body class="bg-slate-950 text-white min-h-screen flex flex-col items-center p-4">
 
-    <!-- शीर्ष भाग: एक ही लाइन में मुख्य पोर्टल और हिंदी/इंग्लिश टॉगल बटन -->
+    <!-- शीर्ष भाग (पोर्टल और भाषा टॉगल एक लाइन में) -->
     <div class="w-full max-w-2xl flex justify-between items-center my-4 px-2">
-        <a href="/" class="bg-red-600 hover:bg-red-500 text-white px-3 py-2 rounded-xl text-xs font-bold shadow-lg transition">
-            ← मुख्य पोर्टल
-        </a>
-
-        <!-- एक ही लाइन का कॉम्पैक्ट हिंदी / English स्विच -->
+        <a href="/" class="bg-red-600 hover:bg-red-500 text-white px-3 py-2 rounded-xl text-xs font-bold shadow-lg transition">← मुख्य पोर्टल</a>
+        
         <div class="bg-slate-900 border border-slate-700 p-1 rounded-xl flex items-center shadow-inner gap-1">
-            <button onclick="changeLanguage('hi')" id="langHi" class="bg-cyan-600 text-white px-3 py-1 rounded-lg text-xs font-bold transition cursor-pointer">
-                हिं
-            </button>
-            <button onclick="changeLanguage('en')" id="langEn" class="text-slate-400 px-3 py-1 rounded-lg text-xs font-bold transition cursor-pointer">
-                English
-            </button>
+            <button onclick="setLanguage('hi')" id="hiBtn" class="bg-cyan-600 text-white px-3 py-1 rounded-lg text-xs font-bold">हिं</button>
+            <button onclick="setLanguage('en')" id="enBtn" class="text-slate-400 px-3 py-1 rounded-lg text-xs font-bold">English</button>
         </div>
     </div>
 
     <!-- हेडिंग -->
     <div class="w-full max-w-2xl text-center mb-4">
-        <h1 id="uiTitle" class="text-2xl md:text-3xl font-extrabold text-cyan-400">एआई वर्चुअल क्लासरूम</h1>
-        <p id="uiSub" class="text-slate-300 text-sm mt-1">सीखो, स्कोर बनाओ और दोस्तों को चुनौती दो!</p>
+        <h1 id="mainTitle" class="text-2xl md:text-3xl font-extrabold text-cyan-400">एआई वर्चुअल क्लासरूम</h1>
+        <p id="subTitle" class="text-slate-300 text-sm mt-1">सीखो, स्कोर बनाओ और दोस्तों को चुनौती दो!</p>
     </div>
 
-    <!-- मुख्य ब्लैकबोर्ड बॉक्स -->
+    <!-- मुख्य ब्लैकबोर्ड -->
     <div class="w-full max-w-2xl bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-2xl flex flex-col items-center">
         
-        <!-- एआई टीचर अवतार और लाइव स्कोर कार्ड -->
         <div class="w-full flex justify-between items-center mb-4 px-2">
             <div class="flex items-center gap-2">
-                <div class="w-12 h-12 bg-gradient-to-tr from-yellow-400 to-emerald-400 rounded-full flex items-center justify-center text-xl shadow-lg animate-bounce">
-                    👩‍🏫
-                </div>
+                <div class="w-12 h-12 bg-gradient-to-tr from-yellow-400 to-emerald-400 rounded-full flex items-center justify-center text-xl shadow-lg animate-bounce">👩‍🏫</div>
                 <div>
-                    <span id="uiTeacher" class="text-xs text-emerald-400 font-bold block">नेबुला एआई टीचर</span>
+                    <span id="teacherName" class="text-xs text-emerald-400 font-bold block">नेबुला एआई टीचर</span>
                     <span class="text-[10px] text-slate-400">NC-Class 5 Module</span>
                 </div>
             </div>
-            <!-- लाइव स्कोर बैज -->
             <div class="bg-slate-950 border border-cyan-500/50 px-3 py-1.5 rounded-xl text-right">
-                <span id="uiScoreText" class="text-[10px] text-cyan-400 block font-bold">जीनियस स्कोर</span>
+                <span id="scoreLabel" class="text-[10px] text-cyan-400 block font-bold">जीनियस स्कोर</span>
                 <span id="scoreDisplay" class="text-sm font-extrabold text-yellow-300">⭐ 0 अंक</span>
             </div>
         </div>
 
-        <!-- उत्तर दिखाने का बॉक्स -->
         <div id="aiText" class="w-full bg-slate-950 border border-slate-700 rounded-2xl p-4 min-h-[110px] text-cyan-200 text-center flex items-center justify-center text-lg mb-6 shadow-inner font-medium">
             नमस्ते मेरे नन्हे जीनियस! आज का चैलेंज शुरू करने के लिए नीचे दिए गए किसी भी बटन पर क्लिक करो! 😊
         </div>
 
-        <!-- पाठ्यक्रम आधारित सुझाव वाले बटन (100% सेफ onclick के साथ) -->
         <div class="w-full grid grid-cols-1 md:grid-cols-2 gap-2.5 mb-6">
-            <button onclick="runActivity('math')" class="bg-slate-800 hover:bg-slate-700 text-cyan-300 py-3 px-4 rounded-xl text-left font-medium transition flex items-center gap-2 cursor-pointer shadow">
-                ➕ <span id="btn1">गणित: जोड़-घटाना चैलेंज</span>
-            </button>
-            <button onclick="runActivity('hindi')" class="bg-slate-800 hover:bg-slate-700 text-emerald-300 py-3 px-4 rounded-xl text-left font-medium transition flex items-center gap-2 cursor-pointer shadow">
-                🔤 <span id="btn2">हिंदी: शब्द रचना चैलेंज</span>
-            </button>
-            <button onclick="runActivity('evs')" class="bg-slate-800 hover:bg-slate-700 text-yellow-300 py-3 px-4 rounded-xl text-left font-medium transition flex items-center gap-2 cursor-pointer shadow">
-                🌿 <span id="btn3">EVS: प्रकृति का रहस्य</span>
-            </button>
-            <button onclick="runActivity('puzzle')" class="bg-slate-800 hover:bg-slate-700 text-pink-300 py-3 px-4 rounded-xl text-left font-medium transition flex items-center gap-2 cursor-pointer shadow">
-                🤔 <span id="btn4">आज की सुपर पहेली</span>
-            </button>
+            <button onclick="processQuestion('math')" class="bg-slate-800 hover:bg-slate-700 text-cyan-300 py-3 px-4 rounded-xl text-left font-medium transition shadow">➕ <span id="btn1">गणित: जोड़-घटाना चैलेंज</span></button>
+            <button onclick="processQuestion('hindi')" class="bg-slate-800 hover:bg-slate-700 text-emerald-300 py-3 px-4 rounded-xl text-left font-medium transition shadow">🔤 <span id="btn2">हिंदी: शब्द रचना चैलेंज</span></button>
+            <button onclick="processQuestion('evs')" class="bg-slate-800 hover:bg-slate-700 text-yellow-300 py-3 px-4 rounded-xl text-left font-medium transition shadow">🌿 <span id="btn3">EVS: प्रकृति का रहस्य</span></button>
+            <button onclick="processQuestion('puzzle')" class="bg-slate-800 hover:bg-slate-700 text-pink-300 py-3 px-4 rounded-xl text-left font-medium transition shadow">🤔 <span id="btn4">आज की सुपर पहेली</span></button>
         </div>
 
-        <!-- यूजर इनपुट एरिया -->
-        <div class="w-full flex flex-col gap-3">
-            <input type="text" id="userInput" placeholder="यहाँ अपना सवाल या उत्तर टाइप करें..." class="w-full bg-slate-950 border border-slate-700 text-white px-4 py-3 rounded-xl focus:outline-none focus:border-cyan-500 shadow-inner">
-            <button onclick="runCustomInput()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white py-3 rounded-xl font-bold shadow-lg transition cursor-pointer">
-                <span id="btnSubmit">एआई टीचर से जाँच करवाएं 🚀</span>
-            </button>
-        </div>
+        <input type="text" id="userInput" placeholder="यहाँ अपना सवाल टाइप करें..." class="w-full bg-slate-950 border border-slate-700 text-white px-4 py-3 rounded-xl mb-3">
+        <button id="submitBtn" onclick="handleCustomInput()" class="w-full bg-emerald-600 py-3 rounded-xl font-bold">एआई टीचर से जाँच करवाएं 🚀</button>
 
-        <!-- व्हाट्सएप रिपोर्ट और फ्रेंड चैलेंज सेक्शन -->
-        <div class="w-full mt-6 bg-green-900/30 p-6 rounded-2xl border border-green-500/50 shadow-2xl text-center">
+        <div class="w-full mt-6 bg-green-900/30 p-6 rounded-2xl border border-green-500/50 text-center">
             <h3 id="repTitle" class="text-green-400 font-bold text-lg mb-2">🔥 फ्रेंड चैलेंज और प्रोग्रेस रिपोर्ट!</h3>
-            <p id="repDesc" class="text-green-100 text-sm mb-4">अपना स्कोर अपने दोस्तों और गार्जियन को व्हाट्सएप पर भेजकर चुनौती दें!</p>
-            <button onclick="shareToWhatsApp()" class="w-full bg-green-600 hover:bg-green-500 text-white py-3 rounded-xl font-bold shadow-lg transition cursor-pointer">
-                <span id="btnWhatsapp">WhatsApp पर स्कोर शेयर करें 📱</span>
-            </button>
+            <button id="waBtn" onclick="shareToWhatsApp()" class="w-full bg-green-600 py-3 rounded-xl font-bold">WhatsApp पर स्कोर शेयर करें 📱</button>
         </div>
-
     </div>
 
-    <!-- फुटर नोट -->
-    <div class="text-center text-xs text-slate-500 mt-6">
-        Dhruv Tech Academy Foundation Initiative (NC-Class 5 Learning Module)
-    </div>
-
-    <!-- अचूक और 100% वर्किंग जावास्क्रिप्ट लॉजिक -->
     <script>
         let studentScore = 0;
         let currentLang = 'hi';
 
-        const langData = {
-            hi: {
-                title: "एआई वर्चुअल क्लासरूम",
-                sub: "सीखो, स्कोर बनाओ और दोस्तों को चुनौती दो!",
-                teacher: "नेबुला एआई टीचर",
-                scoreText: "जीनियस स्कोर",
-                welcome: "नमस्ते मेरे नन्हे जीनियस! आज का चैलेंज शुरू करने के लिए नीचे दिए गए किसी भी बटन पर क्लिक करो! 😊",
-                b1: "गणित: जोड़-घटाना चैलेंज",
-                b2: "हिंदी: शब्द रचना चैलेंज",
-                b3: "EVS: प्रकृति का रहस्य",
-                b4: "आज की सुपर पहेली",
-                placeholder: "यहाँ अपना सवाल या उत्तर टाइप करें...",
-                submit: "एआई टीचर से जाँच करवाएं 🚀",
-                repTitle: "🔥 फ्रेंड चैलेंज और प्रोग्रेस रिपोर्ट!",
-                repDesc: "अपना स्कोर अपने दोस्तों और गार्जियन को व्हाट्सएप पर भेजकर चुनौती दें!",
-                waBtn: "WhatsApp पर स्कोर शेयर करें 📱"
-            },
-            en: {
-                title: "AI Virtual Classroom",
-                sub: "Learn, Score Points and Challenge Friends!",
-                teacher: "Nebula AI Teacher",
-                scoreText: "Genius Score",
-                welcome: "Hello my little genius! Click any button below to start today's challenge! 😊",
-                b1: "Math: Add & Subtract Challenge",
-                b2: "Hindi: Word Building Challenge",
-                b3: "EVS: Mystery of Nature",
-                b4: "Today's Super Puzzle",
-                placeholder: "Type your question or answer here...",
-                submit: "Check with AI Teacher 🚀",
-                repTitle: "🔥 Friend Challenge & Progress Report!",
-                repDesc: "Share your score with friends & guardians on WhatsApp to challenge them!",
-                waBtn: "Share Score on WhatsApp 📱"
-            }
+        const dict = {
+            hi: { title: "एआई वर्चुअल क्लासरूम", sub: "सीखो, स्कोर बनाओ और दोस्तों को चुनौती दो!", teacher: "नेबुला एआई टीचर", score: "जीनियस स्कोर", welcome: "नमस्ते मेरे नन्हे जीनियस! आज का चैलेंज शुरू करने के लिए बटन दबाओ! 😊", b1: "गणित: जोड़-घटाना चैलेंज", b2: "हिंदी: शब्द रचना चैलेंज", b3: "EVS: प्रकृति का रहस्य", b4: "आज की सुपर पहेली", inputPh: "यहाँ अपना सवाल टाइप करें...", submit: "एआई टीचर से जाँच करवाएं 🚀", repTitle: "🔥 फ्रेंड चैलेंज और प्रोग्रेस रिपोर्ट!", waBtn: "WhatsApp पर स्कोर शेयर करें 📱" },
+            en: { title: "AI Virtual Classroom", sub: "Learn, Score Points and Challenge Friends!", teacher: "Nebula AI Teacher", score: "Genius Score", welcome: "Hello my little genius! Click any button below to start! 😊", b1: "Math: Add & Subtract Challenge", b2: "Hindi: Word Building Challenge", b3: "EVS: Mystery of Nature", b4: "Today's Super Puzzle", inputPh: "Type your question here...", submit: "Check with AI Teacher 🚀", repTitle: "🔥 Friend Challenge & Progress Report!", waBtn: "Share Score on WhatsApp 📱" }
         };
 
-        function changeLanguage(lang) {
+        function setLanguage(lang) {
             currentLang = lang;
-            let d = langData[lang];
-
-            document.getElementById('uiTitle').innerText = d.title;
-            document.getElementById('uiSub').innerText = d.sub;
-            document.getElementById('uiTeacher').innerText = d.teacher;
-            document.getElementById('uiScoreText').innerText = d.scoreText;
+            let d = dict[lang];
+            document.getElementById('mainTitle').innerText = d.title;
+            document.getElementById('subTitle').innerText = d.sub;
+            document.getElementById('teacherName').innerText = d.teacher;
+            document.getElementById('scoreLabel').innerText = d.score;
             document.getElementById('aiText').innerText = d.welcome;
             document.getElementById('btn1').innerText = d.b1;
             document.getElementById('btn2').innerText = d.b2;
             document.getElementById('btn3').innerText = d.b3;
             document.getElementById('btn4').innerText = d.b4;
-            document.getElementById('userInput').placeholder = d.placeholder;
-            document.getElementById('btnSubmit').innerText = d.submit;
+            document.getElementById('userInput').placeholder = d.inputPh;
+            document.getElementById('submitBtn').innerText = d.submit;
             document.getElementById('repTitle').innerText = d.repTitle;
-            document.getElementById('repDesc').innerText = d.repDesc;
-            document.getElementById('btnWhatsapp').innerText = d.waBtn;
-
-            if (lang === 'hi') {
-                document.getElementById('langHi').className = "bg-cyan-600 text-white px-3 py-1 rounded-lg text-xs font-bold transition cursor-pointer";
-                document.getElementById('langEn').className = "text-slate-400 px-3 py-1 rounded-lg text-xs font-bold transition cursor-pointer";
-            } else {
-                document.getElementById('langEn').className = "bg-cyan-600 text-white px-3 py-1 rounded-lg text-xs font-bold transition cursor-pointer";
-                document.getElementById('langHi').className = "text-slate-400 px-3 py-1 rounded-lg text-xs font-bold transition cursor-pointer";
-            }
+            document.getElementById('waBtn').innerText = d.waBtn;
+            document.getElementById('hiBtn').className = (lang === 'hi') ? "bg-cyan-600 text-white px-3 py-1 rounded-lg text-xs font-bold" : "text-slate-400 px-3 py-1 rounded-lg text-xs font-bold";
+            document.getElementById('enBtn').className = (lang === 'en') ? "bg-cyan-600 text-white px-3 py-1 rounded-lg text-xs font-bold" : "text-slate-400 px-3 py-1 rounded-lg text-xs font-bold";
         }
 
         function speakText(text, lang) {
-            try {
-                if ('speechSynthesis' in window) {
-                    window.speechSynthesis.cancel();
-                    let utterance = new SpeechSynthesisUtterance(text);
-                    utterance.lang = lang === 'en' ? 'en-US' : 'hi-IN';
-                    utterance.rate = 0.9;
-                    window.speechSynthesis.speak(utterance);
-                }
-            } catch (e) {
-                console.log("Audio safe mode");
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+                let u = new SpeechSynthesisUtterance(text);
+                u.lang = (lang === 'en') ? 'en-US' : 'hi-IN';
+                window.speechSynthesis.speak(u);
             }
         }
 
-        function runActivity(type) {
-            let aiText = document.getElementById('aiText');
-            let answer = "";
-            let earnedPoints = 15;
-
-            if (currentLang === 'hi') {
-                if (type === 'math') {
-                    answer = "वाह भाई वाह! गणित के इस चैलेंज में तुमने बिल्कुल सही दिमाग लगाया। मान लो 10 कंचे थे, 4 खो गए तो 6 बचे! शाबाश!";
-                } else if (type === 'hindi') {
-                    answer = "बहुत बढ़िया! हिंदी भाषा का तुम्हारा यह ज्ञान देखकर नेबुला टीचर बहुत खुश हुई। ऐसे ही सुंदर शब्द रोज लिखा करो!";
-                } else if (type === 'evs') {
-                    answer = "शाबाश! पर्यावरण का यह पाठ तुमने एकदम पक्का कर लिया है। पौधे हमारे सबसे अच्छे दोस्त हैं!";
-                } else {
-                    answer = "अरे वाह! इस कठिन पहेली का तुमने एकदम सही जवाब खोज निकाला! तुम्हारी बुद्धिमत्ता कमाल की है!";
-                }
-            } else {
-                if (type === 'math') {
-                    answer = "Awesome! You solved the math challenge brilliantly. If you had 10 marbles and lost 4, you have 6 left!";
-                } else if (type === 'hindi') {
-                    answer = "Fantastic! Nebula Teacher loves your word-building skills. Keep practicing every day!";
-                } else if (type === 'evs') {
-                    answer = "Well done! You mastered this science topic. Plants are indeed our best friends!";
-                } else {
-                    answer = "Incredible! You solved this tricky puzzle with pure genius intellect. Great job!";
-                }
-            }
-
-            studentScore += earnedPoints;
+        function processQuestion(type) {
+            let ans = (currentLang === 'hi') ? "वाह! बहुत बढ़िया जवाब! +15 अंक!" : "Awesome! Great job! +15 points!";
+            studentScore += 15;
             document.getElementById('scoreDisplay').innerText = `⭐ ${studentScore} ${currentLang === 'hi' ? 'अंक' : 'Pts'}`;
-            aiText.innerText = `${answer} (+${earnedPoints} ${currentLang === 'hi' ? 'अंक मिले!' : 'Points!'})`;
-            speakText(answer, currentLang);
+            document.getElementById('aiText').innerText = ans;
+            speakText(ans, currentLang);
         }
 
-        function runCustomInput() {
-            let inputField = document.getElementById('userInput');
-            let val = inputField.value.trim();
-            if(val !== "") {
-                runActivity('math');
-                inputField.value = "";
-            }
+        function handleCustomInput() {
+            let val = document.getElementById('userInput').value.trim();
+            if (val) { processQuestion('math'); document.getElementById('userInput').value = ""; }
         }
 
         function shareToWhatsApp() {
-            let message = currentLang === 'hi' ? 
-                `🔥 *Dhruv Tech Academy - AI Challenge* 🔥\n\nमैंने आज एआई वर्चुअल क्लासरूम में ${studentScore} शानदार अंक हासिल किए हैं! 🌟\nक्या तुम्हारा दिमाग इतना तेज है कि तुम मेरा यह स्कोर पार कर सको?\n\nhttps://dhruv-tech-academy.onrender.com/` :
-                `🔥 *Dhruv Tech Academy - AI Challenge* 🔥\n\nI scored ${studentScore} points in the AI Virtual Classroom today! 🌟\nCan you beat my genius score?\n\nhttps://dhruv-tech-academy.onrender.com/`;
-                          
-            let whatsappUrl = "https://wa.me/?text=" + encodeURIComponent(message);
-            window.open(whatsappUrl, '_blank');
+            let msg = `Dhruv Tech Academy Challenge: My Score is ${studentScore}! Can you beat me? https://dhruv-tech-academy.onrender.com/`;
+            window.open("https://wa.me/?text=" + encodeURIComponent(msg), '_blank');
         }
     </script>
 </body>
