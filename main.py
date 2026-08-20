@@ -132,54 +132,7 @@ def master_ecosystem_dashboard():
                 </div>
             </header>
 
-            <!-- डायनेमिक रंग बदलने वाली और उड़कर आने वाली एआई चिड़िया -->
-<style>
-@keyframes flyInFromAnywhere {
-    0% { opacity: 0; transform: scale(0.1) translate(var(--start-x), var(--start-y)); }
-    100% { opacity: 1; transform: scale(1) translate(0, 0); }
-}
-.bird-flying-in {
-    animation: flyInFromAnywhere 1.5s ease-out forwards;
-    position: fixed;
-    z-index: 1000;
-}
-</style>
-
-<div id="flyingBirdContainer" style="position: fixed; top: 40%; left: 50%; transform: translate(-50%, -50%); z-index: 1001;">
-    <div id="birdCircle" class="w-24 h-24 sm:w-28 sm:h-28 bg-red-600 rounded-full flex flex-col items-center justify-center text-2xl sm:text-3xl shadow-2xl">
-        <span id="birdIconSymbol" class="text-white font-extrabold text-2xl sm:text-3xl">🐦</span>
-    </div>
-    <div id="birdDialogue" class="absolute top-full left-1/2 -translate-x-1/2 mt-3 bg-slate-950/95 border border-cyan-400/60 px-4 sm:px-6 py-2.5 rounded-2xl shadow-2xl text-center w-64 opacity-0 transition-opacity duration-500 delay-1000">
-        <p class="text-cyan-200 text-xs sm:text-sm font-bold">
-            "चूँ-चूँ! यह लाल रंग है! एक, दो, तीन, चार, पाँच! NC से कक्षा 5 के बच्चे मेरे साथ दोहराओ!"
-        </p>
-    </div>
-</div>
-
-<script>
-document.addEventListener("DOMContentLoaded", function() {
-    const birdContainer = document.getElementById('flyingBirdContainer');
-    const birdDialogue = document.getElementById('birdDialogue');
-    const startPositions = [
-        { x: '-1500px', y: '-800px' },
-        { x: '1500px', y: '-800px' },
-        { x: '-1500px', y: '800px' },
-        { x: '1500px', y: '800px' }
-    ];
-    const randomPos = startPositions[Math.floor(Math.random() * startPositions.length)];
-    birdContainer.style.setProperty('--start-x', randomPos.x);
-    birdContainer.style.setProperty('--start-y', randomPos.y);
-    birdContainer.classList.add('bird-flying-in');
-    setTimeout(() => {
-        birdDialogue.classList.remove('opacity-0');
-        if ('speechSynthesis' in window) {
-             let utterance = new SpeechSynthesisUtterance('चूँ-चूँ! यह लाल रंग है! एक, दो, तीन, चार, पाँच!');
-             utterance.lang = 'hi-IN';
-             window.speechSynthesis.speak(utterance);
-        }
-    }, 1500);
-});
-</script>
+            
 
             <!-- नेबुला बैनर और प्राइसिंग गेटवे -->
             <div class="nebula-master-glow p-6 sm:p-12 rounded-3xl border border-cyan-500/40 text-center space-y-6 shadow-2xl relative overflow-hidden">
