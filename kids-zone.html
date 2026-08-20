@@ -276,32 +276,63 @@
             }
         }
 
+        // प्रोफेशनल और मोटिवेटिंग टीचर जैसी आवाज़ के लिए सुधरा हुआ मास्टर फंक्शन
         function speakText(text) {
             try {
                 if ('speechSynthesis' in window) {
                     window.speechSynthesis.cancel();
+                    
                     let utterance = new SpeechSynthesisUtterance(text);
                     utterance.lang = (currentLang === 'en') ? 'en-US' : 'hi-IN';
-                    utterance.rate = 0.85;
+                    utterance.rate = 0.9;   // स्पष्ट और शांत गति
+                    utterance.pitch = 1.1;  // टीचर जैसी मिठास और ऊर्जा
+
+                    // ब्राउज़र में उपलब्ध सबसे अच्छी हिंदी/भारतीय आवाज़ चुनना
+                    let voices = window.speechSynthesis.getVoices();
+                    if (voices.length > 0) {
+                        let targetLang = (currentLang === 'en') ? 'en' : 'hi';
+                        let teacherVoice = voices.find(v => v.lang.toLowerCase().includes(targetLang) && (v.name.includes('Google') || v.name.includes('Natural')));
+                        
+                        if (!teacherVoice) {
+                            teacherVoice = voices.find(v => v.lang.toLowerCase().includes(targetLang) || (currentLang === 'hi' && v.lang.includes('IN')));
+                        }
+                        
+                        if (teacherVoice) {
+                            utterance.voice = teacherVoice;
+                        }
+                    }
 
                     let avatar = document.getElementById('teacherAvatar');
                     let status = document.getElementById('teacherStatus');
 
                     utterance.onstart = function() {
-                        avatar.classList.add('animate-spin');
-                        status.innerText = currentLang === 'hi' ? "नेबुला बोल रही हैं..." : "Nebula speaking...";
+                        if (avatar) avatar.classList.add('animate-spin');
+                        if (status) status.innerText = currentLang === 'hi' ? "नेबुला बोल रही हैं..." : "Nebula speaking...";
                     };
 
                     utterance.onend = function() {
-                        avatar.classList.remove('animate-spin');
-                        status.innerText = currentLang === 'hi' ? "उत्तर दें" : "Answer now";
+                        if (avatar) avatar.classList.remove('animate-spin');
+                        if (status) status.innerText = currentLang === 'hi' ? "उत्तर दें" : "Answer now";
+                    };
+
+                    utterance.onerror = function() {
+                        if (avatar) avatar.classList.remove('animate-spin');
+                        if (status) status.innerText = currentLang === 'hi' ? "तैयार हैं..." : "Ready...";
                     };
 
                     window.speechSynthesis.speak(utterance);
                 }
             } catch (e) {
-                console.log("Audio speech skipped safely");
+                console.log("Speech skipped safely: ", e);
             }
+        }
+
+        // वॉइस लिस्ट एक्टिवेटर
+        if ('speechSynthesis' in window) {
+            window.speechSynthesis.onvoiceschanged = function() {
+                window.speechSynthesis.getVoices();
+            };
+            window.speechSynthesis.getVoices();
         }
 
         function startVoiceInput() {
@@ -325,7 +356,6 @@
             }
         }
 
-        // 1. फोटो अपलोड होने पर आवाज़ और सेंटर स्क्रॉल
         function handleImageUpload(event) {
             let file = event.target.files[0];
             if (file) {
@@ -350,7 +380,6 @@
             }
         }
 
-        // 2. एआई द्वारा समझाते समय आवाज़ और सेंटर स्क्रॉल
         async function explainBookPage() {
             let scanMsg = currentLang === 'hi' 
                 ? "🔄 नेबुला एआई किताब का पन्ना स्कैन कर रही है..." 
@@ -412,7 +441,6 @@
             }
         }
 
-        // 5 विषयों का सवाल जनरेटर (20 अंक प्रति प्रश्न)
         function loadChallenge(category) {
             let d = siteData[currentLang];
             currentActiveCategory = category;
@@ -481,7 +509,6 @@
             speakText(textToShow);
         }
 
-        // उत्तर की पुष्टि (5 x 20 = 100 अंक)
         function verifyAnswer() {
             let d = siteData[currentLang];
             let userField = document.getElementById('userInput');
