@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="hi" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dhruv Tech Academy - Kids AI Foundation Zone</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-950 text-white min-h-screen flex flex-col items-center justify-between p-4 sm:p-6">
+
+    <!-- टॉप हेडर -->
+    <div class="w-full max-w-2xl flex items-center justify-between bg-slate-900/80 border border-emerald-500/40 p-4 rounded-2xl shadow-xl">
+        <div class="flex items-center gap-3">
+            <span class="text-4xl animate-bounce">🐦</span>
+            <div>
+                <h1 class="text-lg sm:text-xl font-extrabold text-emerald-400">नन्ही जिज्ञासा एआई ज़ोन (NC-5)</h1>
+                <p class="text-xs text-cyan-200">पूछो बच्चों! जो मन में आए, हमारी एआई बताएगी!</p>
+            </div>
+        </div>
+        <button onclick="window.location.href='/'" class="bg-red-600 hover:bg-red-500 text-white px-3 py-1.5 rounded-xl text-xs font-bold shadow-lg">
+            मुख्य पोर्टल पर लौटें
+        </button>
+    </div>
+
+    <!-- मुख्य संवाद और चिड़िया बॉक्स -->
+    <div class="w-full max-w-2xl my-6 bg-slate-900 border border-cyan-400/50 p-6 rounded-3xl shadow-2xl text-center relative overflow-hidden">
+        <div class="absolute -top-10 -right-10 w-32 h-32 bg-emerald-500/10 rounded-full blur-2xl"></div>
+        
+        <div id="aiAvatar" class="w-24 h-24 mx-auto bg-gradient-to-tr from-emerald-600 to-cyan-500 rounded-full flex items-center justify-center text-5xl shadow-2xl mb-4 animate-pulse">
+            🐥
+        </div>
+
+        <div id="dialogueBox" class="bg-slate-950/90 border border-cyan-400/40 p-4 rounded-2xl shadow-inner mb-4">
+            <p id="aiText" class="text-cyan-100 text-sm sm:text-base font-medium leading-relaxed">
+                "नमस्ते मेरे प्यारे बच्चों! मैं आपकी दोस्त चिड़िया हूँ। आज मुझसे विज्ञान, अंतरिक्ष या रंगों के बारे में जो मन हो पूछो!"
+            </p>
+        </div>
+
+        <!-- जिज्ञासा बढ़ाने वाले क्विक बटन -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 mt-4">
+            <button onclick="askAILittle('आसमान नीला क्यों दिखाई देता है?')" class="bg-slate-800 hover:bg-slate-700 border border-emerald-500/30 text-emerald-300 text-xs py-2.5 px-3 rounded-xl font-semibold transition-all">
+                ✨ आसमान नीला क्यों है?
+            </button>
+            <button onclick="askAILittle('पेड़-पौधे सांस कैसे लेते हैं?')" class="bg-slate-800 hover:bg-slate-700 border border-emerald-500/30 text-emerald-300 text-xs py-2.5 px-3 rounded-xl font-semibold transition-all">
+                🌿 पौधे सांस कैसे लेते हैं?
+            </button>
+            <button onclick="askAILittle('तारे रात को ही क्यों चमकते हैं?')" class="bg-slate-800 hover:bg-slate-700 border border-emerald-500/30 text-emerald-300 text-xs py-2.5 px-3 rounded-xl font-semibold transition-all">
+                ⭐ तारे रात में क्यों चमकते हैं?
+            </button>
+            <button onclick="askAILittle('इंद्रधनुष में कितने रंग होते हैं?')" class="bg-slate-800 hover:bg-slate-700 border border-emerald-500/30 text-emerald-300 text-xs py-2.5 px-3 rounded-xl font-semibold transition-all">
+                🌈 इंद्रधनुष कैसे बनता है?
+            </button>
+        </div>
+    </div>
+
+    <!-- यूजर इनपुट एरिया -->
+    <div class="w-full max-w-2xl bg-slate-900 border border-slate-700 p-3 rounded-2xl flex items-center gap-2 shadow-lg">
+        <input type="text" id="userInput" placeholder="यहाँ अपना सवाल टाइप करो बच्चे..." class="w-full bg-slate-950 border border-slate-700 text-white px-4 py-2.5 rounded-xl text-sm focus:outline-none focus:border-cyan-400">
+        <button onclick="handleUserQuestion()" class="bg-emerald-600 hover:bg-emerald-500 text-white px-5 py-2.5 rounded-xl text-xs font-bold shadow-lg">
+            पूछो
+        </button>
+    </div>
+
+    <!-- फुटर नोट -->
+    <div class="text-center text-xs text-slate-500 mt-4">
+        Dhruv Tech Academy Foundation Initiative (NC-Class 5 Learning Module)
+    </div>
+
+    <!-- जावास्क्रिप्ट लॉजिक -->
+    <script>
+        // पेज खुलते ही चिड़िया का स्वागत भाषण
+        window.addEventListener('DOMContentLoaded', () => {
+            speakText("नमस्ते मेरे प्यारे बच्चों! मैं आपकी दोस्त चिड़िया हूँ। आज मुझसे जो मन हो पूछो!");
+        });
+
+        function speakText(text) {
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel(); // पुराना बोलना रोके
+                let utterance = new SpeechSynthesisUtterance(text);
+                utterance.lang = 'hi-IN';
+                utterance.rate = 0.9; // बच्चों के लिए थोड़ी धीमी और मधुर गति
+                window.speechSynthesis.speak(utterance);
+            }
+        }
+
+        function askAILittle(question) {
+            document.getElementById('userInput').value = question;
+            handleUserQuestion();
+        }
+
+        function handleUserQuestion() {
+            let input = document.getElementById('userInput').value.trim();
+            let aiText = document.getElementById('aiText');
+            
+            if(!input) return;
+
+            let answer = "";
+            let q = input.toLowerCase();
+
+            // बच्चों के स्तर पर सरल और जिज्ञासु उत्तर देने का लॉजिक
+            if(q.includes('नीला') || q.includes('आसमान')) {
+                answer = "वाह! बहुत अच्छा सवाल है बच्चे! सूरज की रोशनी जब धरती के वायुमंडल से टकराती है, तो नीला रंग चारों तरफ बिखर जाता है, इसलिए हमें आसमान नीला दिखता है!";
+            } else if(q.includes('पौधे') || q.includes('सांस')) {
+                answer = "अरे वाह! पौधे हमारी तरह नाक से सांस नहीं लेते बेटा, वे अपनी पत्तियों पर बने नन्हे छेदों से हवा लेते हैं और सूरज की धूप से अपना खाना बनाते हैं!";
+            } else if(q.includes('तारे') || q.includes('चमकते')) {
+                answer = "तारे दिन में भी आसमान में रहते हैं मेरे बच्चे! लेकिन सूरज की तेज धूप की वजह से वे हमें दिन में दिखाई नहीं देते, रात को अंधेरा होने पर चमकते हैं!";
+            } else if(q.includes('इंद्रधनुष') || q.includes('रंग')) {
+                answer = "इंद्रधनुष में 7 प्यारे-प्यारे रंग होते हैं! लाल, नारंगी, पीला, हरा, नीला, जामुनी और बैंगनी! यह बारिश के बाद सूरज की किरणों से बनता है!";
+            } else {
+                answer = "यह तो बहुत ही प्यारा और नया सवाल है बच्चे! तुम्हारी जिज्ञासा बहुत अच्छी है। इसका मतलब है तुम बहुत समझदार हो, ऐसे ही नए-नए सवाल पूछते रहो!";
+            }
+
+            aiText.innerText = "${answer}";
+            speakText(answer);
+            document.getElementById('userInput').value = "";
+        }
+    </script>
+</body>
+</html>
