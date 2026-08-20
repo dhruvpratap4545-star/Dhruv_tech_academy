@@ -171,7 +171,7 @@
         let currentCorrectAnswer = "";
         let currentActiveCategory = "";
         let currentQuestionText = "";
-        let solvedCategories = {}; // 5 श्रेणियों का ट्रैक रखने के लिए
+        let solvedCategories = {};
 
         const siteData = {
             hi: {
@@ -203,8 +203,7 @@
                 wrongMsg: "गलत जवाब! जरा सोचकर या बोलकर दोबारा कोशिश करो! 🤔",
                 alreadySolvedMsg: "⚠️ यह चैलेंज इस सेशन में हल हो चुका है! नया स्कोर पाने के लिए दूसरा विषय चुनें!",
                 fullScoreMsg: "🎉 शानदार! आपने पूरे 100/100 अंक हासिल कर लिए हैं! 🏆",
-                zeroScoreAlert: "⚠️ पहले कम से कम एक सही जवाब देकर अंक प्राप्त करें, तभी आप स्कोर शेयर कर सकते हैं!",
-                visionProcessing: "🔄 नेबुला एआई आपकी किताब की फोटो को स्कैन कर रही है..."
+                zeroScoreAlert: "⚠️ पहले कम से कम एक सही जवाब देकर अंक प्राप्त करें, तभी आप स्कोर शेयर कर सकते हैं!"
             },
             en: {
                 portal: "Main Portal",
@@ -235,8 +234,7 @@
                 wrongMsg: "Wrong answer! Think carefully and try again! 🤔",
                 alreadySolvedMsg: "⚠️ This challenge is already solved! Choose another subject for more points!",
                 fullScoreMsg: "🎉 Congratulations! You achieved full 100/100 points! 🏆",
-                zeroScoreAlert: "⚠️ Please earn at least some score before sharing!",
-                visionProcessing: "🔄 Nebula AI is scanning your book photo..."
+                zeroScoreAlert: "⚠️ Please earn at least some score before sharing!"
             }
         };
 
@@ -327,6 +325,7 @@
             }
         }
 
+        // 1. फोटो अपलोड होने पर आवाज़ और सेंटर स्क्रॉल
         function handleImageUpload(event) {
             let file = event.target.files[0];
             if (file) {
@@ -335,56 +334,81 @@
                     document.getElementById('uploadedImagePreview').src = e.target.result;
                     document.getElementById('imagePreviewContainer').classList.remove('hidden');
                     document.getElementById('explainVisionBtn').classList.remove('hidden');
-                    document.getElementById('aiText').innerText = currentLang === 'hi' ? 
-                        "📸 किताब की फोटो आ गई है! अब नीचे दिए गए 'नेबुला एआई से इस फोटो का मतलब पूछें' बटन पर क्लिक करें।" : 
-                        "📸 Book photo uploaded! Click the button below to explain.";
+                    
+                    let uploadMsg = currentLang === 'hi' 
+                        ? "📸 किताब की फोटो आ गई है! अब नीचे दिए गए बटन पर क्लिक करें।" 
+                        : "📸 Book photo uploaded! Click the button below.";
+                    
+                    document.getElementById('aiText').innerText = uploadMsg;
+                    speakText(uploadMsg);
+                    
+                    setTimeout(() => {
+                        document.getElementById('explainVisionBtn').scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }, 100);
                 };
                 reader.readAsDataURL(file);
             }
         }
 
+        // 2. एआई द्वारा समझाते समय आवाज़ और सेंटर स्क्रॉल
         async function explainBookPage() {
-            let d = siteData[currentLang];
-            let imgElement = document.getElementById('uploadedImagePreview');
+            let scanMsg = currentLang === 'hi' 
+                ? "🔄 नेबुला एआई किताब का पन्ना स्कैन कर रही है..." 
+                : "🔄 Nebula AI is scanning your book photo...";
+            
+            document.getElementById('aiText').innerText = scanMsg;
+            speakText(scanMsg);
+            
+            document.getElementById('aiText').scrollIntoView({ behavior: 'smooth', block: 'center' });
 
-            document.getElementById('aiText').innerText = d.visionProcessing;
-            speakText(d.visionProcessing);
+            let imgElement = document.getElementById('uploadedImagePreview');
 
             try {
                 if (GEMINI_API_KEY && !GEMINI_API_KEY.includes("यहाँ")) {
                     let base64Data = imgElement.src.split(',')[1];
                     let mimeType = imgElement.src.split(';')[0].split(':')[1];
+                    
+                    let promptText = currentLang === 'hi' 
+                        ? "इस स्कूल की किताब के पन्ने को छोटे बच्चों के लिए सरल हिंदी में 2-3 वाक्यों में समझाएं।" 
+                        : "Explain this school textbook page for kids in 2-3 simple sentences.";
+
                     let response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
                             contents: [{
                                 parts: [
-                                    { text: "Explain this school textbook page for kids in simple terms." },
+                                    { text: promptText },
                                     { inline_data: { mime_type: mimeType, data: base64Data } }
                                 ]
                             }]
                         })
                     });
+
                     let data = await response.json();
                     if (data.candidates && data.candidates[0].content) {
-                        let text = data.candidates[0].content.parts[0].text;
-                        document.getElementById('aiText').innerText = text;
-                        speakText(text);
+                        let aiResponseText = data.candidates[0].content.parts[0].text;
+                        document.getElementById('aiText').innerText = aiResponseText;
+                        speakText(aiResponseText);
                         return;
                     }
                 }
+
                 setTimeout(() => {
-                    let defaultText = currentLang === 'hi' ? 
-                        "✨ नेबुला टीचर कहती हैं: 'यह आपकी किताब का एक बढ़िया प्रश्न है! इसे ध्यान से पढ़ें, अपने माता-पिता या ट्यूटर की मदद लें और सही उत्तर खोजकर यहाँ दर्ज करें!'" :
-                        "✨ Nebula Teacher says: 'This is a great question from your book! Read it carefully and solve it!'";
+                    let defaultText = currentLang === 'hi' 
+                        ? "✨ नेबुला टीचर कहती हैं: 'यह आपकी किताब का एक बढ़िया प्रश्न है! इसे ध्यान से पढ़ें और हल करें!'" 
+                        : "✨ Nebula Teacher says: 'This is a great question from your book! Read carefully and solve it!'";
+                    
                     document.getElementById('aiText').innerText = defaultText;
                     speakText(defaultText);
                 }, 1500);
-            } catch (e) {
-                let err = currentLang === 'hi' ? "स्कैन सफल रहा। कृपया इस प्रश्न को हल करें।" : "Scan successful. Please solve this question.";
-                document.getElementById('aiText').innerText = err;
-                speakText(err);
+
+            } catch (error) {
+                let errText = currentLang === 'hi' 
+                    ? "स्कैन सफल रहा। कृपया इस प्रश्न को ध्यान से पढ़कर हल करें।" 
+                    : "Scan successful. Please read and solve this question.";
+                document.getElementById('aiText').innerText = errText;
+                speakText(errText);
             }
         }
 
@@ -518,10 +542,7 @@
                 return;
             }
 
-            let message = currentLang === 'hi' ? 
-                `🏫 *डिजिटल होमवर्क पोर्टल - ध्रुव टेक एकेडमी* 🏫\n\n*संस्थान/ट्यूटर:* ${schoolName}\n*कक्षा:* ${selectedClass} | *माध्यम:* ${selectedMedium}\n*आज का असाइनमेंट:* ${homeworkDesc}\n\nhttps://dhruv-tech-academy.onrender.com/` :
-                `🏫 *Digital Homework Hub - Dhruv Tech Academy* 🏫\n\n*Institution/Tutor:* ${schoolName}\n*Class:* ${selectedClass} | *Medium:* ${selectedMedium}\n*Today's Assignment:* ${homeworkDesc}\n\nhttps://dhruv-tech-academy.onrender.com/`;
-            
+            let message = `🏫 *डिजिटल होमवर्क पोर्टल - ध्रुव टेक एकेडमी* 🏫\n\n*संस्थान/ट्यूटर:* ${schoolName}\n*कक्षा:* ${selectedClass} | *माध्यम:* ${selectedMedium}\n*आज का असाइनमेंट:* ${homeworkDesc}\n\nhttps://dhruv-tech-academy.onrender.com/`;
             window.open("https://wa.me/?text=" + encodeURIComponent(message), '_blank');
         }
 
@@ -535,10 +556,7 @@
                 return;
             }
 
-            let message = currentLang === 'hi' ? 
-                `📝 *होमवर्क सबमिशन - ध्रुव टेक एकेडमी* 📝\n\n*छात्र का नाम:* ${studentName}\n*कक्षा:* ${studentClass}\n*कुल प्राप्त स्कोर:* ${studentScore} / 100 अंक\n*सबमिट किया गया काम:* ${studentAnswer}\n\nमैंने अपना होमवर्क पूरा कर लिया है! 🙏` :
-                `📝 *Homework Submission - Dhruv Tech Academy* 📝\n\n*Student Name:* ${studentName}\n*Class:* ${studentClass}\n*Total Score:* ${studentScore} / 100 Pts\n*Submitted Work:* ${studentAnswer}\n\nI have successfully completed my homework! 🙏`;
-
+            let message = `📝 *होमवर्क सबमिशन - ध्रुव टेक एकेडमी* 📝\n\n*छात्र का नाम:* ${studentName}\n*कक्षा:* ${studentClass}\n*कुल प्राप्त स्कोर:* ${studentScore} / 100 अंक\n*सबमिट किया गया काम:* ${studentAnswer}\n\nमैंने अपना होमवर्क पूरा कर लिया है! 🙏`;
             window.open("https://wa.me/?text=" + encodeURIComponent(message), '_blank');
         }
 
@@ -549,10 +567,7 @@
                 return; 
             }
 
-            let message = currentLang === 'hi' ? 
-                `🔥 *ध्रुव टेक एकेडमी - एआई किड्स ज़ोन* 🔥\n\nमैंने आज एआई वर्चुअल क्लासरूम में ${studentScore} / 100 शानदार अंक हासिल किए हैं!\nhttps://dhruv-tech-academy.onrender.com/` :
-                `🔥 *Dhruv Tech Academy - AI Kids Zone* 🔥\n\nI scored ${studentScore} / 100 points in the AI Virtual Classroom today!\nhttps://dhruv-tech-academy.onrender.com/`;
-                        
+            let message = `🔥 *ध्रुव टेक एकेडमी - एआई किड्स ज़ोन* 🔥\n\nमैंने आज एआई वर्चुअल क्लासरूम में ${studentScore} / 100 शानदार अंक हासिल किए हैं!\nhttps://dhruv-tech-academy.onrender.com/`;
             window.open("https://wa.me/?text=" + encodeURIComponent(message), '_blank');
         }
     </script>
