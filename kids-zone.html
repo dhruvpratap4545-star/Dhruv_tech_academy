@@ -101,6 +101,13 @@
             </button>
         </div>
 
+        <!-- स्क्रीन पर रिपोर्ट शेयर करने के लिए व्हाट्सएप बटन -->
+        <div class="w-full flex justify-center mt-4">
+            <button onclick="sendWhatsAppReport()" class="bg-green-600 hover:bg-green-500 text-white px-4 py-2.5 rounded-xl text-xs md:text-sm font-bold transition flex items-center gap-2 cursor-pointer shadow-lg">
+                💬 <span>WhatsApp पर रिपोर्ट भेजें (Share Report)</span>
+            </button>
+        </div>
+
         <!-- एआई बुक विजन स्कैनर -->
         <div class="w-full mt-6 bg-slate-950 p-5 rounded-2xl border border-cyan-500/40 shadow-2xl">
             <h3 id="visionTitle" class="text-cyan-400 font-bold text-base mb-2 text-center">📸 एआई बुक स्कैनर (किताब की फोटो से समझें)</h3>
@@ -671,6 +678,19 @@
                 if (typeof speakText === 'function') { speakText(d.wrongMsg); }
             }
             userField.value = "";
+        }
+
+        // व्हाट्सएप पर स्कोर और रिपोर्ट भेजने वाला फ़ंक्शन
+        function sendWhatsAppReport() {
+            let inputName = document.getElementById('studentNameInput') ? document.getElementById('studentNameInput').value.trim() : "";
+            let studentName = inputName !== "" ? inputName : (currentLang === 'hi' ? "ध्रुव टेक छात्र" : "Dhruv Tech Student");
+            
+            let msg = `🌟 *Nebula AI Class Report* 🌟\n\n👤 छात्र: ${studentName}\n⭐ कुल अंक: ${studentScore} / 100\n📚 स्थिति: ${studentScore >= 100 ? "🏆 जीनियस चैंपियन!" : "प्रगति पर है 🌱"}\n\nयह रिपोर्ट ध्रुव टेक एकेडमी वर्चुअल क्लासरूम से भेजी गई है!\nhttps://dhruv-tech-academy.onrender.com/`;
+            
+            let encodedMessage = encodeURIComponent(msg);
+            let whatsappURL = `https://api.whatsapp.com/send?text=${encodedMessage}`;
+            
+            window.open(whatsappURL, '_blank');
         }
 
         function sendSchoolHomework() {
