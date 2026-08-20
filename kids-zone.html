@@ -47,13 +47,13 @@
             </div>
             <div class="bg-slate-950 border border-cyan-500/50 px-3.5 py-2 rounded-xl text-right shadow-inner">
                 <span id="scoreLabel" class="text-[10px] text-cyan-400 block font-bold">जीनियस स्कोर (100 अंक)</span>
-                <span id="scoreDisplay" class="text-sm font-extrabold text-yellow-300">⭐ 100</span>
+                <span id="scoreDisplay" class="text-sm font-extrabold text-yellow-300">⭐ 0 / 100</span>
             </div>
         </div>
 
         <!-- उत्तर और विजन स्कैनर दिखाने का ब्लैकबोर्ड बॉक्स -->
         <div id="aiText" class="w-full bg-slate-950 border border-slate-700 rounded-2xl p-5 min-h-[140px] text-cyan-200 text-center flex flex-col items-center justify-center text-base mb-6 shadow-inner font-medium leading-relaxed">
-            नमस्ते! नीचे दिए गए 6 विषयों में से कोई भी बटन चुनें या किताब की फोटो अपलोड करके समझें! 😊
+            नमस्ते! नीचे दिए गए 5 विषयों में से कोई भी बटन चुनें या किताब की फोटो अपलोड करके समझें! 😊
         </div>
 
         <!-- अपलोड की गई फोटो का प्रीव्यू -->
@@ -62,7 +62,7 @@
             <img id="uploadedImagePreview" src="" alt="Book Preview" class="max-h-40 mx-auto rounded-xl border border-slate-700 object-contain">
         </div>
 
-        <!-- 6 विषय और चैलेंज बटन -->
+        <!-- 5 विषय और चैलेंज बटन (5 x 20 = 100 अंक) -->
         <div class="w-full grid grid-cols-1 md:grid-cols-2 gap-3 mb-6">
             <button onclick="loadChallenge('math')" class="bg-slate-800 hover:bg-slate-700 text-cyan-300 py-3 px-4 rounded-xl text-left font-medium transition flex items-center gap-2 cursor-pointer shadow border border-slate-700">
                 ➕ <span id="btnMath">गणित चैलेंज (+20)</span>
@@ -76,11 +76,8 @@
             <button onclick="loadChallenge('evs')" class="bg-slate-800 hover:bg-slate-700 text-emerald-300 py-3 px-4 rounded-xl text-left font-medium transition flex items-center gap-2 cursor-pointer shadow border border-slate-700">
                 🌿 <span id="btnEvs">विज्ञान / EVS (+20)</span>
             </button>
-            <button onclick="loadChallenge('poem')" class="bg-slate-800 hover:bg-slate-700 text-yellow-300 py-3 px-4 rounded-xl text-left font-medium transition flex items-center gap-2 cursor-pointer shadow border border-slate-700">
+            <button onclick="loadChallenge('poem')" class="bg-slate-800 hover:bg-slate-700 text-yellow-300 py-3 px-4 rounded-xl text-left font-medium transition flex items-center gap-2 cursor-pointer shadow border border-slate-700 md:col-span-2 justify-center">
                 🎵 <span id="btnPoem">कविता: मछली जल की रानी (+20)</span>
-            </button>
-            <button onclick="loadChallenge('story')" class="bg-slate-800 hover:bg-slate-700 text-purple-300 py-3 px-4 rounded-xl text-left font-medium transition flex items-center gap-2 cursor-pointer shadow border border-slate-700">
-                📖 <span id="btnStory">महापुरुषों की कहानी (+20)</span>
             </button>
         </div>
 
@@ -165,7 +162,7 @@
         Dhruv Tech Academy Foundation Initiative (Digital Education Hub)
     </div>
 
-    <!-- जावास्क्रिप्ट लॉजिक (Complete Master Engine) -->
+    <!-- जावास्क्रिप्ट लॉजिक -->
     <script>
         const GEMINI_API_KEY = "";
 
@@ -173,7 +170,8 @@
         let currentLang = 'hi';
         let currentCorrectAnswer = "";
         let currentActiveCategory = "";
-        let solvedCategories = {};
+        let currentQuestionText = "";
+        let solvedCategories = {}; // 5 श्रेणियों का ट्रैक रखने के लिए
 
         const siteData = {
             hi: {
@@ -182,14 +180,13 @@
                 subTitle: "स्कूल, ट्यूटर और बच्चों के लिए संपूर्ण डिजिटल शिक्षा मंच!",
                 teacher: "नेबुला एआई टीचर (मास्टर विज़न)",
                 statusText: "तैयार हैं...",
-                scoreLabel: "जीनियस स्कोर",
-                welcome: "नमस्ते! नीचे दिए गए 6 विषयों में से कोई भी बटन चुनें या किताब की फोटो अपलोड करके समझें! 😊",
+                scoreLabel: "जीनियस स्कोर (100 अंक)",
+                welcome: "नमस्ते! नीचे दिए गए 5 विषयों में से कोई भी बटन चुनें या किताब की फोटो अपलोड करके समझें! 😊",
                 mText: "गणित चैलेंज (+20)",
                 pText: "सुपर पहेली (+20)",
                 gText: "सामान्य ज्ञान / GK (+20)",
                 eText: "विज्ञान / EVS (+20)",
                 poemText: "कविता: मछली जल की रानी (+20)",
-                storyText: "महापुरुषों की कहानी (+20)",
                 inputPh: "यहाँ उत्तर लिखें या माइक से बोलें...",
                 micBtn: "बोलें",
                 submitBtn: "उत्तर की पुष्टि करें (Check Answer) 🚀",
@@ -205,9 +202,9 @@
                 correctMsg: "वाह! बिल्कुल सही जवाब! आपको +20 अंक मिले हैं! 🎉",
                 wrongMsg: "गलत जवाब! जरा सोचकर या बोलकर दोबारा कोशिश करो! 🤔",
                 alreadySolvedMsg: "⚠️ यह चैलेंज इस सेशन में हल हो चुका है! नया स्कोर पाने के लिए दूसरा विषय चुनें!",
+                fullScoreMsg: "🎉 शानदार! आपने पूरे 100/100 अंक हासिल कर लिए हैं! 🏆",
                 zeroScoreAlert: "⚠️ पहले कम से कम एक सही जवाब देकर अंक प्राप्त करें, तभी आप स्कोर शेयर कर सकते हैं!",
-                visionProcessing: "🔄 नेबुला एआई आपकी किताब की फोटो को स्कैन कर रही है...",
-                apiKeyMissingError: "⚠️ कृपया फोटो स्कैन करने के लिए अपना सही उत्तर दें या दूसरा विषय चुनें।"
+                visionProcessing: "🔄 नेबुला एआई आपकी किताब की फोटो को स्कैन कर रही है..."
             },
             en: {
                 portal: "Main Portal",
@@ -215,14 +212,13 @@
                 subTitle: "Complete Digital Education Hub for Schools & Tutors!",
                 teacher: "Nebula AI Teacher (Vision)",
                 statusText: "Ready...",
-                scoreLabel: "Genius Score",
-                welcome: "Hello! Choose any of the 6 subjects below or upload your book photo! 😊",
+                scoreLabel: "Genius Score (100 Pts)",
+                welcome: "Hello! Choose any of the 5 subjects below or upload your book photo! 😊",
                 mText: "Math Challenge (+20)",
                 pText: "Super Puzzle (+20)",
                 gText: "General Knowledge / GK (+20)",
                 eText: "Science / EVS (+20)",
                 poemText: "Poem: Twinkle Twinkle (+20)",
-                storyText: "Short Moral Story (+20)",
                 inputPh: "Type answer or use mic...",
                 micBtn: "Speak",
                 submitBtn: "Verify Answer 🚀",
@@ -238,9 +234,9 @@
                 correctMsg: "Awesome! Correct answer! You earned +20 points! 🎉",
                 wrongMsg: "Wrong answer! Think carefully and try again! 🤔",
                 alreadySolvedMsg: "⚠️ This challenge is already solved! Choose another subject for more points!",
+                fullScoreMsg: "🎉 Congratulations! You achieved full 100/100 points! 🏆",
                 zeroScoreAlert: "⚠️ Please earn at least some score before sharing!",
-                visionProcessing: "🔄 Nebula AI is scanning your book photo...",
-                apiKeyMissingError: "⚠️ Please provide your answer or select another subject."
+                visionProcessing: "🔄 Nebula AI is scanning your book photo..."
             }
         };
 
@@ -260,7 +256,6 @@
             document.getElementById('btnGk').innerText = d.gText;
             document.getElementById('btnEvs').innerText = d.eText;
             document.getElementById('btnPoem').innerText = d.poemText;
-            document.getElementById('btnStory').innerText = d.storyText;
             document.getElementById('userInput').placeholder = d.inputPh;
             document.getElementById('micText').innerText = d.micBtn;
             document.getElementById('btnSubmit').innerText = d.submitBtn;
@@ -393,10 +388,10 @@
             }
         }
 
+        // 5 विषयों का सवाल जनरेटर (20 अंक प्रति प्रश्न)
         function loadChallenge(category) {
             let d = siteData[currentLang];
             currentActiveCategory = category;
-            
             let textToShow = "";
 
             if (category === 'math') {
@@ -423,7 +418,8 @@
                     {q: "What has a head and a tail, but no body?", a: "coin"}
                 ];
                 let p = list[Math.floor(Math.random() * list.length)];
-                textToShow = p.q; currentCorrectAnswer = p.a;
+                textToShow = p.q; 
+                currentCorrectAnswer = p.a;
             }
             else if (category === 'gk') {
                 const list = currentLang === 'hi' ? [
@@ -435,32 +431,33 @@
                     {q: "How many days are there in a week?", a: "7"}
                 ];
                 let g = list[Math.floor(Math.random() * list.length)];
-                textToShow = g.q; currentCorrectAnswer = g.a;
+                textToShow = g.q; 
+                currentCorrectAnswer = g.a;
             }
             else if (category === 'evs') {
                 const list = currentLang === 'hi' ? [
                     {q: "पेड़-पौधे हमें सांस लेने के लिए कौन सी गैस देते हैं?", a: "ऑक्सीजन"},
-                    {q: "सूरज किस दिशा से निकलता है?", a: "पूर्व"}
+                    {q: "सूरज किस दिशा से निकलता है?", a: "पूर्व"},
+                    {q: "हमारा राष्ट्रीय पक्षी कौन है?", a: "मोर"}
                 ] : [
                     {q: "Which gas do trees give us to breathe?", a: "oxygen"},
                     {q: "From which direction does the Sun rise?", a: "east"}
                 ];
                 let e = list[Math.floor(Math.random() * list.length)];
-                textToShow = e.q; currentCorrectAnswer = e.a;
+                textToShow = e.q; 
+                currentCorrectAnswer = e.a;
             }
             else if (category === 'poem') {
-                textToShow = currentLang === 'hi' ? "🎵 कविता: 'मछली जल की रानी है, जीवन उसका पानी है...' (दोहराने के बाद 'हाँ' लिखें)" : "🎵 Poem: 'Twinkle, twinkle, little star...' (Type 'Yes')";
-                currentCorrectAnswer = currentLang === 'hi' ? "हाँ" : "yes";
-            } 
-            else if (category === 'story') {
-                textToShow = currentLang === 'hi' ? "📖 लघु कहानी: 'उठो, जागो और तब तक मत रुको जब तक लक्ष्य प्राप्त न हो जाए।' (कहानी सुनी? 'हाँ' लिखें)" : "📖 Moral Story: 'Arise, awake, and stop not until the goal is reached.' (Type 'Yes')";
+                textToShow = currentLang === 'hi' ? "🎵 कविता: 'मछली जल की रानी है, जीवन उसका पानी है...' (कविता सुनी? 'हाँ' लिखें)" : "🎵 Poem: 'Twinkle, twinkle, little star...' (Type 'Yes')";
                 currentCorrectAnswer = currentLang === 'hi' ? "हाँ" : "yes";
             }
 
+            currentQuestionText = textToShow;
             document.getElementById('aiText').innerText = textToShow;
             speakText(textToShow);
         }
 
+        // उत्तर की पुष्टि (5 x 20 = 100 अंक)
         function verifyAnswer() {
             let d = siteData[currentLang];
             let userField = document.getElementById('userInput');
@@ -476,6 +473,13 @@
                 return;
             }
 
+            if (studentScore >= 100) {
+                document.getElementById('aiText').innerText = d.fullScoreMsg;
+                speakText(d.fullScoreMsg);
+                userField.value = "";
+                return;
+            }
+
             if (userVal.includes(currentCorrectAnswer.toLowerCase())) {
                 if (solvedCategories[currentActiveCategory]) {
                     document.getElementById('aiText').innerText = d.alreadySolvedMsg;
@@ -487,9 +491,15 @@
                 studentScore += 20;
                 solvedCategories[currentActiveCategory] = true;
 
-                document.getElementById('scoreDisplay').innerText = `⭐ ${studentScore} / 120 ${currentLang === 'hi' ? 'अंक' : 'Pts'}`;
-                document.getElementById('aiText').innerText = d.correctMsg;
-                speakText(d.correctMsg);
+                document.getElementById('scoreDisplay').innerText = `⭐ ${studentScore} / 100`;
+
+                if (studentScore >= 100) {
+                    document.getElementById('aiText').innerText = d.fullScoreMsg;
+                    speakText(d.fullScoreMsg);
+                } else {
+                    document.getElementById('aiText').innerText = d.correctMsg;
+                    speakText(d.correctMsg);
+                }
             } else {
                 document.getElementById('aiText').innerText = d.wrongMsg;
                 speakText(d.wrongMsg);
@@ -526,8 +536,8 @@
             }
 
             let message = currentLang === 'hi' ? 
-                `📝 *होमवर्क सबमिशन - ध्रुव टेक एकेडमी* 📝\n\n*छात्र का नाम:* ${studentName}\n*कक्षा:* ${studentClass}\n*कुल प्राप्त स्कोर:* ${studentScore} / 120 अंक\n*सबमिट किया गया काम:* ${studentAnswer}\n\nमैंने अपना होमवर्क पूरा कर लिया है! 🙏` :
-                `📝 *Homework Submission - Dhruv Tech Academy* 📝\n\n*Student Name:* ${studentName}\n*Class:* ${studentClass}\n*Total Score:* ${studentScore} / 120 Pts\n*Submitted Work:* ${studentAnswer}\n\nI have successfully completed my homework! 🙏`;
+                `📝 *होमवर्क सबमिशन - ध्रुव टेक एकेडमी* 📝\n\n*छात्र का नाम:* ${studentName}\n*कक्षा:* ${studentClass}\n*कुल प्राप्त स्कोर:* ${studentScore} / 100 अंक\n*सबमिट किया गया काम:* ${studentAnswer}\n\nमैंने अपना होमवर्क पूरा कर लिया है! 🙏` :
+                `📝 *Homework Submission - Dhruv Tech Academy* 📝\n\n*Student Name:* ${studentName}\n*Class:* ${studentClass}\n*Total Score:* ${studentScore} / 100 Pts\n*Submitted Work:* ${studentAnswer}\n\nI have successfully completed my homework! 🙏`;
 
             window.open("https://wa.me/?text=" + encodeURIComponent(message), '_blank');
         }
@@ -540,8 +550,8 @@
             }
 
             let message = currentLang === 'hi' ? 
-                `🔥 *ध्रुव टेक एकेडमी - एआई किड्स ज़ोन* 🔥\n\nमैंने आज एआई वर्चुअल क्लासरूम में ${studentScore} / 120 शानदार अंक हासिल किए हैं!\nhttps://dhruv-tech-academy.onrender.com/` :
-                `🔥 *Dhruv Tech Academy - AI Kids Zone* 🔥\n\nI scored ${studentScore} / 120 points in the AI Virtual Classroom today!\nhttps://dhruv-tech-academy.onrender.com/`;
+                `🔥 *ध्रुव टेक एकेडमी - एआई किड्स ज़ोन* 🔥\n\nमैंने आज एआई वर्चुअल क्लासरूम में ${studentScore} / 100 शानदार अंक हासिल किए हैं!\nhttps://dhruv-tech-academy.onrender.com/` :
+                `🔥 *Dhruv Tech Academy - AI Kids Zone* 🔥\n\nI scored ${studentScore} / 100 points in the AI Virtual Classroom today!\nhttps://dhruv-tech-academy.onrender.com/`;
                         
             window.open("https://wa.me/?text=" + encodeURIComponent(message), '_blank');
         }
