@@ -41,13 +41,13 @@
                     👩‍🏫
                 </div>
                 <div>
-                    <span id="teacherName" class="text-xs text-emerald-400 font-bold block">नेबुला एआई टीचर (मास्टर विज़न)</span>
+                    <span id="teacherName" class="text-xs text-emerald-400 font-bold block">नेबुला एआई टीचर (मास्टर विज़न)</span>
                     <span id="teacherStatus" class="text-[10px] text-cyan-300">तैयार हैं...</span>
                 </div>
             </div>
             <div class="bg-slate-950 border border-cyan-500/50 px-3.5 py-2 rounded-xl text-right shadow-inner">
-                <span id="scoreLabel" class="text-[10px] text-cyan-400 block font-bold">जीनियस स्कोर</span>
-                <span id="scoreDisplay" class="text-sm font-extrabold text-yellow-300">⭐ 0 अंक</span>
+                <span id="scoreLabel" class="text-[10px] text-cyan-400 block font-bold">जीनियस स्कोर (100 अंक)</span>
+                <span id="scoreDisplay" class="text-sm font-extrabold text-yellow-300">⭐ 100</span>
             </div>
         </div>
 
@@ -167,21 +167,20 @@
 
     <!-- जावास्क्रिप्ट लॉजिक (Complete Master Engine) -->
     <script>
-        // 👉 यदि आपके पास गूगल जेमिनी एपीआई की है, तो यहाँ दर्ज कर सकते हैं (वैकल्पिक):
         const GEMINI_API_KEY = "";
 
         let studentScore = 0;
         let currentLang = 'hi';
         let currentCorrectAnswer = "";
         let currentActiveCategory = "";
-        let solvedCategories = {}; // डबल स्कोर रोकने का ताला
+        let solvedCategories = {};
 
         const siteData = {
             hi: {
                 portal: "मुख्य पोर्टल",
                 mainTitle: "एआई वर्चुअल क्लासरूम और मास्टर हब",
                 subTitle: "स्कूल, ट्यूटर और बच्चों के लिए संपूर्ण डिजिटल शिक्षा मंच!",
-                teacher: "नेबुला एआई टीचर (मास्टर विज़न)",
+                teacher: "नेबुला एआई टीचर (मास्टर विज़न)",
                 statusText: "तैयार हैं...",
                 scoreLabel: "जीनियस स्कोर",
                 welcome: "नमस्ते! नीचे दिए गए 6 विषयों में से कोई भी बटन चुनें या किताब की फोटो अपलोड करके समझें! 😊",
@@ -203,7 +202,6 @@
                 subTitleText: "📝 छात्र होमवर्क सबमिशन (होमवर्क वापस भेजें)",
                 subHwBtn: "शिक्षक को व्हाट्सएप पर होमवर्क जमा करें",
                 waBtn: "छात्र अपना स्कोर दोस्तों को शेयर करें",
-                
                 correctMsg: "वाह! बिल्कुल सही जवाब! आपको +20 अंक मिले हैं! 🎉",
                 wrongMsg: "गलत जवाब! जरा सोचकर या बोलकर दोबारा कोशिश करो! 🤔",
                 alreadySolvedMsg: "⚠️ यह चैलेंज इस सेशन में हल हो चुका है! नया स्कोर पाने के लिए दूसरा विषय चुनें!",
@@ -237,7 +235,6 @@
                 subTitleText: "📝 Student Homework Submission",
                 subHwBtn: "Submit Homework to Teacher on WhatsApp",
                 waBtn: "Share Score with Friends",
-                
                 correctMsg: "Awesome! Correct answer! You earned +20 points! 🎉",
                 wrongMsg: "Wrong answer! Think carefully and try again! 🤔",
                 alreadySolvedMsg: "⚠️ This challenge is already solved! Choose another subject for more points!",
@@ -382,10 +379,9 @@
                         return;
                     }
                 }
-                // स्मार्ट स्मार्ट-प्रीसेट मोड यदि एपीआई की न हो
                 setTimeout(() => {
                     let defaultText = currentLang === 'hi' ? 
-                        "✨ नेबुला टीचर कहती हैं: 'यह आपकी किताब का एक बढ़िया प्रश्न है! इसे ध्यान से पढ़ें, अपने माता-पिता या ट्यूटर की मदद लें और सही उत्तर खोजकर यहाँ दर्ज करें!'" :
+                        "✨ नेबुला टीचर कहती हैं: 'यह आपकी किताब का एक बढ़िया प्रश्न है! इसे ध्यान से पढ़ें, अपने माता-पिता या ट्यूटर की मदद लें और सही उत्तर खोजकर यहाँ दर्ज करें!'" :
                         "✨ Nebula Teacher says: 'This is a great question from your book! Read it carefully and solve it!'";
                     document.getElementById('aiText').innerText = defaultText;
                     speakText(defaultText);
@@ -397,7 +393,6 @@
             }
         }
 
-        // 🌟 6 विषयों का डाइनैमिक सवाल जनरेटर (हर बार नए सवाल, डबल स्कोर प्रिवेंशन के साथ)
         function loadChallenge(category) {
             let d = siteData[currentLang];
             currentActiveCategory = category;
@@ -411,7 +406,7 @@
 
                 if (isAddition) {
                     currentCorrectAnswer = (num1 + num2).toString();
-                    textToShow = currentLang === 'hi' ? `गणित चैलेंज: ${num1} में ${num2} जोड़ने पर कितना होगा? (अंक लिखें)` : `Math: What is ${num1} plus ${num2}?`;
+                    textToShow = currentLang === 'hi' ? `गणित चैलेंज: ${num1} में ${num2} जोड़ने पर कितना होगा? (अंक लिखें)` : `Math: What is ${num1} plus ${num2}?`;
                 } else {
                     if (num1 < num2) { let t = num1; num1 = num2; num2 = t; }
                     currentCorrectAnswer = (num1 - num2).toString();
@@ -420,7 +415,7 @@
             } 
             else if (category === 'puzzle') {
                 const list = currentLang === 'hi' ? [
-                    {q: "ऐसी कौन सी चीज़ है जो लिखने के काम आती है पर पेन नहीं?", a: "पेंसिल"},
+                    {q: "ऐसी कौन सी चीज़ है जो लिखने के काम आती है पर पेन नहीं?", a: "पेंसिल"},
                     {q: "काला कुत्ता, कमरे में खूंटा? (बताओ क्या)", a: "छाता"},
                     {q: "एक पैर है, पर चल नहीं सकता?", a: "मेज"}
                 ] : [
@@ -444,7 +439,7 @@
             }
             else if (category === 'evs') {
                 const list = currentLang === 'hi' ? [
-                    {q: "पेड़-पौधे हमें सांस लेने के लिए कौन सी गैस देते हैं?", a: "ऑक्सीजन"},
+                    {q: "पेड़-पौधे हमें सांस लेने के लिए कौन सी गैस देते हैं?", a: "ऑक्सीजन"},
                     {q: "सूरज किस दिशा से निकलता है?", a: "पूर्व"}
                 ] : [
                     {q: "Which gas do trees give us to breathe?", a: "oxygen"},
@@ -466,7 +461,6 @@
             speakText(textToShow);
         }
 
-        // सख्त ताले के साथ उत्तर की पुष्टि (डबल स्कोर हमेशा के लिए बंद)
         function verifyAnswer() {
             let d = siteData[currentLang];
             let userField = document.getElementById('userInput');
@@ -490,7 +484,7 @@
                     return;
                 }
 
-                studentScore += 20; // 6 विषय × 20 अंक = कुल 120 ग्रैंड स्कोर
+                studentScore += 20;
                 solvedCategories[currentActiveCategory] = true;
 
                 document.getElementById('scoreDisplay').innerText = `⭐ ${studentScore} / 120 ${currentLang === 'hi' ? 'अंक' : 'Pts'}`;
@@ -548,7 +542,7 @@
             let message = currentLang === 'hi' ? 
                 `🔥 *ध्रुव टेक एकेडमी - एआई किड्स ज़ोन* 🔥\n\nमैंने आज एआई वर्चुअल क्लासरूम में ${studentScore} / 120 शानदार अंक हासिल किए हैं!\nhttps://dhruv-tech-academy.onrender.com/` :
                 `🔥 *Dhruv Tech Academy - AI Kids Zone* 🔥\n\nI scored ${studentScore} / 120 points in the AI Virtual Classroom today!\nhttps://dhruv-tech-academy.onrender.com/`;
-                          
+                        
             window.open("https://wa.me/?text=" + encodeURIComponent(message), '_blank');
         }
     </script>
