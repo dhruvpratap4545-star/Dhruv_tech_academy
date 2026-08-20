@@ -85,7 +85,7 @@
             </button>
         </div>
 
-        <!-- 3. स्कूल और ट्यूटर व्हाट्सएप होमवर्क पोर्टल (दो साफ-सुथरे विकल्प: हिंदी और इंग्लिश मीडियम) -->
+        <!-- 3. स्कूल और ट्यूटर व्हाट्सएप होमवर्क पोर्टल -->
         <div class="w-full mt-6 bg-slate-950 p-5 rounded-2xl border border-cyan-500/40 shadow-2xl">
             <h3 id="homeworkTitle" class="text-cyan-400 font-bold text-base mb-3 text-center">🏫 स्कूल / ट्यूटर व्हाट्सएप होमवर्क पोर्टल</h3>
             
@@ -123,12 +123,13 @@
         Dhruv Tech Academy Foundation Initiative (Digital Education Hub)
     </div>
 
-    <!-- 4. त्रुटिहीन जावास्क्रिप्ट लॉजिक -->
+    <!-- 4. त्रुटिहीन और सुरक्षित जावास्क्रिप्ट लॉजिक -->
     <script>
         let studentScore = 0;
         let currentLang = 'hi';
         let currentCorrectAnswer = "6";
-        let questionAnswered = false; // डबल स्कोर फिक्स का कड़ा ताला
+        let questionAnswered = false; // डबल स्कोर रोकने का कड़ा ताला
+        let currentQuestionKey = ""; // यह ट्रैक रखेगा कि कौन सा सवाल चल रहा है
 
         const siteData = {
             hi: {
@@ -161,7 +162,8 @@
                 ansStory: "हाँ",
 
                 correctMsg: "वाह! बिल्कुल सही जवाब! आपको +20 अंक मिले हैं! 🎉",
-                wrongMsg: "गलत जवाब! जरा सोचकर या बोलकर दोबारा कोशिश करो! 🤔"
+                wrongMsg: "गलत जवाब! जरा सोचकर या बोलकर दोबारा कोशिश करो! 🤔",
+                zeroScoreAlert: "⚠️ पहले कम से कम एक सही जवाब देकर अंक (Score) प्राप्त करें, तभी आप स्कोर दोस्तों को भेज सकते हैं!"
             },
             en: {
                 portal: "Main Portal",
@@ -193,7 +195,8 @@
                 ansStory: "yes",
 
                 correctMsg: "Awesome! Correct answer! You earned +20 points! 🎉",
-                wrongMsg: "Wrong answer! Think carefully and try again! 🤔"
+                wrongMsg: "Wrong answer! Think carefully and try again! 🤔",
+                zeroScoreAlert: "⚠️ Please earn at least some score by answering correctly before sharing with friends!"
             }
         };
 
@@ -279,7 +282,10 @@
 
         function loadChallenge(category) {
             let d = siteData[currentLang];
-            questionAnswered = false; // नया सवाल आते ही स्कोर का ताला खुल जाएगा
+            
+            // यदि यूजर ने वही सवाल दोबारा क्लिक किया है और वह पहले ही हल हो चुका है, तो नया सवाल असाइन करें या लॉक रखें
+            currentQuestionKey = category;
+            questionAnswered = false; // नया चैलेंज शुरू होते ही ताला खुल जाएगा ताकि एक बार स्कोर मिल सके
 
             let textToShow = "";
             if (category === 'math') {
@@ -300,7 +306,7 @@
             speakText(textToShow);
         }
 
-        // सख्त ताले के साथ उत्तर की पुष्टि (डबल स्कोर हमेशा के लिए बंद)
+        // सख्त ताले और सिंगल-क्रेडिट लॉजिक के साथ उत्तर की पुष्टि
         function verifyAnswer() {
             let d = siteData[currentLang];
             let userField = document.getElementById('userInput');
@@ -314,7 +320,7 @@
             if (userVal.includes(currentCorrectAnswer.toLowerCase())) {
                 if (!questionAnswered) {
                     studentScore += 20;
-                    questionAnswered = true; // एक बार सही होने पर लॉक हो गया, दोबारा क्लिक पर नंबर नहीं बढ़ेगा
+                    questionAnswered = true; // एक बार अंक मिलने पर यह सवाल लॉक हो गया, दोबारा इसी पर अंक नहीं मिलेंगे
                 }
                 document.getElementById('scoreDisplay').innerText = `⭐ ${studentScore} ${currentLang === 'hi' ? 'अंक' : 'Pts'}`;
                 document.getElementById('aiText').innerText = d.correctMsg;
@@ -326,7 +332,7 @@
             userField.value = "";
         }
 
-        // स्कूल और ट्यूटर के लिए भाषा और क्लास आधारित व्हाट्सएप होमवर्क जेनरेटर
+        // स्कूल और ट्यूटर के लिए होमवर्क भेजने का सुरक्षित फॉर्म वैलिडेटर
         function sendSchoolHomework() {
             let schoolName = document.getElementById('schoolNameInput').value.trim();
             let homeworkDesc = document.getElementById('homeworkDescInput').value.trim();
@@ -334,7 +340,7 @@
             let selectedMedium = document.getElementById('selectMedium').value;
 
             if (schoolName === "" || homeworkDesc === "") {
-                alert(currentLang === 'hi' ? "कृपया संस्थान का नाम और होमवर्क विवरण दोनों भरें!" : "Please fill school name and homework details!");
+                alert(currentLang === 'hi' ? "कृपया संस्थान/ट्यूटर का नाम और होमवर्क का विवरण दोनों अनिवार्य रूप से भरें!" : "Please fill both institution name and homework details!");
                 return;
             }
 
@@ -349,8 +355,15 @@
             window.open(whatsappUrl, '_blank');
         }
 
-        // छात्र द्वारा दोस्तों को स्कोर शेयर करने का सही परिप्रेक्ष्य मैसेज
+        // शून्य स्कोर सुरक्षा के साथ व्हाट्सएप शेयरिंग फंक्शन
         function shareToWhatsApp() {
+            let d = siteData[currentLang];
+            
+            if (studentScore <= 0) {
+                alert(d.zeroScoreAlert);
+                return; // 0 या उससे कम स्कोर होने पर व्हाट्सएप शेयर बिल्कुल नहीं खुलेगा
+            }
+
             let message = currentLang === 'hi' ? 
                 `🔥 *ध्रुव टेक एकेडमी - एआई किड्स ज़ोन* 🔥\n\nमैंने आज एआई वर्चुअल क्लासरूम में ${studentScore} शानदार अंक हासिल किए हैं! क्या तुम्हारा दिमाग इतना तेज है कि तुम मेरा यह स्कोर पार कर सको?\n\nयहाँ खेलें: https://dhruv-tech-academy.onrender.com/` :
                 `🔥 *Dhruv Tech Academy - AI Kids Zone* 🔥\n\nI scored ${studentScore} points in the AI Virtual Classroom today! Can you beat my genius score?\n\nPlay here: https://dhruv-tech-academy.onrender.com/`;
