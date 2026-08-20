@@ -85,19 +85,34 @@
             </button>
         </div>
 
-        <!-- 3. स्कूल और ट्यूटर व्हाट्सएप होमवर्क शेयरिंग सेक्शन -->
+        <!-- 3. स्कूल और ट्यूटर व्हाट्सएप होमवर्क पोर्टल (मीडियम और क्लास आधारित) -->
         <div class="w-full mt-6 bg-slate-950 p-5 rounded-2xl border border-cyan-500/40 shadow-2xl">
-            <h3 id="homeworkTitle" class="text-cyan-400 font-bold text-base mb-2 text-center">🏫 स्कूल / ट्यूटर व्हाट्सएप होमवर्क पोर्टल</h3>
-            <div class="flex flex-col gap-2.5 mb-3">
-                <input type="text" id="schoolNameInput" placeholder="स्कूल या ट्यूटर का नाम (जैसे: सेंट जेवियर्स / राहुल सर)" class="w-full bg-slate-900 border border-slate-700 text-white px-3 py-2.5 rounded-xl text-xs outline-none focus:border-cyan-500">
-                <input type="text" id="homeworkDescInput" placeholder="आज का होमवर्क (जैसे: पेज 45 के सवाल हल करें)" class="w-full bg-slate-900 border border-slate-700 text-white px-3 py-2.5 rounded-xl text-xs outline-none focus:border-cyan-500">
+            <h3 id="homeworkTitle" class="text-cyan-400 font-bold text-base mb-3 text-center">🏫 स्कूल / ट्यूटर व्हाट्सएप होमवर्क पोर्टल</h3>
+            
+            <div class="grid grid-cols-2 gap-2 mb-2.5">
+                <select id="selectClass" class="bg-slate-900 border border-slate-700 text-white px-3 py-2 rounded-xl text-xs outline-none">
+                    <option value="Class 5">कक्षा 5 (Class 5)</option>
+                    <option value="Class 4">कक्षा 4 (Class 4)</option>
+                    <option value="Class 3">कक्षा 3 (Class 3)</option>
+                    <option value="Middle School">जूनियर (Middle School)</option>
+                </select>
+                <select id="selectMedium" class="bg-slate-900 border border-slate-700 text-white px-3 py-2 rounded-xl text-xs outline-none">
+                    <option value="हिंदी मीडियम (UP/State Board)">हिंदी मीडियम (UP Board)</option>
+                    <option value="English Medium (CBSE/ICSE)">English Medium (CBSE/ICSE)</option>
+                </select>
             </div>
+
+            <div class="flex flex-col gap-2.5 mb-3">
+                <input type="text" id="schoolNameInput" placeholder="संस्थान/ट्यूटर का नाम (जैसे: सेंट जेवियर्स / राहुल सर)" class="w-full bg-slate-900 border border-slate-700 text-white px-3 py-2.5 rounded-xl text-xs outline-none focus:border-cyan-500">
+                <input type="text" id="homeworkDescInput" placeholder="आज का होमवर्क (जैसे: गणित पेज 45 के सवाल हल करें)" class="w-full bg-slate-900 border border-slate-700 text-white px-3 py-2.5 rounded-xl text-xs outline-none focus:border-cyan-500">
+            </div>
+
             <button onclick="sendSchoolHomework()" class="w-full bg-sky-600 hover:bg-sky-500 text-white py-2.5 rounded-xl font-bold text-xs shadow transition cursor-pointer mb-3">
-                📤 <span id="hwBtnText">व्हाट्सएप पर बच्चों को होमवर्क भेजें</span>
+                📤 <span id="hwBtnText">व्हाट्सएप पर कक्षा वार होमवर्क भेजें</span>
             </button>
             <hr class="border-slate-800 my-2">
             <button onclick="shareToWhatsApp()" class="w-full bg-green-600 hover:bg-green-500 text-white py-2.5 rounded-xl font-bold text-xs shadow transition cursor-pointer flex items-center justify-center gap-1.5 mt-2">
-                📱 <span id="whatsappBtnText">छात्र का स्कोर परिवार को शेयर करें</span>
+                📱 <span id="whatsappBtnText">छात्र अपना स्कोर दोस्तों को शेयर करें</span>
             </button>
         </div>
 
@@ -108,12 +123,12 @@
         Dhruv Tech Academy Foundation Initiative (Digital Education Hub)
     </div>
 
-    <!-- 4. जावास्क्रिप्ट लॉजिक (डबल स्कोर फिक्स और होमवर्क इंजन) -->
+    <!-- 4. त्रुटिहीन जावास्क्रिप्ट लॉजिक -->
     <script>
         let studentScore = 0;
         let currentLang = 'hi';
         let currentCorrectAnswer = "6";
-        let questionAnswered = false; // डबल स्कोर फिक्स का ताला
+        let questionAnswered = false; // डबल स्कोर फिक्स का कड़ा ताला
 
         const siteData = {
             hi: {
@@ -123,7 +138,7 @@
                 teacher: "नेबुला एआई टीचर (लाइव मोड)",
                 statusText: "तैयार हैं...",
                 scoreLabel: "जीनियस स्कोर",
-                welcome: "नमस्ते! विषय चुनें या नीचे दिए गए फॉर्म से स्कूल का होमवर्क व्हाट्सएप पर भेजें! 😊",
+                welcome: "नमस्ते! विषय चुनें या नीचे दिए गए फॉर्म से क्लास का होमवर्क व्हाट्सएप पर भेजें! 😊",
                 mText: "गणित: जोड़-घटाना चैलेंज",
                 pText: "आज की सुपर पहेली",
                 poemText: "कविता: मछली जल की रानी है",
@@ -132,8 +147,8 @@
                 micBtn: "बोलें",
                 submitBtn: "उत्तर की पुष्टि करें (Check Answer) 🚀",
                 hwTitle: "🏫 स्कूल / ट्यूटर व्हाट्सएप होमवर्क पोर्टल",
-                hwBtn: "व्हाट्सएप पर बच्चों को होमवर्क भेजें",
-                waBtn: "छात्र का स्कोर परिवार को शेयर करें",
+                hwBtn: "व्हाट्सएप पर कक्षा वार होमवर्क भेजें",
+                waBtn: "छात्र अपना स्कोर दोस्तों को शेयर करें",
                 
                 qMath: "10 कंचे थे, 4 खो गए। बताओ अब कितने कंचे बचे? (अंक लिखें)",
                 qPuzzle: "ऐसी कौन सी चीज़ है जो लिखने के काम आती है पर पेन नहीं?",
@@ -155,7 +170,7 @@
                 teacher: "Nebula AI Teacher (Live)",
                 statusText: "Ready...",
                 scoreLabel: "Genius Score",
-                welcome: "Hello! Choose a subject or send school homework via WhatsApp below! 😊",
+                welcome: "Hello! Choose a subject or send class homework via WhatsApp below! 😊",
                 mText: "Math: Add & Subtract Challenge",
                 pText: "Today's Super Puzzle",
                 poemText: "Poem: Twinkle Twinkle Little Star",
@@ -164,8 +179,8 @@
                 micBtn: "Speak",
                 submitBtn: "Verify Answer 🚀",
                 hwTitle: "🏫 School / Tutor WhatsApp Homework Portal",
-                hwBtn: "Send Homework to Students on WhatsApp",
-                waBtn: "Share Child's Score to Family",
+                hwBtn: "Send Class Homework on WhatsApp",
+                waBtn: "Share Score with Friends",
                 
                 qMath: "You had 10 marbles and lost 4. How many left? (Type number)",
                 qPuzzle: "What is used to write with, but is not a pen?",
@@ -264,7 +279,7 @@
 
         function loadChallenge(category) {
             let d = siteData[currentLang];
-            questionAnswered = false; // नया सवाल आते ही स्कोर लॉक खुल जाएगा
+            questionAnswered = false; // नया सवाल आते ही स्कोर का ताला खुल जाएगा
 
             let textToShow = "";
             if (category === 'math') {
@@ -285,7 +300,7 @@
             speakText(textToShow);
         }
 
-        // डबल स्कोर फिक्स: एक सवाल पर केवल एक बार अंक जुड़ेगा
+        // सख्त ताले के साथ उत्तर की पुष्टि (डबल स्कोर हमेशा के लिए बंद)
         function verifyAnswer() {
             let d = siteData[currentLang];
             let userField = document.getElementById('userInput');
@@ -299,7 +314,7 @@
             if (userVal.includes(currentCorrectAnswer.toLowerCase())) {
                 if (!questionAnswered) {
                     studentScore += 20;
-                    questionAnswered = true; // स्कोर जुड़ते ही ताला लग जाएगा, दोबारा क्लिक पर नहीं बढ़ेगा
+                    questionAnswered = true; // एक बार सही होने पर लॉक हो गया, दोबारा क्लिक पर नंबर नहीं बढ़ेगा
                 }
                 document.getElementById('scoreDisplay').innerText = `⭐ ${studentScore} ${currentLang === 'hi' ? 'अंक' : 'Pts'}`;
                 document.getElementById('aiText').innerText = d.correctMsg;
@@ -311,26 +326,34 @@
             userField.value = "";
         }
 
-        // स्कूल और ट्यूटर के लिए व्हाट्सएप होमवर्क भेजने का फंक्शन
+        // स्कूल और ट्यूटर के लिए भाषा और क्लास आधारित व्हाट्सएप होमवर्क जेनरेटर
         function sendSchoolHomework() {
             let schoolName = document.getElementById('schoolNameInput').value.trim();
             let homeworkDesc = document.getElementById('homeworkDescInput').value.trim();
+            let selectedClass = document.getElementById('selectClass').value;
+            let selectedMedium = document.getElementById('selectMedium').value;
 
             if (schoolName === "" || homeworkDesc === "") {
-                alert(currentLang === 'hi' ? "कृपया स्कूल/ट्यूटर का नाम और होमवर्क दोनों भरें!" : "Please fill school name and homework!");
+                alert(currentLang === 'hi' ? "कृपया संस्थान का नाम और होमवर्क विवरण दोनों भरें!" : "Please fill school name and homework details!");
                 return;
             }
 
-            let message = `🏫 *Digital Homework Hub - Dhruv Tech Academy* 🏫\n\n*संस्थान/ट्यूटर:* ${schoolName}\n*आज का असाइनमेंट:* ${homeworkDesc}\n\nप्रिय छात्र एवं अभिभावक, कृपया घर पर रहकर इस डिजिटल लर्निंग पोर्टल से अपनी पढ़ाई जारी रखें:\nhttps://dhruv-tech-academy.onrender.com/`;
+            let message = "";
+            if (currentLang === 'hi') {
+                message = `🏫 *डिजिटल होमवर्क पोर्टल - ध्रुव टेक एकेडमी* 🏫\n\n*संस्थान/ट्यूटर:* ${schoolName}\n*कक्षा:* ${selectedClass} | *माध्यम:* ${selectedMedium}\n*आज का असाइनमेंट:* ${homeworkDesc}\n\nप्रिय छात्र एवं अभिभावक, घर पर रहकर इस स्मार्ट एआई पोर्टल से अपनी पढ़ाई जारी रखें:\nhttps://dhruv-tech-academy.onrender.com/`;
+            } else {
+                message = `🏫 *Digital Homework Hub - Dhruv Tech Academy* 🏫\n\n*Institution/Tutor:* ${schoolName}\n*Class:* ${selectedClass} | *Medium:* ${selectedMedium}\n*Today's Assignment:* ${homeworkDesc}\n\nDear Student & Parent, continue learning from home using this smart AI portal:\nhttps://dhruv-tech-academy.onrender.com/`;
+            }
             
             let whatsappUrl = "https://wa.me/?text=" + encodeURIComponent(message);
             window.open(whatsappUrl, '_blank');
         }
 
+        // छात्र द्वारा दोस्तों को स्कोर शेयर करने का सही परिप्रेक्ष्य मैसेज
         function shareToWhatsApp() {
             let message = currentLang === 'hi' ? 
-                `🔥 *Dhruv Tech Academy - AI Kids Zone* 🔥\n\nमेरे बच्चे ने एआई वर्चुअल क्लासरूम में ${studentScore} शानदार अंक हासिल किए हैं! 🌟\n\nhttps://dhruv-tech-academy.onrender.com/` :
-                `🔥 *Dhruv Tech Academy - AI Kids Zone* 🔥\n\nMy child scored ${studentScore} points in the AI Virtual Classroom!\n\nhttps://dhruv-tech-academy.onrender.com/`;
+                `🔥 *ध्रुव टेक एकेडमी - एआई किड्स ज़ोन* 🔥\n\nमैंने आज एआई वर्चुअल क्लासरूम में ${studentScore} शानदार अंक हासिल किए हैं! क्या तुम्हारा दिमाग इतना तेज है कि तुम मेरा यह स्कोर पार कर सको?\n\nयहाँ खेलें: https://dhruv-tech-academy.onrender.com/` :
+                `🔥 *Dhruv Tech Academy - AI Kids Zone* 🔥\n\nI scored ${studentScore} points in the AI Virtual Classroom today! Can you beat my genius score?\n\nPlay here: https://dhruv-tech-academy.onrender.com/`;
                           
             let whatsappUrl = "https://wa.me/?text=" + encodeURIComponent(message);
             window.open(whatsappUrl, '_blank');
