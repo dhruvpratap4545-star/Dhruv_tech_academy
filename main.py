@@ -153,10 +153,10 @@ def master_ecosystem_dashboard():
             <!-- सभी 10 विश्व स्तरीय मॉड्यूल्स -->
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 
-                <div onclick="openModulePortal(1)" class="master-card p-6 rounded-2xl cursor-pointer" onmouseover="speakPolite('पहला मॉड्यूल है, किड्स वॉयस बर्ड ज़ोन।')">
-                    <h3 class="font-bold text-lg mb-2">🦜 1. Kids Voice Bird Zone</h3>
-                    <p class="text-xs">नर्सरी और प्राथमिक बच्चों के लिए बोलती हुई एआई चिड़िया (NC-Class 5).</p>
-                </div>
+                <div onclick="window.location.href='/kids-zone'" class="master-card p-6 rounded-2xl cursor-pointer hover:border-emerald-500 border border-transparent transition-all">
+    <h3 class="font-bold text-lg mb-2">1. Foundation: NC-5 Kids Tier</h3>
+    <p class="text-xs">नर्सरी से कक्षा 5 तक की नींव (AI-Driven Learning Module).</p>
+</div>
 
                 <div onclick="openModulePortal(2)" class="master-card p-6 rounded-2xl cursor-pointer" onmouseover="speakPolite('दूसरा मॉड्यूल है, सुपर एआई इंजन कोर।')">
                     <h3 class="font-bold text-lg mb-2">⚡ 2. AI Engine Core</h3>
