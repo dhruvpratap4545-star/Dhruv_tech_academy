@@ -52,7 +52,7 @@
         </div>
 
         <!-- उत्तर और विजन स्कैनर दिखाने का ब्लैकबोर्ड बॉक्स -->
-        <div id="aiText" class="w-full bg-slate-950 border border-slate-700 rounded-2xl p-5 min-h-[140px] text-cyan-200 text-center flex flex-col items-center justify-center text-base mb-6 shadow-inner font-medium leading-relaxed">
+        <div id="aiText" class="w-full bg-slate-950 border border-slate-700 rounded-2xl p-5 min-h-[140px] text-cyan-200 text-center flex flex-col items-center justify-center text-base mb-4 shadow-inner font-medium leading-relaxed">
             नमस्ते! नीचे दिए गए 5 विषयों में से कोई भी बटन चुनें या किताब की फोटो अपलोड करके समझें! 😊
         </div>
 
@@ -78,6 +78,13 @@
             </button>
             <button onclick="loadChallenge('poem')" class="bg-slate-800 hover:bg-slate-700 text-yellow-300 py-3 px-4 rounded-xl text-left font-medium transition flex items-center gap-2 cursor-pointer shadow border border-slate-700 md:col-span-2 justify-center">
                 🎵 <span id="btnPoem">कविता: मछली जल की रानी (+20)</span>
+            </button>
+        </div>
+
+        <!-- 💡 हिंट बटन -->
+        <div class="w-full flex justify-end mb-2">
+            <button onclick="giveHint()" class="bg-amber-600/80 hover:bg-amber-500 text-white px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1 cursor-pointer shadow">
+                💡 <span id="hintBtnText">नेबुला टीचर से संकेत (Hint) लें</span>
             </button>
         </div>
 
@@ -171,7 +178,7 @@
         let currentCorrectAnswer = "";
         let currentActiveCategory = "";
         let currentQuestionText = "";
-        let solvedQuestions = {}; // प्रत्येक यूनिक प्रश्न को ट्रैक करने के लिए
+        let solvedQuestions = {};
 
         const siteData = {
             hi: {
@@ -187,6 +194,7 @@
                 gText: "सामान्य ज्ञान / GK (+20)",
                 eText: "विज्ञान / EVS (+20)",
                 poemText: "कविता: मछली जल की रानी (+20)",
+                hintBtnText: "नेबुला टीचर से संकेत (Hint) लें",
                 inputPh: "यहाँ उत्तर लिखें या माइक से बोलें...",
                 micBtn: "बोलें",
                 submitBtn: "उत्तर की पुष्टि करें (Check Answer) 🚀",
@@ -217,6 +225,7 @@
                 gText: "General Knowledge / GK (+20)",
                 eText: "Science / EVS (+20)",
                 poemText: "Poem: Twinkle Twinkle (+20)",
+                hintBtnText: "Get Hint from Nebula Teacher",
                 inputPh: "Type answer or use mic...",
                 micBtn: "Speak",
                 submitBtn: "Verify Answer 🚀",
@@ -252,6 +261,7 @@
             document.getElementById('btnGk').innerText = d.gText;
             document.getElementById('btnEvs').innerText = d.eText;
             document.getElementById('btnPoem').innerText = d.poemText;
+            document.getElementById('hintBtnText').innerText = d.hintBtnText;
             document.getElementById('userInput').placeholder = d.inputPh;
             document.getElementById('micText').innerText = d.micBtn;
             document.getElementById('btnSubmit').innerText = d.submitBtn;
@@ -505,6 +515,41 @@
             speakText(textToShow);
         }
 
+        // वर्तमान सवाल के आधार पर स्मार्ट हिंट देने वाला फंक्शन
+        function giveHint() {
+            if (!currentActiveCategory || !currentQuestionText) {
+                let alertMsg = currentLang === 'hi' ? "⚠️ पहले ऊपर से कोई विषय और सवाल चुनें!" : "⚠️ Please choose a subject and question first!";
+                alert(alertMsg);
+                return;
+            }
+
+            let hintText = "";
+            if (currentLang === 'hi') {
+                if (currentActiveCategory === 'math') {
+                    hintText = "💡 नेबुला टीचर का संकेत: संख्याओं को उंगलियों पर गिनकर जोड़ें या घटाएं!";
+                } else if (currentActiveCategory === 'gk') {
+                    hintText = "💡 नेबुला टीचर का संकेत: अपने आसपास के बड़ों से पूछकर सोचें, जवाब बहुत आसान है!";
+                } else if (currentActiveCategory === 'evs') {
+                    hintText = "💡 नेबुला टीचर का संकेत: प्रकृति, पेड़ों और पर्यावरण के बारे में सोचें!";
+                } else if (currentActiveCategory === 'puzzle') {
+                    hintText = "💡 नेबुला टीचर का संकेत: थोड़ा दिमाग पर जोर डालें, यह रोजमर्रा की चीज है!";
+                } else {
+                    hintText = "💡 नेबुला टीचर का संकेत: कविता या लाइन को एक बार फिर ध्यान से पढ़ें!";
+                }
+            } else {
+                if (currentActiveCategory === 'math') {
+                    hintText = "💡 Nebula Teacher's Hint: Count on your fingers or calculate carefully!";
+                } else {
+                    hintText = "💡 Nebula Teacher's Hint: Think about it, the answer is all around you!";
+                }
+            }
+
+            document.getElementById('aiText').innerText = hintText;
+            if (typeof speakText === 'function') {
+                speakText(hintText);
+            }
+        }
+
         // तालियों की वास्तविक आवाज़ (Clapping Sound Effect) उत्पन्न करने का इंजन
         function playClappingSound() {
             try {
@@ -558,13 +603,9 @@
                 <div class="text-cyan-200 text-base font-semibold">${congratsText}</div>
             `;
             
-            // स्क्रीन को सेंटर में स्क्रॉल करना
             celebrationBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
-
-            // तालियों की आवाज़ बजाना
             playClappingSound();
 
-            // एआई टीचर द्वारा बोलना
             if (typeof speakText === 'function') {
                 setTimeout(() => {
                     speakText(congratsText);
@@ -572,7 +613,7 @@
             }
         }
 
-        // उत्तर की पुष्टि (नया व सुरक्षित सत्यापन लॉजिक)
+        // उत्तर की पुष्टि
         function verifyAnswer() {
             let d = siteData[currentLang];
             let userField = document.getElementById('userInput');
@@ -597,7 +638,6 @@
                     document.getElementById('aiText').innerText = alreadyDoneMsg;
                     if (typeof speakText === 'function') { speakText(alreadyDoneMsg); }
                 } else {
-                    // गलत उत्तर देने पर टोकने वाला संदेश (ताकि तालियाँ न बजें)
                     let wrongAfter100Msg = currentLang === 'hi' ? "⚠️ ध्यान दें: आप 100 अंक पहले ही प्राप्त कर चुके हैं, किंतु इस बार आपका उत्तर गलत है। हमेशा सही उत्तर देने का प्रयास करें!" : "⚠️ Note: You already scored 100, but this answer is incorrect. Try to give the right answer!";
                     document.getElementById('aiText').innerText = wrongAfter100Msg;
                     if (typeof speakText === 'function') { speakText(wrongAfter100Msg); }
@@ -620,7 +660,6 @@
 
                 document.getElementById('scoreDisplay').innerText = `⭐ ${studentScore} / 100`;
 
-                // यदि यहाँ पर 100 अंक पूरे हो गए हैं, तो सेलिब्रेशन चलाएं
                 if (studentScore >= 100) {
                     triggerCelebration();
                 } else {
@@ -628,7 +667,6 @@
                     if (typeof speakText === 'function') { speakText(d.correctMsg); }
                 }
             } else {
-                // गलत उत्तर देने पर सामान्य गलत संदेश
                 document.getElementById('aiText').innerText = d.wrongMsg;
                 if (typeof speakText === 'function') { speakText(d.wrongMsg); }
             }
