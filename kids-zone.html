@@ -85,7 +85,7 @@
             </button>
         </div>
 
-        <!-- 3. स्कूल और ट्यूटर व्हाट्सएप होमवर्क पोर्टल (मीडियम और क्लास आधारित) -->
+        <!-- 3. स्कूल और ट्यूटर व्हाट्सएप होमवर्क पोर्टल (दो साफ-सुथरे विकल्प: हिंदी और इंग्लिश मीडियम) -->
         <div class="w-full mt-6 bg-slate-950 p-5 rounded-2xl border border-cyan-500/40 shadow-2xl">
             <h3 id="homeworkTitle" class="text-cyan-400 font-bold text-base mb-3 text-center">🏫 स्कूल / ट्यूटर व्हाट्सएप होमवर्क पोर्टल</h3>
             
@@ -97,14 +97,14 @@
                     <option value="Middle School">जूनियर (Middle School)</option>
                 </select>
                 <select id="selectMedium" class="bg-slate-900 border border-slate-700 text-white px-3 py-2 rounded-xl text-xs outline-none">
-                    <option value="हिंदी मीडियम (UP/State Board)">हिंदी मीडियम (UP Board)</option>
-                    <option value="English Medium (CBSE/ICSE)">English Medium (CBSE/ICSE)</option>
+                    <option value="हिंदी मीडियम (Hindi Medium)">हिंदी मीडियम (Hindi Medium)</option>
+                    <option value="इंग्लिश मीडियम (English Medium)">इंग्लिश मीडियम (English Medium)</option>
                 </select>
             </div>
 
             <div class="flex flex-col gap-2.5 mb-3">
                 <input type="text" id="schoolNameInput" placeholder="संस्थान/ट्यूटर का नाम (जैसे: सेंट जेवियर्स / राहुल सर)" class="w-full bg-slate-900 border border-slate-700 text-white px-3 py-2.5 rounded-xl text-xs outline-none focus:border-cyan-500">
-                <input type="text" id="homeworkDescInput" placeholder="आज का होमवर्क (जैसे: गणित पेज 45 के सवाल हल करें)" class="w-full bg-slate-900 border border-slate-700 text-white px-3 py-2.5 rounded-xl text-xs outline-none focus:border-cyan-500">
+                <input type="text" id="homeworkDescInput" placeholder="आज का होमवर्क (विषय व पेज नंबर सहित, जैसे: गणित पेज 45)" class="w-full bg-slate-900 border border-slate-700 text-white px-3 py-2.5 rounded-xl text-xs outline-none focus:border-cyan-500">
             </div>
 
             <button onclick="sendSchoolHomework()" class="w-full bg-sky-600 hover:bg-sky-500 text-white py-2.5 rounded-xl font-bold text-xs shadow transition cursor-pointer mb-3">
