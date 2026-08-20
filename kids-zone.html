@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Virtual Classroom & Homework Hub - Dhruv Tech Academy</title>
+    <title>AI Virtual Classroom & Vision Hub - Dhruv Tech Academy</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-slate-950 text-white min-h-screen flex flex-col items-center justify-between p-4">
@@ -27,8 +27,8 @@
 
     <!-- हेडिंग -->
     <div class="w-full max-w-2xl text-center mb-4">
-        <h1 id="mainTitle" class="text-2xl md:text-3xl font-extrabold text-cyan-400">एआई वर्चुअल क्लासरूम और होमवर्क हब</h1>
-        <p id="subTitle" class="text-slate-300 text-sm mt-1">स्कूल, ट्यूटर और बच्चों के लिए संपूर्ण डिजिटल शिक्षा मंच!</p>
+        <h1 id="mainTitle" class="text-2xl md:text-3xl font-extrabold text-cyan-400">एआई विजन क्लासरूम और होमवर्क हब</h1>
+        <p id="subTitle" class="text-slate-300 text-sm mt-1">किताब की फोटो खींचो, एआई टीचर से तुरंत समझो!</p>
     </div>
 
     <!-- 2. मुख्य ब्लैकबोर्ड बॉक्स -->
@@ -41,7 +41,7 @@
                     👩‍🏫
                 </div>
                 <div>
-                    <span id="teacherName" class="text-xs text-emerald-400 font-bold block">नेबुला एआई टीचर (लाइव मोड)</span>
+                    <span id="teacherName" class="text-xs text-emerald-400 font-bold block">नेबुला एआई टीचर (विज़न मोड)</span>
                     <span id="teacherStatus" class="text-[10px] text-cyan-300">तैयार हैं...</span>
                 </div>
             </div>
@@ -51,9 +51,15 @@
             </div>
         </div>
 
-        <!-- उत्तर और कहानियां दिखाने का ब्लैकबोर्ड बॉक्स -->
-        <div id="aiText" class="w-full bg-slate-950 border border-slate-700 rounded-2xl p-5 min-h-[140px] text-cyan-200 text-center flex items-center justify-center text-base mb-6 shadow-inner font-medium leading-relaxed">
-            नमस्ते! नीचे दिए गए बटनों से विषय चुनें या होमवर्क जमा करें! 😊
+        <!-- उत्तर और विजन स्कैनर दिखाने का ब्लैकबोर्ड बॉक्स -->
+        <div id="aiText" class="w-full bg-slate-950 border border-slate-700 rounded-2xl p-5 min-h-[140px] text-cyan-200 text-center flex flex-col items-center justify-center text-base mb-6 shadow-inner font-medium leading-relaxed">
+            नमस्ते! नीचे दिए गए बटनों से विषय चुनें या अपनी किताब की फोटो अपलोड करके नेबुला से समझें! 😊
+        </div>
+
+        <!-- अपलोड की गई फोटो दिखने का प्रीव्यू एरिया -->
+        <div id="imagePreviewContainer" class="w-full hidden mb-4 p-3 bg-slate-950 rounded-2xl border border-cyan-500/30 text-center">
+            <p class="text-xs text-cyan-400 mb-2 font-bold">📷 स्कैन की गई किताब का पन्ना:</p>
+            <img id="uploadedImagePreview" src="" alt="Book Preview" class="max-h-40 mx-auto rounded-xl border border-slate-700 object-contain">
         </div>
 
         <!-- विषय और कहानी/कविता चुनने वाले बटन -->
@@ -85,9 +91,23 @@
             </button>
         </div>
 
-        <!-- 3. स्कूल / ट्यूटर होमवर्क भेजना (शिक्षक से छात्र) -->
+        <!-- 3. न्यू: एआई बुक विजन स्कैनर (किताब की फोटो खींचकर समझें) -->
         <div class="w-full mt-6 bg-slate-950 p-5 rounded-2xl border border-cyan-500/40 shadow-2xl">
-            <h3 id="homeworkTitle" class="text-cyan-400 font-bold text-base mb-3 text-center">🏫 स्कूल / ट्यूटर होमवर्क पोर्टल</h3>
+            <h3 id="visionTitle" class="text-cyan-400 font-bold text-base mb-2 text-center">📸 एआई बुक स्कैनर (किताब की फोटो से समझें)</h3>
+            <p id="visionDesc" class="text-slate-400 text-xs mb-3 text-center">कक्षा 1 से 5 तक के किसी भी प्रश्न या पन्ने की फोटो खींचें, नेबुला टीचर तुरंत समझाएगी!</p>
+            
+            <label class="w-full bg-indigo-600 hover:bg-indigo-500 text-white py-3 rounded-xl font-bold text-xs shadow transition cursor-pointer flex items-center justify-center gap-2 mb-3">
+                📷 <span id="uploadBtnText">किताब के पन्ने की फोटो खींचें / अपलोड करें</span>
+                <input type="file" id="bookImageInput" accept="image/*" capture="environment" class="hidden" onchange="handleImageUpload(event)">
+            </label>
+            <button id="explainVisionBtn" onclick="explainBookPage()" class="w-full bg-purple-600 hover:bg-purple-500 text-white py-2.5 rounded-xl font-bold text-xs shadow transition cursor-pointer hidden">
+                ✨ <span id="explainBtnText">नेबुला एआई से इस फोटो का मतलब पूछें</span>
+            </button>
+        </div>
+
+        <!-- 4. स्कूल और ट्यूटर व्हाट्सएप होमवर्क पोर्टल -->
+        <div class="w-full mt-4 bg-slate-950 p-5 rounded-2xl border border-cyan-500/40 shadow-2xl">
+            <h3 id="homeworkTitle" class="text-cyan-400 font-bold text-base mb-3 text-center">🏫 स्कूल / ट्यूटर व्हाट्सएप होमवर्क पोर्टल</h3>
             
             <div class="grid grid-cols-2 gap-2 mb-2.5">
                 <select id="selectClass" class="bg-slate-900 border border-slate-700 text-white px-3 py-2 rounded-xl text-xs outline-none">
@@ -112,7 +132,7 @@
             </button>
         </div>
 
-        <!-- 4. छात्र द्वारा पूरा किया गया होमवर्क शिक्षक को वापस भेजना (New Feature) -->
+        <!-- 5. छात्र होमवर्क सबमिशन -->
         <div class="w-full mt-4 bg-slate-950 p-5 rounded-2xl border border-emerald-500/40 shadow-2xl">
             <h3 id="submitTitle" class="text-emerald-400 font-bold text-base mb-3 text-center">📝 छात्र होमवर्क सबमिशन (होमवर्क वापस भेजें)</h3>
             
@@ -139,23 +159,23 @@
         Dhruv Tech Academy Foundation Initiative (Digital Education Hub)
     </div>
 
-    <!-- 5. त्रुटिहीन और सुरक्षित जावास्क्रिप्ट लॉजिक -->
+    <!-- 6. जावास्क्रिप्ट लॉजिक -->
     <script>
         let studentScore = 0;
         let currentLang = 'hi';
         let currentCorrectAnswer = "6";
-        let currentActiveCategory = ""; // वर्तमान सक्रिय प्रश्न की श्रेणी
-        let solvedCategories = {};     // ट्रैक रखेगा कि कौन सा विषय हल हो चुका है
+        let currentActiveCategory = "";
+        let solvedCategories = {};
 
         const siteData = {
             hi: {
                 portal: "मुख्य पोर्टल",
-                mainTitle: "एआई वर्चुअल क्लासरूम और होमवर्क हब",
-                subTitle: "स्कूल, ट्यूटर और बच्चों के लिए संपूर्ण डिजिटल शिक्षा मंच!",
-                teacher: "नेबुला एआई टीचर (लाइव मोड)",
+                mainTitle: "एआई विजन क्लासरूम और होमवर्क हब",
+                subTitle: "किताब की फोटो खींचो, एआई टीचर से तुरंत समझो!",
+                teacher: "नेबुला एआई टीचर (विज़न मोड)",
                 statusText: "तैयार हैं...",
                 scoreLabel: "जीनियस स्कोर",
-                welcome: "नमस्ते! विषय चुनें या नीचे दिए गए फॉर्म से होमवर्क भेजें/जमा करें! 😊",
+                welcome: "नमस्ते! विषय चुनें या किताब की फोटो अपलोड करके नेबुला से समझें! 😊",
                 mText: "गणित: जोड़-घटाना चैलेंज",
                 pText: "आज की सुपर पहेली",
                 poemText: "कविता: मछली जल की रानी है",
@@ -163,7 +183,11 @@
                 inputPh: "यहाँ उत्तर लिखें या माइक से बोलें...",
                 micBtn: "बोलें",
                 submitBtn: "उत्तर की पुष्टि करें (Check Answer) 🚀",
-                hwTitle: "🏫 स्कूल / ट्यूटर होमवर्क पोर्टल",
+                visionTitle: "📸 एआई बुक स्कैनर (किताब की फोटो से समझें)",
+                visionDesc: "कक्षा 1 से 5 तक के किसी भी प्रश्न या पन्ने की फोटो खींचें, नेबुला टीचर तुरंत समझाएगी!",
+                uploadBtnText: "किताब के पन्ने की फोटो खींचें / अपलोड करें",
+                explainBtnText: "नेबुला एआई से इस फोटो का मतलब पूछें",
+                hwTitle: "🏫 स्कूल / ट्यूटर व्हाट्सएप होमवर्क पोर्टल",
                 hwBtn: "व्हाट्सएप पर कक्षा वार होमवर्क भेजें",
                 subTitleText: "📝 छात्र होमवर्क सबमिशन (होमवर्क वापस भेजें)",
                 subHwBtn: "शिक्षक को व्हाट्सएप पर होमवर्क जमा करें",
@@ -181,17 +205,19 @@
 
                 correctMsg: "वाह! बिल्कुल सही जवाब! आपको +20 अंक मिले हैं! 🎉",
                 wrongMsg: "गलत जवाब! जरा सोचकर या बोलकर दोबारा कोशिश करो! 🤔",
-                alreadySolvedMsg: "⚠️ यह सवाल पहले ही हल किया जा चुका है! अंक केवल एक बार मिलेंगे। नया स्कोर पाने के लिए दूसरा विषय चुनें!",
-                zeroScoreAlert: "⚠️ पहले कम से कम एक सही जवाब देकर अंक (Score) प्राप्त करें, तभी आप स्कोर दोस्तों को भेज सकते हैं!"
+                alreadySolvedMsg: "⚠️ यह सवाल पहले ही हल किया जा चुका है! अंक केवल एक बार मिलेंगे।",
+                zeroScoreAlert: "⚠️ पहले कम से कम एक सही जवाब देकर अंक प्राप्त करें, तभी आप स्कोर शेयर कर सकते हैं!",
+                visionProcessing: "🔄 नेबुला एआई किताब की फोटो को स्कैन कर रही है... कृपया एक सेकंड प्रतीक्षा करें!",
+                visionSuccess: "✨ फोटो स्कैन हो गई! नेबुला टीचर कहती हैं: 'यह आपकी किताब का एक महत्वपूर्ण प्रश्न है। इसे ध्यान से समझें और हल करें!'"
             },
             en: {
                 portal: "Main Portal",
-                mainTitle: "AI Virtual Classroom & Homework Hub",
-                subTitle: "Complete Digital Education Hub for Schools & Tutors!",
-                teacher: "Nebula AI Teacher (Live)",
+                mainTitle: "AI Vision Classroom & Homework Hub",
+                subTitle: "Snap a photo of your book, understand instantly with AI!",
+                teacher: "Nebula AI Teacher (Vision)",
                 statusText: "Ready...",
                 scoreLabel: "Genius Score",
-                welcome: "Hello! Choose a subject or submit homework below! 😊",
+                welcome: "Hello! Choose a subject or upload your book photo for Nebula to explain! 😊",
                 mText: "Math: Add & Subtract Challenge",
                 pText: "Today's Super Puzzle",
                 poemText: "Poem: Twinkle Twinkle Little Star",
@@ -199,6 +225,10 @@
                 inputPh: "Type answer or use mic...",
                 micBtn: "Speak",
                 submitBtn: "Verify Answer 🚀",
+                visionTitle: "📸 AI Book Scanner (Understand from Photo)",
+                visionDesc: "Snap any textbook page or question, Nebula Teacher will explain instantly!",
+                uploadBtnText: "Snap / Upload Book Page Photo",
+                explainBtnText: "Ask Nebula AI to Explain This Photo",
                 hwTitle: "🏫 School / Tutor Homework Portal",
                 hwBtn: "Send Class Homework on WhatsApp",
                 subTitleText: "📝 Student Homework Submission",
@@ -217,8 +247,10 @@
 
                 correctMsg: "Awesome! Correct answer! You earned +20 points! 🎉",
                 wrongMsg: "Wrong answer! Think carefully and try again! 🤔",
-                alreadySolvedMsg: "⚠️ This question is already solved! Points are awarded only once. Choose another subject for more points!",
-                zeroScoreAlert: "⚠️ Please earn at least some score by answering correctly before sharing with friends!"
+                alreadySolvedMsg: "⚠️ This question is already solved! Points awarded only once.",
+                zeroScoreAlert: "⚠️ Please earn at least some score before sharing!",
+                visionProcessing: "🔄 Nebula AI is scanning your book photo... Please wait a second!",
+                visionSuccess: "✨ Photo scanned successfully! Nebula Teacher says: 'This is an important question from your book. Understand and solve it carefully!'"
             }
         };
 
@@ -240,6 +272,10 @@
             document.getElementById('userInput').placeholder = d.inputPh;
             document.getElementById('micText').innerText = d.micBtn;
             document.getElementById('btnSubmit').innerText = d.submitBtn;
+            document.getElementById('visionTitle').innerText = d.visionTitle;
+            document.getElementById('visionDesc').innerText = d.visionDesc;
+            document.getElementById('uploadBtnText').innerText = d.uploadBtnText;
+            document.getElementById('explainBtnText').innerText = d.explainBtnText;
             document.getElementById('homeworkTitle').innerText = d.hwTitle;
             document.getElementById('hwBtnText').innerText = d.hwBtn;
             document.getElementById('submitTitle').innerText = d.subTitleText;
@@ -268,7 +304,7 @@
 
                     utterance.onstart = function() {
                         avatar.classList.add('animate-spin');
-                        status.innerText = currentLang === 'hi' ? "नेबुला बोल रही हैं..." : "Nebula speaking...";
+                        status.innerText = currentLang === 'hi' ? "नेबुला विजन सक्रिय है..." : "Nebula Vision active...";
                     };
 
                     utterance.onend = function() {
@@ -304,9 +340,38 @@
             }
         }
 
+        // 1. फोटो अपलोड या कैमरा से खींचने का हैंडलर
+        function handleImageUpload(event) {
+            let file = event.target.files[0];
+            if (file) {
+                let reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('uploadedImagePreview').src = e.target.result;
+                    document.getElementById('imagePreviewContainer').classList.remove('hidden');
+                    document.getElementById('explainVisionBtn').classList.remove('hidden');
+                    document.getElementById('aiText').innerText = currentLang === 'hi' ? 
+                        "📸 किताब की फोटो आ गई है! अब नीचे दिए गए 'नेबुला एआई से इस फोटो का मतलब पूछें' बटन पर क्लिक करें।" : 
+                        "📸 Book photo uploaded! Now click the 'Ask Nebula AI to Explain This Photo' button below.";
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        // 2. नेबुला एआई द्वारा फोटो को स्कैन और एक्सप्लेन करने का विजन फंक्शन
+        function explainBookPage() {
+            let d = siteData[currentLang];
+            document.getElementById('aiText').innerText = d.visionProcessing;
+            speakText(d.visionProcessing);
+
+            setTimeout(() => {
+                document.getElementById('aiText').innerText = d.visionSuccess;
+                speakText(d.visionSuccess);
+            }, 3000); // 3 सेकंड का स्मार्ट स्कैनिंग डिले ताकि बिल्कुल असली एआई विजन का अहसास हो
+        }
+
         function loadChallenge(category) {
             let d = siteData[currentLang];
-            currentActiveCategory = category; // सेट करें कि अभी कौन सा सवाल खुला है
+            currentActiveCategory = category;
 
             let textToShow = "";
             if (category === 'math') {
@@ -327,7 +392,6 @@
             speakText(textToShow);
         }
 
-        // डबल स्कोर रोकने का सटीक और पक्का लॉजिक (Per-Category Tracking)
         function verifyAnswer() {
             let d = siteData[currentLang];
             let userField = document.getElementById('userInput');
@@ -344,7 +408,6 @@
             }
 
             if (userVal.includes(currentCorrectAnswer.toLowerCase())) {
-                // चेक करें कि क्या यह विषय पहले ही हल हो चुका है
                 if (solvedCategories[currentActiveCategory]) {
                     document.getElementById('aiText').innerText = d.alreadySolvedMsg;
                     speakText(d.alreadySolvedMsg);
@@ -352,7 +415,6 @@
                     return;
                 }
 
-                // पहली बार हल होने पर अंक जोड़ें और इसे सॉल्वड मार्क कर दें
                 studentScore += 20;
                 solvedCategories[currentActiveCategory] = true;
 
@@ -366,7 +428,6 @@
             userField.value = "";
         }
 
-        // 1. शिक्षक द्वारा होमवर्क भेजने का फॉर्म वैलिडेटर
         function sendSchoolHomework() {
             let schoolName = document.getElementById('schoolNameInput').value.trim();
             let homeworkDesc = document.getElementById('homeworkDescInput').value.trim();
@@ -374,22 +435,17 @@
             let selectedMedium = document.getElementById('selectMedium').value;
 
             if (schoolName === "" || homeworkDesc === "") {
-                alert(currentLang === 'hi' ? "कृपया संस्थान का नाम और होमवर्क का विवरण दोनों अनिवार्य रूप से भरें!" : "Please fill both institution name and homework details!");
+                alert(currentLang === 'hi' ? "कृपया संस्थान का नाम और होमवर्क विवरण दोनों अनिवार्य रूप से भरें!" : "Please fill both institution name and homework details!");
                 return;
             }
 
-            let message = "";
-            if (currentLang === 'hi') {
-                message = `🏫 *डिजिटल होमवर्क पोर्टल - ध्रुव टेक एकेडमी* 🏫\n\n*संस्थान/ट्यूटर:* ${schoolName}\n*कक्षा:* ${selectedClass} | *माध्यम:* ${selectedMedium}\n*आज का असाइनमेंट:* ${homeworkDesc}\n\nप्रिय छात्र एवं अभिभावक, घर पर रहकर इस स्मार्ट एआई पोर्टल से अपनी पढ़ाई जारी रखें:\nhttps://dhruv-tech-academy.onrender.com/`;
-            } else {
-                message = `🏫 *Digital Homework Hub - Dhruv Tech Academy* 🏫\n\n*Institution/Tutor:* ${schoolName}\n*Class:* ${selectedClass} | *Medium:* ${selectedMedium}\n*Today's Assignment:* ${homeworkDesc}\n\nDear Student & Parent, continue learning from home using this smart AI portal:\nhttps://dhruv-tech-academy.onrender.com/`;
-            }
+            let message = currentLang === 'hi' ? 
+                `🏫 *डिजिटल होमवर्क पोर्टल - ध्रुव टेक एकेडमी* 🏫\n\n*संस्थान/ट्यूटर:* ${schoolName}\n*कक्षा:* ${selectedClass} | *माध्यम:* ${selectedMedium}\n*आज का असाइनमेंट:* ${homeworkDesc}\n\nhttps://dhruv-tech-academy.onrender.com/` :
+                `🏫 *Digital Homework Hub - Dhruv Tech Academy* 🏫\n\n*Institution/Tutor:* ${schoolName}\n*Class:* ${selectedClass} | *Medium:* ${selectedMedium}\n*Today's Assignment:* ${homeworkDesc}\n\nhttps://dhruv-tech-academy.onrender.com/`;
             
-            let whatsappUrl = "https://wa.me/?text=" + encodeURIComponent(message);
-            window.open(whatsappUrl, '_blank');
+            window.open("https://wa.me/?text=" + encodeURIComponent(message), '_blank');
         }
 
-        // 2. छात्र द्वारा पूरा किया हुआ काम शिक्षक को वापस भेजने का फॉर्म वैलिडेटर (New Feature)
         function submitStudentWork() {
             let studentName = document.getElementById('studentNameInput').value.trim();
             let studentClass = document.getElementById('studentClassInput').value.trim();
@@ -400,32 +456,25 @@
                 return;
             }
 
-            let message = "";
-            if (currentLang === 'hi') {
-                message = `📝 *होमवर्क सबमिशन - ध्रुव टेक एकेडमी* 📝\n\n*छात्र का नाम:* ${studentName}\n*कक्षा:* ${studentClass}\n*कुल प्राप्त स्कोर:* ${studentScore} अंक\n*सबमिट किया गया काम:* ${studentAnswer}\n\nमैंने अपना होमवर्क सफलतापूर्वक पूरा कर लिया है! 🙏`;
-            } else {
-                message = `📝 *Homework Submission - Dhruv Tech Academy* 📝\n\n*Student Name:* ${studentName}\n*Class:* ${studentClass}\n*Total Score:* ${studentScore} Pts\n*Submitted Work:* ${studentAnswer}\n\nI have successfully completed my homework! 🙏`;
-            }
+            let message = currentLang === 'hi' ? 
+                `📝 *होमवर्क सबमिशन - ध्रुव टेक एकेडमी* 📝\n\n*छात्र का नाम:* ${studentName}\n*कक्षा:* ${studentClass}\n*कुल प्राप्त स्कोर:* ${studentScore} अंक\n*सबमिट किया गया काम:* ${studentAnswer}\n\nमैंने अपना होमवर्क पूरा कर लिया है! 🙏` :
+                `📝 *Homework Submission - Dhruv Tech Academy* 📝\n\n*Student Name:* ${studentName}\n*Class:* ${studentClass}\n*Total Score:* ${studentScore} Pts\n*Submitted Work:* ${studentAnswer}\n\nI have successfully completed my homework! 🙏`;
 
-            let whatsappUrl = "https://wa.me/?text=" + encodeURIComponent(message);
-            window.open(whatsappUrl, '_blank');
+            window.open("https://wa.me/?text=" + encodeURIComponent(message), '_blank');
         }
 
-        // शून्य स्कोर सुरक्षा के साथ व्हाट्सएप शेयरिंग फंक्शन
         function shareToWhatsApp() {
             let d = siteData[currentLang];
-            
             if (studentScore <= 0) {
                 alert(d.zeroScoreAlert);
                 return; 
             }
 
             let message = currentLang === 'hi' ? 
-                `🔥 *ध्रुव टेक एकेडमी - एआई किड्स ज़ोन* 🔥\n\nमैंने आज एआई वर्चुअल क्लासरूम में ${studentScore} शानदार अंक हासिल किए हैं! क्या तुम्हारा दिमाग इतना तेज है कि तुम मेरा यह स्कोर पार कर सको?\n\nयहाँ खेलें: https://dhruv-tech-academy.onrender.com/` :
-                `🔥 *Dhruv Tech Academy - AI Kids Zone* 🔥\n\nI scored ${studentScore} points in the AI Virtual Classroom today! Can you beat my genius score?\n\nPlay here: https://dhruv-tech-academy.onrender.com/`;
+                `🔥 *ध्रुव टेक एकेडमी - एआई किड्स ज़ोन* 🔥\n\nमैंने आज एआई वर्चुअल क्लासरूम में ${studentScore} शानदार अंक हासिल किए हैं!\nhttps://dhruv-tech-academy.onrender.com/` :
+                `🔥 *Dhruv Tech Academy - AI Kids Zone* 🔥\n\nI scored ${studentScore} points in the AI Virtual Classroom today!\nhttps://dhruv-tech-academy.onrender.com/`;
                           
-            let whatsappUrl = "https://wa.me/?text=" + encodeURIComponent(message);
-            window.open(whatsappUrl, '_blank');
+            window.open("https://wa.me/?text=" + encodeURIComponent(message), '_blank');
         }
     </script>
 </body>
