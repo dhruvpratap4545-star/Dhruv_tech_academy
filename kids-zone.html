@@ -171,7 +171,7 @@
         let currentCorrectAnswer = "";
         let currentActiveCategory = "";
         let currentQuestionText = "";
-        let solvedCategories = {};
+        let solvedQuestions = {}; // प्रत्येक यूनिक प्रश्न को ट्रैक करने के लिए
 
         const siteData = {
             hi: {
@@ -201,7 +201,7 @@
                 waBtn: "छात्र अपना स्कोर दोस्तों को शेयर करें",
                 correctMsg: "वाह! बिल्कुल सही जवाब! आपको +20 अंक मिले हैं! 🎉",
                 wrongMsg: "गलत जवाब! जरा सोचकर या बोलकर दोबारा कोशिश करो! 🤔",
-                alreadySolvedMsg: "⚠️ यह चैलेंज इस सेशन में हल हो चुका है! नया स्कोर पाने के लिए दूसरा विषय चुनें!",
+                alreadySolvedMsg: "⚠️ यह प्रश्न आप पहले हल कर चुके हैं! नया स्कोर पाने के लिए दूसरा विषय चुनें!",
                 zeroScoreAlert: "⚠️ पहले कम से कम एक सही जवाब देकर अंक प्राप्त करें, तभी आप स्कोर शेयर कर सकते हैं!"
             },
             en: {
@@ -231,7 +231,7 @@
                 waBtn: "Share Score with Friends",
                 correctMsg: "Awesome! Correct answer! You earned +20 points! 🎉",
                 wrongMsg: "Wrong answer! Think carefully and try again! 🤔",
-                alreadySolvedMsg: "⚠️ This challenge is already solved! Choose another subject for more points!",
+                alreadySolvedMsg: "⚠️ You have already solved this question! Choose another subject for points!",
                 zeroScoreAlert: "⚠️ Please earn at least some score before sharing!"
             }
         };
@@ -558,13 +558,13 @@
                 <div class="text-cyan-200 text-base font-semibold">${congratsText}</div>
             `;
             
-            // 1. स्क्रीन को सेंटर में स्क्रॉल करना
+            // स्क्रीन को सेंटर में स्क्रॉल करना
             celebrationBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
 
-            // 2. तालियों की आवाज़ बजाना
+            // तालियों की आवाज़ बजाना
             playClappingSound();
 
-            // 3. एआई टीचर द्वारा बोलना
+            // एआई टीचर द्वारा बोलना
             if (typeof speakText === 'function') {
                 setTimeout(() => {
                     speakText(congratsText);
@@ -572,14 +572,14 @@
             }
         }
 
-        // उत्तर की पुष्टि (सेलिब्रेशन लॉजिक के साथ)
+        // उत्तर की पुष्टि (नया व सुरक्षित सत्यापन लॉजिक)
         function verifyAnswer() {
             let d = siteData[currentLang];
             let userField = document.getElementById('userInput');
             let userVal = userField.value.trim().toLowerCase();
 
             if (userVal === "") {
-                alert(currentLang === 'hi' ? "कृपया अपना उत्तर लिखें या बोलें!" : "Please type or speak your answer!");
+                alert(currentLang === 'hi' ? "कृपया अपना उत्तर लिखें!" : "Please type your answer!");
                 return;
             }
 
@@ -588,36 +588,49 @@
                 return;
             }
 
-            // यदि छात्र पहले ही 100 अंक प्राप्त कर चुका है
+            let uniqueQuestionKey = currentActiveCategory + "_" + currentQuestionText;
+
+            // यदि छात्र पहले ही 100 अंक पूरे कर चुका है
             if (studentScore >= 100) {
-                triggerCelebration();
+                if (userVal.includes(currentCorrectAnswer.toLowerCase())) {
+                    let alreadyDoneMsg = currentLang === 'hi' ? "🎉 आप पहले ही 100 अंक जीत चुके हैं! बहुत बढ़िया!" : "🎉 You already won 100 points! Excellent!";
+                    document.getElementById('aiText').innerText = alreadyDoneMsg;
+                    if (typeof speakText === 'function') { speakText(alreadyDoneMsg); }
+                } else {
+                    // गलत उत्तर देने पर टोकने वाला संदेश (ताकि तालियाँ न बजें)
+                    let wrongAfter100Msg = currentLang === 'hi' ? "⚠️ ध्यान दें: आप 100 अंक पहले ही प्राप्त कर चुके हैं, किंतु इस बार आपका उत्तर गलत है। हमेशा सही उत्तर देने का प्रयास करें!" : "⚠️ Note: You already scored 100, but this answer is incorrect. Try to give the right answer!";
+                    document.getElementById('aiText').innerText = wrongAfter100Msg;
+                    if (typeof speakText === 'function') { speakText(wrongAfter100Msg); }
+                }
                 userField.value = "";
                 return;
             }
 
+            // सामान्य खेल का लॉजिक (जब स्कोर 100 से कम है)
             if (userVal.includes(currentCorrectAnswer.toLowerCase())) {
-                if (solvedCategories[currentActiveCategory]) {
+                if (solvedQuestions[uniqueQuestionKey]) {
                     document.getElementById('aiText').innerText = d.alreadySolvedMsg;
-                    speakText(d.alreadySolvedMsg);
+                    if (typeof speakText === 'function') { speakText(d.alreadySolvedMsg); }
                     userField.value = "";
                     return;
                 }
 
-                studentScore += 20;
-                solvedCategories[currentActiveCategory] = true;
+                studentScore += 20; // 5 विषय x 20 = 100 अंक
+                solvedQuestions[uniqueQuestionKey] = true;
 
                 document.getElementById('scoreDisplay').innerText = `⭐ ${studentScore} / 100`;
 
-                // 100 अंक पूरे होते ही सेलिब्रेशन ट्रिगर करें
+                // यदि यहाँ पर 100 अंक पूरे हो गए हैं, तो सेलिब्रेशन चलाएं
                 if (studentScore >= 100) {
                     triggerCelebration();
                 } else {
                     document.getElementById('aiText').innerText = d.correctMsg;
-                    speakText(d.correctMsg);
+                    if (typeof speakText === 'function') { speakText(d.correctMsg); }
                 }
             } else {
+                // गलत उत्तर देने पर सामान्य गलत संदेश
                 document.getElementById('aiText').innerText = d.wrongMsg;
-                speakText(d.wrongMsg);
+                if (typeof speakText === 'function') { speakText(d.wrongMsg); }
             }
             userField.value = "";
         }
