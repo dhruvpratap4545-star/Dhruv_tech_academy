@@ -53,7 +53,7 @@
 
         <!-- उत्तर और कहानियां दिखाने का ब्लैकबोर्ड बॉक्स -->
         <div id="aiText" class="w-full bg-slate-950 border border-slate-700 rounded-2xl p-5 min-h-[140px] text-cyan-200 text-center flex items-center justify-center text-base mb-6 shadow-inner font-medium leading-relaxed">
-            नमस्ते! नीचे दिए गए बटनों से विषय चुनें या स्कूल/होमवर्क मोड का उपयोग करें! 😊
+            नमस्ते! नीचे दिए गए बटनों से विषय चुनें या होमवर्क जमा करें! 😊
         </div>
 
         <!-- विषय और कहानी/कविता चुनने वाले बटन -->
@@ -85,9 +85,9 @@
             </button>
         </div>
 
-        <!-- 3. स्कूल और ट्यूटर व्हाट्सएप होमवर्क पोर्टल -->
+        <!-- 3. स्कूल / ट्यूटर होमवर्क भेजना (शिक्षक से छात्र) -->
         <div class="w-full mt-6 bg-slate-950 p-5 rounded-2xl border border-cyan-500/40 shadow-2xl">
-            <h3 id="homeworkTitle" class="text-cyan-400 font-bold text-base mb-3 text-center">🏫 स्कूल / ट्यूटर व्हाट्सएप होमवर्क पोर्टल</h3>
+            <h3 id="homeworkTitle" class="text-cyan-400 font-bold text-base mb-3 text-center">🏫 स्कूल / ट्यूटर होमवर्क पोर्टल</h3>
             
             <div class="grid grid-cols-2 gap-2 mb-2.5">
                 <select id="selectClass" class="bg-slate-900 border border-slate-700 text-white px-3 py-2 rounded-xl text-xs outline-none">
@@ -110,6 +110,22 @@
             <button onclick="sendSchoolHomework()" class="w-full bg-sky-600 hover:bg-sky-500 text-white py-2.5 rounded-xl font-bold text-xs shadow transition cursor-pointer mb-3">
                 📤 <span id="hwBtnText">व्हाट्सएप पर कक्षा वार होमवर्क भेजें</span>
             </button>
+        </div>
+
+        <!-- 4. छात्र द्वारा पूरा किया गया होमवर्क शिक्षक को वापस भेजना (New Feature) -->
+        <div class="w-full mt-4 bg-slate-950 p-5 rounded-2xl border border-emerald-500/40 shadow-2xl">
+            <h3 id="submitTitle" class="text-emerald-400 font-bold text-base mb-3 text-center">📝 छात्र होमवर्क सबमिशन (होमवर्क वापस भेजें)</h3>
+            
+            <div class="flex flex-col gap-2.5 mb-3">
+                <input type="text" id="studentNameInput" placeholder="छात्र का नाम (Student Name)" class="w-full bg-slate-900 border border-slate-700 text-white px-3 py-2.5 rounded-xl text-xs outline-none focus:border-emerald-500">
+                <input type="text" id="studentClassInput" placeholder="कक्षा (Class, e.g. Class 5)" class="w-full bg-slate-900 border border-slate-700 text-white px-3 py-2.5 rounded-xl text-xs outline-none focus:border-emerald-500">
+                <input type="text" id="studentAnswerInput" placeholder="हल किया गया काम / उत्तर (जैसे: मैंने गणित पेज 45 हल कर लिया है)" class="w-full bg-slate-900 border border-slate-700 text-white px-3 py-2.5 rounded-xl text-xs outline-none focus:border-emerald-500">
+            </div>
+
+            <button onclick="submitStudentWork()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white py-2.5 rounded-xl font-bold text-xs shadow transition cursor-pointer mb-3">
+                ✅ <span id="submitHwBtnText">शिक्षक को व्हाट्सएप पर होमवर्क जमा करें</span>
+            </button>
+
             <hr class="border-slate-800 my-2">
             <button onclick="shareToWhatsApp()" class="w-full bg-green-600 hover:bg-green-500 text-white py-2.5 rounded-xl font-bold text-xs shadow transition cursor-pointer flex items-center justify-center gap-1.5 mt-2">
                 📱 <span id="whatsappBtnText">छात्र अपना स्कोर दोस्तों को शेयर करें</span>
@@ -123,13 +139,13 @@
         Dhruv Tech Academy Foundation Initiative (Digital Education Hub)
     </div>
 
-    <!-- 4. त्रुटिहीन और सुरक्षित जावास्क्रिप्ट लॉजिक -->
+    <!-- 5. त्रुटिहीन और सुरक्षित जावास्क्रिप्ट लॉजिक -->
     <script>
         let studentScore = 0;
         let currentLang = 'hi';
         let currentCorrectAnswer = "6";
-        let questionAnswered = false; // डबल स्कोर रोकने का कड़ा ताला
-        let currentQuestionKey = ""; // यह ट्रैक रखेगा कि कौन सा सवाल चल रहा है
+        let currentActiveCategory = ""; // वर्तमान सक्रिय प्रश्न की श्रेणी
+        let solvedCategories = {};     // ट्रैक रखेगा कि कौन सा विषय हल हो चुका है
 
         const siteData = {
             hi: {
@@ -139,7 +155,7 @@
                 teacher: "नेबुला एआई टीचर (लाइव मोड)",
                 statusText: "तैयार हैं...",
                 scoreLabel: "जीनियस स्कोर",
-                welcome: "नमस्ते! विषय चुनें या नीचे दिए गए फॉर्म से क्लास का होमवर्क व्हाट्सएप पर भेजें! 😊",
+                welcome: "नमस्ते! विषय चुनें या नीचे दिए गए फॉर्म से होमवर्क भेजें/जमा करें! 😊",
                 mText: "गणित: जोड़-घटाना चैलेंज",
                 pText: "आज की सुपर पहेली",
                 poemText: "कविता: मछली जल की रानी है",
@@ -147,8 +163,10 @@
                 inputPh: "यहाँ उत्तर लिखें या माइक से बोलें...",
                 micBtn: "बोलें",
                 submitBtn: "उत्तर की पुष्टि करें (Check Answer) 🚀",
-                hwTitle: "🏫 स्कूल / ट्यूटर व्हाट्सएप होमवर्क पोर्टल",
+                hwTitle: "🏫 स्कूल / ट्यूटर होमवर्क पोर्टल",
                 hwBtn: "व्हाट्सएप पर कक्षा वार होमवर्क भेजें",
+                subTitleText: "📝 छात्र होमवर्क सबमिशन (होमवर्क वापस भेजें)",
+                subHwBtn: "शिक्षक को व्हाट्सएप पर होमवर्क जमा करें",
                 waBtn: "छात्र अपना स्कोर दोस्तों को शेयर करें",
                 
                 qMath: "10 कंचे थे, 4 खो गए। बताओ अब कितने कंचे बचे? (अंक लिखें)",
@@ -163,6 +181,7 @@
 
                 correctMsg: "वाह! बिल्कुल सही जवाब! आपको +20 अंक मिले हैं! 🎉",
                 wrongMsg: "गलत जवाब! जरा सोचकर या बोलकर दोबारा कोशिश करो! 🤔",
+                alreadySolvedMsg: "⚠️ यह सवाल पहले ही हल किया जा चुका है! अंक केवल एक बार मिलेंगे। नया स्कोर पाने के लिए दूसरा विषय चुनें!",
                 zeroScoreAlert: "⚠️ पहले कम से कम एक सही जवाब देकर अंक (Score) प्राप्त करें, तभी आप स्कोर दोस्तों को भेज सकते हैं!"
             },
             en: {
@@ -172,7 +191,7 @@
                 teacher: "Nebula AI Teacher (Live)",
                 statusText: "Ready...",
                 scoreLabel: "Genius Score",
-                welcome: "Hello! Choose a subject or send class homework via WhatsApp below! 😊",
+                welcome: "Hello! Choose a subject or submit homework below! 😊",
                 mText: "Math: Add & Subtract Challenge",
                 pText: "Today's Super Puzzle",
                 poemText: "Poem: Twinkle Twinkle Little Star",
@@ -180,8 +199,10 @@
                 inputPh: "Type answer or use mic...",
                 micBtn: "Speak",
                 submitBtn: "Verify Answer 🚀",
-                hwTitle: "🏫 School / Tutor WhatsApp Homework Portal",
+                hwTitle: "🏫 School / Tutor Homework Portal",
                 hwBtn: "Send Class Homework on WhatsApp",
+                subTitleText: "📝 Student Homework Submission",
+                subHwBtn: "Submit Homework to Teacher on WhatsApp",
                 waBtn: "Share Score with Friends",
                 
                 qMath: "You had 10 marbles and lost 4. How many left? (Type number)",
@@ -196,6 +217,7 @@
 
                 correctMsg: "Awesome! Correct answer! You earned +20 points! 🎉",
                 wrongMsg: "Wrong answer! Think carefully and try again! 🤔",
+                alreadySolvedMsg: "⚠️ This question is already solved! Points are awarded only once. Choose another subject for more points!",
                 zeroScoreAlert: "⚠️ Please earn at least some score by answering correctly before sharing with friends!"
             }
         };
@@ -220,6 +242,8 @@
             document.getElementById('btnSubmit').innerText = d.submitBtn;
             document.getElementById('homeworkTitle').innerText = d.hwTitle;
             document.getElementById('hwBtnText').innerText = d.hwBtn;
+            document.getElementById('submitTitle').innerText = d.subTitleText;
+            document.getElementById('submitHwBtnText').innerText = d.subHwBtn;
             document.getElementById('whatsappBtnText').innerText = d.waBtn;
 
             if (lang === 'hi') {
@@ -282,10 +306,7 @@
 
         function loadChallenge(category) {
             let d = siteData[currentLang];
-            
-            // यदि यूजर ने वही सवाल दोबारा क्लिक किया है और वह पहले ही हल हो चुका है, तो नया सवाल असाइन करें या लॉक रखें
-            currentQuestionKey = category;
-            questionAnswered = false; // नया चैलेंज शुरू होते ही ताला खुल जाएगा ताकि एक बार स्कोर मिल सके
+            currentActiveCategory = category; // सेट करें कि अभी कौन सा सवाल खुला है
 
             let textToShow = "";
             if (category === 'math') {
@@ -306,7 +327,7 @@
             speakText(textToShow);
         }
 
-        // सख्त ताले और सिंगल-क्रेडिट लॉजिक के साथ उत्तर की पुष्टि
+        // डबल स्कोर रोकने का सटीक और पक्का लॉजिक (Per-Category Tracking)
         function verifyAnswer() {
             let d = siteData[currentLang];
             let userField = document.getElementById('userInput');
@@ -317,11 +338,24 @@
                 return;
             }
 
+            if (!currentActiveCategory) {
+                alert(currentLang === 'hi' ? "कृपया पहले ऊपर से कोई विषय चुनें!" : "Please choose a subject first!");
+                return;
+            }
+
             if (userVal.includes(currentCorrectAnswer.toLowerCase())) {
-                if (!questionAnswered) {
-                    studentScore += 20;
-                    questionAnswered = true; // एक बार अंक मिलने पर यह सवाल लॉक हो गया, दोबारा इसी पर अंक नहीं मिलेंगे
+                // चेक करें कि क्या यह विषय पहले ही हल हो चुका है
+                if (solvedCategories[currentActiveCategory]) {
+                    document.getElementById('aiText').innerText = d.alreadySolvedMsg;
+                    speakText(d.alreadySolvedMsg);
+                    userField.value = "";
+                    return;
                 }
+
+                // पहली बार हल होने पर अंक जोड़ें और इसे सॉल्वड मार्क कर दें
+                studentScore += 20;
+                solvedCategories[currentActiveCategory] = true;
+
                 document.getElementById('scoreDisplay').innerText = `⭐ ${studentScore} ${currentLang === 'hi' ? 'अंक' : 'Pts'}`;
                 document.getElementById('aiText').innerText = d.correctMsg;
                 speakText(d.correctMsg);
@@ -332,7 +366,7 @@
             userField.value = "";
         }
 
-        // स्कूल और ट्यूटर के लिए होमवर्क भेजने का सुरक्षित फॉर्म वैलिडेटर
+        // 1. शिक्षक द्वारा होमवर्क भेजने का फॉर्म वैलिडेटर
         function sendSchoolHomework() {
             let schoolName = document.getElementById('schoolNameInput').value.trim();
             let homeworkDesc = document.getElementById('homeworkDescInput').value.trim();
@@ -340,7 +374,7 @@
             let selectedMedium = document.getElementById('selectMedium').value;
 
             if (schoolName === "" || homeworkDesc === "") {
-                alert(currentLang === 'hi' ? "कृपया संस्थान/ट्यूटर का नाम और होमवर्क का विवरण दोनों अनिवार्य रूप से भरें!" : "Please fill both institution name and homework details!");
+                alert(currentLang === 'hi' ? "कृपया संस्थान का नाम और होमवर्क का विवरण दोनों अनिवार्य रूप से भरें!" : "Please fill both institution name and homework details!");
                 return;
             }
 
@@ -355,13 +389,35 @@
             window.open(whatsappUrl, '_blank');
         }
 
+        // 2. छात्र द्वारा पूरा किया हुआ काम शिक्षक को वापस भेजने का फॉर्म वैलिडेटर (New Feature)
+        function submitStudentWork() {
+            let studentName = document.getElementById('studentNameInput').value.trim();
+            let studentClass = document.getElementById('studentClassInput').value.trim();
+            let studentAnswer = document.getElementById('studentAnswerInput').value.trim();
+
+            if (studentName === "" || studentClass === "" || studentAnswer === "") {
+                alert(currentLang === 'hi' ? "कृपया छात्र का नाम, कक्षा और हल किया गया काम तीनों भरें!" : "Please fill student name, class and completed work details!");
+                return;
+            }
+
+            let message = "";
+            if (currentLang === 'hi') {
+                message = `📝 *होमवर्क सबमिशन - ध्रुव टेक एकेडमी* 📝\n\n*छात्र का नाम:* ${studentName}\n*कक्षा:* ${studentClass}\n*कुल प्राप्त स्कोर:* ${studentScore} अंक\n*सबमिट किया गया काम:* ${studentAnswer}\n\nमैंने अपना होमवर्क सफलतापूर्वक पूरा कर लिया है! 🙏`;
+            } else {
+                message = `📝 *Homework Submission - Dhruv Tech Academy* 📝\n\n*Student Name:* ${studentName}\n*Class:* ${studentClass}\n*Total Score:* ${studentScore} Pts\n*Submitted Work:* ${studentAnswer}\n\nI have successfully completed my homework! 🙏`;
+            }
+
+            let whatsappUrl = "https://wa.me/?text=" + encodeURIComponent(message);
+            window.open(whatsappUrl, '_blank');
+        }
+
         // शून्य स्कोर सुरक्षा के साथ व्हाट्सएप शेयरिंग फंक्शन
         function shareToWhatsApp() {
             let d = siteData[currentLang];
             
             if (studentScore <= 0) {
                 alert(d.zeroScoreAlert);
-                return; // 0 या उससे कम स्कोर होने पर व्हाट्सएप शेयर बिल्कुल नहीं खुलेगा
+                return; 
             }
 
             let message = currentLang === 'hi' ? 
