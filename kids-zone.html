@@ -505,23 +505,74 @@
             speakText(textToShow);
         }
 
-        // 100 अंक पूरे होने पर सेलिब्रेशन और एनिमेशन फंक्शन
-        function triggerCelebration() {
-            let congratsText = currentLang === 'hi' 
-                ? "🎉 अद्भुत! आपने 100 में से 100 अंक प्राप्त कर लिए हैं! आप सचमुच एक जीनियस चैंपियन हैं!" 
-                : "🎉 Amazing! You scored 100 out of 100! You are a true Genius Champion!";
-            
-            document.getElementById('aiText').innerHTML = `
-                <div class="animate-bounce text-yellow-300 font-extrabold text-lg mb-2">🏆 100 / 100 - GENIUS CHAMPION! 🏆</div>
-                <div class="text-cyan-200 text-sm font-semibold">${congratsText}</div>
-            `;
-            
-            if (typeof speakText === 'function') {
-                speakText(congratsText);
+        // तालियों की वास्तविक आवाज़ (Clapping Sound Effect) उत्पन्न करने का इंजन
+        function playClappingSound() {
+            try {
+                const AudioContext = window.AudioContext || window.webkitAudioContext;
+                if (!AudioContext) return;
+                const ctx = new AudioContext();
+
+                // 12 बार ताली की क्रमिक थाप
+                for (let i = 0; i < 12; i++) {
+                    let delay = i * 0.15 + (Math.random() * 0.05);
+                    let bufferSize = ctx.sampleRate * 0.05;
+                    let buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+                    let data = buffer.getChannelData(0);
+
+                    for (let j = 0; j < bufferSize; j++) {
+                        data[j] = Math.random() * 2 - 1;
+                    }
+
+                    let noise = ctx.createBufferSource();
+                    noise.buffer = buffer;
+
+                    let filter = ctx.createBiquadFilter();
+                    filter.type = 'bandpass';
+                    filter.frequency.value = 1200;
+                    filter.Q.value = 1.2;
+
+                    let gain = ctx.createGain();
+                    gain.gain.setValueAtTime(0.4, ctx.currentTime + delay);
+                    gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + delay + 0.05);
+
+                    noise.connect(filter);
+                    filter.connect(gain);
+                    gain.connect(ctx.destination);
+
+                    noise.start(ctx.currentTime + delay);
+                }
+            } catch (e) {
+                console.log("Audio clapping effect skipped");
             }
         }
 
-        // उत्तर की पुष्टि (सेलिब्रेशन लॉजिक के साथ मर्ज किया गया)
+        // 100 अंक पूरे होने पर सेलिब्रेशन, ताली और ऑटो सेंटर-स्क्रॉल
+        function triggerCelebration() {
+            let congratsText = currentLang === 'hi' 
+                ? "तालियाँ! अद्भुत! आपने 100 में से 100 अंक प्राप्त कर लिए हैं! आप सचमुच एक जीनियस चैंपियन हैं!" 
+                : "Claps! Amazing! You scored 100 out of 100! You are a true Genius Champion!";
+            
+            let celebrationBox = document.getElementById('aiText');
+            celebrationBox.innerHTML = `
+                <div class="animate-bounce text-yellow-300 font-extrabold text-xl mb-2">🏆 100 / 100 - GENIUS CHAMPION! 🏆</div>
+                <div class="text-cyan-200 text-base font-semibold">${congratsText}</div>
+            `;
+            
+            // 1. स्क्रीन को सेंटर में स्क्रॉल करना
+            celebrationBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+            // 2. तालियों की आवाज़ बजाना
+            playClappingSound();
+
+            // 3. एआई टीचर द्वारा बोलना
+            if (typeof speakText === 'function') {
+                setTimeout(() => {
+                    speakText(congratsText);
+                }, 500);
+            }
+        }
+
+        // उत्तर की पुष्टि (सेलिब्रेशन लॉजिक के साथ)
         function verifyAnswer() {
             let d = siteData[currentLang];
             let userField = document.getElementById('userInput');
