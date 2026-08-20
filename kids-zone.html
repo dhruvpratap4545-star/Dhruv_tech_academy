@@ -1,104 +1,96 @@
 <!DOCTYPE html>
-<html lang="hi" class="dark">
+<html lang="hi">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dhruv Tech Academy - Kids AI Foundation Zone</title>
+    <title>AI Kids Zone - Dhruv Tech Academy</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-slate-950 text-white min-h-screen flex flex-col items-center justify-between p-4 sm:p-6">
+<body class="bg-slate-950 text-white min-h-screen flex flex-col items-center justify-between p-4">
 
-    <!-- टॉप हेडर -->
-    <div class="w-full max-w-2xl flex items-center justify-between bg-slate-900/80 border border-emerald-500/40 p-4 rounded-2xl shadow-xl">
-        <div class="flex items-center gap-3">
-            <span class="text-4xl animate-bounce">🐦</span>
-            <div>
-                <h1 class="text-lg sm:text-xl font-extrabold text-emerald-400">नन्ही जिज्ञासा एआई ज़ोन (NC-5)</h1>
-                <p class="text-xs text-cyan-200">पूछो बच्चों! जो मन में आए, हमारी एआई बताएगी!</p>
-            </div>
-        </div>
-        <button onclick="window.location.href='/'" class="bg-red-600 hover:bg-red-500 text-white px-3 py-1.5 rounded-xl text-xs font-bold shadow-lg">
-            मुख्य पोर्टल पर लौटें
-        </button>
+    <!-- शीर्ष भाग (Top Section) -->
+    <div class="w-full max-w-2xl text-center my-4">
+        <a href="/" class="bg-red-600 hover:bg-red-500 text-white px-4 py-2 rounded-xl text-sm font-bold inline-block shadow-lg">
+            ← मुख्य पोर्टल पर लौटें
+        </a>
+        <h1 class="text-2xl md:text-3xl font-extrabold text-cyan-400 mt-3">एआई ज्ञान (NC-5)</h1>
+        <p class="text-slate-300 text-sm">पूछो बच्चों! जो मन में आए, हमारी एआई बताएगी!</p>
     </div>
 
-    <!-- मुख्य संवाद और चिड़िया बॉक्स -->
-    <div class="w-full max-w-2xl my-6 bg-slate-900 border border-cyan-400/50 p-6 rounded-3xl shadow-2xl text-center relative overflow-hidden">
-        <div class="absolute -top-10 -right-10 w-32 h-32 bg-emerald-500/10 rounded-full blur-2xl"></div>
+    <!-- मुख्य ब्लैकबोर्ड/एआई डिस्प्ले बॉक्स -->
+    <div class="w-full max-w-2xl bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-2xl flex flex-col items-center">
         
-        <div id="aiAvatar" class="w-24 h-24 mx-auto bg-gradient-to-tr from-emerald-600 to-cyan-500 rounded-full flex items-center justify-center text-5xl shadow-2xl mb-4 animate-pulse">
+        <!-- एआई अवतार/आइकन -->
+        <div class="w-20 h-20 bg-gradient-to-tr from-yellow-400 to-emerald-400 rounded-full flex items-center justify-center text-3xl shadow-lg mb-4 animate-bounce">
             🐥
         </div>
 
-        <div id="dialogueBox" class="bg-slate-950/90 border border-cyan-400/40 p-4 rounded-2xl shadow-inner mb-4">
-            <p id="aiText" class="text-cyan-100 text-sm sm:text-base font-medium leading-relaxed">
-                "नमस्ते मेरे प्यारे बच्चों! मैं आपकी दोस्त चिड़िया हूँ। आज मुझसे विज्ञान, अंतरिक्ष या रंगों के बारे में जो मन हो पूछो!"
-            </p>
+        <!-- उत्तर दिखाने का बॉक्स (बैकटिक्स सिंटैक्स के साथ बिल्कुल सही) -->
+        <div id="aiText" class="w-full bg-slate-950 border border-slate-700 rounded-2xl p-4 min-h-[100px] text-cyan-200 text-center flex items-center justify-center text-lg mb-6 shadow-inner">
+            नमस्ते मेरे नन्हे जीनियस! आज मुझसे जो चाहो पूछो। 😊
         </div>
 
-        <!-- जिज्ञासा बढ़ाने वाले क्विक बटन -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 mt-4">
-            <button onclick="askAILittle('आसमान नीला क्यों दिखाई देता है?')" class="bg-slate-800 hover:bg-slate-700 border border-emerald-500/30 text-emerald-300 text-xs py-2.5 px-3 rounded-xl font-semibold transition-all">
+        <!-- सुझाव वाले बटन -->
+        <div class="w-full flex flex-col gap-2.5 mb-6">
+            <button onclick="askQuestion('आसमान नीला क्यों है?')" class="w-full bg-slate-800 hover:bg-slate-700 text-cyan-300 py-3 px-4 rounded-xl text-left font-medium transition flex items-center gap-2">
                 ✨ आसमान नीला क्यों है?
             </button>
-            <button onclick="askAILittle('पेड़-पौधे सांस कैसे लेते हैं?')" class="bg-slate-800 hover:bg-slate-700 border border-emerald-500/30 text-emerald-300 text-xs py-2.5 px-3 rounded-xl font-semibold transition-all">
+            <button onclick="askQuestion('पौधे सांस कैसे लेते हैं?')" class="w-full bg-slate-800 hover:bg-slate-700 text-emerald-300 py-3 px-4 rounded-xl text-left font-medium transition flex items-center gap-2">
                 🌿 पौधे सांस कैसे लेते हैं?
             </button>
-            <button onclick="askAILittle('तारे रात को ही क्यों चमकते हैं?')" class="bg-slate-800 hover:bg-slate-700 border border-emerald-500/30 text-emerald-300 text-xs py-2.5 px-3 rounded-xl font-semibold transition-all">
+            <button onclick="askQuestion('तारे रात में क्यों चमकते हैं?')" class="w-full bg-slate-800 hover:bg-slate-700 text-yellow-300 py-3 px-4 rounded-xl text-left font-medium transition flex items-center gap-2">
                 ⭐ तारे रात में क्यों चमकते हैं?
             </button>
-            <button onclick="askAILittle('इंद्रधनुष में कितने रंग होते हैं?')" class="bg-slate-800 hover:bg-slate-700 border border-emerald-500/30 text-emerald-300 text-xs py-2.5 px-3 rounded-xl font-semibold transition-all">
+            <button onclick="askQuestion('इंद्रधनुष कैसे बनता है?')" class="w-full bg-slate-800 hover:bg-slate-700 text-pink-300 py-3 px-4 rounded-xl text-left font-medium transition flex items-center gap-2">
                 🌈 इंद्रधनुष कैसे बनता है?
             </button>
         </div>
+
+        <!-- यूजर इनपुट एरिया -->
+        <div class="w-full flex flex-col gap-3">
+            <input type="text" id="userInput" placeholder="यहाँ अपना सवाल टाइप करो बच्चे..." class="w-full bg-slate-950 border border-slate-700 text-white px-4 py-3 rounded-xl focus:outline-none focus:border-cyan-500">
+            <button onclick="handleUserQuestion()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white py-3 rounded-xl font-bold shadow-lg transition">
+                पूछो 🚀
+            </button>
+        </div>
+
+        <!-- व्हाट्सएप रिपोर्ट और सब्सक्रिप्शन प्रमोटर सेक्शन (बिना किसी रुकावट के हमेशा दृश्यमान) -->
+        <div id="reportSection" class="w-full mt-6 bg-green-900/30 p-6 rounded-2xl border border-green-500/50 shadow-2xl text-center">
+            <h3 class="text-green-400 font-bold text-lg mb-2">🎉 शानदार काम, नन्हे जीनियस!</h3>
+            <p class="text-green-100 text-sm mb-4">आज के सवाल पूरे हो गए। अपनी प्रोग्रेस व्हाट्सएप पर भेजें!</p>
+            <button onclick="shareToWhatsApp()" class="w-full bg-green-600 hover:bg-green-500 text-white py-3 rounded-xl font-bold shadow-lg transition">
+                WhatsApp पर रिपोर्ट भेजें 📱
+            </button>
+        </div>
+
     </div>
 
-    <!-- यूजर इनपुट एरिया -->
-    <div class="w-full max-w-2xl bg-slate-900 border border-slate-700 p-3 rounded-2xl flex items-center gap-2 shadow-lg">
-        <input type="text" id="userInput" placeholder="यहाँ अपना सवाल टाइप करो बच्चे..." class="w-full bg-slate-950 border border-slate-700 text-white px-4 py-2.5 rounded-xl text-sm focus:outline-none focus:border-cyan-400">
-        <button onclick="handleUserQuestion()" class="bg-emerald-600 hover:bg-emerald-500 text-white px-5 py-2.5 rounded-xl text-xs font-bold shadow-lg">
-            पूछो
-        </button>
-    </div>
-
-    <!-- व्हाट्सएप रिपोर्ट सेक्शन -->
-    <div id="reportSection" class="mt-6 bg-green-900/30 p-6 rounded-2xl border border-green-500/50 shadow-2xl text-center">
-        <h3 class="text-green-400 font-bold text-lg mb-2">🎉 शानदार काम, नन्हे जीनियस!</h3>
-        <p class="text-green-100 text-sm mb-4">आज के सवाल पूरे हो गए। इसे व्हाट्सएप पर भेजें!</p>
-        <button onclick="shareToWhatsApp()" class="w-full bg-green-600 hover:bg-green-500 text-white py-3 rounded-xl font-bold">
-            WhatsApp पर रिपोर्ट भेजें 📱
-        </button>
-    </div>
     <!-- फुटर नोट -->
-    <div class="text-center text-xs text-slate-500 mt-4">
+    <div class="text-center text-xs text-slate-500 mt-6">
         Dhruv Tech Academy Foundation Initiative (NC-Class 5 Learning Module)
     </div>
 
     <!-- जावास्क्रिप्ट लॉजिक -->
     <script>
-        // पेज खुलते ही चिड़िया का स्वागत भाषण
         let completedQuestions = 0;
-        window.addEventListener('DOMContentLoaded', () => {
-            speakText("नमस्ते मेरे प्यारे बच्चों! मैं आपकी दोस्त चिड़िया हूँ। आज मुझसे जो मन हो पूछो!");
-        });
 
         function speakText(text) {
             if ('speechSynthesis' in window) {
-                window.speechSynthesis.cancel(); // पुराना बोलना रोके
+                window.speechSynthesis.cancel();
                 let utterance = new SpeechSynthesisUtterance(text);
                 utterance.lang = 'hi-IN';
-                utterance.rate = 0.9; // बच्चों के लिए थोड़ी धीमी और मधुर गति
+                utterance.rate = 0.9; // बच्चों के लिए धीमी और स्पष्ट गति
                 window.speechSynthesis.speak(utterance);
             }
         }
 
-        function askAILittle(question) {
-            document.getElementById('userInput').value = question;
+        function askQuestion(qText) {
+            document.getElementById('userInput').value = qText;
             handleUserQuestion();
         }
 
         function handleUserQuestion() {
-            let input = document.getElementById('userInput').value.trim();
+            let input = document.getElementById('userInput').value;
             let aiText = document.getElementById('aiText');
             
             if(!input) return;
@@ -107,36 +99,35 @@
             let q = input.toLowerCase();
 
             // बच्चों के स्तर पर सरल और जिज्ञासु उत्तर देने का लॉजिक
-            if(q.includes('नीला') || q.includes('आसमान')) {
-                answer = "वाह! बहुत अच्छा सवाल है बच्चे! सूरज की रोशनी जब धरती के वायुमंडल से टकराती है, तो नीला रंग चारों तरफ बिखर जाता है, इसलिए हमें आसमान नीला दिखता है!";
-            } else if(q.includes('पौधे') || q.includes('सांस')) {
-                answer = "अरे वाह! पौधे हमारी तरह नाक से सांस नहीं लेते बेटा, वे अपनी पत्तियों पर बने नन्हे छेदों से हवा लेते हैं और सूरज की धूप से अपना खाना बनाते हैं!";
-            } else if(q.includes('तारे') || q.includes('चमकते')) {
-                answer = "तारे दिन में भी आसमान में रहते हैं मेरे बच्चे! लेकिन सूरज की तेज धूप की वजह से वे हमें दिन में दिखाई नहीं देते, रात को अंधेरा होने पर चमकते हैं!";
-            } else if(q.includes('इंद्रधनुष') || q.includes('रंग')) {
+            if (q.includes('नीला') || q.includes('आसमान')) {
+                answer = "वाह! बहुत अच्छा सवाल है बच्चे! सूरज की रोशनी जब धरती के वायुमंडल से टकराती है, तो नीला रंग चारों तरफ बिखर जाता है, इसलिए हमें आसमान नीला दिखाई देता है!";
+            } else if (q.includes('पौधे') || q.includes('सांस')) {
+                answer = "अरे वाह! पौधे हमारी तरह नाक से सांस नहीं लेते बेटा, वे अपनी पत्तियों पर बने नन्हे छिद्रों से हवा लेते हैं और सूरज की धूप से अपना खाना बनाते हैं!";
+            } else if (q.includes('तारे') || q.includes('चमकते')) {
+                answer = "तारे दिन में भी आसमान में रहते हैं मेरे बच्चे! लेकिन सूरज की तेज धूप की वजह से वे हमें दिन में दिखाई नहीं देते, रात को अंधेरा होने पर वे जगमगाने लगते हैं!";
+            } else if (q.includes('इंद्रधनुष') || q.includes('रंग')) {
                 answer = "इंद्रधनुष में 7 प्यारे-प्यारे रंग होते हैं! लाल, नारंगी, पीला, हरा, नीला, जामुनी और बैंगनी! यह बारिश के बाद सूरज की किरणों से बनता है!";
             } else {
-                answer = "यह तो बहुत ही प्यारा और नया सवाल है बच्चे! तुम्हारी जिज्ञासा बहुत अच्छी है। इसका मतलब है तुम बहुत समझदार हो, ऐसे ही नए-नए सवाल पूछते रहो!";
+                answer = "यह तो बहुत ही प्यारा और नया सवाल है बच्चे! तुम्हारी जिज्ञासा बहुत अच्छी है। इसका मतलब है कि तुम बहुत समझदार हो, ऐसे ही नए-नए सवाल पूछते रहो!";
             }
 
-            aiText.innerText = "${answer}";
+            aiText.innerText = ${answer};
             speakText(answer);
             document.getElementById('userInput').value = "";
+            
             completedQuestions++;
-    if(completedQuestions >= 5) {
-        document.getElementById('reportSection').classList.remove('hidden');
-    }
         }
+
         function shareToWhatsApp() {
-    let message = "नमस्ते! आज मैंने 'Dhruv Tech Academy' के AI Kids Zone में 5 बहुत ही रोचक सवाल हल किए और नई चीजें सीखीं! 😊\n\n" +
-                  "मेरी सीखने की गति और जिज्ञासा बढ़ रही है! \n" +
-                  "क्या आप मुझे अगले एडवांस्ड लेवल के लिए रजिस्टर कर सकते हैं?\n\n" +
-                  "यहाँ देखें: [https://dhruv-tech-academy.onrender.com/]\n" +
-                  "आने वाला भविष्य, Dhruv Tech Academy के साथ!";
-                  
-    let whatsappUrl = "https://wa.me/?text=" + encodeURIComponent(message);
-    window.open(whatsappUrl, '_blank');
-}
+            let message = "नमस्ते! आज मैंने 'Dhruv Tech Academy' के AI Kids Zone में बहुत ही रोचक सवाल हल किए और नई चीजें सीखीं! 😊\n\n" +
+                          "मेरी सीखने की गति और जिज्ञासा बढ़ रही है! \n" +
+                          "क्या आप मुझे अगले एडवांस्ड लेवल के लिए रजिस्टर कर सकते हैं?\n\n" +
+                          "यहाँ देखें: [https://dhruv-tech-academy.onrender.com/]\n" +
+                          "आने वाला भविष्य, Dhruv Tech Academy के साथ!";
+                          
+            let whatsappUrl = "https://wa.me/?text=" + encodeURIComponent(message);
+            window.open(whatsappUrl, '_blank');
+        }
     </script>
 </body>
 </html>
