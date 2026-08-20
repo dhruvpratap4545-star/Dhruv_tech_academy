@@ -61,6 +61,14 @@
         </button>
     </div>
 
+    <!-- व्हाट्सएप रिपोर्ट सेक्शन -->
+    <div id="reportSection" class="hidden mt-6 bg-green-900/30 p-6 rounded-2xl border border-green-500/50 shadow-2xl text-center">
+        <h3 class="text-green-400 font-bold text-lg mb-2">🎉 शानदार काम, नन्हे जीनियस!</h3>
+        <p class="text-green-100 text-sm mb-4">आज के सवाल पूरे हो गए। इसे व्हाट्सएप पर भेजें!</p>
+        <button onclick="shareToWhatsApp()" class="w-full bg-green-600 hover:bg-green-500 text-white py-3 rounded-xl font-bold">
+            WhatsApp पर रिपोर्ट भेजें 📱
+        </button>
+    </div>
     <!-- फुटर नोट -->
     <div class="text-center text-xs text-slate-500 mt-4">
         Dhruv Tech Academy Foundation Initiative (NC-Class 5 Learning Module)
@@ -69,6 +77,7 @@
     <!-- जावास्क्रिप्ट लॉजिक -->
     <script>
         // पेज खुलते ही चिड़िया का स्वागत भाषण
+        let completedQuestions = 0;
         window.addEventListener('DOMContentLoaded', () => {
             speakText("नमस्ते मेरे प्यारे बच्चों! मैं आपकी दोस्त चिड़िया हूँ। आज मुझसे जो मन हो पूछो!");
         });
@@ -113,7 +122,21 @@
             aiText.innerText = "${answer}";
             speakText(answer);
             document.getElementById('userInput').value = "";
+            completedQuestions++;
+    if(completedQuestions >= 5) {
+        document.getElementById('reportSection').classList.remove('hidden');
+    }
         }
+        function shareToWhatsApp() {
+    let message = "नमस्ते! आज मैंने 'Dhruv Tech Academy' के AI Kids Zone में 5 बहुत ही रोचक सवाल हल किए और नई चीजें सीखीं! 😊\n\n" +
+                  "मेरी सीखने की गति और जिज्ञासा बढ़ रही है! \n" +
+                  "क्या आप मुझे अगले एडवांस्ड लेवल के लिए रजिस्टर कर सकते हैं?\n\n" +
+                  "यहाँ देखें: [https://dhruv-tech-academy.onrender.com/]\n" +
+                  "आने वाला भविष्य, Dhruv Tech Academy के साथ!";
+                  
+    let whatsappUrl = "https://wa.me/?text=" + encodeURIComponent(message);
+    window.open(whatsappUrl, '_blank');
+}
     </script>
 </body>
 </html>
