@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 # ==============================================================================
-# main.py - Dhruv Academy V6 Ultimate Architecture (Merged & RBAC Enhanced)
+# main.py - Dhruv Academy Master Ecosystem (Full & Complete Architecture)
 # ==============================================================================
 
 import os
@@ -17,7 +17,7 @@ from sqlalchemy import create_engine, Column, Integer, String, DateTime, Boolean
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, Session
 
-app = FastAPI(title="Dhruv Tech Academy Master Ecosystem")
+app = FastAPI(title="Dhruv Academy Master Ecosystem")
 
 # ------------------------------------------------------------------------------
 # 1. डेटाबेस, स्टोरेज और सिक्योरिटी मॉडल सेटअप
@@ -42,9 +42,9 @@ class AdminUser(Base):
     __tablename__ = "admin_users"
     id = Column(Integer, primary_key=True, index=True)
     username = Column(String, unique=True, index=True)
-    password = Column(String)  # प्रोडक्शन में हैश उपयोग करें
-    role = Column(String, default="subadmin")  # 'superadmin' या 'subadmin'
-    permissions = Column(JSON, default=list)  # एक्सेस किए जा सकने वाले मॉड्यूल्स की सूची
+    password = Column(String)
+    role = Column(String, default="subadmin")
+    permissions = Column(JSON, default=list)
 
 class FeatureToggle(Base):
     __tablename__ = "feature_toggles"
@@ -56,7 +56,6 @@ class FeatureToggle(Base):
 
 Base.metadata.create_all(bind=engine)
 
-# एक्टिव सेशन्स को ट्रैक करने के लिए इन-मेमोरी स्टोर
 ACTIVE_SESSIONS = {}
 
 def get_db():
@@ -66,7 +65,6 @@ def get_db():
     finally:
         db.close()
 
-# डिफ़ॉल्ट डेटा इनिशियलाइज़ेशन
 def init_default_data():
     db = SessionLocal()
     try:
@@ -113,7 +111,7 @@ def init_default_data():
 init_default_data()
 
 # ------------------------------------------------------------------------------
-# 2. सुरक्षा और प्रमाणीकरण निर्भरता (Cookie-based Auth)
+# 2. सुरक्षा और प्रमाणीकरण निर्भरता
 # ------------------------------------------------------------------------------
 def get_current_admin(request: Request, db: Session = Depends(get_db)) -> AdminUser:
     session_token = request.cookies.get("dhruv_auth_token")
@@ -149,7 +147,7 @@ def secret_login_page(error: Optional[str] = None):
         <div class="bg-slate-900/90 border border-cyan-500/40 rounded-3xl p-8 max-w-md w-full shadow-2xl space-y-6 backdrop-blur-xl">
             <div class="text-center space-y-2">
                 <span class="text-4xl">🔐</span>
-                <h1 class="text-xl font-extrabold text-cyan-400">Dhruv Core V6 Admin Gateway</h1>
+                <h1 class="text-xl font-extrabold text-cyan-400">Dhruv Admin Gateway</h1>
                 <p class="text-xs text-gray-400">केवल अधिकृत व्यवस्थापकों के लिए सुरक्षित प्रवेश द्वार</p>
             </div>
             {err_box}
@@ -202,7 +200,7 @@ def admin_logout(request: Request):
     return res
 
 # ------------------------------------------------------------------------------
-# 4. सुपर-एडमिन डैशबोर्ड (Paywall / Feature Toggles / RBAC Manager)
+# 4. सुपर-एडमिन डैशबोर्ड (Paywall / Feature Toggles / RBAC)
 # ------------------------------------------------------------------------------
 @app.get("/admin/super-dashboard", response_class=HTMLResponse)
 def super_admin_dashboard(user: AdminUser = Depends(get_current_admin), db: Session = Depends(get_db)):
@@ -251,7 +249,7 @@ def super_admin_dashboard(user: AdminUser = Depends(get_current_admin), db: Sess
             <div class="flex flex-wrap justify-between items-center border-b border-gray-800 pb-4 gap-4">
                 <div>
                     <h1 class="text-2xl sm:text-3xl font-extrabold text-cyan-400">🛡️ Super-Admin Master Control</h1>
-                    <p class="text-xs text-gray-400 mt-1">लॉगिन किया गया यूजर: <span class="text-emerald-400 font-bold">{user.username}</span> ({user.role.upper()})</p>
+                    <p class="text-xs text-gray-400 mt-1">लॉगिन यूजर: <span class="text-emerald-400 font-bold">{user.username}</span> ({user.role.upper()})</p>
                 </div>
                 <div class="flex gap-2">
                     <a href="/admin" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-xs font-bold rounded-xl transition">📂 डेटा मॉनिटर</a>
@@ -260,7 +258,6 @@ def super_admin_dashboard(user: AdminUser = Depends(get_current_admin), db: Sess
                 </div>
             </div>
 
-            <!-- फ़ीचर टॉगल और पेवॉल मैनेजर (Checkbox Controls) -->
             <div class="bg-slate-900 p-6 rounded-2xl border border-gray-800 space-y-4">
                 <div class="flex justify-between items-center">
                     <h2 class="text-lg font-bold text-cyan-300">⚙️ मॉड्यूल उपलब्धता व पेवॉल नियंत्रण (Paywall Manager)</h2>
@@ -285,7 +282,6 @@ def super_admin_dashboard(user: AdminUser = Depends(get_current_admin), db: Sess
                 </form>
             </div>
 
-            <!-- सब-एडमिन रोल्स और परमिशन प्रबंधन -->
             <div class="bg-slate-900 p-6 rounded-2xl border border-gray-800 space-y-4">
                 <h2 class="text-lg font-bold text-indigo-400">👥 रोल्स और सब-एडमिन अनुमतियाँ (Role-Based Sub-admins)</h2>
                 <table class="w-full text-left border-collapse">
@@ -320,7 +316,7 @@ async def save_feature_toggles(request: Request, user: AdminUser = Depends(requi
     return RedirectResponse(url="/admin/super-dashboard", status_code=status.HTTP_303_SEE_OTHER)
 
 # ------------------------------------------------------------------------------
-# 5. मुख्य डैशबोर्ड (पुराने सभी 10 मॉड्यूल्स + फुटर सीक्रेट लिंक)
+# 5. मुख्य डैशबोर्ड
 # ------------------------------------------------------------------------------
 @app.get("/", response_class=HTMLResponse)
 def master_ecosystem_dashboard():
@@ -330,20 +326,18 @@ def master_ecosystem_dashboard():
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Dhruv Tech Academy - World's #1 Advanced AI Ecosystem</title>
+        <title>Dhruv Academy Master Ecosystem - World's #1 Advanced AI Ecosystem</title>
         <script src="https://cdn.tailwindcss.com"></script>
         <style>
             @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800&display=swap');
             body { font-family: 'Poppins', sans-serif; transition: background-color 0.3s, color 0.3s; }
             
-            /* डार्क मोड थीम (डिफ़ॉल्ट) */
             body.dark-mode { background-color: #020617; color: #f8fafc; }
             body.dark-mode .master-card { background: rgba(15, 23, 42, 0.92); border: 1px solid rgba(255, 255, 255, 0.15); color: #f8fafc; }
             body.dark-mode .master-card h3 { color: #38bdf8; }
             body.dark-mode .master-card p { color: #cbd5e1; }
             body.dark-mode .top-bar { background-color: rgba(2, 6, 23, 0.98); border-color: rgba(255, 255, 255, 0.1); color: #f8fafc; }
             
-            /* लाइट मोड थीम */
             body.light-mode { background-color: #ffffff; color: #000000; }
             body.light-mode .master-card { background: #f8fafc; border: 2px solid #94a3b8; box-shadow: 0 10px 25px rgba(0,0,0,0.12); color: #000000; }
             body.light-mode .master-card h3 { color: #0369a1; font-weight: 800; }
@@ -365,12 +359,7 @@ def master_ecosystem_dashboard():
     <body class="min-h-screen dark-mode flex flex-col justify-between" id="pageBody">
 
         <div>
-            <!-- शीर्ष नियंत्रण पट्टी -->
-            <div id="topControlBar" class="top-bar w-full border-b px-4 py-1.5 flex flex-wrap justify-between items-center text-xs sticky top-0 z-50 backdrop-blur-md gap-2">
-                <div class="flex items-center gap-2 font-semibold text-[11px]">
-                    <span class="text-cyan-500 font-bold">🟢 Dhruv Core v6.0 RBAC</span>
-                </div>
-                
+            <div id="topControlBar" class="top-bar w-full border-b px-4 py-1.5 flex justify-end items-center text-xs sticky top-0 z-50 backdrop-blur-md gap-2">
                 <div class="flex items-center gap-2 flex-wrap">
                     <button onclick="toggleThemeMode()" id="themeToggleBtn" class="px-2.5 py-1 bg-slate-800 text-amber-300 hover:bg-slate-700 rounded-lg font-bold shadow transition text-[11px]">
                         🌞 Light Mode
@@ -385,10 +374,9 @@ def master_ecosystem_dashboard():
 
             <div id="mainContainer" class="max-w-7xl mx-auto px-4 sm:px-6 py-8 space-y-10">
                 
-                <!-- हेडर व भाषा स्विचर -->
                 <header class="flex flex-col md:flex-row justify-between items-center pb-6 border-b border-gray-800 gap-4">
                     <div>
-                        <h1 class="text-2xl sm:text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-sky-300 to-indigo-400" data-hi="Dhruv Tech Academy" data-en="Dhruv Tech Academy">Dhruv Tech Academy</h1>
+                        <h1 class="text-2xl sm:text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-sky-300 to-indigo-400" data-hi="Dhruv Academy Master Ecosystem" data-en="Dhruv Academy Master Ecosystem">Dhruv Academy Master Ecosystem</h1>
                         <p class="text-[11px] sm:text-xs font-semibold tracking-widest uppercase mt-1 opacity-90" data-hi="🛡️ 100% सिक्योर एनक्रिप्टेड डेटा आर्किटेक्चर | विश्व स्तरीय एआई" data-en="🛡️ 100% Secure Encrypted Data Architecture | World Class AI">🛡️ 100% सिक्योर एनक्रिप्टेड डेटा आर्किटेक्चर | विश्व स्तरीय एआई</p>
                     </div>
                     
@@ -402,9 +390,8 @@ def master_ecosystem_dashboard():
                     </div>
                 </header>
 
-                <!-- नेबुला बैनर और मूल्य निर्धारण गेटवे -->
                 <div class="nebula-master-glow p-6 sm:p-12 rounded-3xl border border-cyan-500/40 text-center space-y-6 shadow-2xl relative overflow-hidden">
-                    <h1 class="text-2xl sm:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-sky-200 to-purple-400" data-hi="Dhruv Tech Academy Master Ecosystem" data-en="Dhruv Tech Academy Master Ecosystem">Dhruv Tech Academy Master Ecosystem</h1>
+                    <h1 class="text-2xl sm:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-sky-200 to-purple-400" data-hi="Dhruv Academy Master Ecosystem" data-en="Dhruv Academy Master Ecosystem">Dhruv Academy Master Ecosystem</h1>
                     <p class="text-xs sm:text-base max-w-3xl mx-auto leading-relaxed font-semibold opacity-95" data-hi="नर्सरी से लेकर सभी कानून, आईएएस (IAS), पीसीएस (PCS), बैंकिंग और प्रतियोगी परीक्षाओं की तैयारी के लिए भारत का सबसे उन्नत एआई पोर्टल।" data-en="India's most advanced AI portal for school education, all laws, and competitive exams like IAS, PCS, Banking, etc.">
                         नर्सरी से लेकर सभी कानून, आईएएस (IAS), पीसीएस (PCS), बैंकिंग और प्रतियोगी परीक्षाओं की तैयारी के लिए भारत का सबसे उन्नत एआई पोर्टल।
                     </p>
@@ -418,7 +405,6 @@ def master_ecosystem_dashboard():
                     </div>
                 </div>
                 
-                <!-- सभी 10 मॉड्यूल्स -->
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                     <div onclick="window.location.href='/kids-zone'" class="master-card p-6 rounded-2xl cursor-pointer hover:border-emerald-500 border border-transparent transition-all">
                         <h3 class="font-bold text-lg mb-2">1. Foundation: NC-5 Kids Tier</h3>
@@ -477,14 +463,12 @@ def master_ecosystem_dashboard():
             </div>
         </div>
 
-        <!-- 1. गुप्त लिंक वाला फुटर -->
         <footer class="w-full border-t border-gray-800/80 py-4 px-6 text-center text-xs text-gray-500 bg-slate-950/80">
-            <p>© 2026 Dhruv Tech Academy Master Ecosystem. सर्वाधिकार सुरक्षित। 
+            <p>© 2026 Dhruv Academy Master Ecosystem. सर्वाधिकार सुरक्षित। 
                 <a href="/secret-admin-login-dhruv" class="opacity-20 hover:opacity-100 hover:text-cyan-400 transition ml-2 text-[10px]" title="सुरक्षित एडमिन पोर्टल">🔒 System Gateway</a>
             </p>
         </footer>
 
-        <!-- पॉप-अप पोर्टल मॉडल -->
         <div id="modulePortalModal" class="hidden fixed inset-0 bg-black/85 flex items-center justify-center p-4 z-50 backdrop-blur-md">
             <div class="master-card p-6 sm:p-8 rounded-3xl w-full max-w-xl space-y-6 border border-cyan-500/50 shadow-2xl">
                 <div class="flex justify-between items-center border-b pb-4">
@@ -498,7 +482,6 @@ def master_ecosystem_dashboard():
             </div>
         </div>
 
-        <!-- पेमेंट गेटवे मॉडल -->
         <div id="paymentGatewayModal" class="hidden fixed inset-0 bg-black/85 flex items-center justify-center p-4 z-50 backdrop-blur-md">
             <div class="master-card p-6 sm:p-8 rounded-3xl w-full max-w-md space-y-6 border border-emerald-500/50 shadow-2xl text-center">
                 <div class="flex justify-between items-center border-b pb-4">
@@ -513,7 +496,7 @@ def master_ecosystem_dashboard():
                     </div>
                     <div class="space-y-2 text-left pt-2">
                         <label class="block text-xs font-semibold">UPI ID / कार्ड नंबर दर्ज करें:</label>
-                        <input type="text" placeholder="dhruv@upi या 4242 xxxx xxxx" class="w-full p-3 border rounded-xl text-xs focus:outline-none focus:border-cyan-500" style="background: rgba(0,0,0,0.05);">
+                        <input type="text" placeholder="dhruv@upi या 4242 xxxx xxxx" class="w-full p-3 border rounded-xl text-xs focus:outline-none focus:border-cyan-500 text-slate-800" style="background: rgba(0,0,0,0.05);">
                     </div>
                 </div>
                 <div id="paymentActionArea" class="space-y-3 pt-2">
@@ -559,7 +542,7 @@ def master_ecosystem_dashboard():
                 if (isVoiceGuideActive) {
                     btn.className = "px-2.5 py-1 bg-emerald-950 border border-emerald-500/50 hover:border-emerald-400 rounded-lg font-bold text-emerald-400 shadow transition flex items-center gap-1 text-[11px]";
                     statusText.innerText = "ACTIVE (ON)";
-                    speakPolite("नमस्ते, ध्रुव टेक एकेडमी में आपका स्वागत है। वॉइस गाइड सक्रिय कर दिया गया है।");
+                    speakPolite("नमस्ते, ध्रुव एकेडमी मास्टर इकोसिस्टम में आपका स्वागत है। वॉइस गाइड सक्रिय कर दिया गया है।");
                 } else {
                     btn.className = "px-2.5 py-1 bg-red-950 border border-red-500/50 hover:border-red-400 rounded-lg font-bold text-red-400 shadow transition flex items-center gap-1 text-[11px]";
                     statusText.innerText = "MUTE (OFF)";
@@ -610,7 +593,7 @@ def master_ecosystem_dashboard():
                 { text: "चीं-चीं! यह अक्षर 'A' है - A फॉर एप्पल! बहुत अच्छे!", color: "bg-amber-500", symbol: "A" },
                 { text: "टर-टर! चलो 1 से 5 तक गिनती बोलें: 1, 2, 3, 4, 5!", color: "bg-emerald-600", symbol: "5" },
                 { text: "चूं-चूं! यह पीला रंग है! बच्चों, इसे पहचानो!", color: "bg-yellow-500", symbol: "🟡" },
-                { text: "वाह! ध्रुव टेक एकेडमी में आपका स्वागत है!", color: "bg-blue-600", symbol: "🦜" }
+                { text: "वाह! ध्रुव एकेडमी मास्टर इकोसिस्टम में आपका स्वागत है!", color: "bg-blue-600", symbol: "🦜" }
             ];
 
             let birdIdx = 0;
@@ -671,7 +654,7 @@ def master_ecosystem_dashboard():
                         break;
                     case 4:
                         title = "🎭 4. Face-Swap Social Explainer";
-                        contentHtml = `<div class='space-y-3'><p class='font-bold'>सोशल मीडिया एक्सप्लेनर विजुअल स्टूडियो:</p><input type='text' placeholder='वीडियो का शीर्षक दर्ज करें...' class='w-full p-3 border rounded-xl text-xs text-slate-800' style='background: rgba(0,0,0,0.03);'><button onclick="alert('सोशल एक्सप्लेनर विजुअल जनरेट हो रहा है!')" class='w-full py-2.5 bg-purple-600 text-white rounded-xl font-bold text-xs'>विजुअल जनरेट करें 🎭</button></div>`;
+                        contentHtml = `<div class='space-y-3'><p class='font-bold'>सोशल मीडिया एक्सप्लेनर विजुअल स्टूडियो:</p><input type='text' placeholder='वीडियो का शीर्षक दर्ज करें...' class='w-full p-3 border rounded-xl text-xs text-slate-800' style='background: rgba(0,0,0,0.03);'></button><button onclick="alert('सोशल एक्सप्लेनर विजुअल जनरेट हो रहा है!')" class='w-full py-2.5 bg-purple-600 text-white rounded-xl font-bold text-xs'>विजुअल जनरेट करें 🎭</button></div>`;
                         break;
                     case 5:
                         title = "📺 5. 3D Blackboard & TV Cast";
@@ -683,7 +666,7 @@ def master_ecosystem_dashboard():
                         break;
                     case 7:
                         title = "⚖️ 7. Legal AI (All Laws Hub)";
-                        contentHtml = `<div class='space-y-3'><p class='font-bold'>सभी प्रकार के कानूनों (All Laws) का अनुसंधान हब:</p><input type='text' placeholder='कानून या धारा (Section/Act) दर्ज करें...' class='w-full p-3 border rounded-xl text-xs text-slate-800' style='background: rgba(0,0,0,0.03);'><button onclick="alert('कानूनी एआई द्वारा धाराओं का विश्लेषण किया जा रहा है!')" class='w-full py-2.5 bg-rose-600 text-white rounded-xl font-bold text-xs'>कानूनी अनुसंधान शुरू करें ⚖️</button></div>`;
+                        contentHtml = `<div class='space-y-3'><p class='font-bold'>सभी प्रकार के कानूनों (All Laws) का अनुसंधान हब:</p><input type='text' placeholder='कानून या धारा (Section/Act) दर्ज करें...' class='w-full p-3 border rounded-xl text-xs text-slate-800' style='background: rgba(0,0,0,0.03);'></input><button onclick="alert('कानूनी एआई द्वारा धाराओं का विश्लेषण किया जा रहा है!')" class='w-full py-2.5 bg-rose-600 text-white rounded-xl font-bold text-xs'>कानूनी अनुसंधान शुरू करें ⚖️</button></div>`;
                         break;
                     case 8:
                         title = "🏫 8. Coaching Center Hub";
@@ -714,7 +697,7 @@ def master_ecosystem_dashboard():
     """
 
 # ------------------------------------------------------------------------------
-# 6. एडमिन पैनल, अपलोड एपीआई और किड्स ज़ोन
+# 6. एडमिन डेटा मॉनिटर, फाइल अपलोड और किड्स ज़ोन
 # ------------------------------------------------------------------------------
 @app.get("/admin", response_class=HTMLResponse)
 async def master_admin_panel(user: AdminUser = Depends(get_current_admin), db: Session = Depends(get_db)):
@@ -782,7 +765,7 @@ async def kids_zone():
         return HTMLResponse(content="""
         <html><body class='bg-slate-950 text-white p-10 font-sans text-center'>
             <h1 class='text-2xl font-bold text-amber-400'>Kids Zone Module</h1>
-            <p class='text-sm text-gray-400 mt-2'>kids-zone.html फाइल डायरेक्टरी में लोड की जा रही है।</p>
+            <p class='text-sm text-gray-400 mt-2'>kids-zone.html लोड की जा रही है।</p>
             <a href='/' class='inline-block mt-4 text-cyan-400'>← वापस मुख्य पेज पर जाएं</a>
         </body></html>
         """)
