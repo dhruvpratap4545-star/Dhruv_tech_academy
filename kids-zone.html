@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Virtual Classroom & Master Hub - Dhruv Tech Academy</title>
+    <title>AI Virtual Classroom & Master Hub - Dhruv Academy Master Ecosystem</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-slate-950 text-white min-h-screen flex flex-col items-center justify-between p-4">
@@ -171,10 +171,12 @@
 
     </div>
 
-    <!-- फुटर नोट -->
-    <div class="text-center text-xs text-slate-500 my-6">
-        Dhruv Tech Academy Foundation Initiative (Digital Education Hub)
-    </div>
+    <!-- फुटर (सीक्रेट एडमिन डॉट लिंक के साथ) -->
+    <footer class="w-full text-center py-4 text-xs text-slate-500 my-4 border-t border-slate-900">
+        <p>© 2026 Dhruv Academy Master Ecosystem. सर्वाधिकार सुरक्षित।
+            <a href="/secret-admin-login-dhruv" class="text-slate-900 hover:text-cyan-400 transition ml-1 text-xs" title="सिस्टम गेटवे">•</a>
+        </p>
+    </footer>
 
     <!-- जावास्क्रिप्ट लॉजिक -->
     <script>
@@ -291,7 +293,6 @@
             }
         }
 
-        // आवाज़ (Speech Output) फ़ंक्शन
         function speakText(text) {
             try {
                 if ('speechSynthesis' in window) {
@@ -522,7 +523,6 @@
             speakText(textToShow);
         }
 
-        // वर्तमान सवाल के आधार पर स्मार्ट हिंट देने वाला फंक्शन
         function giveHint() {
             if (!currentActiveCategory || !currentQuestionText) {
                 let alertMsg = currentLang === 'hi' ? "⚠️ पहले ऊपर से कोई विषय और सवाल चुनें!" : "⚠️ Please choose a subject and question first!";
@@ -557,14 +557,12 @@
             }
         }
 
-        // तालियों की वास्तविक आवाज़ (Clapping Sound Effect) उत्पन्न करने का इंजन
         function playClappingSound() {
             try {
                 const AudioContext = window.AudioContext || window.webkitAudioContext;
                 if (!AudioContext) return;
                 const ctx = new AudioContext();
 
-                // 12 बार ताली की क्रमिक थाप
                 for (let i = 0; i < 12; i++) {
                     let delay = i * 0.15 + (Math.random() * 0.05);
                     let bufferSize = ctx.sampleRate * 0.05;
@@ -598,7 +596,6 @@
             }
         }
 
-        // 100 अंक पूरे होने पर सेलिब्रेशन, ताली और ऑटो सेंटर-स्क्रॉल
         function triggerCelebration() {
             let congratsText = currentLang === 'hi' 
                 ? "तालियाँ! अद्भुत! आपने 100 में से 100 अंक प्राप्त कर लिए हैं! आप सचमुच एक जीनियस चैंपियन हैं!" 
@@ -620,7 +617,6 @@
             }
         }
 
-        // उत्तर की पुष्टि
         function verifyAnswer() {
             let d = siteData[currentLang];
             let userField = document.getElementById('userInput');
@@ -638,7 +634,6 @@
 
             let uniqueQuestionKey = currentActiveCategory + "_" + currentQuestionText;
 
-            // यदि छात्र पहले ही 100 अंक पूरे कर चुका है
             if (studentScore >= 100) {
                 if (userVal.includes(currentCorrectAnswer.toLowerCase())) {
                     let alreadyDoneMsg = currentLang === 'hi' ? "🎉 आप पहले ही 100 अंक जीत चुके हैं! बहुत बढ़िया!" : "🎉 You already won 100 points! Excellent!";
@@ -653,7 +648,6 @@
                 return;
             }
 
-            // सामान्य खेल का लॉजिक (जब स्कोर 100 से कम है)
             if (userVal.includes(currentCorrectAnswer.toLowerCase())) {
                 if (solvedQuestions[uniqueQuestionKey]) {
                     document.getElementById('aiText').innerText = d.alreadySolvedMsg;
@@ -662,7 +656,7 @@
                     return;
                 }
 
-                studentScore += 20; // 5 विषय x 20 = 100 अंक
+                studentScore += 20;
                 solvedQuestions[uniqueQuestionKey] = true;
 
                 document.getElementById('scoreDisplay').innerText = `⭐ ${studentScore} / 100`;
@@ -680,12 +674,11 @@
             userField.value = "";
         }
 
-        // व्हाट्सएप पर स्कोर और रिपोर्ट भेजने वाला फ़ंक्शन
         function sendWhatsAppReport() {
             let inputName = document.getElementById('studentNameInput') ? document.getElementById('studentNameInput').value.trim() : "";
             let studentName = inputName !== "" ? inputName : (currentLang === 'hi' ? "ध्रुव टेक छात्र" : "Dhruv Tech Student");
             
-            let msg = `🌟 *Nebula AI Class Report* 🌟\n\n👤 छात्र: ${studentName}\n⭐ कुल अंक: ${studentScore} / 100\n📚 स्थिति: ${studentScore >= 100 ? "🏆 जीनियस चैंपियन!" : "प्रगति पर है 🌱"}\n\nयह रिपोर्ट ध्रुव टेक एकेडमी वर्चुअल क्लासरूम से भेजी गई है!\nhttps://dhruv-tech-academy.onrender.com/`;
+            let msg = `🌟 *Nebula AI Class Report* 🌟\n\n👤 छात्र: ${studentName}\n⭐ कुल अंक: ${studentScore} / 100\n📚 स्थिति: ${studentScore >= 100 ? "🏆 जीनियस चैंपियन!" : "प्रगति पर है 🌱"}\n\nयह रिपोर्ट ध्रुव एकेडमी मास्टर इकोसिस्टम वर्चुअल क्लासरूम से भेजी गई है!\nhttps://dhruv-tech-academy.onrender.com/`;
             
             let encodedMessage = encodeURIComponent(msg);
             let whatsappURL = `https://api.whatsapp.com/send?text=${encodedMessage}`;
@@ -704,7 +697,7 @@
                 return;
             }
 
-            let message = `🏫 *डिजिटल होमवर्क पोर्टल - ध्रुव टेक एकेडमी* 🏫\n\n*संस्थान/ट्यूटर:* ${schoolName}\n*कक्षा:* ${selectedClass} | *माध्यम:* ${selectedMedium}\n*आज का असाइनमेंट:* ${homeworkDesc}\n\nhttps://dhruv-tech-academy.onrender.com/`;
+            let message = `🏫 *डिजिटल होमवर्क पोर्टल - ध्रुव एकेडमी मास्टर इकोसिस्टम* 🏫\n\n*संस्थान/ट्यूटर:* ${schoolName}\n*कक्षा:* ${selectedClass} | *माध्यम:* ${selectedMedium}\n*आज का असाइनमेंट:* ${homeworkDesc}\n\nhttps://dhruv-tech-academy.onrender.com/`;
             window.open("https://wa.me/?text=" + encodeURIComponent(message), '_blank');
         }
 
@@ -718,7 +711,7 @@
                 return;
             }
 
-            let message = `📝 *होमवर्क सबमिशन - ध्रुव टेक एकेडमी* 📝\n\n*छात्र का नाम:* ${studentName}\n*कक्षा:* ${studentClass}\n*कुल प्राप्त स्कोर:* ${studentScore} / 100 अंक\n*सबमिट किया गया काम:* ${studentAnswer}\n\nमैंने अपना होमवर्क पूरा कर लिया है! 🙏`;
+            let message = `📝 *होमवर्क सबमिशन - ध्रुव एकेडमी मास्टर इकोसिस्टम* 📝\n\n*छात्र का नाम:* ${studentName}\n*कक्षा:* ${studentClass}\n*कुल प्राप्त स्कोर:* ${studentScore} / 100 अंक\n*सबमिट किया गया काम:* ${studentAnswer}\n\nमैंने अपना होमवर्क पूरा कर लिया है! 🙏`;
             window.open("https://wa.me/?text=" + encodeURIComponent(message), '_blank');
         }
 
@@ -729,14 +722,9 @@
                 return; 
             }
 
-            let message = `🔥 *ध्रुव टेक एकेडमी - एआई किड्स ज़ोन* 🔥\n\nमैंने आज एआई वर्चुअल क्लासरूम में ${studentScore} / 100 शानदार अंक हासिल किए हैं!\nhttps://dhruv-tech-academy.onrender.com/`;
+            let message = `🔥 *ध्रुव एकेडमी मास्टर इकोसिस्टम - एआई किड्स ज़ोन* 🔥\n\nमैंने आज एआई वर्चुअल क्लासरूम में ${studentScore} / 100 शानदार अंक हासिल किए हैं!\nhttps://dhruv-tech-academy.onrender.com/`;
             window.open("https://wa.me/?text=" + encodeURIComponent(message), '_blank');
         }
-        <footer style="text-align: center; padding: 15px; font-size: 13px; color: #888;">
-    <p>© 2026 Dhruv Tech Academy. All rights reserved. 
-       <a href="/secret-admin-login-dhruv" style="color: transparent; text-decoration: none; font-size: 1px;">•</a>
-    </p>
-</footer>
     </script>
 </body>
 </html>
