@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 # ==============================================================================
-# main.py - Dhruv Academy Master Ecosystem (100% Complete & Error-Free)
+# main.py - Dhruv Academy Master Ecosystem (Fixed UI, Toggle & Icons)
 # ==============================================================================
 
 import os
@@ -111,7 +111,7 @@ def init_default_data():
 init_default_data()
 
 # ------------------------------------------------------------------------------
-# 2. सुरक्षा और प्रमाणीकरण निर्भरता
+# 2. सुरक्षा और प्रमाणीकरण
 # ------------------------------------------------------------------------------
 def get_current_admin(request: Request, db: Session = Depends(get_db)) -> AdminUser:
     session_token = request.cookies.get("dhruv_auth_token")
@@ -130,7 +130,7 @@ def require_superadmin(current_user: AdminUser = Depends(get_current_admin)):
     return current_user
 
 # ------------------------------------------------------------------------------
-# 3. सीक्रेट एडमिन लॉगिन रूट्स
+# 3. सीक्रेट एडमिन लॉगिन
 # ------------------------------------------------------------------------------
 @app.get("/secret-admin-login-dhruv", response_class=HTMLResponse)
 def secret_login_page(error: Optional[str] = None):
@@ -193,7 +193,7 @@ def admin_logout(request: Request):
     return res
 
 # ------------------------------------------------------------------------------
-# 4. सुपर-एडमिन डैशबोर्ड (Paywall & Sub-Admin Roles)
+# 4. सुपर-एडमिन डैशबोर्ड
 # ------------------------------------------------------------------------------
 @app.get("/admin/super-dashboard", response_class=HTMLResponse)
 def super_admin_dashboard(user: AdminUser = Depends(get_current_admin), db: Session = Depends(get_db)):
@@ -300,7 +300,7 @@ async def save_feature_toggles(request: Request, user: AdminUser = Depends(requi
     return RedirectResponse(url="/admin/super-dashboard", status_code=status.HTTP_303_SEE_OTHER)
 
 # ------------------------------------------------------------------------------
-# 5. मुख्य डैशबोर्ड (Fixed Hindi/English Toggle & Clean Top Bar)
+# 5. मुख्य डैशबोर्ड (Fixed Hindi/English Toggle, Icons & Clean Alignment)
 # ------------------------------------------------------------------------------
 @app.get("/", response_class=HTMLResponse)
 def master_ecosystem_dashboard():
@@ -334,19 +334,19 @@ def master_ecosystem_dashboard():
 
             /* परफेक्ट दो-बटन टॉगल कंटेनर */
             .lang-pill-container {
-                display: flex;
+                display: inline-flex;
                 align-items: center;
-                background-color: #0f172a;
+                background-color: #0b1329;
                 border: 1.5px solid #0284c7;
                 border-radius: 9999px;
                 padding: 3px;
-                gap: 3px;
-                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+                gap: 4px;
+                box-shadow: inset 0 2px 4px rgba(0,0,0,0.5);
             }
 
             /* दोनों बटनों का बेसिक स्टाइल */
             .lang-pill-btn {
-                padding: 5px 16px;
+                padding: 6px 18px;
                 border-radius: 9999px;
                 font-size: 12px;
                 font-weight: 700;
@@ -355,6 +355,9 @@ def master_ecosystem_dashboard():
                 outline: none;
                 transition: all 0.25s ease-in-out;
                 cursor: pointer;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
                 white-space: nowrap;
             }
 
@@ -382,11 +385,11 @@ def master_ecosystem_dashboard():
             <!-- शीर्ष पट्टी (Top Bar) -->
             <div id="topControlBar" class="top-bar w-full border-b px-4 py-2 flex justify-end items-center text-xs sticky top-0 z-50 backdrop-blur-md gap-3">
                 <button onclick="toggleThemeMode()" id="themeToggleBtn" class="px-3 py-1 bg-slate-800 text-amber-300 hover:bg-slate-700 rounded-lg font-bold shadow transition text-[11px]">
-                    🌞 Light Mode
+                    Light Mode
                 </button>
 
                 <button onclick="toggleMasterVoiceGuide()" id="voiceToggleBtn" class="px-3 py-1 bg-red-950 border border-red-500/50 hover:border-red-400 rounded-lg font-bold text-red-400 shadow transition flex items-center gap-1 text-[11px]">
-                    <span>🎙️ AI Voice:</span>
+                    <span>AI Voice:</span>
                     <span id="voiceStatusText">MUTE (OFF)</span>
                 </button>
             </div>
@@ -397,10 +400,10 @@ def master_ecosystem_dashboard():
                 <header class="flex flex-col md:flex-row justify-between items-center pb-6 border-b border-gray-800 gap-4">
                     <div>
                         <h1 class="text-2xl sm:text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-sky-300 to-indigo-400" id="mainHeaderTitle">Dhruv Academy Master Ecosystem</h1>
-                        <p class="text-[11px] sm:text-xs font-semibold tracking-widest uppercase mt-1 opacity-90 text-cyan-300" id="mainHeaderSub">🛡️ 100% सिक्योर एनक्रिप्टेड डेटा आर्किटेक्चर | विश्व स्तरीय एआई</p>
+                        <p class="text-[11px] sm:text-xs font-semibold tracking-widest uppercase mt-1 opacity-90 text-cyan-300" id="mainHeaderSub">100% सिक्योर एनक्रिप्टेड डेटा आर्किटेक्चर | विश्व स्तरीय एआई</p>
                     </div>
                     
-                    <!-- भाषा टॉगल -->
+                    <!-- भाषा टॉगल (साफ और सुव्यवस्थित) -->
                     <div class="flex items-center gap-2">
                         <span class="text-xs font-bold text-slate-400">Lang:</span>
                         <div class="lang-pill-container">
@@ -418,11 +421,11 @@ def master_ecosystem_dashboard():
                     </p>
                     
                     <div class="flex flex-wrap justify-center gap-2 sm:gap-3 pt-2">
-                        <button onclick="openPaymentGateway('NC से कक्षा 5 (Kids Tier)', '29')" class="px-3 sm:px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold shadow-lg transition">NC-5 🟢 (₹29)</button>
-                        <button onclick="openPaymentGateway('कक्षा 6 से 8 (Standard)', '49')" class="px-3 sm:px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-bold shadow-lg transition">Class 6-8 💳 (₹49)</button>
-                        <button onclick="openPaymentGateway('कक्षा 8 से 12 (Advanced)', '99')" class="px-3 sm:px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white rounded-xl text-xs font-bold shadow-lg transition">Class 8-12 💳 (₹99)</button>
-                        <button onclick="openPaymentGateway('Graduate (Pro)', '149')" class="px-3 sm:px-4 py-2 bg-amber-600 hover:bg-amber-500 text-white rounded-xl text-xs font-bold shadow-lg transition">Graduate 💳 (₹149)</button>
-                        <button onclick="openPaymentGateway('Post Graduate & IAS/PCS', '299')" class="px-3 sm:px-4 py-2 bg-red-600 hover:bg-red-500 text-white rounded-xl text-xs font-bold shadow-lg transition">PG & IAS/PCS 💳 (₹299)</button>
+                        <button onclick="openPaymentGateway('NC से कक्षा 5 (Kids Tier)', '29')" class="px-3 sm:px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold shadow-lg transition">NC-5 (₹29)</button>
+                        <button onclick="openPaymentGateway('कक्षा 6 से 8 (Standard)', '49')" class="px-3 sm:px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-bold shadow-lg transition">Class 6-8 (₹49)</button>
+                        <button onclick="openPaymentGateway('कक्षा 8 से 12 (Advanced)', '99')" class="px-3 sm:px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white rounded-xl text-xs font-bold shadow-lg transition">Class 8-12 (₹99)</button>
+                        <button onclick="openPaymentGateway('Graduate (Pro)', '149')" class="px-3 sm:px-4 py-2 bg-amber-600 hover:bg-amber-500 text-white rounded-xl text-xs font-bold shadow-lg transition">Graduate (₹149)</button>
+                        <button onclick="openPaymentGateway('Post Graduate & IAS/PCS', '299')" class="px-3 sm:px-4 py-2 bg-red-600 hover:bg-red-500 text-white rounded-xl text-xs font-bold shadow-lg transition">PG & IAS/PCS (₹299)</button>
                     </div>
                 </div>
                 
@@ -434,53 +437,53 @@ def master_ecosystem_dashboard():
                     </div>
 
                     <div onclick="openModulePortal(2)" class="master-card p-6 rounded-2xl cursor-pointer">
-                        <h3 class="font-bold text-lg mb-2">⚡ 2. AI Engine Core</h3>
+                        <h3 class="font-bold text-lg mb-2">2. AI Engine Core</h3>
                         <p class="text-xs">अति-सटीक भाषा और डेटा प्रोसेसिंग इंजन।</p>
                     </div>
 
                     <div onclick="openModulePortal(3)" class="master-card p-6 rounded-2xl cursor-pointer">
-                        <h3 class="font-bold text-lg mb-2">🛡️ 3. AI Auto-Healing</h3>
+                        <h3 class="font-bold text-lg mb-2">3. AI Auto-Healing</h3>
                         <p class="text-xs">सॉफ्टवेयर त्रुटियों को स्वतः ठीक करने वाला स्कैनर।</p>
                     </div>
 
                     <div onclick="openModulePortal(4)" class="master-card p-6 rounded-2xl cursor-pointer">
-                        <h3 class="font-bold text-lg mb-2">🎭 4. Face-Swap Social</h3>
+                        <h3 class="font-bold text-lg mb-2">4. Face-Swap Social</h3>
                         <p class="text-xs">छात्रों के लिए वीडियो और सोशल एक्सप्लेनर विजुअल्स।</p>
                     </div>
 
                     <div onclick="openModulePortal(5)" class="master-card p-6 rounded-2xl cursor-pointer">
-                        <h3 class="font-bold text-lg mb-2">📺 5. 3D Blackboard</h3>
+                        <h3 class="font-bold text-lg mb-2">5. 3D Blackboard</h3>
                         <p class="text-xs">डिजिटल कक्षाओं के लिए 3डी ब्लैकबोर्ड और टीवी कास्ट।</p>
                     </div>
 
                     <div onclick="openModulePortal(6)" class="master-card p-6 rounded-2xl cursor-pointer">
-                        <h3 class="font-bold text-lg mb-2">📚 6. Digital Library</h3>
+                        <h3 class="font-bold text-lg mb-2">6. Digital Library</h3>
                         <p class="text-xs">एनक्रिप्टेड ई-बुक्स और सुरक्षित डिजिटल वॉलेट।</p>
                     </div>
 
                     <div onclick="openModulePortal(7)" class="master-card p-6 rounded-2xl cursor-pointer border-rose-500/30">
-                        <h3 class="font-bold text-lg mb-2">⚖️ 7. Legal AI (All Laws)</h3>
+                        <h3 class="font-bold text-lg mb-2">7. Legal AI (All Laws)</h3>
                         <p class="text-xs">भारत और दुनिया के सभी कानूनों (All Laws) का मास्टर हब।</p>
                     </div>
 
                     <div onclick="openModulePortal(8)" class="master-card p-6 rounded-2xl cursor-pointer">
-                        <h3 class="font-bold text-lg mb-2">🏫 8. Coaching Hub</h3>
+                        <h3 class="font-bold text-lg mb-2">8. Coaching Hub</h3>
                         <p class="text-xs">कोचिंग संस्थानों के संचालन और बैच प्रबंधन का डैशबोर्ड।</p>
                     </div>
 
                     <div onclick="openModulePortal(9)" class="master-card p-6 rounded-2xl cursor-pointer border-orange-500/30">
-                        <h3 class="font-bold text-lg mb-2">📊 9. Competition Solver</h3>
+                        <h3 class="font-bold text-lg mb-2">9. Competition Solver</h3>
                         <p class="text-xs">IAS, IFS, IRS, PCS, Banking, NEET आदि सभी परीक्षाओं का सॉल्वर।</p>
                     </div>
 
                     <div onclick="openModulePortal(10)" class="master-card p-6 rounded-2xl cursor-pointer">
-                        <h3 class="font-bold text-lg mb-2">🌌 10. Nebula Visual Hub</h3>
+                        <h3 class="font-bold text-lg mb-2">10. Nebula Visual Hub</h3>
                         <p class="text-xs">सिस्टम गतिविधियों को दिखाने वाला नेबुला डैशबोर्ड।</p>
                     </div>
                 </div>
 
                 <div class="text-center pt-4 pb-4">
-                    <a href="/admin" class="inline-block px-8 py-3.5 bg-gradient-to-r from-cyan-600 to-blue-600 rounded-xl text-sm font-bold text-white shadow-xl transition">📂 एडमिन डेटा मॉनिटर खोलें</a>
+                    <a href="/admin" class="inline-block px-8 py-3.5 bg-gradient-to-r from-cyan-600 to-blue-600 rounded-xl text-sm font-bold text-white shadow-xl transition">एडमिन डेटा मॉनिटर खोलें</a>
                 </div>
             </div>
         </div>
@@ -488,7 +491,7 @@ def master_ecosystem_dashboard():
         <!-- फुटर -->
         <footer class="w-full border-t border-gray-800/80 py-4 px-6 text-center text-xs text-gray-500 bg-slate-950/80">
             <p>© 2026 Dhruv Academy Master Ecosystem. सर्वाधिकार सुरक्षित। 
-                <a href="/secret-admin-login-dhruv" class="opacity-20 hover:opacity-100 hover:text-cyan-400 transition ml-2 text-[10px]" title="एडमिन पोर्टल">🔒 System Gateway</a>
+                <a href="/secret-admin-login-dhruv" class="opacity-20 hover:opacity-100 hover:text-cyan-400 transition ml-2 text-[10px]" title="एडमिन पोर्टल">System Gateway</a>
             </p>
         </footer>
 
@@ -510,7 +513,7 @@ def master_ecosystem_dashboard():
         <div id="paymentGatewayModal" class="hidden fixed inset-0 bg-black/85 flex items-center justify-center p-4 z-50 backdrop-blur-md">
             <div class="master-card p-6 sm:p-8 rounded-3xl w-full max-w-md space-y-6 border border-emerald-500/50 shadow-2xl text-center">
                 <div class="flex justify-between items-center border-b border-gray-700 pb-4">
-                    <h2 class="text-lg sm:text-xl font-bold text-emerald-400">🛡️ Secure Payment Gateway</h2>
+                    <h2 class="text-lg sm:text-xl font-bold text-emerald-400">Secure Payment Gateway</h2>
                     <button onclick="closePaymentGateway()" class="font-bold text-lg">✕</button>
                 </div>
                 <div class="space-y-3">
@@ -525,11 +528,11 @@ def master_ecosystem_dashboard():
                     </div>
                 </div>
                 <div id="paymentActionArea" class="space-y-3 pt-2">
-                    <button onclick="processPayment()" class="w-full py-3 bg-emerald-600 hover:bg-emerald-500 rounded-xl font-bold text-xs sm:text-sm text-white shadow-lg transition">भुगतान करें (Pay Now) 💳</button>
+                    <button onclick="processPayment()" class="w-full py-3 bg-emerald-600 hover:bg-emerald-500 rounded-xl font-bold text-xs sm:text-sm text-white shadow-lg transition">भुगतान करें (Pay Now)</button>
                 </div>
                 <div id="paymentStatusBox" class="hidden py-4 space-y-2">
                     <div class="inline-block animate-spin rounded-full h-8 w-8 border-4 border-cyan-500 border-t-transparent"></div>
-                    <p class="text-xs font-bold tracking-wider text-cyan-300">⏳ ट्रांसजैक्शन अंडर प्रोसेस... कृपया प्रतीक्षा करें!</p>
+                    <p class="text-xs font-bold tracking-wider text-cyan-300">ट्रांसजैक्शन अंडर प्रोसेस... कृपया प्रतीक्षा करें!</p>
                 </div>
             </div>
         </div>
@@ -541,11 +544,11 @@ def master_ecosystem_dashboard():
 
             const langDictionary = {
                 hi: {
-                    sub: "🛡️ 100% सिक्योर एनक्रिप्टेड डेटा आर्किटेक्चर | विश्व स्तरीय एआई",
+                    sub: "100% सिक्योर एनक्रिप्टेड डेटा आर्किटेक्चर | विश्व स्तरीय एआई",
                     heroDesc: "नर्सरी से लेकर सभी कानून, आईएएस (IAS), पीसीएस (PCS), बैंकिंग और प्रतियोगी परीक्षाओं की तैयारी के लिए भारत का सबसे उन्नत एआई पोर्टल।"
                 },
                 en: {
-                    sub: "🛡️ 100% Secure Encrypted Data Architecture | World Class AI",
+                    sub: "100% Secure Encrypted Data Architecture | World Class AI",
                     heroDesc: "India's most advanced AI portal for school education, all laws, and competitive exams like IAS, PCS, Banking, etc."
                 }
             };
@@ -577,14 +580,14 @@ def master_ecosystem_dashboard():
                     currentTheme = 'light';
                     bodyEl.classList.remove('dark-mode');
                     bodyEl.classList.add('light-mode');
-                    themeBtn.innerText = "🌙 Dark Mode";
+                    themeBtn.innerText = "Dark Mode";
                     themeBtn.className = "px-3 py-1 bg-slate-200 text-slate-900 hover:bg-slate-300 rounded-lg font-bold shadow transition text-[11px]";
                     speakPolite("लाइट मोड ऑन किया गया।");
                 } else {
                     currentTheme = 'dark';
                     bodyEl.classList.remove('light-mode');
                     bodyEl.classList.add('dark-mode');
-                    themeBtn.innerText = "🌞 Light Mode";
+                    themeBtn.innerText = "Light Mode";
                     themeBtn.className = "px-3 py-1 bg-slate-800 text-amber-300 hover:bg-slate-700 rounded-lg font-bold shadow transition text-[11px]";
                     speakPolite("डार्क मोड ऑन किया गया।");
                 }
@@ -643,10 +646,10 @@ def master_ecosystem_dashboard():
                 let title = "मॉड्यूल पोर्टल";
                 let contentHtml = "<p class='text-xs'>यह मॉड्यूल सक्रिय है।</p>";
 
-                if(modId === 2) { title = "⚡ 2. Super AI Engine Core"; contentHtml = "<p class='text-xs'>डेटा प्रोसेसिंग इंजन सक्रिय है।</p>"; }
-                else if(modId === 3) { title = "🛡️ 3. AI Auto-Healing"; contentHtml = "<p class='text-xs'>सिस्टम ऑटो-हीलिंग स्कैनर रेडी है।</p>"; }
-                else if(modId === 7) { title = "⚖️ 7. Legal AI Hub"; contentHtml = "<p class='text-xs'>कानूनी अनुसंधान प्रणाली सक्रिय है।</p>"; }
-                else if(modId === 9) { title = "📊 9. Competition Solver"; contentHtml = "<p class='text-xs'>IAS/PCS/NEET सॉल्वर तैयार है।</p>"; }
+                if(modId === 2) { title = "2. Super AI Engine Core"; contentHtml = "<p class='text-xs'>डेटा प्रोसेसिंग इंजन सक्रिय है।</p>"; }
+                else if(modId === 3) { title = "3. AI Auto-Healing"; contentHtml = "<p class='text-xs'>सिस्टम ऑटो-हीलिंग स्कैनर रेडी है।</p>"; }
+                else if(modId === 7) { title = "7. Legal AI Hub"; contentHtml = "<p class='text-xs'>कानूनी अनुसंधान प्रणाली सक्रिय है।</p>"; }
+                else if(modId === 9) { title = "9. Competition Solver"; contentHtml = "<p class='text-xs'>IAS/PCS/NEET सॉल्वर तैयार है।</p>"; }
 
                 document.getElementById('portalModalTitle').innerText = title;
                 document.getElementById('portalModalBody').innerHTML = contentHtml;
