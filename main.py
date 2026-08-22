@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 # ==============================================================================
-# main.py - Dhruv Academy Master Ecosystem (Full & Working with Gemini Vision)
+# main.py - Dhruv Academy Master Ecosystem (Complete Production Architecture)
 # ==============================================================================
 
 import os
@@ -659,7 +659,7 @@ def master_ecosystem_dashboard():
     """
 
 # ------------------------------------------------------------------------------
-# 6. एआई विजन एपीआई (Handles /analyze-homework, /analyze & /upload)
+# 6. एआई विजन एपीआई (Gemini 1.5 Flash Server-Side Integration)
 # ------------------------------------------------------------------------------
 async def process_gemini_vision(file: UploadFile, lang: str):
     api_key = os.environ.get("GEMINI_API_KEY", "")
@@ -697,7 +697,7 @@ async def process_gemini_vision(file: UploadFile, lang: str):
             ]
         }
 
-        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={api_key}"
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={api_key}"
         req = urllib.request.Request(
             url,
             data=json.dumps(payload).encode("utf-8"),
