@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 # ==============================================================================
-# main.py - Dhruv Academy Master Ecosystem (Complete Production Architecture)
+# main.py - Dhruv Academy Master Ecosystem (Fixed Port Binding for Render)
 # ==============================================================================
 
 import os
@@ -803,9 +803,9 @@ async def kids_zone():
         return f.read()
 
 # ------------------------------------------------------------------------------
-# 8. सर्वर एक्ज़ीक्यूशन
+# 8. सर्वर एक्ज़ीक्यूशन (Render Auto-Detect Port Binding)
 # ------------------------------------------------------------------------------
 if __name__ == "__main__":
     import uvicorn
-    port = int(os.environ.get("PORT", 10000))
-    uvicorn.run("main:app", host="0.0.0.0", port=port, reload=True)
+    port = int(os.environ.get("PORT", 8000))
+    uvicorn.run(app, host="0.0.0.0", port=port)
