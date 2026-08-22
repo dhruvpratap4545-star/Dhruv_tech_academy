@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 # ==============================================================================
-# main.py - Dhruv Academy Master Ecosystem (Fixed Port Binding for Render)
+# main.py - Dhruv Academy Master Ecosystem (Complete Production Server)
 # ==============================================================================
 
 import os
@@ -320,74 +320,30 @@ def master_ecosystem_dashboard():
         <style>
             @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap');
             body { font-family: 'Poppins', sans-serif; transition: background-color 0.3s, color 0.3s; }
-            
             body.dark-mode { background-color: #020617; color: #f8fafc; }
             body.dark-mode .master-card { background: rgba(15, 23, 42, 0.92); border: 1px solid rgba(255, 255, 255, 0.12); color: #f8fafc; }
             body.dark-mode .master-card h3 { color: #38bdf8; }
             body.dark-mode .master-card p { color: #cbd5e1; }
             body.dark-mode .top-bar { background-color: rgba(2, 6, 23, 0.98); border-color: rgba(255, 255, 255, 0.1); }
-            
             body.light-mode { background-color: #f8fafc; color: #0f172a; }
             body.light-mode .master-card { background: #ffffff; border: 2px solid #cbd5e1; box-shadow: 0 10px 25px rgba(0,0,0,0.06); color: #0f172a; }
             body.light-mode .master-card h3 { color: #0284c7; font-weight: 800; }
             body.light-mode .master-card p { color: #334155; font-weight: 600; }
             body.light-mode .top-bar { background-color: #e2e8f0; border-color: #cbd5e1; color: #0f172a; }
-
             .nebula-master-glow { background: radial-gradient(circle at center, rgba(14, 165, 233, 0.35) 0%, rgba(147, 51, 234, 0.25) 45%, transparent 85%); }
             .master-card { backdrop-filter: blur(20px); transition: all 0.3s ease; }
             .master-card:hover { transform: translateY(-4px); box-shadow: 0 15px 30px -10px rgba(56, 189, 248, 0.4); }
-
-            .lang-pill-container {
-                display: inline-flex;
-                align-items: center;
-                background-color: #0b1329;
-                border: 1.5px solid #0284c7;
-                border-radius: 9999px;
-                padding: 3px;
-                gap: 4px;
-                box-shadow: inset 0 2px 4px rgba(0,0,0,0.5);
-            }
-
-            .lang-pill-btn {
-                padding: 6px 18px;
-                border-radius: 9999px;
-                font-size: 12px;
-                font-weight: 700;
-                line-height: 1;
-                border: none;
-                outline: none;
-                transition: all 0.25s ease-in-out;
-                cursor: pointer;
-                display: inline-flex;
-                align-items: center;
-                justify-content: center;
-                white-space: nowrap;
-            }
-
-            .lang-pill-active {
-                background: linear-gradient(135deg, #0284c7, #0369a1) !important;
-                color: #ffffff !important;
-                box-shadow: 0 2px 8px rgba(14, 165, 233, 0.5);
-            }
-
-            .lang-pill-inactive {
-                background: transparent !important;
-                color: #94a3b8 !important;
-            }
-
-            .lang-pill-inactive:hover {
-                color: #f8fafc !important;
-            }
+            .lang-pill-container { display: inline-flex; align-items: center; background-color: #0b1329; border: 1.5px solid #0284c7; border-radius: 9999px; padding: 3px; gap: 4px; box-shadow: inset 0 2px 4px rgba(0,0,0,0.5); }
+            .lang-pill-btn { padding: 6px 18px; border-radius: 9999px; font-size: 12px; font-weight: 700; line-height: 1; border: none; outline: none; transition: all 0.25s ease-in-out; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; white-space: nowrap; }
+            .lang-pill-active { background: linear-gradient(135deg, #0284c7, #0369a1) !important; color: #ffffff !important; box-shadow: 0 2px 8px rgba(14, 165, 233, 0.5); }
+            .lang-pill-inactive { background: transparent !important; color: #94a3b8 !important; }
+            .lang-pill-inactive:hover { color: #f8fafc !important; }
         </style>
     </head>
     <body class="min-h-screen dark-mode flex flex-col justify-between" id="pageBody">
-
         <div>
             <div id="topControlBar" class="top-bar w-full border-b px-4 py-2 flex justify-end items-center text-xs sticky top-0 z-50 backdrop-blur-md gap-3">
-                <button onclick="toggleThemeMode()" id="themeToggleBtn" class="px-3 py-1 bg-slate-800 text-amber-300 hover:bg-slate-700 rounded-lg font-bold shadow transition text-[11px]">
-                    Light Mode
-                </button>
-
+                <button onclick="toggleThemeMode()" id="themeToggleBtn" class="px-3 py-1 bg-slate-800 text-amber-300 hover:bg-slate-700 rounded-lg font-bold shadow transition text-[11px]">Light Mode</button>
                 <button onclick="toggleMasterVoiceGuide()" id="voiceToggleBtn" class="px-3 py-1 bg-red-950 border border-red-500/50 hover:border-red-400 rounded-lg font-bold text-red-400 shadow transition flex items-center gap-1 text-[11px]">
                     <span>AI Voice:</span>
                     <span id="voiceStatusText">MUTE (OFF)</span>
@@ -395,13 +351,11 @@ def master_ecosystem_dashboard():
             </div>
 
             <div id="mainContainer" class="max-w-7xl mx-auto px-4 sm:px-6 py-8 space-y-10">
-                
                 <header class="flex flex-col md:flex-row justify-between items-center pb-6 border-b border-gray-800 gap-4">
                     <div>
                         <h1 class="text-2xl sm:text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-sky-300 to-indigo-400" id="mainHeaderTitle">Dhruv Academy Master Ecosystem</h1>
                         <p class="text-[11px] sm:text-xs font-semibold tracking-widest uppercase mt-1 opacity-90 text-cyan-300" id="mainHeaderSub">100% सिक्योर एनक्रिप्टेड डेटा आर्किटेक्चर | विश्व स्तरीय एआई</p>
                     </div>
-                    
                     <div class="flex items-center gap-2">
                         <span class="text-xs font-bold text-slate-400">Lang:</span>
                         <div class="lang-pill-container">
@@ -413,10 +367,7 @@ def master_ecosystem_dashboard():
 
                 <div class="nebula-master-glow p-6 sm:p-12 rounded-3xl border border-cyan-500/40 text-center space-y-6 shadow-2xl relative overflow-hidden">
                     <h1 class="text-2xl sm:text-4xl lg:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-sky-200 to-purple-400" id="heroTitle">Dhruv Academy Master Ecosystem</h1>
-                    <p class="text-xs sm:text-sm md:text-base max-w-3xl mx-auto leading-relaxed font-semibold text-slate-200" id="heroDesc">
-                        नर्सरी से लेकर सभी कानून, आईएएस (IAS), पीसीएस (PCS), बैंकिंग और प्रतियोगी परीक्षाओं की तैयारी के लिए भारत का सबसे उन्नत एआई पोर्टल।
-                    </p>
-                    
+                    <p class="text-xs sm:text-sm md:text-base max-w-3xl mx-auto leading-relaxed font-semibold text-slate-200" id="heroDesc">नर्सरी से लेकर सभी कानून, आईएएस (IAS), पीसीएस (PCS), बैंकिंग और प्रतियोगी परीक्षाओं की तैयारी के लिए भारत का सबसे उन्नत एआई पोर्टल।</p>
                     <div class="flex flex-wrap justify-center gap-2 sm:gap-3 pt-2">
                         <button onclick="openPaymentGateway('NC से कक्षा 5 (Kids Tier)', '29')" class="px-3 sm:px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold shadow-lg transition">NC-5 (₹29)</button>
                         <button onclick="openPaymentGateway('कक्षा 6 से 8 (Standard)', '49')" class="px-3 sm:px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-bold shadow-lg transition">Class 6-8 (₹49)</button>
@@ -431,47 +382,38 @@ def master_ecosystem_dashboard():
                         <h3 class="font-bold text-lg mb-2">1. Foundation: NC-5 Kids Tier</h3>
                         <p class="text-xs">नर्सरी से कक्षा 5 तक की नींव (AI-Driven Learning Module).</p>
                     </div>
-
                     <div onclick="openModulePortal(2)" class="master-card p-6 rounded-2xl cursor-pointer">
                         <h3 class="font-bold text-lg mb-2">2. AI Engine Core</h3>
                         <p class="text-xs">अति-सटीक भाषा और डेटा प्रोसेसिंग इंजन।</p>
                     </div>
-
                     <div onclick="openModulePortal(3)" class="master-card p-6 rounded-2xl cursor-pointer">
                         <h3 class="font-bold text-lg mb-2">3. AI Auto-Healing</h3>
                         <p class="text-xs">सॉफ्टवेयर त्रुटियों को स्वतः ठीक करने वाला स्कैनर।</p>
                     </div>
-
                     <div onclick="openModulePortal(4)" class="master-card p-6 rounded-2xl cursor-pointer">
                         <h3 class="font-bold text-lg mb-2">4. Face-Swap Social</h3>
                         <p class="text-xs">छात्रों के लिए वीडियो और सोशल एक्सप्लेनर विजुअल्स।</p>
                     </div>
-
                     <div onclick="openModulePortal(5)" class="master-card p-6 rounded-2xl cursor-pointer">
                         <h3 class="font-bold text-lg mb-2">5. 3D Blackboard</h3>
                         <p class="text-xs">डिजिटल कक्षाओं के लिए 3डी ब्लैकबोर्ड और टीवी कास्ट।</p>
                     </div>
-
                     <div onclick="openModulePortal(6)" class="master-card p-6 rounded-2xl cursor-pointer">
                         <h3 class="font-bold text-lg mb-2">6. Digital Library</h3>
                         <p class="text-xs">एनक्रिप्टेड ई-बुक्स और सुरक्षित डिजिटल वॉलेट।</p>
                     </div>
-
                     <div onclick="openModulePortal(7)" class="master-card p-6 rounded-2xl cursor-pointer border-rose-500/30">
                         <h3 class="font-bold text-lg mb-2">7. Legal AI (All Laws)</h3>
                         <p class="text-xs">भारत और दुनिया के सभी कानूनों (All Laws) का मास्टर हब।</p>
                     </div>
-
                     <div onclick="openModulePortal(8)" class="master-card p-6 rounded-2xl cursor-pointer">
                         <h3 class="font-bold text-lg mb-2">8. Coaching Hub</h3>
                         <p class="text-xs">कोचिंग संस्थानों के संचालन और बैच प्रबंधन का डैशबोर्ड।</p>
                     </div>
-
                     <div onclick="openModulePortal(9)" class="master-card p-6 rounded-2xl cursor-pointer border-orange-500/30">
                         <h3 class="font-bold text-lg mb-2">9. Competition Solver</h3>
                         <p class="text-xs">IAS, IFS, IRS, PCS, Banking, NEET आदि सभी परीक्षाओं का सॉल्वर।</p>
                     </div>
-
                     <div onclick="openModulePortal(10)" class="master-card p-6 rounded-2xl cursor-pointer">
                         <h3 class="font-bold text-lg mb-2">10. Nebula Visual Hub</h3>
                         <p class="text-xs">सिस्टम गतिविधियों को दिखाने वाला नेबुला डैशबोर्ड।</p>
@@ -536,21 +478,14 @@ def master_ecosystem_dashboard():
             let currentLang = 'hi';
 
             const langDictionary = {
-                hi: {
-                    sub: "100% सिक्योर एनक्रिप्टेड डेटा आर्किटेक्चर | विश्व स्तरीय एआई",
-                    heroDesc: "नर्सरी से लेकर सभी कानून, आईएएस (IAS), पीसीएस (PCS), बैंकिंग और प्रतियोगी परीक्षाओं की तैयारी के लिए भारत का सबसे उन्नत एआई पोर्टल।"
-                },
-                en: {
-                    sub: "100% Secure Encrypted Data Architecture | World Class AI",
-                    heroDesc: "India's most advanced AI portal for school education, all laws, and competitive exams like IAS, PCS, Banking, etc."
-                }
+                hi: { sub: "100% सिक्योर एनक्रिप्टेड डेटा आर्किटेक्चर | विश्व स्तरीय एआई", heroDesc: "नर्सरी से लेकर सभी कानून, आईएएस (IAS), पीसीएस (PCS), बैंकिंग और प्रतियोगी परीक्षाओं की तैयारी के लिए भारत का सबसे उन्नत एआई पोर्टल।" },
+                en: { sub: "100% Secure Encrypted Data Architecture | World Class AI", heroDesc: "India's most advanced AI portal for school education, all laws, and competitive exams like IAS, PCS, Banking, etc." }
             };
 
             function setLanguage(lang) {
                 currentLang = lang;
                 let btnHi = document.getElementById('btnLangHi');
                 let btnEn = document.getElementById('btnLangEn');
-                
                 if (lang === 'hi') {
                     btnHi.className = "lang-pill-btn lang-pill-active";
                     btnEn.className = "lang-pill-btn lang-pill-inactive";
@@ -621,9 +556,7 @@ def master_ecosystem_dashboard():
                 speakPolite(planName + " चुना गया है।");
             }
 
-            function closePaymentGateway() {
-                document.getElementById('paymentGatewayModal').classList.add('hidden');
-            }
+            function closePaymentGateway() { document.getElementById('paymentGatewayModal').classList.add('hidden'); }
 
             function processPayment() {
                 document.getElementById('paymentActionArea').classList.add('hidden');
@@ -638,7 +571,6 @@ def master_ecosystem_dashboard():
             function openModulePortal(modId) {
                 let title = "मॉड्यूल पोर्टल";
                 let contentHtml = "<p class='text-xs'>यह मॉड्यूल सक्रिय है।</p>";
-
                 if(modId === 2) { title = "2. Super AI Engine Core"; contentHtml = "<p class='text-xs'>डेटा प्रोसेसिंग इंजन सक्रिय है।</p>"; }
                 else if(modId === 3) { title = "3. AI Auto-Healing"; contentHtml = "<p class='text-xs'>सिस्टम ऑटो-हीलिंग स्कैनर रेडी है।</p>"; }
                 else if(modId === 7) { title = "7. Legal AI Hub"; contentHtml = "<p class='text-xs'>कानूनी अनुसंधान प्रणाली सक्रिय है।</p>"; }
@@ -650,9 +582,7 @@ def master_ecosystem_dashboard():
                 speakPolite(title + " खोल दिया गया है।");
             }
 
-            function closeModulePortal() {
-                document.getElementById('modulePortalModal').classList.add('hidden');
-            }
+            function closeModulePortal() { document.getElementById('modulePortalModal').classList.add('hidden'); }
         </script>
     </body>
     </html>
