@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 # ==============================================================================
-# main.py - Dhruv Academy Master Ecosystem (Complete Production Server)
+# main.py - Dhruv Academy Master Ecosystem (Robust Gemini Vision Integration)
 # ==============================================================================
 
 import os
@@ -15,6 +15,13 @@ from typing import Optional, List
 
 import urllib.request
 import urllib.error
+
+# Google Generative AI SDK (Safely imported)
+try:
+    import google.generativeai as genai
+    GENAI_AVAILABLE = True
+except ImportError:
+    GENAI_AVAILABLE = False
 
 from fastapi import FastAPI, UploadFile, File, Form, Depends, HTTPException, Request, Response, status
 from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse
@@ -589,20 +596,25 @@ def master_ecosystem_dashboard():
     """
 
 # ------------------------------------------------------------------------------
-# 6. एआई विजन एपीआई (Gemini 1.5 Flash Server-Side Integration)
+# 6. एआई विजन एपीआई (Robust Configuration & Execution)
 # ------------------------------------------------------------------------------
 async def process_gemini_vision(file: UploadFile, lang: str):
-    api_key = os.environ.get("GEMINI_API_KEY", "")
+    # Retrieve and clean API Key
+    api_key = (
+        os.environ.get("GEMINI_API_KEY") or 
+        os.getenv("GEMINI_API_KEY") or 
+        os.environ.get("GOOGLE_API_KEY") or 
+        ""
+    ).strip().strip('"').strip("'")
     
     if not api_key:
         return JSONResponse(content={
             "success": False,
-            "solution": "⚠️ सर्वर पर GEMINI_API_KEY उपलब्ध नहीं है। कृपया Render एनवायरनमेंट सेटिंग्स में GEMINI_API_KEY जोड़ें।" if lang == "hi" else "⚠️ GEMINI_API_KEY is not configured in server environment variables."
+            "solution": "⚠️ सर्वर पर GEMINI_API_KEY उपलब्ध नहीं है। कृपया Render Dashboard -> Environment Variables में GEMINI_API_KEY जोड़ें।" if lang == "hi" else "⚠️ GEMINI_API_KEY is not configured in server environment variables."
         })
 
     try:
         image_bytes = await file.read()
-        base64_image = base64.b64encode(image_bytes).decode("utf-8")
         mime_type = file.content_type or "image/jpeg"
 
         prompt = (
@@ -611,6 +623,26 @@ async def process_gemini_vision(file: UploadFile, lang: str):
             else "You are Nebula AI Teacher. Explain and solve this school textbook question for young kids in 2-3 simple, engaging sentences suitable for a classroom blackboard."
         )
 
+        # 1. Primary: Google Generative AI SDK
+        if GENAI_AVAILABLE:
+            try:
+                genai.configure(api_key=api_key)
+                model = genai.GenerativeModel("gemini-1.5-flash")
+                contents = [
+                    prompt,
+                    {
+                        "mime_type": mime_type,
+                        "data": image_bytes
+                    }
+                ]
+                res = model.generate_content(contents)
+                if res and res.text:
+                    return JSONResponse(content={"success": True, "solution": res.text.strip()})
+            except Exception as sdk_err:
+                print("SDK Attempt Error, trying REST Fallback:", str(sdk_err))
+
+        # 2. Secondary: Direct REST API Fallback
+        base64_image = base64.b64encode(image_bytes).decode("utf-8")
         payload = {
             "contents": [
                 {
@@ -635,7 +667,7 @@ async def process_gemini_vision(file: UploadFile, lang: str):
             method="POST"
         )
 
-        with urllib.request.urlopen(req, timeout=30) as response:
+        with urllib.request.urlopen(req, timeout=35) as response:
             res_data = json.loads(response.read().decode("utf-8"))
             solution_text = res_data["candidates"][0]["content"]["parts"][0]["text"]
             return JSONResponse(content={"success": True, "solution": solution_text.strip()})
