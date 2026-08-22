@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 # ==============================================================================
-# main.py - Dhruv Academy Master Ecosystem (Complete Production Server)
+# main.py - Dhruv Academy Master Ecosystem (Full & Working with Vision API)
 # ==============================================================================
 
 import os
@@ -659,16 +659,15 @@ def master_ecosystem_dashboard():
     """
 
 # ------------------------------------------------------------------------------
-# 6. एआई विजन एपीआई (Gemini Vision Server-Side Integration)
+# 6. एआई विजन एपीआई (Handles /analyze-homework, /analyze & /upload-homework)
 # ------------------------------------------------------------------------------
-@app.post("/analyze-homework")
-async def analyze_homework(file: UploadFile = File(...), lang: str = Form("hi")):
+async def process_gemini_vision(file: UploadFile, lang: str):
     api_key = os.environ.get("GEMINI_API_KEY", "")
     
     if not api_key:
         return JSONResponse(content={
             "success": False,
-            "solution": "⚠️ सर्वर पर GEMINI_API_KEY उपलब्ध नहीं है। कृपया Render एनवायरनमेंट सेटिंग्स में GEMINI_API_KEY जोड़ें।" if lang == "hi" else "⚠️ GEMINI_API_KEY is not set on the server environment."
+            "solution": "⚠️ सर्वर पर GEMINI_API_KEY उपलब्ध नहीं है। कृपया Render एनवायरनमेंट सेटिंग्स में GEMINI_API_KEY जोड़ें।" if lang == "hi" else "⚠️ GEMINI_API_KEY is not configured in server environment variables."
         })
 
     try:
@@ -698,7 +697,7 @@ async def analyze_homework(file: UploadFile = File(...), lang: str = Form("hi"))
             ]
         }
 
-        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={api_key}"
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={api_key}"
         req = urllib.request.Request(
             url,
             data=json.dumps(payload).encode("utf-8"),
@@ -714,6 +713,18 @@ async def analyze_homework(file: UploadFile = File(...), lang: str = Form("hi"))
     except Exception as e:
         err_msg = f"त्रुटि: फोटो का विश्लेषण नहीं हो सका ({str(e)})" if lang == "hi" else f"Error: Unable to analyze image ({str(e)})"
         return JSONResponse(content={"success": False, "solution": err_msg})
+
+@app.post("/analyze-homework")
+async def analyze_homework_endpoint(file: UploadFile = File(...), lang: str = Form("hi")):
+    return await process_gemini_vision(file, lang)
+
+@app.post("/analyze")
+async def analyze_alias_endpoint(file: UploadFile = File(...), lang: str = Form("hi")):
+    return await process_gemini_vision(file, lang)
+
+@app.post("/upload-homework")
+async def upload_alias_endpoint(file: UploadFile = File(...), lang: str = Form("hi")):
+    return await process_gemini_vision(file, lang)
 
 # ------------------------------------------------------------------------------
 # 7. एडमिन डेटा मॉनिटर, फाइल अपलोड और किड्स ज़ोन
