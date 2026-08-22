@@ -271,7 +271,7 @@
         let currentActiveCategory = "";
         let currentQuestionText = "";
         let solvedQuestions = {};
-        let uploadedImageFile = null;
+        let uploadedImageBlob = null;
 
         const siteData = {
             hi: {
@@ -622,6 +622,7 @@
             updateBlackboard(`<span class="text-amber-300 font-bold">${hintText}</span>`);
         }
 
+        // स्कोर 100 की सीमा और टोकने (Warning) का सटीक लॉजिक
         function verifyAnswer() {
             let d = siteData[currentLang];
             let userField = document.getElementById('userInput');
@@ -638,6 +639,24 @@
 
             let uniqueKey = currentActiveCategory + "_" + currentQuestionText;
 
+            // अगर 100 अंक पहले ही प्राप्त हो चुके हैं
+            if (studentScore >= 100) {
+                if (userVal.includes(currentCorrectAnswer.toLowerCase())) {
+                    let alreadyWonMsg = currentLang === 'hi' 
+                        ? "🎉 आप पहले ही 100 अंक जीत चुके हैं! आप पहले से ही जीनियस चैंपियन हैं!" 
+                        : "🎉 You have already won 100 points! You are already a Genius Champion!";
+                    updateBlackboard(`<span class="text-yellow-300 font-bold text-xl">${alreadyWonMsg}</span>`);
+                } else {
+                    let tokenMsg = currentLang === 'hi'
+                        ? `⚠️ गलत उत्तर! सही उत्तर था: '${currentCorrectAnswer}'। ध्यान देकर हल करें!`
+                        : `⚠️ Incorrect! The right answer was: '${currentCorrectAnswer}'. Try to focus!`;
+                    updateBlackboard(`<span class="text-rose-400 font-bold text-xl">${tokenMsg}</span>`);
+                }
+                userField.value = "";
+                return;
+            }
+
+            // सामान्य जाँच (स्कोर 100 से कम होने पर)
             if (userVal.includes(currentCorrectAnswer.toLowerCase())) {
                 if (solvedQuestions[uniqueKey]) {
                     updateBlackboard(`<span class="text-amber-400">${d.alreadySolvedMsg}</span>`);
@@ -645,7 +664,7 @@
                     return;
                 }
 
-                studentScore += 20;
+                studentScore = Math.min(100, studentScore + 20);
                 solvedQuestions[uniqueKey] = true;
                 document.getElementById('scoreDisplay').innerText = `⭐ ${studentScore} / 100`;
 
@@ -655,7 +674,11 @@
                     updateBlackboard(`<span class="text-emerald-300 font-bold text-2xl">${d.correctMsg}</span><br><span class="text-sm text-slate-300 mt-2 block">सही उत्तर: ${currentCorrectAnswer}</span>`);
                 }
             } else {
-                updateBlackboard(`<span class="text-rose-400 font-bold text-2xl">${d.wrongMsg}</span><br><span class="text-sm text-slate-300 mt-2 block">दोबारा प्रयास करें!</span>`);
+                // गलत उत्तर पर टोकना
+                let warnFeedback = currentLang === 'hi'
+                    ? `❌ गलत जवाब! '${userVal}' सही नहीं है। सही उत्तर '${currentCorrectAnswer}' है। ध्यान से सोचें!`
+                    : `❌ Wrong answer! '${userVal}' is incorrect. Correct is '${currentCorrectAnswer}'.`;
+                updateBlackboard(`<span class="text-rose-400 font-bold text-xl">${warnFeedback}</span><br><span class="text-xs text-slate-300 mt-2 block">अगले प्रश्न में सही उत्तर देने का प्रयास करें!</span>`);
             }
             userField.value = "";
         }
@@ -724,27 +747,64 @@
             }
         }
 
+        // मोबाइल कैमरा क्रैश रोकने के लिए इमेज रिसाइज़र/कंप्रेसर
+        function compressImage(file, maxWidth, maxHeight, quality, callback) {
+            let reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = function (event) {
+                let img = new Image();
+                img.src = event.target.result;
+                img.onload = function () {
+                    let canvas = document.createElement('canvas');
+                    let width = img.width;
+                    let height = img.height;
+
+                    if (width > height) {
+                        if (width > maxWidth) {
+                            height = Math.round((height * maxWidth) / width);
+                            width = maxWidth;
+                        }
+                    } else {
+                        if (height > maxHeight) {
+                            width = Math.round((width * maxHeight) / height);
+                            height = maxHeight;
+                        }
+                    }
+
+                    canvas.width = width;
+                    canvas.height = height;
+                    let ctx = canvas.getContext("2d");
+                    ctx.drawImage(img, 0, 0, width, height);
+
+                    canvas.toBlob(function (blob) {
+                        callback(blob, canvas.toDataURL("image/jpeg", quality));
+                    }, "image/jpeg", quality);
+                };
+            };
+        }
+
         function handleImageUpload(event) {
             let file = event.target.files[0];
             if (file) {
-                uploadedImageFile = file;
-                let reader = new FileReader();
-                reader.onload = function(e) {
-                    document.getElementById('uploadedImagePreview').src = e.target.result;
+                let processMsg = currentLang === 'hi' ? "📸 फोटो तैयार की जा रही है..." : "📸 Preparing photo...";
+                updateBlackboard(processMsg);
+
+                compressImage(file, 1024, 1024, 0.7, function (compressedBlob, previewDataUrl) {
+                    uploadedImageBlob = compressedBlob;
+                    document.getElementById('uploadedImagePreview').src = previewDataUrl;
                     document.getElementById('imagePreviewContainer').classList.remove('hidden');
                     document.getElementById('explainVisionBtn').classList.remove('hidden');
                     
                     let msg = currentLang === 'hi' 
-                        ? "📸 किताब की फोटो लोड हो गई है! अब नीचे 'सॉल्यूशन देखें' बटन पर क्लिक करें।" 
-                        : "📸 Book photo uploaded! Click 'View Solution' below.";
+                        ? "📸 फोटो तैयार है! अब नीचे 'सॉल्यूशन देखें' बटन दबाएं।" 
+                        : "📸 Photo ready! Click 'View Solution' below.";
                     updateBlackboard(msg);
-                };
-                reader.readAsDataURL(file);
+                });
             }
         }
 
         async function explainBookPage() {
-            if (!uploadedImageFile) {
+            if (!uploadedImageBlob) {
                 alert(currentLang === 'hi' ? "कृपया पहले फोटो खींचें या अपलोड करें!" : "Please upload a photo first!");
                 return;
             }
@@ -755,7 +815,7 @@
             updateBlackboard(scanMsg);
 
             let formData = new FormData();
-            formData.append("file", uploadedImageFile);
+            formData.append("file", uploadedImageBlob, "homework.jpg");
             formData.append("lang", currentLang);
 
             try {
