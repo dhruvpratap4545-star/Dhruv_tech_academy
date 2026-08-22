@@ -132,7 +132,7 @@
         </div>
 
         <!-- 2. नेबुला ब्लैकबोर्ड (Live Chalkboard Display) -->
-        <div class="nebula-board rounded-2xl p-5 sm:p-6 text-white board-frame">
+        <div id="nebulaBlackboardSection" class="nebula-board rounded-2xl p-5 sm:p-6 text-white board-frame scroll-mt-6">
             <div class="flex justify-between items-center border-b border-slate-700/60 pb-2 mb-3 text-xs text-slate-400">
                 <span class="flex items-center gap-1.5 font-bold text-cyan-300">
                     <span>📋</span> <span id="boardHeader">नेबुला डिजिटल ब्लैकबोर्ड (Live Chalkboard)</span>
@@ -341,7 +341,7 @@
             }
         };
 
-        // डायनामिक प्रश्न बैंक (10+ प्रश्न प्रति विषय)
+        // डायनामिक प्रश्न बैंक
         const puzzleBank = {
             hi: [
                 {q: "ऐसी कौन सी चीज़ है जो लिखने के काम आती है पर पेन नहीं?", a: "पेंसिल"},
@@ -439,6 +439,14 @@
             ]
         };
 
+        // ब्लैकबोर्ड पर फोकस करने के लिए ऑटो-स्मूथ स्क्रॉल फंक्शन
+        function scrollToBlackboard() {
+            const board = document.getElementById('nebulaBlackboardSection');
+            if (board) {
+                board.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        }
+
         function switchLanguage(lang) {
             currentLang = lang;
             let d = siteData[lang];
@@ -480,9 +488,10 @@
                 hiBtn.className = "lang-pill-btn lang-pill-inactive";
             }
             speakText(d.welcome);
+            scrollToBlackboard();
         }
 
-        // 3. वॉयस गाइडेंस (Speech Synthesis) व एआई अवतार एनिमेशन
+        // वॉयस गाइडेंस (Speech Synthesis)
         function speakText(text) {
             try {
                 if ('speechSynthesis' in window) {
@@ -534,19 +543,21 @@
                 ? "नमस्ते! मैं आपकी नेबुला एआई टीचर हूँ। नीचे दिए गए बटन दबाकर मुझसे सवाल पूछें!" 
                 : "Hello! I am your Nebula AI Teacher. Click any subject button below to start learning!";
             updateBlackboard(msg);
+            scrollToBlackboard();
         }
 
         function updateBlackboard(contentHtml) {
             let board = document.getElementById('aiText');
             board.innerHTML = contentHtml;
             speakText(board.innerText);
+            scrollToBlackboard();
         }
 
         function getRandomQuestion(arr) {
             return arr[Math.floor(Math.random() * arr.length)];
         }
 
-        // 2. नेबुला ब्लैकबोर्ड इंटीग्रेशन: सवाल लोड करना
+        // सवाल लोड करना
         function loadChallenge(category) {
             currentActiveCategory = category;
             let textToShow = "";
@@ -592,6 +603,7 @@
 
             currentQuestionText = textToShow;
             updateBlackboard(`<span class="text-yellow-200">${textToShow.replace(/\n/g, '<br>')}</span>`);
+            scrollToBlackboard();
         }
 
         function giveHint() {
@@ -611,6 +623,7 @@
             }
 
             updateBlackboard(`<span class="text-amber-300 font-bold">${hintText}</span>`);
+            scrollToBlackboard();
         }
 
         function verifyAnswer() {
@@ -633,6 +646,7 @@
                 if (solvedQuestions[uniqueKey]) {
                     updateBlackboard(`<span class="text-amber-400">${d.alreadySolvedMsg}</span>`);
                     userField.value = "";
+                    scrollToBlackboard();
                     return;
                 }
 
@@ -649,6 +663,7 @@
                 updateBlackboard(`<span class="text-rose-400 font-bold text-2xl">${d.wrongMsg}</span><br><span class="text-sm text-slate-300 mt-2 block">दोबारा प्रयास करें!</span>`);
             }
             userField.value = "";
+            scrollToBlackboard();
         }
 
         function triggerCelebration() {
@@ -662,6 +677,7 @@
             `;
             updateBlackboard(html);
             playClappingSound();
+            scrollToBlackboard();
         }
 
         function playClappingSound() {
@@ -728,6 +744,7 @@
                         ? "📸 किताब की फोटो लोड हो गई है! अब नीचे 'सॉल्यूशन देखें' बटन पर क्लिक करें।" 
                         : "📸 Book photo uploaded! Click 'View Solution' below.";
                     updateBlackboard(msg);
+                    scrollToBlackboard();
                 };
                 reader.readAsDataURL(file);
             }
@@ -738,6 +755,7 @@
                 ? "🔄 नेबुला एआई ब्लैकबोर्ड पर किताब का सॉल्यूशन लिख रही है..." 
                 : "🔄 Nebula AI is writing the solution on the blackboard...";
             updateBlackboard(scanMsg);
+            scrollToBlackboard();
 
             let imgElement = document.getElementById('uploadedImagePreview');
 
@@ -766,6 +784,7 @@
                     if (data.candidates && data.candidates[0].content) {
                         let aiResponseText = data.candidates[0].content.parts[0].text;
                         updateBlackboard(`<span class="text-emerald-200">${aiResponseText}</span>`);
+                        scrollToBlackboard();
                         return;
                     }
                 }
@@ -775,10 +794,12 @@
                         ? "✨ ब्लैकबोर्ड सॉल्यूशन:\nप्रश्न को ध्यान से पढ़ें! मुख्य सूत्रों को लागू करें और चरण-दर-चरण उत्तर प्राप्त करें!" 
                         : "✨ Blackboard Solution:\nRead carefully! Apply key concepts and solve step-by-step!";
                     updateBlackboard(`<span class="text-cyan-200">${defaultSolution.replace(/\n/g, '<br>')}</span>`);
+                    scrollToBlackboard();
                 }, 1200);
 
             } catch (error) {
                 updateBlackboard("सॉल्यूशन तैयार है। कृपया प्रश्न को ध्यान से हल करें।");
+                scrollToBlackboard();
             }
         }
 
