@@ -200,7 +200,7 @@
             </button>
         </div>
 
-        <!-- 5. एआई बुक स्कैनर -->
+        <!-- 5. एआई बुक स्कैनर (Integrated with Python Backend) -->
         <div class="w-full bg-slate-950 p-5 rounded-2xl border border-cyan-500/40 shadow-xl space-y-3">
             <h3 id="visionTitle" class="text-cyan-400 font-bold text-sm text-center">📸 एआई बुक स्कैनर (किताब की फोटो से ब्लैकबोर्ड पर समझें)</h3>
             <p id="visionDesc" class="text-slate-400 text-xs text-center">कक्षा 1 से 5 तक के किसी भी प्रश्न का फोटो खींचें, नेबुला टीचर ब्लैकबोर्ड पर लिखकर समझाएगी!</p>
@@ -265,14 +265,13 @@
 
     <!-- जावास्क्रिप्ट इंजन -->
     <script>
-        const GEMINI_API_KEY = "";
-
         let studentScore = 0;
         let currentLang = 'hi';
         let currentCorrectAnswer = "";
         let currentActiveCategory = "";
         let currentQuestionText = "";
         let solvedQuestions = {};
+        let uploadedImageFile = null;
 
         const siteData = {
             hi: {
@@ -728,6 +727,7 @@
         function handleImageUpload(event) {
             let file = event.target.files[0];
             if (file) {
+                uploadedImageFile = file;
                 let reader = new FileReader();
                 reader.onload = function(e) {
                     document.getElementById('uploadedImagePreview').src = e.target.result;
@@ -744,51 +744,40 @@
         }
 
         async function explainBookPage() {
+            if (!uploadedImageFile) {
+                alert(currentLang === 'hi' ? "कृपया पहले फोटो खींचें या अपलोड करें!" : "Please upload a photo first!");
+                return;
+            }
+
             let scanMsg = currentLang === 'hi' 
-                ? "🔄 नेबुला एआई ब्लैकबोर्ड पर किताब का सॉल्यूशन लिख रही है..." 
-                : "🔄 Nebula AI is writing the solution on the blackboard...";
+                ? "🔄 नेबुला एआई सर्वर पर किताब का सॉल्यूशन प्रोसेस कर रही है..." 
+                : "🔄 Nebula AI is analyzing the page on the server...";
             updateBlackboard(scanMsg);
 
-            let imgElement = document.getElementById('uploadedImagePreview');
+            let formData = new FormData();
+            formData.append("file", uploadedImageFile);
+            formData.append("lang", currentLang);
 
             try {
-                if (GEMINI_API_KEY && !GEMINI_API_KEY.includes("यहाँ")) {
-                    let base64Data = imgElement.src.split(',')[1];
-                    let mimeType = imgElement.src.split(';')[0].split(':')[1];
-                    let promptText = currentLang === 'hi' 
-                        ? "इस स्कूल की किताब के पन्ने के प्रश्न को बच्चों के लिए ब्लैकबोर्ड स्टाइल में 2-3 सरल वाक्यों में हल करें।" 
-                        : "Explain this school textbook question for kids in 2-3 simple blackboard style sentences.";
+                let response = await fetch("/analyze-homework", {
+                    method: "POST",
+                    body: formData
+                });
 
-                    let response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            contents: [{
-                                parts: [
-                                    { text: promptText },
-                                    { inline_data: { mime_type: mimeType, data: base64Data } }
-                                ]
-                            }]
-                        })
-                    });
+                let result = await response.json();
 
-                    let data = await response.json();
-                    if (data.candidates && data.candidates[0].content) {
-                        let aiResponseText = data.candidates[0].content.parts[0].text;
-                        updateBlackboard(`<span class="text-emerald-200">${aiResponseText}</span>`);
-                        return;
-                    }
+                if (result.solution) {
+                    updateBlackboard(`<span class="text-cyan-200 font-medium">${result.solution.replace(/\n/g, '<br>')}</span>`);
+                } else {
+                    updateBlackboard("सॉल्यूशन प्राप्त नहीं हुआ। कृपया दोबारा प्रयास करें।");
                 }
 
-                setTimeout(() => {
-                    let defaultSolution = currentLang === 'hi' 
-                        ? "✨ ब्लैकबोर्ड सॉल्यूशन:\nप्रश्न को ध्यान से पढ़ें! मुख्य सूत्रों को लागू करें और चरण-दर-चरण उत्तर प्राप्त करें!" 
-                        : "✨ Blackboard Solution:\nRead carefully! Apply key concepts and solve step-by-step!";
-                    updateBlackboard(`<span class="text-cyan-200">${defaultSolution.replace(/\n/g, '<br>')}</span>`);
-                }, 1200);
-
             } catch (error) {
-                updateBlackboard("सॉल्यूशन तैयार है। कृपया प्रश्न को ध्यान से हल करें।");
+                console.error("Analysis Error:", error);
+                let errText = currentLang === 'hi' 
+                    ? "⚠️ सर्वर से कनेक्ट करने में समस्या हुई। कृपया इंटरनेट कनेक्शन जाँचें।" 
+                    : "⚠️ Connection error. Please check your internet connection.";
+                updateBlackboard(errText);
             }
         }
 
