@@ -1,18 +1,23 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 # ==============================================================================
-# main.py - Dhruv Academy Master Ecosystem (Fixed UI, Toggle & Icons)
+# main.py - Dhruv Academy Master Ecosystem (Complete Production Server)
 # ==============================================================================
 
 import os
 import shutil
 import datetime
 import secrets
+import base64
+import json
 from pathlib import Path
 from typing import Optional, List
 
+import urllib.request
+import urllib.error
+
 from fastapi import FastAPI, UploadFile, File, Form, Depends, HTTPException, Request, Response, status
-from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse
 from sqlalchemy import create_engine, Column, Integer, String, DateTime, Boolean, JSON
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, Session
@@ -130,7 +135,7 @@ def require_superadmin(current_user: AdminUser = Depends(get_current_admin)):
     return current_user
 
 # ------------------------------------------------------------------------------
-# 3. सीक्रेट एडमिन लॉगिन
+# 3. सीक्रेट एडमिन लॉगिन रूट्स
 # ------------------------------------------------------------------------------
 @app.get("/secret-admin-login-dhruv", response_class=HTMLResponse)
 def secret_login_page(error: Optional[str] = None):
@@ -300,7 +305,7 @@ async def save_feature_toggles(request: Request, user: AdminUser = Depends(requi
     return RedirectResponse(url="/admin/super-dashboard", status_code=status.HTTP_303_SEE_OTHER)
 
 # ------------------------------------------------------------------------------
-# 5. मुख्य डैशबोर्ड (Fixed Hindi/English Toggle, Icons & Clean Alignment)
+# 5. मुख्य डैशबोर्ड
 # ------------------------------------------------------------------------------
 @app.get("/", response_class=HTMLResponse)
 def master_ecosystem_dashboard():
@@ -332,7 +337,6 @@ def master_ecosystem_dashboard():
             .master-card { backdrop-filter: blur(20px); transition: all 0.3s ease; }
             .master-card:hover { transform: translateY(-4px); box-shadow: 0 15px 30px -10px rgba(56, 189, 248, 0.4); }
 
-            /* परफेक्ट दो-बटन टॉगल कंटेनर */
             .lang-pill-container {
                 display: inline-flex;
                 align-items: center;
@@ -344,7 +348,6 @@ def master_ecosystem_dashboard():
                 box-shadow: inset 0 2px 4px rgba(0,0,0,0.5);
             }
 
-            /* दोनों बटनों का बेसिक स्टाइल */
             .lang-pill-btn {
                 padding: 6px 18px;
                 border-radius: 9999px;
@@ -361,14 +364,12 @@ def master_ecosystem_dashboard():
                 white-space: nowrap;
             }
 
-            /* Active Button */
             .lang-pill-active {
                 background: linear-gradient(135deg, #0284c7, #0369a1) !important;
                 color: #ffffff !important;
                 box-shadow: 0 2px 8px rgba(14, 165, 233, 0.5);
             }
 
-            /* Inactive Button */
             .lang-pill-inactive {
                 background: transparent !important;
                 color: #94a3b8 !important;
@@ -382,7 +383,6 @@ def master_ecosystem_dashboard():
     <body class="min-h-screen dark-mode flex flex-col justify-between" id="pageBody">
 
         <div>
-            <!-- शीर्ष पट्टी (Top Bar) -->
             <div id="topControlBar" class="top-bar w-full border-b px-4 py-2 flex justify-end items-center text-xs sticky top-0 z-50 backdrop-blur-md gap-3">
                 <button onclick="toggleThemeMode()" id="themeToggleBtn" class="px-3 py-1 bg-slate-800 text-amber-300 hover:bg-slate-700 rounded-lg font-bold shadow transition text-[11px]">
                     Light Mode
@@ -396,14 +396,12 @@ def master_ecosystem_dashboard():
 
             <div id="mainContainer" class="max-w-7xl mx-auto px-4 sm:px-6 py-8 space-y-10">
                 
-                <!-- हेडर और परफेक्ट भाषा स्विच -->
                 <header class="flex flex-col md:flex-row justify-between items-center pb-6 border-b border-gray-800 gap-4">
                     <div>
                         <h1 class="text-2xl sm:text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-sky-300 to-indigo-400" id="mainHeaderTitle">Dhruv Academy Master Ecosystem</h1>
                         <p class="text-[11px] sm:text-xs font-semibold tracking-widest uppercase mt-1 opacity-90 text-cyan-300" id="mainHeaderSub">100% सिक्योर एनक्रिप्टेड डेटा आर्किटेक्चर | विश्व स्तरीय एआई</p>
                     </div>
                     
-                    <!-- भाषा टॉगल (साफ और सुव्यवस्थित) -->
                     <div class="flex items-center gap-2">
                         <span class="text-xs font-bold text-slate-400">Lang:</span>
                         <div class="lang-pill-container">
@@ -413,7 +411,6 @@ def master_ecosystem_dashboard():
                     </div>
                 </header>
 
-                <!-- नेबुला बैनर -->
                 <div class="nebula-master-glow p-6 sm:p-12 rounded-3xl border border-cyan-500/40 text-center space-y-6 shadow-2xl relative overflow-hidden">
                     <h1 class="text-2xl sm:text-4xl lg:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-sky-200 to-purple-400" id="heroTitle">Dhruv Academy Master Ecosystem</h1>
                     <p class="text-xs sm:text-sm md:text-base max-w-3xl mx-auto leading-relaxed font-semibold text-slate-200" id="heroDesc">
@@ -429,7 +426,6 @@ def master_ecosystem_dashboard():
                     </div>
                 </div>
                 
-                <!-- सभी 10 मॉड्यूल्स -->
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                     <div onclick="window.location.href='/kids-zone'" class="master-card p-6 rounded-2xl cursor-pointer hover:border-emerald-500 border border-transparent transition-all">
                         <h3 class="font-bold text-lg mb-2">1. Foundation: NC-5 Kids Tier</h3>
@@ -488,14 +484,12 @@ def master_ecosystem_dashboard():
             </div>
         </div>
 
-        <!-- फुटर -->
         <footer class="w-full border-t border-gray-800/80 py-4 px-6 text-center text-xs text-gray-500 bg-slate-950/80">
             <p>© 2026 Dhruv Academy Master Ecosystem. सर्वाधिकार सुरक्षित। 
                 <a href="/secret-admin-login-dhruv" class="opacity-20 hover:opacity-100 hover:text-cyan-400 transition ml-2 text-[10px]" title="एडमिन पोर्टल">System Gateway</a>
             </p>
         </footer>
 
-        <!-- मॉड्यूल्स पॉप-अप -->
         <div id="modulePortalModal" class="hidden fixed inset-0 bg-black/85 flex items-center justify-center p-4 z-50 backdrop-blur-md">
             <div class="master-card p-6 sm:p-8 rounded-3xl w-full max-w-xl space-y-6 border border-cyan-500/50 shadow-2xl">
                 <div class="flex justify-between items-center border-b border-gray-700 pb-4">
@@ -509,7 +503,6 @@ def master_ecosystem_dashboard():
             </div>
         </div>
 
-        <!-- पेमेंट गेटवे -->
         <div id="paymentGatewayModal" class="hidden fixed inset-0 bg-black/85 flex items-center justify-center p-4 z-50 backdrop-blur-md">
             <div class="master-card p-6 sm:p-8 rounded-3xl w-full max-w-md space-y-6 border border-emerald-500/50 shadow-2xl text-center">
                 <div class="flex justify-between items-center border-b border-gray-700 pb-4">
@@ -666,7 +659,64 @@ def master_ecosystem_dashboard():
     """
 
 # ------------------------------------------------------------------------------
-# 6. एडमिन डेटा मॉनिटर, फाइल अपलोड और किड्स ज़ोन
+# 6. एआई विजन एपीआई (Gemini Vision Server-Side Integration)
+# ------------------------------------------------------------------------------
+@app.post("/analyze-homework")
+async def analyze_homework(file: UploadFile = File(...), lang: str = Form("hi")):
+    api_key = os.environ.get("GEMINI_API_KEY", "")
+    
+    if not api_key:
+        return JSONResponse(content={
+            "success": False,
+            "solution": "⚠️ सर्वर पर GEMINI_API_KEY उपलब्ध नहीं है। कृपया Render एनवायरनमेंट सेटिंग्स में GEMINI_API_KEY जोड़ें।" if lang == "hi" else "⚠️ GEMINI_API_KEY is not set on the server environment."
+        })
+
+    try:
+        image_bytes = await file.read()
+        base64_image = base64.b64encode(image_bytes).decode("utf-8")
+        mime_type = file.content_type or "image/jpeg"
+
+        prompt = (
+            "आप नेबुला एआई टीचर हैं। इस स्कूल की किताब के पन्ने/प्रश्न को छोटे बच्चों के लिए ब्लैकबोर्ड पर समझाने के अंदाज़ में बहुत सरल, स्पष्ट और रोचक तरीके से 2-3 वाक्यों में स्टेप-बाय-स्टेप हल करें।"
+            if lang == "hi"
+            else "You are Nebula AI Teacher. Explain and solve this school textbook question for young kids in 2-3 simple, engaging sentences suitable for a classroom blackboard."
+        )
+
+        payload = {
+            "contents": [
+                {
+                    "parts": [
+                        {"text": prompt},
+                        {
+                            "inline_data": {
+                                "mime_type": mime_type,
+                                "data": base64_image
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={api_key}"
+        req = urllib.request.Request(
+            url,
+            data=json.dumps(payload).encode("utf-8"),
+            headers={"Content-Type": "application/json"},
+            method="POST"
+        )
+
+        with urllib.request.urlopen(req, timeout=30) as response:
+            res_data = json.loads(response.read().decode("utf-8"))
+            solution_text = res_data["candidates"][0]["content"]["parts"][0]["text"]
+            return JSONResponse(content={"success": True, "solution": solution_text.strip()})
+
+    except Exception as e:
+        err_msg = f"त्रुटि: फोटो का विश्लेषण नहीं हो सका ({str(e)})" if lang == "hi" else f"Error: Unable to analyze image ({str(e)})"
+        return JSONResponse(content={"success": False, "solution": err_msg})
+
+# ------------------------------------------------------------------------------
+# 7. एडमिन डेटा मॉनिटर, फाइल अपलोड और किड्स ज़ोन
 # ------------------------------------------------------------------------------
 @app.get("/admin", response_class=HTMLResponse)
 async def master_admin_panel(user: AdminUser = Depends(get_current_admin), db: Session = Depends(get_db)):
@@ -742,7 +792,7 @@ async def kids_zone():
         return f.read()
 
 # ------------------------------------------------------------------------------
-# 7. सर्वर एक्ज़ीक्यूशन
+# 8. सर्वर एक्ज़ीक्यूशन
 # ------------------------------------------------------------------------------
 if __name__ == "__main__":
     import uvicorn
