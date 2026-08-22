@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 # ==============================================================================
-# main.py - Dhruv Academy Master Ecosystem (Full & Working with Vision API)
+# main.py - Dhruv Academy Master Ecosystem (Full & Working with Gemini Vision)
 # ==============================================================================
 
 import os
@@ -659,7 +659,7 @@ def master_ecosystem_dashboard():
     """
 
 # ------------------------------------------------------------------------------
-# 6. एआई विजन एपीआई (Handles /analyze-homework, /analyze & /upload-homework)
+# 6. एआई विजन एपीआई (Handles /analyze-homework, /analyze & /upload)
 # ------------------------------------------------------------------------------
 async def process_gemini_vision(file: UploadFile, lang: str):
     api_key = os.environ.get("GEMINI_API_KEY", "")
@@ -722,7 +722,7 @@ async def analyze_homework_endpoint(file: UploadFile = File(...), lang: str = Fo
 async def analyze_alias_endpoint(file: UploadFile = File(...), lang: str = Form("hi")):
     return await process_gemini_vision(file, lang)
 
-@app.post("/upload-homework")
+@app.post("/upload")
 async def upload_alias_endpoint(file: UploadFile = File(...), lang: str = Form("hi")):
     return await process_gemini_vision(file, lang)
 
