@@ -5,6 +5,54 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AI Virtual Classroom & Master Hub - Dhruv Academy Master Ecosystem</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap');
+        body { font-family: 'Poppins', sans-serif; }
+
+        /* सुव्यवस्थित भाषा टॉगल कंटेनर */
+        .lang-pill-container {
+            display: inline-flex;
+            align-items: center;
+            background-color: #0b1329;
+            border: 1.5px solid #0284c7;
+            border-radius: 9999px;
+            padding: 3px;
+            gap: 4px;
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        /* बटन स्टाइल */
+        .lang-pill-btn {
+            padding: 5px 14px;
+            border-radius: 9999px;
+            font-size: 11px;
+            font-weight: 700;
+            line-height: 1;
+            border: none;
+            outline: none;
+            transition: all 0.25s ease-in-out;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            white-space: nowrap;
+        }
+
+        .lang-pill-active {
+            background: linear-gradient(135deg, #0284c7, #0369a1) !important;
+            color: #ffffff !important;
+            box-shadow: 0 2px 8px rgba(14, 165, 233, 0.5);
+        }
+
+        .lang-pill-inactive {
+            background: transparent !important;
+            color: #94a3b8 !important;
+        }
+
+        .lang-pill-inactive:hover {
+            color: #f8fafc !important;
+        }
+    </style>
 </head>
 <body class="bg-slate-950 text-white min-h-screen flex flex-col items-center justify-between p-4">
 
@@ -15,13 +63,16 @@
         </a>
 
         <!-- भाषा बदलने का टॉगल स्विच -->
-        <div class="bg-slate-900 border border-slate-700 p-1.5 rounded-xl flex items-center shadow-inner gap-1">
-            <button onclick="switchLanguage('hi')" id="hiBtn" class="bg-cyan-600 text-white px-3 py-1 rounded-lg text-xs font-bold transition cursor-pointer">
-                हिं
-            </button>
-            <button onclick="switchLanguage('en')" id="enBtn" class="text-slate-400 px-3 py-1 rounded-lg text-xs font-bold transition cursor-pointer">
-                English
-            </button>
+        <div class="flex items-center gap-2">
+            <span class="text-xs font-bold text-slate-400">Lang:</span>
+            <div class="lang-pill-container">
+                <button type="button" onclick="switchLanguage('hi')" id="hiBtn" class="lang-pill-btn lang-pill-active">
+                    हिंदी
+                </button>
+                <button type="button" onclick="switchLanguage('en')" id="enBtn" class="lang-pill-btn lang-pill-inactive">
+                    English
+                </button>
+            </div>
         </div>
     </div>
 
@@ -254,6 +305,119 @@
             }
         };
 
+        // --- NEW DYNAMIC QUESTION BANKS ---
+        const puzzleBank = {
+            hi: [
+                {q: "ऐसी कौन सी चीज़ है जो लिखने के काम आती है पर पेन नहीं?", a: "पेंसिल"},
+                {q: "काला कुत्ता, कमरे में खूंटा? (बताओ क्या)", a: "छाता"},
+                {q: "एक पैर है, पर चल नहीं सकता?", a: "मेज"},
+                {q: "ऐसी कौन सी चीज है जो हमेशा बढ़ती है, कभी कम नहीं होती?", a: "उम्र"},
+                {q: "कटोरे में कटोरा, बेटा बाप से भी गोरा। बताओ क्या?", a: "नारियल"},
+                {q: "लाल डिब्बे में पीले खाने, हर खाने में मोती के दाने। बताओ क्या?", a: "अनार"},
+                {q: "हरी डंडी, लाल कमान, तौबा-तौबा करे इंसान।", a: "मिर्च"},
+                {q: "बिना पंख के उड़ती है, बिना पैर के चलती है।", a: "पतंग"},
+                {q: "मैं हर किसी के पास हूँ, पर कोई मुझे देख नहीं सकता।", a: "हवा"},
+                {q: "जितना ज्यादा निकालोगे, उतना ही बड़ा होगा।", a: "गड्ढा"},
+                {q: "एक गुफा में बत्तीस चोर, दिनभर करते काम रात को करते आराम।", a: "दांत"},
+                {q: "पानी से पैदा होता है, पानी में ही मर जाता है।", a: "नमक"}
+            ],
+            en: [
+                {q: "What is used to write with, but is not a pen?", a: "pencil"},
+                {q: "What has a head and a tail, but no body?", a: "coin"},
+                {q: "What gets wetter as it dries?", a: "towel"},
+                {q: "What has legs, but doesn't walk?", a: "table"},
+                {q: "What has hands but cannot clap?", a: "clock"},
+                {q: "I have branches, but no fruit, trunk or leaves. What am I?", a: "bank"},
+                {q: "What has many keys but can't open a single lock?", a: "piano"},
+                {q: "What is always in front of you but can't be seen?", a: "future"},
+                {q: "The more you take, the more you leave behind. What are they?", a: "footsteps"},
+                {q: "What can you catch, but not throw?", a: "cold"},
+                {q: "What goes up but never comes down?", a: "age"},
+                {q: "I shave every day, but my beard stays the same. What am I?", a: "barber"}
+            ]
+        };
+
+        const gkBank = {
+            hi: [
+                {q: "हमारे देश भारत की राजधानी क्या है?", a: "दिल्ली"},
+                {q: "ताजमहल किस शहर में स्थित है?", a: "आगरा"},
+                {q: "हफ्ते में कुल कितने दिन होते हैं?", a: "7"},
+                {q: "भारत का राष्ट्रीय पशु कौन सा है?", a: "बाघ"},
+                {q: "एक साल में कितने महीने होते हैं?", a: "12"},
+                {q: "भारत के प्रथम प्रधानमंत्री कौन थे?", a: "जवाहरलाल नेहरू"},
+                {q: "सौरमंडल का सबसे बड़ा ग्रह कौन सा है?", a: "बृहस्पति"},
+                {q: "स्वतंत्रता दिवस कब मनाया जाता है? (महीना लिखें)", a: "अगस्त"},
+                {q: "गणतंत्र दिवस कब मनाया जाता है? (महीना लिखें)", a: "जनवरी"},
+                {q: "कुतुब मीनार कहाँ है?", a: "दिल्ली"},
+                {q: "लाल किला किस शहर में है?", a: "दिल्ली"},
+                {q: "राष्ट्रीय गीत 'वंदे मातरम' किसने लिखा था?", a: "बंकिम चंद्र चटर्जी"}
+            ],
+            en: [
+                {q: "What is the capital city of India?", a: "delhi"},
+                {q: "How many days are there in a week?", a: "7"},
+                {q: "What is the national animal of India?", a: "tiger"},
+                {q: "How many months are in a year?", a: "12"},
+                {q: "Which is the largest planet in our solar system?", a: "jupiter"},
+                {q: "Who was the first Prime Minister of India?", a: "jawaharlal nehru"},
+                {q: "In which city is the Taj Mahal located?", a: "agra"},
+                {q: "How many colors are there in a rainbow?", a: "7"},
+                {q: "Which is the tallest animal on Earth?", a: "giraffe"},
+                {q: "Which is the fastest land animal?", a: "cheetah"},
+                {q: "What do bees make?", a: "honey"},
+                {q: "Which direction does the sun rise?", a: "east"}
+            ]
+        };
+
+        const evsBank = {
+            hi: [
+                {q: "पेड़-पौधे हमें सांस लेने के लिए कौन सी गैस देते हैं?", a: "ऑक्सीजन"},
+                {q: "सूरज किस दिशा से निकलता है?", a: "पूर्व"},
+                {q: "हमारा राष्ट्रीय पक्षी कौन है?", a: "मोर"},
+                {q: "रात में आसमान में चमकने वाला सबसे बड़ा पिंड क्या है?", a: "चांद"},
+                {q: "जल का रंग कैसा होता है?", a: "पारदर्शी"},
+                {q: "बर्फ पिघलने पर क्या बनती है?", a: "पानी"},
+                {q: "दूध का रंग कैसा होता है?", a: "सफेद"},
+                {q: "पृथ्वी पर सबसे ऊंचा जानवर कौन सा है?", a: "जिराफ"},
+                {q: "मछली कहाँ रहती है?", a: "पानी"},
+                {q: "आसमान का रंग कैसा होता है?", a: "नीला"},
+                {q: "पत्तियों का रंग आमतौर पर कैसा होता है?", a: "हरा"},
+                {q: "शहद कौन बनाता है?", a: "मधुमक्खी"}
+            ],
+            en: [
+                {q: "Which gas do trees give us to breathe?", a: "oxygen"},
+                {q: "From which direction does the Sun rise?", a: "east"},
+                {q: "What is the national bird of India?", a: "peacock"},
+                {q: "What shines brightly in the night sky?", a: "moon"},
+                {q: "What color is milk?", a: "white"},
+                {q: "What do you call frozen water?", a: "ice"},
+                {q: "Where do fish live?", a: "water"},
+                {q: "What color is the sky on a clear day?", a: "blue"},
+                {q: "What color are most leaves?", a: "green"},
+                {q: "Which planet do we live on?", a: "earth"},
+                {q: "What do cows give us to drink?", a: "milk"},
+                {q: "What falls from clouds when it's raining?", a: "rain"}
+            ]
+        };
+        
+        const poemBank = {
+             hi: [
+                {q: "🎵 कविता: 'मछली जल की रानी है, जीवन उसका पानी है...' (कविता सुनी? 'हाँ' लिखें)", a: "हाँ"},
+                {q: "🎵 कविता: 'चंदा मामा दूर के, पुए पकाएं बूर के...' (कविता सुनी? 'हाँ' लिखें)", a: "हाँ"},
+                {q: "🎵 कविता: 'नानी तेरी मोरनी को मोर ले गए...' (कविता सुनी? 'हाँ' लिखें)", a: "हाँ"},
+                {q: "🎵 कविता: 'आलू कचालू बेटा कहाँ गए थे...' (कविता सुनी? 'हाँ' लिखें)", a: "हाँ"},
+                {q: "🎵 कविता: 'लकड़ी की काठी, काठी पे घोड़ा...' (कविता सुनी? 'हाँ' लिखें)", a: "हाँ"}
+             ],
+             en: [
+                {q: "🎵 Poem: 'Twinkle, twinkle, little star...' (Type 'Yes')", a: "yes"},
+                {q: "🎵 Poem: 'Baa, baa, black sheep...' (Type 'Yes')", a: "yes"},
+                {q: "🎵 Poem: 'Humpty Dumpty sat on a wall...' (Type 'Yes')", a: "yes"},
+                {q: "🎵 Poem: 'Jack and Jill went up the hill...' (Type 'Yes')", a: "yes"},
+                {q: "🎵 Poem: 'Mary had a little lamb...' (Type 'Yes')", a: "yes"}
+             ]
+        }
+
+        // --- END DYNAMIC QUESTION BANKS ---
+
         function switchLanguage(lang) {
             currentLang = lang;
             let d = siteData[lang];
@@ -284,12 +448,15 @@
             document.getElementById('submitHwBtnText').innerText = d.subHwBtn;
             document.getElementById('whatsappBtnText').innerText = d.waBtn;
 
+            let hiBtn = document.getElementById('hiBtn');
+            let enBtn = document.getElementById('enBtn');
+
             if (lang === 'hi') {
-                document.getElementById('hiBtn').className = "bg-cyan-600 text-white px-3 py-1 rounded-lg text-xs font-bold transition cursor-pointer";
-                document.getElementById('enBtn').className = "text-slate-400 px-3 py-1 rounded-lg text-xs font-bold transition cursor-pointer";
+                hiBtn.className = "lang-pill-btn lang-pill-active";
+                enBtn.className = "lang-pill-btn lang-pill-inactive";
             } else {
-                document.getElementById('enBtn').className = "bg-cyan-600 text-white px-3 py-1 rounded-lg text-xs font-bold transition cursor-pointer";
-                document.getElementById('hiBtn').className = "text-slate-400 px-3 py-1 rounded-lg text-xs font-bold transition cursor-pointer";
+                enBtn.className = "lang-pill-btn lang-pill-active";
+                hiBtn.className = "lang-pill-btn lang-pill-inactive";
             }
         }
 
@@ -455,6 +622,12 @@
             }
         }
 
+        // Helper function to get a random question from an array
+        function getRandomQuestion(questionArray) {
+            let randomIndex = Math.floor(Math.random() * questionArray.length);
+            return questionArray[randomIndex];
+        }
+
         function loadChallenge(category) {
             let d = siteData[currentLang];
             currentActiveCategory = category;
@@ -475,47 +648,24 @@
                 }
             } 
             else if (category === 'puzzle') {
-                const list = currentLang === 'hi' ? [
-                    {q: "ऐसी कौन सी चीज़ है जो लिखने के काम आती है पर पेन नहीं?", a: "पेंसिल"},
-                    {q: "काला कुत्ता, कमरे में खूंटा? (बताओ क्या)", a: "छाता"},
-                    {q: "एक पैर है, पर चल नहीं सकता?", a: "मेज"}
-                ] : [
-                    {q: "What is used to write with, but is not a pen?", a: "pencil"},
-                    {q: "What has a head and a tail, but no body?", a: "coin"}
-                ];
-                let p = list[Math.floor(Math.random() * list.length)];
+                let p = getRandomQuestion(puzzleBank[currentLang]);
                 textToShow = p.q; 
                 currentCorrectAnswer = p.a;
             }
             else if (category === 'gk') {
-                const list = currentLang === 'hi' ? [
-                    {q: "हमारे देश भारत की राजधानी क्या है?", a: "दिल्ली"},
-                    {q: "ताजमहल किस शहर में स्थित है?", a: "आगरा"},
-                    {q: "हफ्ते में कुल कितने दिन होते हैं?", a: "7"}
-                ] : [
-                    {q: "What is the capital city of India?", a: "delhi"},
-                    {q: "How many days are there in a week?", a: "7"}
-                ];
-                let g = list[Math.floor(Math.random() * list.length)];
+                let g = getRandomQuestion(gkBank[currentLang]);
                 textToShow = g.q; 
                 currentCorrectAnswer = g.a;
             }
             else if (category === 'evs') {
-                const list = currentLang === 'hi' ? [
-                    {q: "पेड़-पौधे हमें सांस लेने के लिए कौन सी गैस देते हैं?", a: "ऑक्सीजन"},
-                    {q: "सूरज किस दिशा से निकलता है?", a: "पूर्व"},
-                    {q: "हमारा राष्ट्रीय पक्षी कौन है?", a: "मोर"}
-                ] : [
-                    {q: "Which gas do trees give us to breathe?", a: "oxygen"},
-                    {q: "From which direction does the Sun rise?", a: "east"}
-                ];
-                let e = list[Math.floor(Math.random() * list.length)];
+                let e = getRandomQuestion(evsBank[currentLang]);
                 textToShow = e.q; 
                 currentCorrectAnswer = e.a;
             }
             else if (category === 'poem') {
-                textToShow = currentLang === 'hi' ? "🎵 कविता: 'मछली जल की रानी है, जीवन उसका पानी है...' (कविता सुनी? 'हाँ' लिखें)" : "🎵 Poem: 'Twinkle, twinkle, little star...' (Type 'Yes')";
-                currentCorrectAnswer = currentLang === 'hi' ? "हाँ" : "yes";
+                let po = getRandomQuestion(poemBank[currentLang]);
+                textToShow = po.q;
+                currentCorrectAnswer = po.a;
             }
 
             currentQuestionText = textToShow;
