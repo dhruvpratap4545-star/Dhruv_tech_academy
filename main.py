@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 # ==============================================================================
-# main.py - Dhruv Academy Master Ecosystem (100% v1beta Verified Vision Engine)
+# main.py - Dhruv Academy Master Ecosystem (Gemini 2.5 Flash Production Engine)
 # ==============================================================================
 
 import os
@@ -589,7 +589,7 @@ def master_ecosystem_dashboard():
     """
 
 # ------------------------------------------------------------------------------
-# 6. एआई विजन एपीआई (100% v1beta Verified Architecture)
+# 6. एआई विजन एपीआई (Targeted to Active gemini-2.5-flash)
 # ------------------------------------------------------------------------------
 async def process_gemini_vision(file: UploadFile, lang: str):
     api_key = (
@@ -632,41 +632,31 @@ async def process_gemini_vision(file: UploadFile, lang: str):
             ]
         }
 
-        # केवल शुद्ध v1beta एंडपॉइंट्स (v1 पूरी तरह हटा दिया गया है)
-        verified_v1beta_endpoints = [
-            f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={api_key}",
-            f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-8b:generateContent?key={api_key}",
-            f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={api_key}"
-        ]
+        # Google Gemini Active Models
+        target_url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={api_key}"
 
-        last_error = ""
-        for target_url in verified_v1beta_endpoints:
-            try:
-                req = urllib.request.Request(
-                    target_url,
-                    data=json.dumps(payload).encode("utf-8"),
-                    headers={
-                        "Content-Type": "application/json",
-                        "x-goog-api-key": api_key
-                    },
-                    method="POST"
-                )
-                with urllib.request.urlopen(req, timeout=40) as response:
-                    res_data = json.loads(response.read().decode("utf-8"))
-                    solution_text = res_data["candidates"][0]["content"]["parts"][0]["text"]
-                    return JSONResponse(content={"success": True, "solution": solution_text.strip()})
-            except urllib.error.HTTPError as he:
-                try:
-                    err_body = he.read().decode("utf-8")
-                    err_json = json.loads(err_body)
-                    last_error = err_json.get("error", {}).get("message", f"HTTP {he.code}: {he.reason}")
-                except Exception:
-                    last_error = f"HTTP Error {he.code}: {he.reason}"
-                continue
-            except Exception as e:
-                last_error = str(e)
-                continue
+        req = urllib.request.Request(
+            target_url,
+            data=json.dumps(payload).encode("utf-8"),
+            headers={
+                "Content-Type": "application/json"
+            },
+            method="POST"
+        )
 
+        with urllib.request.urlopen(req, timeout=40) as response:
+            res_data = json.loads(response.read().decode("utf-8"))
+            solution_text = res_data["candidates"][0]["content"]["parts"][0]["text"]
+            return JSONResponse(content={"success": True, "solution": solution_text.strip()})
+
+    except urllib.error.HTTPError as he:
+        try:
+            err_body = he.read().decode("utf-8")
+            err_json = json.loads(err_body)
+            last_error = err_json.get("error", {}).get("message", f"HTTP {he.code}: {he.reason}")
+        except Exception:
+            last_error = f"HTTP Error {he.code}: {he.reason}"
+        
         err_msg = f"त्रुटि: फोटो का विश्लेषण नहीं हो सका ({last_error})" if lang == "hi" else f"Error: Unable to analyze image ({last_error})"
         return JSONResponse(content={"success": False, "solution": err_msg})
 
