@@ -589,11 +589,11 @@ def master_ecosystem_dashboard():
     """
 
 # ------------------------------------------------------------------------------
-# 6. ऑटो एपीआई कीज़ रोटेशन इंजन
+# 6. ऑटो एपीआई कीज़ रोटेशन व पूर्ण समाधान इंजन
 # ------------------------------------------------------------------------------
 def get_all_gemini_keys() -> List[str]:
     keys = []
-    # GEMINI_API_KEY1, GEMINI_API_KEY2, GEMINI_API_KEY3 आदि से पढ़ना
+    # Render में सेट GEMINI_API_KEY1, GEMINI_API_KEY2, GEMINI_API_KEY3 पढ़ना
     for i in range(1, 6):
         k_val = (os.environ.get(f"GEMINI_API_KEY{i}") or os.environ.get(f"GEMINI_API_KEY_{i}") or "").strip().strip('"').strip("'")
         if k_val and k_val not in keys:
@@ -623,9 +623,9 @@ async def process_gemini_vision(file: UploadFile, lang: str):
         base64_image = base64.b64encode(image_bytes).decode("utf-8")
 
         prompt = (
-            "आप नेबुला एआई टीचर हैं। इस किताब के पन्ने/सवाल को कक्षा 1 से 5 के छोटे बच्चों के लिए बहुत ही सरल, मीठी और आसान बोलचाल की भाषा में समझाएं। भारी किताबी शब्द बिल्कुल न लिखें। इसे केवल 2-3 छोटे-छोटे पॉइंट (जैसे पॉइंट 1, पॉइंट 2, पॉइंट 3) में स्टेप-बाय-स्टेप समझाकर हल करें।"
+            "आप नेबुला एआई टीचर हैं। इस किताब के पन्ने/प्रश्न का पूरा, सटीक और विस्तृत समाधान कक्षा 1 से 5 के बच्चों के लिए पॉइंट-टू-पॉइंट (पॉइंट 1, पॉइंट 2, पॉइंट 3...) सरल हिंदी और आसान शब्दों में समझाकर लिखें। अधूरा उत्तर बिल्कुल न दें, पूरे पन्ने के मुख्य विषय और सभी सवालों का हल साफ-साफ स्पष्ट करें।"
             if lang == "hi"
-            else "You are Nebula AI Teacher. Explain and solve this textbook question for class 1-5 young kids in very simple, step-by-step points (Point 1, Point 2, Point 3). Use easy everyday English."
+            else "You are Nebula AI Teacher. Provide a complete, accurate, and step-by-step point-to-point (Point 1, Point 2, Point 3...) solution for this textbook page for young school kids. Explain the entire topic and questions completely in simple everyday English without leaving out anything."
         )
 
         payload = {
@@ -641,12 +641,16 @@ async def process_gemini_vision(file: UploadFile, lang: str):
                         }
                     ]
                 }
-            ]
+            ],
+            "generationConfig": {
+                "maxOutputTokens": 1024,
+                "temperature": 0.3
+            }
         }
 
         last_error = ""
 
-        # Key Rotation
+        # Multi-Key Rotation
         for key in api_keys:
             target_url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key={key}"
             try:
@@ -657,7 +661,7 @@ async def process_gemini_vision(file: UploadFile, lang: str):
                     method="POST"
                 )
 
-                with urllib.request.urlopen(req, timeout=35) as response:
+                with urllib.request.urlopen(req, timeout=40) as response:
                     res_data = json.loads(response.read().decode("utf-8"))
                     solution_text = res_data["candidates"][0]["content"]["parts"][0]["text"]
                     return JSONResponse(content={"success": True, "solution": solution_text.strip()})
