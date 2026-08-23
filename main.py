@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 # ==============================================================================
-# main.py - Dhruv Academy Master Ecosystem (API Key Rotation & Crash Safe)
+# main.py - Dhruv Academy Master Ecosystem (Child-Friendly AI Vision Engine)
 # ==============================================================================
 
 import os
@@ -318,17 +318,15 @@ def master_ecosystem_dashboard():
     """
 
 # ------------------------------------------------------------------------------
-# 6. ऑटो एपीआई कीज़ रोटेशन इंजन (Detects GEMINI_API_KEY1, 2, 3)
+# 6. ऑटो एपीआई कीज़ रोटेशन इंजन
 # ------------------------------------------------------------------------------
 def get_all_gemini_keys() -> List[str]:
     keys = []
-    # आपके Render डैशबोर्ड के अनुसार (GEMINI_API_KEY1, GEMINI_API_KEY2, GEMINI_API_KEY3)
     for i in range(1, 6):
         k_val = (os.environ.get(f"GEMINI_API_KEY{i}") or os.environ.get(f"GEMINI_API_KEY_{i}") or "").strip().strip('"').strip("'")
         if k_val and k_val not in keys:
             keys.append(k_val)
 
-    # सिंगल या कॉमा सेपरेटेड बैकअप
     env_keys_raw = (os.environ.get("GEMINI_API_KEY") or os.environ.get("GEMINI_API_KEYS") or "").strip()
     if env_keys_raw:
         for k in env_keys_raw.split(","):
@@ -352,10 +350,11 @@ async def process_gemini_vision(file: UploadFile, lang: str):
         mime_type = file.content_type or "image/jpeg"
         base64_image = base64.b64encode(image_bytes).decode("utf-8")
 
+        # बच्चों के लिए बेहद सरल और रोचक प्रॉम्प्ट
         prompt = (
-            "आप नेबुला एआई टीचर हैं। इस स्कूल की किताब के पन्ने/प्रश्न को छोटे बच्चों के लिए ब्लैकबोर्ड पर समझाने के अंदाज़ में बहुत सरल, स्पष्ट और रोचक तरीके से 2-3 वाक्यों में स्टेप-बाय-स्टेप हल करें।"
+            "आप नेबुला एआई टीचर हैं। इस किताब के पन्ने/सवाल को कक्षा 1 से 5 के छोटे बच्चों के लिए बहुत ही सरल, मीठी और आसान बोलचाल की भाषा में समझाएं। भारी किताबी शब्द बिल्कुल न लिखें। केवल 2-3 छोटे-छोटे वाक्यों में स्टेप-बाय-स्टेप और सीधे मतलब समझाएं।"
             if lang == "hi"
-            else "You are Nebula AI Teacher. Explain and solve this school textbook question for young kids in 2-3 simple, engaging sentences suitable for a classroom blackboard."
+            else "You are Nebula AI Teacher. Explain and solve this textbook question for class 1-5 young kids in very simple, easy everyday English. Avoid complex words. Keep it to 2-3 very short, clear sentences suitable for a blackboard."
         )
 
         payload = {
@@ -376,7 +375,7 @@ async def process_gemini_vision(file: UploadFile, lang: str):
 
         last_error = ""
 
-        # Key Rotation: यदि Key 1 पर कोटा फुल (429) हो तो तुरंत Key 2 पर स्विच
+        # Key Rotation
         for key in api_keys:
             target_url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key={key}"
             try:
