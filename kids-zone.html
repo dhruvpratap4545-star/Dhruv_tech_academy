@@ -10,11 +10,13 @@
         
         body { font-family: 'Poppins', 'Yantramanav', sans-serif; }
 
+        /* चाक-बोर्ड / ब्लैकबोर्ड फॉन्ट */
         .chalk-font { 
             font-family: 'Poppins', 'Yantramanav', sans-serif; 
             letter-spacing: 0.02em;
         }
 
+        /* नेबुला ब्लैकबोर्ड बॉर्डर व बैकग्राउंड */
         .nebula-board {
             background: radial-gradient(circle at top left, #0d1b2a 0%, #050b14 100%);
             border: 8px solid #334155;
@@ -25,6 +27,7 @@
             border: 2px dashed rgba(56, 189, 248, 0.3);
         }
 
+        /* एनिमेटेड एआई अवतार */
         .avatar-glow {
             box-shadow: 0 0 25px rgba(56, 189, 248, 0.6), inset 0 0 15px rgba(255, 255, 255, 0.4);
             animation: floatGlow 3s ease-in-out infinite;
@@ -42,6 +45,7 @@
             100% { transform: scale(1.08); border-color: #facc15; box-shadow: 0 0 30px #facc15; }
         }
 
+        /* भाषा टॉगल पिल्स */
         .lang-pill-container {
             display: inline-flex;
             align-items: center;
@@ -81,7 +85,7 @@
 </head>
 <body class="bg-slate-950 text-white min-h-screen flex flex-col items-center justify-between p-3 sm:p-5">
 
-    <!-- शीर्ष बार -->
+    <!-- शीर्ष बार: मुख्य पोर्टल और भाषा स्विच -->
     <div class="w-full max-w-3xl flex justify-between items-center my-3 px-2">
         <a href="/" class="bg-red-600 hover:bg-red-500 text-white px-4 py-2 rounded-xl text-xs font-bold shadow-lg transition flex items-center gap-1.5">
             ← <span id="portalText">मुख्य पोर्टल</span>
@@ -128,13 +132,13 @@
             <div class="bg-slate-950 border border-cyan-500/50 px-4 py-2.5 rounded-2xl text-center sm:text-right shadow-inner w-full sm:w-auto">
                 <div class="flex items-center justify-between sm:justify-end gap-3">
                     <span id="scoreLabel" class="text-[10px] text-cyan-400 block font-bold uppercase tracking-wider">जीनियस स्कोर</span>
-                    <button onclick="resetScoreProgress()" class="text-[10px] text-gray-400 hover:text-rose-400 underline" title="स्कोर रीसेट करें">रीसेट</button>
+                    <button onclick="resetScoreProgress()" type="button" class="text-[10px] text-rose-400 hover:text-rose-300 font-bold underline" title="स्कोर रीसेट करें">रीसेट ✕</button>
                 </div>
                 <span id="scoreDisplay" class="text-lg font-extrabold text-yellow-300">⭐ 0 / 100</span>
             </div>
         </div>
 
-        <!-- 2. नेबुला ब्लैकबोर्ड -->
+        <!-- 2. नेबुला ब्लैकबोर्ड (Live Chalkboard Display) -->
         <div id="nebulaBlackboardSection" class="nebula-board rounded-2xl p-5 sm:p-6 text-white board-frame">
             <div class="flex justify-between items-center border-b border-slate-700/60 pb-2 mb-3 text-xs text-slate-400">
                 <span class="flex items-center gap-1.5 font-bold text-cyan-300">
@@ -203,15 +207,20 @@
             </button>
         </div>
 
-        <!-- 5. एआई बुक स्कैनर -->
+        <!-- 5. एआई बुक स्कैनर ('सॉल्यूशन देखें' बटन सहित) -->
         <div class="w-full bg-slate-950 p-5 rounded-2xl border border-cyan-500/40 shadow-xl space-y-3">
             <h3 id="visionTitle" class="text-cyan-400 font-bold text-sm text-center">📸 एआई बुक स्कैनर (किताब की फोटो से ब्लैकबोर्ड पर समझें)</h3>
             <p id="visionDesc" class="text-slate-400 text-xs text-center">कक्षा 1 से 5 तक के किसी भी प्रश्न का फोटो खींचें, नेबुला टीचर ब्लैकबोर्ड पर लिखकर समझाएगी!</p>
             
-            <label class="w-full bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 text-white py-3.5 rounded-xl font-bold text-sm shadow-xl cursor-pointer flex items-center justify-center gap-2">
-                📷 <span id="uploadBtnText">कैमरे से किताब की फोटो खींचें</span>
+            <label class="w-full bg-indigo-600 hover:bg-indigo-500 text-white py-3 rounded-xl font-bold text-xs shadow transition cursor-pointer flex items-center justify-center gap-2">
+                📷 <span id="uploadBtnText">कैमरे से किताब की फोटो खींचें / अपलोड करें</span>
                 <input type="file" id="bookImageInput" accept="image/*" capture="environment" class="hidden" onchange="handleImageUpload(event)">
             </label>
+
+            <!-- यूजर के लिए साफ़ 'सॉल्यूशन देखें' बटन -->
+            <button id="explainVisionBtn" onclick="explainBookPage(event)" type="button" class="w-full bg-purple-600 hover:bg-purple-500 text-white py-3 rounded-xl font-bold text-sm shadow-xl transition hidden flex items-center justify-center gap-2">
+                ✨ <span id="explainBtnText">नेबुला एआई से ब्लैकबोर्ड पर सॉल्यूशन देखें 🚀</span>
+            </button>
         </div>
 
         <!-- 6. स्कूल व ट्यूटर व्हाट्सएप होमवर्क पोर्टल -->
@@ -283,7 +292,7 @@
                 statusText: "तैयार हूँ! मुझे कोई भी सवाल दें...",
                 scoreLabel: "जीनियस स्कोर",
                 boardHeader: "नेबुला डिजिटल ब्लैकबोर्ड (Live Chalkboard)",
-                welcome: "नमस्ते प्यारे बच्चों! 🌟 नीचे दिए गए 5 विषयों में से कोई भी विषय चुनें या अपनी किताब की फोटो अपलोड करें!",
+                welcome: "नमस्ते प्यारे बच्चों! 🌟 नीचे दिए गए 5 विषयों में से कोई भी विषय चुनें या अपनी किताब की फोटो खींचें!",
                 mText: "गणित चैलेंज (+20)",
                 pText: "सुपर पहेली (+20)",
                 gText: "सामान्य ज्ञान / GK (+20)",
@@ -295,7 +304,8 @@
                 submitBtn: "उत्तर की पुष्टि करें (Check Answer) 🚀",
                 visionTitle: "📸 एआई बुक स्कैनर (किताब की फोटो से ब्लैकबोर्ड पर समझें)",
                 visionDesc: "कक्षा 1 से 5 तक के किसी भी प्रश्न का फोटो खींचें, नेबुला टीचर ब्लैकबोर्ड पर लिखकर समझाएगी!",
-                uploadBtnText: "कैमरे से किताब की फोटो खींचें",
+                uploadBtnText: "कैमरे से किताब की फोटो खींचें / अपलोड करें",
+                explainBtnText: "नेबुला एआई से ब्लैकबोर्ड पर सॉल्यूशन देखें 🚀",
                 hwTitle: "🏫 स्कूल / ट्यूटर व्हाट्सएप होमवर्क पोर्टल",
                 hwBtn: "व्हाट्सएप पर होमवर्क भेजें",
                 subTitleText: "📝 छात्र होमवर्क सबमिशन (होमवर्क वापस भेजें)",
@@ -314,7 +324,7 @@
                 statusText: "Ready! Ask me any question...",
                 scoreLabel: "Genius Score",
                 boardHeader: "Nebula Digital Blackboard (Live Chalkboard)",
-                welcome: "Hello smart kids! 🌟 Choose any subject below or upload your book photo to start learning!",
+                welcome: "Hello smart kids! 🌟 Choose any subject below or snap your book photo to start learning!",
                 mText: "Math Challenge (+20)",
                 pText: "Super Puzzle (+20)",
                 gText: "General Knowledge / GK (+20)",
@@ -326,7 +336,8 @@
                 submitBtn: "Verify Answer 🚀",
                 visionTitle: "📸 AI Book Scanner (Learn on Blackboard from Photo)",
                 visionDesc: "Snap any textbook page, Nebula Teacher will explain directly on the blackboard!",
-                uploadBtnText: "Snap Book Page Photo with Camera",
+                uploadBtnText: "Snap Book Photo with Camera / Upload",
+                explainBtnText: "View Solution on Blackboard 🚀",
                 hwTitle: "🏫 School / Tutor Homework Portal",
                 hwBtn: "Send Homework on WhatsApp",
                 subTitleText: "📝 Student Homework Submission",
@@ -464,14 +475,16 @@
             }
         }
 
+        // स्कोर रीसेट फिक्स (0 / 100 Reset)
         function resetScoreProgress() {
-            if (confirm(currentLang === 'hi' ? "क्या आप अपना स्कोर रीसेट करना चाहते हैं?" : "Do you want to reset your score?")) {
+            if (confirm(currentLang === 'hi' ? "क्या आप अपना स्कोर रीसेट करके 0 करना चाहते हैं?" : "Do you want to reset your score to 0?")) {
                 studentScore = 0;
                 solvedQuestions = {};
                 localStorage.setItem('dhruv_student_score', '0');
                 localStorage.setItem('dhruv_solved_questions', JSON.stringify({}));
                 updateScoreDisplay();
-                speakGreeting();
+                let msg = currentLang === 'hi' ? "स्कोर रीसेट हो गया है! नया सवाल हल करके अंक बनाएं ⭐" : "Score reset to 0! Solve a question to earn points ⭐";
+                updateBlackboard(msg);
             }
         }
 
@@ -499,6 +512,7 @@
             document.getElementById('visionTitle').innerText = d.visionTitle;
             document.getElementById('visionDesc').innerText = d.visionDesc;
             document.getElementById('uploadBtnText').innerText = d.uploadBtnText;
+            document.getElementById('explainBtnText').innerText = d.explainBtnText;
             document.getElementById('homeworkTitle').innerText = d.hwTitle;
             document.getElementById('hwBtnText').innerText = d.hwBtn;
             document.getElementById('submitTitle').innerText = d.subTitleText;
@@ -518,6 +532,7 @@
             scrollToBlackboard();
         }
 
+        // एआई टीचर की शांत, मधुर और धीमी आवाज़
         function speakText(text) {
             try {
                 if ('speechSynthesis' in window) {
@@ -780,6 +795,7 @@
             }
         }
 
+        // मोबाइल रैम क्रैश रोकने के लिए सुरक्षित 800px कैनवस कंप्रेसर
         function safeCompress(file, callback) {
             const img = new Image();
             const url = URL.createObjectURL(file);
@@ -811,13 +827,20 @@
 
             if (retryIntervalTimer) clearInterval(retryIntervalTimer);
 
-            updateBlackboard("📸 फोटो मिल गई है! नेबुला एआई उत्तर तैयार कर रही है...");
+            updateBlackboard("📸 फोटो लोड हो रही है... कृपया प्रतीक्षा करें!");
 
             safeCompress(file, function(blob, dataUrl) {
                 uploadedImageBlob = blob;
                 document.getElementById('uploadedImagePreview').src = dataUrl;
                 document.getElementById('imagePreviewContainer').classList.remove('hidden');
-                sendImageToServer();
+                
+                // यूजर के लिए 'सॉल्यूशन देखें' बटन दिखाना
+                document.getElementById('explainVisionBtn').classList.remove('hidden');
+                
+                let readyMsg = currentLang === 'hi' 
+                    ? "📸 फोटो तैयार है! अब नीचे 'सॉल्यूशन देखें' बटन दबाएं।" 
+                    : "📸 Photo ready! Click 'View Solution' button below.";
+                updateBlackboard(readyMsg);
             });
         }
 
@@ -847,10 +870,19 @@
             }, 1000);
         }
 
-        async function sendImageToServer() {
-            if (!uploadedImageBlob) return;
+        async function explainBookPage(e) {
+            if (e) e.preventDefault();
+            if (!uploadedImageBlob) {
+                alert(currentLang === 'hi' ? "कृपया पहले फोटो खींचें या अपलोड करें!" : "Please take a photo first!");
+                return;
+            }
 
             if (retryIntervalTimer) clearInterval(retryIntervalTimer);
+
+            let scanMsg = currentLang === 'hi' 
+                ? "🔄 नेबुला एआई सर्वर पर किताब का सॉल्यूशन प्रोसेस कर रही है..." 
+                : "🔄 Nebula AI is analyzing the page on the server...";
+            updateBlackboard(scanMsg);
 
             let formData = new FormData();
             formData.append("file", uploadedImageBlob, "homework.jpg");
@@ -862,14 +894,21 @@
                     body: formData
                 });
 
+                if (response.status === 404) {
+                    response = await fetch("/analyze", {
+                        method: "POST",
+                        body: formData
+                    });
+                }
+
                 let result = await response.json();
 
                 if (result.solution) {
                     let solText = result.solution;
                     if (solText.includes("विश्राम") || solText.includes("कोटा") || solText.includes("429") || solText.includes("quota")) {
-                        startAutoRetryCountdown(30, sendImageToServer);
+                        startAutoRetryCountdown(35, () => explainBookPage(null));
                     } else {
-                        // फोटो स्कैन हल होने पर +20 अंक जोड़ना
+                        // फोटो स्कैन सफल होने पर +20 अंक और 100/100 स्कोर
                         if (studentScore < 100) {
                             studentScore = Math.min(100, studentScore + 20);
                             localStorage.setItem('dhruv_student_score', studentScore.toString());
@@ -886,11 +925,11 @@
                         updateBlackboard(solText);
                     }
                 } else {
-                    updateBlackboard("सॉल्यूशन प्राप्त नहीं हुआ। कृपया दोबारा फोटो खींचें।");
+                    updateBlackboard("सॉल्यूशन प्राप्त नहीं हुआ। कृपया दोबारा प्रयास करें।");
                 }
             } catch (err) {
                 console.error(err);
-                startAutoRetryCountdown(15, sendImageToServer);
+                startAutoRetryCountdown(15, () => explainBookPage(null));
             }
         }
 
