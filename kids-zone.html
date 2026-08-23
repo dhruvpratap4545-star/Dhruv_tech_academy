@@ -6,11 +6,15 @@
     <title>AI Virtual Classroom & Nebula Blackboard - Dhruv Academy Master Ecosystem</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Poppins:wght@400;600;700;800&display=swap');
-        body { font-family: 'Poppins', sans-serif; }
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Yantramanav:wght@500;700&display=swap');
+        
+        body { font-family: 'Poppins', 'Yantramanav', sans-serif; }
 
         /* चाक-बोर्ड / ब्लैकबोर्ड फॉन्ट */
-        .chalk-font { font-family: 'Caveat', cursive, sans-serif; }
+        .chalk-font { 
+            font-family: 'Poppins', 'Yantramanav', sans-serif; 
+            letter-spacing: 0.02em;
+        }
 
         /* नेबुला ब्लैकबोर्ड बॉर्डर व बैकग्राउंड */
         .nebula-board {
@@ -81,7 +85,7 @@
 </head>
 <body class="bg-slate-950 text-white min-h-screen flex flex-col items-center justify-between p-3 sm:p-5">
 
-    <!-- शीर्ष बार: मुख्य पोर्टल और भाषा स्विच -->
+    <!-- शीर्ष बार -->
     <div class="w-full max-w-3xl flex justify-between items-center my-3 px-2">
         <a href="/" class="bg-red-600 hover:bg-red-500 text-white px-4 py-2 rounded-xl text-xs font-bold shadow-lg transition flex items-center gap-1.5">
             ← <span id="portalText">मुख्य पोर्टल</span>
@@ -120,7 +124,7 @@
                         <span class="text-[10px] bg-cyan-950 border border-cyan-500 text-cyan-400 px-2 py-0.5 rounded-full font-semibold">Live Assistant</span>
                     </div>
                     <span id="teacherStatus" class="text-xs text-emerald-400 font-medium block mt-0.5">तैयार हूँ! मुझे कोई भी सवाल दें...</span>
-                    <p class="text-[11px] text-slate-400 mt-1">अवतार पर टैप करके आवाज़ सुनें</p>
+                    <p class="text-[11px] text-slate-400 mt-1">अवतार पर टैप करके प्यारी आवाज़ सुनें</p>
                 </div>
             </div>
 
@@ -142,8 +146,8 @@
                 </span>
             </div>
 
-            <!-- ब्लैकबोर्ड कंटेंट / चाक राइटिंग -->
-            <div id="aiText" class="chalk-font text-cyan-100 text-lg sm:text-2xl min-h-[140px] flex flex-col items-center justify-center text-center p-3 leading-relaxed tracking-wide">
+            <!-- ब्लैकबोर्ड कंटेंट -->
+            <div id="aiText" class="chalk-font text-cyan-100 text-base sm:text-xl min-h-[140px] flex flex-col items-center justify-center text-center p-3 leading-relaxed tracking-wide space-y-2">
                 नमस्ते प्यारे बच्चों! 🌟 नीचे दिए गए 5 विषयों में से कोई भी विषय चुनें या अपनी किताब की फोटो अपलोड करें!
             </div>
 
@@ -200,7 +204,7 @@
             </button>
         </div>
 
-        <!-- 5. एआई बुक स्कैनर (Integrated with Python Backend) -->
+        <!-- 5. एआई बुक स्कैनर -->
         <div class="w-full bg-slate-950 p-5 rounded-2xl border border-cyan-500/40 shadow-xl space-y-3">
             <h3 id="visionTitle" class="text-cyan-400 font-bold text-sm text-center">📸 एआई बुक स्कैनर (किताब की फोटो से ब्लैकबोर्ड पर समझें)</h3>
             <p id="visionDesc" class="text-slate-400 text-xs text-center">कक्षा 1 से 5 तक के किसी भी प्रश्न का फोटो खींचें, नेबुला टीचर ब्लैकबोर्ड पर लिखकर समझाएगी!</p>
@@ -437,6 +441,17 @@
             ]
         };
 
+        // मार्कडाउन सिंटैक्स को साफ़ और सुंदर HTML में बदलने वाला क्लीनर
+        function formatBlackboardText(text) {
+            if (!text) return "";
+            return text
+                .replace(/\*\*(.*?)\*\*/g, '<strong class="text-yellow-300 font-bold">$1</strong>')
+                .replace(/\*(.*?)\*/g, '<span class="text-cyan-200 font-medium">$1</span>')
+                .replace(/👉/g, '<span class="text-amber-400 mr-1">👉</span>')
+                .replace(/\n\n/g, '<br><br>')
+                .replace(/\n/g, '<br>');
+        }
+
         function scrollToBlackboard() {
             setTimeout(() => {
                 const board = document.getElementById('nebulaBlackboardSection');
@@ -459,7 +474,7 @@
             document.getElementById('teacherStatus').innerText = d.statusText;
             document.getElementById('scoreLabel').innerText = d.scoreLabel;
             document.getElementById('boardHeader').innerText = d.boardHeader;
-            document.getElementById('aiText').innerText = d.welcome;
+            document.getElementById('aiText').innerHTML = d.welcome;
             document.getElementById('btnMath').innerText = d.mText;
             document.getElementById('btnPuzzle').innerText = d.pText;
             document.getElementById('btnGk').innerText = d.gText;
@@ -492,21 +507,27 @@
             scrollToBlackboard();
         }
 
+        // एआई टीचर की मीठी, स्पष्ट और प्राकृतिक आवाज़
         function speakText(text) {
             try {
                 if ('speechSynthesis' in window) {
                     window.speechSynthesis.cancel();
                     
-                    let cleanText = text.replace(/[*_#~🎵➕🤔🌍🌿📸💡⭐🏆]/g, '').trim();
+                    let cleanText = text.replace(/[*_#~🎵➕🤔🌍🌿📸💡⭐🏆❌⚠️👉]/g, '').trim();
                     let utterance = new SpeechSynthesisUtterance(cleanText);
                     utterance.lang = (currentLang === 'en') ? 'en-US' : 'hi-IN';
-                    utterance.rate = 0.92;
-                    utterance.pitch = 1.05;
+                    
+                    // बच्चों के लिए मधुर व स्पष्ट टोन
+                    utterance.rate = 0.90;
+                    utterance.pitch = 1.15;
 
                     let voices = window.speechSynthesis.getVoices();
                     if (voices.length > 0) {
                         let targetLang = (currentLang === 'en') ? 'en' : 'hi';
-                        let teacherVoice = voices.find(v => v.lang.toLowerCase().includes(targetLang) && (v.name.includes('Google') || v.name.includes('Natural') || v.name.includes('Female')));
+                        let teacherVoice = voices.find(v => 
+                            v.lang.toLowerCase().includes(targetLang) && 
+                            (v.name.toLowerCase().includes('female') || v.name.toLowerCase().includes('natural') || v.name.toLowerCase().includes('google') || v.name.toLowerCase().includes('lekha') || v.name.toLowerCase().includes('neerja'))
+                        );
                         if (!teacherVoice) {
                             teacherVoice = voices.find(v => v.lang.toLowerCase().includes(targetLang) || (currentLang === 'hi' && v.lang.includes('IN')));
                         }
@@ -547,7 +568,7 @@
 
         function updateBlackboard(contentHtml) {
             let board = document.getElementById('aiText');
-            board.innerHTML = contentHtml;
+            board.innerHTML = formatBlackboardText(contentHtml);
             speakText(board.innerText);
             scrollToBlackboard();
         }
@@ -622,7 +643,6 @@
             updateBlackboard(`<span class="text-amber-300 font-bold">${hintText}</span>`);
         }
 
-        // स्कोर 100 की सीमा और टोकने (Warning) का सटीक लॉजिक
         function verifyAnswer() {
             let d = siteData[currentLang];
             let userField = document.getElementById('userInput');
@@ -639,7 +659,6 @@
 
             let uniqueKey = currentActiveCategory + "_" + currentQuestionText;
 
-            // अगर 100 अंक पहले ही प्राप्त हो चुके हैं
             if (studentScore >= 100) {
                 if (userVal.includes(currentCorrectAnswer.toLowerCase())) {
                     let alreadyWonMsg = currentLang === 'hi' 
@@ -656,7 +675,6 @@
                 return;
             }
 
-            // सामान्य जाँच (स्कोर 100 से कम होने पर)
             if (userVal.includes(currentCorrectAnswer.toLowerCase())) {
                 if (solvedQuestions[uniqueKey]) {
                     updateBlackboard(`<span class="text-amber-400">${d.alreadySolvedMsg}</span>`);
@@ -674,7 +692,6 @@
                     updateBlackboard(`<span class="text-emerald-300 font-bold text-2xl">${d.correctMsg}</span><br><span class="text-sm text-slate-300 mt-2 block">सही उत्तर: ${currentCorrectAnswer}</span>`);
                 }
             } else {
-                // गलत उत्तर पर टोकना
                 let warnFeedback = currentLang === 'hi'
                     ? `❌ गलत जवाब! '${userVal}' सही नहीं है। सही उत्तर '${currentCorrectAnswer}' है। ध्यान से सोचें!`
                     : `❌ Wrong answer! '${userVal}' is incorrect. Correct is '${currentCorrectAnswer}'.`;
@@ -747,7 +764,6 @@
             }
         }
 
-        // मोबाइल कैमरा क्रैश रोकने के लिए इमेज रिसाइज़र/कंप्रेसर
         function compressImage(file, maxWidth, maxHeight, quality, callback) {
             let reader = new FileReader();
             reader.readAsDataURL(file);
@@ -834,7 +850,7 @@
                 let result = await response.json();
 
                 if (result.solution) {
-                    updateBlackboard(`<span class="text-cyan-200 font-medium">${result.solution.replace(/\n/g, '<br>')}</span>`);
+                    updateBlackboard(result.solution);
                 } else {
                     updateBlackboard("सॉल्यूशन प्राप्त नहीं हुआ। कृपया दोबारा प्रयास करें।");
                 }
