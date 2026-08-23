@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 # ==============================================================================
-# main.py - Dhruv Academy Master Ecosystem (Rate-Limit Safe Multi-Model Engine)
+# main.py - Dhruv Academy Master Ecosystem (Direct Gemini 3.6 Flash Architecture)
 # ==============================================================================
 
 import os
@@ -589,7 +589,7 @@ def master_ecosystem_dashboard():
     """
 
 # ------------------------------------------------------------------------------
-# 6. एआई विजन एपीआई (Rate-Limit Safe Multi-Model Rotation Engine)
+# 6. एआई विजन एपीआई (Direct & Pure Gemini 3.6 Flash Engine)
 # ------------------------------------------------------------------------------
 async def process_gemini_vision(file: UploadFile, lang: str):
     api_key = (
@@ -632,60 +632,41 @@ async def process_gemini_vision(file: UploadFile, lang: str):
             ]
         }
 
-        # रेट लिमिट (429) से बचने के लिए प्राथमिक और बैकअप मॉडल्स की श्रृंखला
-        models_to_try = [
-            "gemini-3.6-flash",
-            "gemini-3.6-flash-8b",
-            "gemini-2.5-flash",
-            "gemini-1.5-flash-8b"
-        ]
+        # Google Gemini का एकमात्र आधिकारिक एक्टिव मॉडल
+        target_url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key={api_key}"
 
-        last_error = ""
-        for model_name in models_to_try:
-            target_url = f"https://generativelanguage.googleapis.com/v1beta/models/{model_name}:generateContent?key={api_key}"
-            try:
-                req = urllib.request.Request(
-                    target_url,
-                    data=json.dumps(payload).encode("utf-8"),
-                    headers={
-                        "Content-Type": "application/json"
-                    },
-                    method="POST"
-                )
+        req = urllib.request.Request(
+            target_url,
+            data=json.dumps(payload).encode("utf-8"),
+            headers={
+                "Content-Type": "application/json"
+            },
+            method="POST"
+        )
 
-                with urllib.request.urlopen(req, timeout=40) as response:
-                    res_data = json.loads(response.read().decode("utf-8"))
-                    solution_text = res_data["candidates"][0]["content"]["parts"][0]["text"]
-                    return JSONResponse(content={"success": True, "solution": solution_text.strip()})
+        with urllib.request.urlopen(req, timeout=40) as response:
+            res_data = json.loads(response.read().decode("utf-8"))
+            solution_text = res_data["candidates"][0]["content"]["parts"][0]["text"]
+            return JSONResponse(content={"success": True, "solution": solution_text.strip()})
 
-            except urllib.error.HTTPError as he:
-                try:
-                    err_body = he.read().decode("utf-8")
-                    err_json = json.loads(err_body)
-                    last_error = err_json.get("error", {}).get("message", f"HTTP {he.code}: {he.reason}")
-                except Exception:
-                    last_error = f"HTTP Error {he.code}: {he.reason}"
-                
-                # यदि 429 (Rate Limit) या 404 आता है तो तुरंत अगले बैकअप मॉडल पर स्विच करें
-                if he.code in [429, 404, 503]:
-                    continue
-                else:
-                    break
+    except urllib.error.HTTPError as he:
+        try:
+            err_body = he.read().decode("utf-8")
+            err_json = json.loads(err_body)
+            raw_err = err_json.get("error", {}).get("message", f"HTTP {he.code}: {he.reason}")
+        except Exception:
+            raw_err = f"HTTP Error {he.code}: {he.reason}"
 
-            except Exception as e:
-                last_error = str(e)
-                continue
-
-        # यदि सभी मॉडल्स का फ़्री कोटा भर गया हो तो यूज़र-फ़्रेंडली संदेश दें
-        if "quota" in last_error.lower() or "429" in last_error:
-            friendly_msg = (
-                "⏳ एआई टीचर अभी व्यस्त हैं (फ़्री कोटा लिमिट)। कृपया 30-40 सेकंड बाद दोबारा 'सॉल्यूशन देखें' पर क्लिक करें!" 
-                if lang == "hi" 
-                else "⏳ AI Teacher is busy (Free Rate Limit). Please retry in 30-40 seconds!"
+        # यदि फ़्री कोटा लिमिट (429) आ जाए तो स्पष्ट संदेश
+        if he.code == 429 or "quota" in raw_err.lower():
+            rate_limit_msg = (
+                "⏳ नेबुला टीचर थोड़ा विश्राम ले रही हैं (फ़्री कोटा लिमिट)। कृपया 30-40 सेकंड बाद दोबारा 'सॉल्यूशन देखें' दबाएँ! 🌟"
+                if lang == "hi"
+                else "⏳ Nebula Teacher is taking a short rest (Free Quota Limit). Please retry in 30-40 seconds! 🌟"
             )
-            return JSONResponse(content={"success": False, "solution": friendly_msg})
-
-        err_msg = f"त्रुटि: फोटो का विश्लेषण नहीं हो सका ({last_error})" if lang == "hi" else f"Error: Unable to analyze image ({last_error})"
+            return JSONResponse(content={"success": False, "solution": rate_limit_msg})
+        
+        err_msg = f"त्रुटि: फोटो का विश्लेषण नहीं हो सका ({raw_err})" if lang == "hi" else f"Error: Unable to analyze image ({raw_err})"
         return JSONResponse(content={"success": False, "solution": err_msg})
 
     except Exception as e:
