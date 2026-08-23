@@ -85,7 +85,7 @@
 </head>
 <body class="bg-slate-950 text-white min-h-screen flex flex-col items-center justify-between p-3 sm:p-5">
 
-    <!-- शीर्ष बार -->
+    <!-- शीर्ष बार: मुख्य पोर्टल और भाषा स्विच -->
     <div class="w-full max-w-3xl flex justify-between items-center my-3 px-2">
         <a href="/" class="bg-red-600 hover:bg-red-500 text-white px-4 py-2 rounded-xl text-xs font-bold shadow-lg transition flex items-center gap-1.5">
             ← <span id="portalText">मुख्य पोर्टल</span>
@@ -128,7 +128,7 @@
                 </div>
             </div>
 
-            <!-- लाइव स्कोर बॉक्स (LocalStorage) -->
+            <!-- लाइव स्कोर बॉक्स (LocalStorage Integrated) -->
             <div class="bg-slate-950 border border-cyan-500/50 px-4 py-2.5 rounded-2xl text-center sm:text-right shadow-inner w-full sm:w-auto">
                 <div class="flex items-center justify-between sm:justify-end gap-3">
                     <span id="scoreLabel" class="text-[10px] text-cyan-400 block font-bold uppercase tracking-wider">जीनियस स्कोर</span>
@@ -149,7 +149,7 @@
                 </span>
             </div>
 
-            <!-- ब्लैकबोर्ड कंटेंट -->
+            <!-- ब्लैकबोर्ड कंटेंट / क्लीन फॉर्मेटेड राइटिंग -->
             <div id="aiText" class="chalk-font text-cyan-100 text-base sm:text-xl min-h-[140px] flex flex-col items-center justify-center text-center p-3 leading-relaxed tracking-wide space-y-2">
                 नमस्ते प्यारे बच्चों! 🌟 नीचे दिए गए 5 विषयों में से कोई भी विषय चुनें या अपनी किताब की फोटो अपलोड करें!
             </div>
@@ -207,18 +207,16 @@
             </button>
         </div>
 
-        <!-- 5. एआई बुक स्कैनर -->
+        <!-- 5. एआई बुक स्कैनर (Direct Camera & Instant Auto-Solve) -->
         <div class="w-full bg-slate-950 p-5 rounded-2xl border border-cyan-500/40 shadow-xl space-y-3">
             <h3 id="visionTitle" class="text-cyan-400 font-bold text-sm text-center">📸 एआई बुक स्कैनर (किताब की फोटो से ब्लैकबोर्ड पर समझें)</h3>
             <p id="visionDesc" class="text-slate-400 text-xs text-center">कक्षा 1 से 5 तक के किसी भी प्रश्न का फोटो खींचें, नेबुला टीचर ब्लैकबोर्ड पर लिखकर समझाएगी!</p>
             
-            <label class="w-full bg-indigo-600 hover:bg-indigo-500 text-white py-3 rounded-xl font-bold text-xs shadow transition cursor-pointer flex items-center justify-center gap-2">
-                📷 <span id="uploadBtnText">किताब के पन्ने की फोटो खींचें / अपलोड करें</span>
-                <input type="file" id="bookImageInput" accept="image/*" class="hidden" onchange="handleImageUpload(event)">
+            <label class="w-full bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 text-white py-3.5 rounded-xl font-bold text-sm shadow-xl cursor-pointer flex items-center justify-center gap-2">
+                📷 <span id="uploadBtnText">कैमरे से किताब की फोटो खींचें</span>
+                <!-- capture="environment" से सीधे रियर कैमरा खुलता है -->
+                <input type="file" id="bookImageInput" accept="image/*" capture="environment" class="hidden" onchange="handleImageUpload(event)">
             </label>
-            <button id="explainVisionBtn" onclick="explainBookPage(event)" type="button" class="w-full bg-purple-600 hover:bg-purple-500 text-white py-2.5 rounded-xl font-bold text-xs shadow transition hidden">
-                ✨ <span id="explainBtnText">नेबुला एआई से ब्लैकबोर्ड पर सॉल्यूशन देखें</span>
-            </button>
         </div>
 
         <!-- 6. स्कूल व ट्यूटर व्हाट्सएप होमवर्क पोर्टल -->
@@ -302,8 +300,7 @@
                 submitBtn: "उत्तर की पुष्टि करें (Check Answer) 🚀",
                 visionTitle: "📸 एआई बुक स्कैनर (किताब की फोटो से ब्लैकबोर्ड पर समझें)",
                 visionDesc: "कक्षा 1 से 5 तक के किसी भी प्रश्न का फोटो खींचें, नेबुला टीचर ब्लैकबोर्ड पर लिखकर समझाएगी!",
-                uploadBtnText: "किताब के पन्ने की फोटो खींचें / अपलोड करें",
-                explainBtnText: "नेबुला एआई से ब्लैकबोर्ड पर सॉल्यूशन देखें",
+                uploadBtnText: "कैमरे से किताब की फोटो खींचें",
                 hwTitle: "🏫 स्कूल / ट्यूटर व्हाट्सएप होमवर्क पोर्टल",
                 hwBtn: "व्हाट्सएप पर होमवर्क भेजें",
                 subTitleText: "📝 छात्र होमवर्क सबमिशन (होमवर्क वापस भेजें)",
@@ -334,8 +331,7 @@
                 submitBtn: "Verify Answer 🚀",
                 visionTitle: "📸 AI Book Scanner (Learn on Blackboard from Photo)",
                 visionDesc: "Snap any textbook page, Nebula Teacher will explain directly on the blackboard!",
-                uploadBtnText: "Snap / Upload Book Page Photo",
-                explainBtnText: "View Solution on Nebula Blackboard",
+                uploadBtnText: "Snap Book Page Photo with Camera",
                 hwTitle: "🏫 School / Tutor Homework Portal",
                 hwBtn: "Send Homework on WhatsApp",
                 subTitleText: "📝 Student Homework Submission",
@@ -509,7 +505,6 @@
             document.getElementById('visionTitle').innerText = d.visionTitle;
             document.getElementById('visionDesc').innerText = d.visionDesc;
             document.getElementById('uploadBtnText').innerText = d.uploadBtnText;
-            document.getElementById('explainBtnText').innerText = d.explainBtnText;
             document.getElementById('homeworkTitle').innerText = d.hwTitle;
             document.getElementById('hwBtnText').innerText = d.hwBtn;
             document.getElementById('submitTitle').innerText = d.subTitleText;
@@ -529,7 +524,7 @@
             scrollToBlackboard();
         }
 
-        // एआई टीचर की धीमी, मधुर और शांत आवाज़ (Smart Math-Safe Sign Cleaner)
+        // एआई टीचर की शांत, मधुर और धीमी आवाज़ (Smart Math-Safe Sign Cleaner)
         function speakText(text) {
             try {
                 if ('speechSynthesis' in window) {
@@ -544,8 +539,8 @@
                     let utterance = new SpeechSynthesisUtterance(cleanText);
                     utterance.lang = (currentLang === 'en') ? 'en-US' : 'hi-IN';
                     
-                    // बच्चों के स्तर की शांत, मीठी और धीमी आवाज़
-                    utterance.rate = 0.75;   // शांत व धीमी गति
+                    // बच्चों के समझने लायक शांत, मीठी और धीमी आवाज़
+                    utterance.rate = 0.75;   // धीमी व स्पष्ट गति
                     utterance.pitch = 1.15;  // मधुर टोन
 
                     let voices = window.speechSynthesis.getVoices();
@@ -588,7 +583,7 @@
 
         function speakGreeting() {
             let msg = currentLang === 'hi' 
-                ? "नमस्ते प्यारे बच्चों! मैं आपकी नेबुला टीचर हूँ। नीचे दिए गए बटन दबाकर कोई भी विषय चुनें!" 
+                ? "नमस्ते प्यारे बच्चों! मैं आपकी नेबुला टीचर हूँ। नीचे दिए गए बटन दबाकर कोई भी विषय चुनें या किताब की फोटो खींचे!" 
                 : "Hello smart kids! I am your Nebula Teacher. Click any subject below to learn!";
             updateBlackboard(msg);
         }
@@ -794,7 +789,7 @@
             }
         }
 
-        // मोबाइल रैम क्रैश रोकने के लिए 800px कैनवस कंप्रेसर
+        // मोबाइल रैम क्रैश रोकने के लिए सुरक्षित 800px कैनवस कंप्रेसर
         function safeCompress(file, callback) {
             const img = new Image();
             const url = URL.createObjectURL(file);
@@ -802,7 +797,7 @@
                 URL.revokeObjectURL(url);
                 let w = img.width;
                 let h = img.height;
-                const maxDim = 800;
+                const maxDim = 800; // मोबाइल को रीस्टार्ट होने से बचाने के लिए सुरक्षित सीमा
                 if (w > maxDim || h > maxDim) {
                     if (w > h) { h = Math.round((h * maxDim) / w); w = maxDim; }
                     else { w = Math.round((w * maxDim) / h); h = maxDim; }
@@ -826,14 +821,15 @@
 
             if (retryIntervalTimer) clearInterval(retryIntervalTimer);
 
-            updateBlackboard("📸 फोटो तैयार की जा रही है...");
+            updateBlackboard("📸 फोटो मिल गई है! नेबुला एआई उत्तर तैयार कर रही है...");
 
             safeCompress(file, function(blob, dataUrl) {
                 uploadedImageBlob = blob;
                 document.getElementById('uploadedImagePreview').src = dataUrl;
                 document.getElementById('imagePreviewContainer').classList.remove('hidden');
-                document.getElementById('explainVisionBtn').classList.remove('hidden');
-                updateBlackboard("📸 फोटो तैयार है! अब नीचे 'सॉल्यूशन देखें' बटन दबाएं।");
+                
+                // फोटो तैयार होते ही अपने-आप एआई से सॉल्यूशन मंगाना
+                sendImageToServer();
             });
         }
 
@@ -879,12 +875,8 @@
             }, 1000);
         }
 
-        async function explainBookPage(e) {
-            if (e) e.preventDefault();
-            if (!uploadedImageBlob) {
-                alert(currentLang === 'hi' ? "कृपया पहले फोटो खींचें या अपलोड करें!" : "Please upload a photo first!");
-                return;
-            }
+        async function sendImageToServer() {
+            if (!uploadedImageBlob) return;
 
             if (retryIntervalTimer) clearInterval(retryIntervalTimer);
 
@@ -915,7 +907,7 @@
                 if (result.solution) {
                     let solText = result.solution;
                     if (solText.includes("विश्राम") || solText.includes("कोटा") || solText.includes("429") || solText.includes("quota") || solText.includes("exceeded")) {
-                        startAutoRetryCountdown(35, () => explainBookPage(null));
+                        startAutoRetryCountdown(35, sendImageToServer);
                     } else {
                         updateBlackboard(solText);
                     }
@@ -925,7 +917,7 @@
 
             } catch (error) {
                 console.error("Analysis Error:", error);
-                startAutoRetryCountdown(15, () => explainBookPage(null));
+                startAutoRetryCountdown(15, sendImageToServer);
             }
         }
 
@@ -972,6 +964,7 @@
             window.open("https://wa.me/?text=" + encodeURIComponent(message), '_blank');
         }
 
+        // पेज लोड होने पर स्कोर और वॉइस इनिशियलाइज़ करना
         window.addEventListener('DOMContentLoaded', () => {
             updateScoreDisplay();
             if ('speechSynthesis' in window) {
