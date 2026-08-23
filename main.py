@@ -16,13 +16,6 @@ from typing import Optional, List
 import urllib.request
 import urllib.error
 
-# Safely import Google SDK if installed
-try:
-    import google.generativeai as genai
-    GENAI_AVAILABLE = True
-except ImportError:
-    GENAI_AVAILABLE = False
-
 from fastapi import FastAPI, UploadFile, File, Form, Depends, HTTPException, Request, Response, status
 from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse
 from sqlalchemy import create_engine, Column, Integer, String, DateTime, Boolean, JSON
@@ -596,7 +589,7 @@ def master_ecosystem_dashboard():
     """
 
 # ------------------------------------------------------------------------------
-# 6. एआई विजन एपीआई (Multi-Version Robust Fallback Engine)
+# 6. एआई विजन एपीआई (Universal Google Endpoint Solver)
 # ------------------------------------------------------------------------------
 async def process_gemini_vision(file: UploadFile, lang: str):
     api_key = (
@@ -609,13 +602,13 @@ async def process_gemini_vision(file: UploadFile, lang: str):
     if not api_key:
         return JSONResponse(content={
             "success": False,
-            "solution": "⚠️ सर्वर पर GEMINI_API_KEY उपलब्ध नहीं है। कृपया Render Environment Variables में GEMINI_API_KEY जोड़ें।" if lang == "hi" else "⚠️ GEMINI_API_KEY is not configured."
+            "solution": "⚠️ सर्वर पर GEMINI_API_KEY उपलब्ध नहीं है। कृपया Render Dashboard -> Environment Variables में GEMINI_API_KEY जोड़ें।" if lang == "hi" else "⚠️ GEMINI_API_KEY is not configured."
         })
 
     try:
         image_bytes = await file.read()
-        mime_type = file.content_type or "image/jpeg"
         base64_image = base64.b64encode(image_bytes).decode("utf-8")
+        mime_type = file.content_type or "image/jpeg"
 
         prompt = (
             "आप नेबुला एआई टीचर हैं। इस स्कूल की किताब के पन्ने/प्रश्न को छोटे बच्चों के लिए ब्लैकबोर्ड पर समझाने के अंदाज़ में बहुत सरल, स्पष्ट और रोचक तरीके से 2-3 वाक्यों में स्टेप-बाय-स्टेप हल करें।"
@@ -639,10 +632,11 @@ async def process_gemini_vision(file: UploadFile, lang: str):
             ]
         }
 
-        # 404 Error को हमेशा के लिए खत्म करने हेतु 3 मजबूत एंडपॉइंट्स
+        # Google Gemini के ऑफिशियल एक्टिव एंडपॉइंट्स (404 से बचने के लिए)
         candidate_urls = [
             f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={api_key}",
-            f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key={api_key}",
+            f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={api_key}",
+            f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={api_key}",
             f"https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key={api_key}"
         ]
 
