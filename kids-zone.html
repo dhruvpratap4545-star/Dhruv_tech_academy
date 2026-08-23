@@ -45,7 +45,7 @@
             100% { transform: scale(1.08); border-color: #facc15; box-shadow: 0 0 30px #facc15; }
         }
 
-        /* भाषा टॉगल */
+        /* भाषा टॉगल पिल्स */
         .lang-pill-container {
             display: inline-flex;
             align-items: center;
@@ -85,7 +85,7 @@
 </head>
 <body class="bg-slate-950 text-white min-h-screen flex flex-col items-center justify-between p-3 sm:p-5">
 
-    <!-- शीर्ष बार -->
+    <!-- शीर्ष बार: मुख्य पोर्टल और भाषा स्विच -->
     <div class="w-full max-w-3xl flex justify-between items-center my-3 px-2">
         <a href="/" class="bg-red-600 hover:bg-red-500 text-white px-4 py-2 rounded-xl text-xs font-bold shadow-lg transition flex items-center gap-1.5">
             ← <span id="portalText">मुख्य पोर्टल</span>
@@ -128,9 +128,12 @@
                 </div>
             </div>
 
-            <!-- लाइव स्कोर बॉक्स -->
+            <!-- लाइव स्कोर बॉक्स (LocalStorage Integrated) -->
             <div class="bg-slate-950 border border-cyan-500/50 px-4 py-2.5 rounded-2xl text-center sm:text-right shadow-inner w-full sm:w-auto">
-                <span id="scoreLabel" class="text-[10px] text-cyan-400 block font-bold uppercase tracking-wider">जीनियस स्कोर</span>
+                <div class="flex items-center justify-between sm:justify-end gap-3">
+                    <span id="scoreLabel" class="text-[10px] text-cyan-400 block font-bold uppercase tracking-wider">जीनियस स्कोर</span>
+                    <button onclick="resetScoreProgress()" class="text-[10px] text-gray-400 hover:text-rose-400 underline" title="स्कोर रीसेट करें">रीसेट</button>
+                </div>
                 <span id="scoreDisplay" class="text-lg font-extrabold text-yellow-300">⭐ 0 / 100</span>
             </div>
         </div>
@@ -146,7 +149,7 @@
                 </span>
             </div>
 
-            <!-- ब्लैकबोर्ड कंटेंट -->
+            <!-- ब्लैकबोर्ड कंटेंट / क्लीन फॉर्मेटेड राइटिंग -->
             <div id="aiText" class="chalk-font text-cyan-100 text-base sm:text-xl min-h-[140px] flex flex-col items-center justify-center text-center p-3 leading-relaxed tracking-wide space-y-2">
                 नमस्ते प्यारे बच्चों! 🌟 नीचे दिए गए 5 विषयों में से कोई भी विषय चुनें या अपनी किताब की फोटो अपलोड करें!
             </div>
@@ -204,7 +207,7 @@
             </button>
         </div>
 
-        <!-- 5. एआई बुक स्कैनर -->
+        <!-- 5. एआई बुक स्कैनर (Canvas Image Compressor Integrated) -->
         <div class="w-full bg-slate-950 p-5 rounded-2xl border border-cyan-500/40 shadow-xl space-y-3">
             <h3 id="visionTitle" class="text-cyan-400 font-bold text-sm text-center">📸 एआई बुक स्कैनर (किताब की फोटो से ब्लैकबोर्ड पर समझें)</h3>
             <p id="visionDesc" class="text-slate-400 text-xs text-center">कक्षा 1 से 5 तक के किसी भी प्रश्न का फोटो खींचें, नेबुला टीचर ब्लैकबोर्ड पर लिखकर समझाएगी!</p>
@@ -269,12 +272,13 @@
 
     <!-- जावास्क्रिप्ट इंजन -->
     <script>
-        let studentScore = 0;
+        // LocalStorage से स्कोर और सॉल्व्ड सवाल लोड करना
+        let studentScore = parseInt(localStorage.getItem('dhruv_student_score') || '0', 10);
         let currentLang = 'hi';
         let currentCorrectAnswer = "";
         let currentActiveCategory = "";
         let currentQuestionText = "";
-        let solvedQuestions = {};
+        let solvedQuestions = JSON.parse(localStorage.getItem('dhruv_solved_questions') || '{}');
         let uploadedImageBlob = null;
 
         const siteData = {
@@ -463,6 +467,24 @@
             }, 60);
         }
 
+        function updateScoreDisplay() {
+            const scoreDisplay = document.getElementById('scoreDisplay');
+            if (scoreDisplay) {
+                scoreDisplay.innerText = `⭐ ${studentScore} / 100`;
+            }
+        }
+
+        function resetScoreProgress() {
+            if (confirm(currentLang === 'hi' ? "क्या आप अपना स्कोर रीसेट करना चाहते हैं?" : "Do you want to reset your score?")) {
+                studentScore = 0;
+                solvedQuestions = {};
+                localStorage.setItem('dhruv_student_score', '0');
+                localStorage.setItem('dhruv_solved_questions', JSON.stringify({}));
+                updateScoreDisplay();
+                speakGreeting();
+            }
+        }
+
         function switchLanguage(lang) {
             currentLang = lang;
             let d = siteData[lang];
@@ -507,7 +529,7 @@
             scrollToBlackboard();
         }
 
-        // एआई टीचर की मीठी, स्पष्ट और प्राकृतिक आवाज़
+        // एआई टीचर की मीठी, स्पष्ट और प्राकृतिक आवाज़ का इंजन
         function speakText(text) {
             try {
                 if ('speechSynthesis' in window) {
@@ -659,6 +681,7 @@
 
             let uniqueKey = currentActiveCategory + "_" + currentQuestionText;
 
+            // अगर 100 अंक पहले ही प्राप्त हो चुके हैं
             if (studentScore >= 100) {
                 if (userVal.includes(currentCorrectAnswer.toLowerCase())) {
                     let alreadyWonMsg = currentLang === 'hi' 
@@ -675,6 +698,7 @@
                 return;
             }
 
+            // सामान्य जाँच (स्कोर 100 से कम होने पर)
             if (userVal.includes(currentCorrectAnswer.toLowerCase())) {
                 if (solvedQuestions[uniqueKey]) {
                     updateBlackboard(`<span class="text-amber-400">${d.alreadySolvedMsg}</span>`);
@@ -684,7 +708,11 @@
 
                 studentScore = Math.min(100, studentScore + 20);
                 solvedQuestions[uniqueKey] = true;
-                document.getElementById('scoreDisplay').innerText = `⭐ ${studentScore} / 100`;
+                
+                // LocalStorage में सुरक्षित सेव करना
+                localStorage.setItem('dhruv_student_score', studentScore.toString());
+                localStorage.setItem('dhruv_solved_questions', JSON.stringify(solvedQuestions));
+                updateScoreDisplay();
 
                 if (studentScore >= 100) {
                     triggerCelebration();
@@ -764,6 +792,7 @@
             }
         }
 
+        // मोबाइल कैमरा क्रैश रोकने के लिए क्लाइंट-साइड 70% JPEG कंप्रेसर व रिसाइज़र
         function compressImage(file, maxWidth, maxHeight, quality, callback) {
             let reader = new FileReader();
             reader.readAsDataURL(file);
@@ -805,6 +834,7 @@
                 let processMsg = currentLang === 'hi' ? "📸 फोटो तैयार की जा रही है..." : "📸 Preparing photo...";
                 updateBlackboard(processMsg);
 
+                // मैक्सिमम 1024px और 70% क्वालिटी पर सुरक्षित कंप्रेशन
                 compressImage(file, 1024, 1024, 0.7, function (compressedBlob, previewDataUrl) {
                     uploadedImageBlob = compressedBlob;
                     document.getElementById('uploadedImagePreview').src = previewDataUrl;
@@ -907,11 +937,15 @@
             window.open("https://wa.me/?text=" + encodeURIComponent(message), '_blank');
         }
 
-        if ('speechSynthesis' in window) {
-            window.speechSynthesis.onvoiceschanged = function() {
-                window.speechSynthesis.getVoices();
-            };
-        }
+        // पेज लोड होने पर स्कोर और वॉइस इनिशियलाइज़ करना
+        window.addEventListener('DOMContentLoaded', () => {
+            updateScoreDisplay();
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.onvoiceschanged = function() {
+                    window.speechSynthesis.getVoices();
+                };
+            }
+        });
     </script>
 </body>
 </html>
