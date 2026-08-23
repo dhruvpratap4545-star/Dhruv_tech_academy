@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 # ==============================================================================
-# main.py - Dhruv Academy Master Ecosystem (Direct Point-Wise Full Answer Engine)
+# main.py - Dhruv Academy Master Ecosystem (AI Vision & Smart Quiz Engine)
 # ==============================================================================
 
 import os
@@ -589,7 +589,7 @@ def master_ecosystem_dashboard():
     """
 
 # ------------------------------------------------------------------------------
-# 6. नो-इंट्रो व 100% पूर्ण समाधान विजन इंजन
+# 6. एआई विजन व ऑटो-क्विज़ इंजन (Direct Point-Wise & Smart MCQ Generator)
 # ------------------------------------------------------------------------------
 def get_all_gemini_keys() -> List[str]:
     keys = []
@@ -623,7 +623,7 @@ async def process_gemini_vision(file: UploadFile, lang: str):
 
         prompt = (
             "सख्त निर्देश: अपना कोई परिचय या अभिवादन (जैसे 'नमस्ते, मैं नेबुला टीचर हूँ') बिल्कुल न दें। "
-            "सीधे इस किताब के पन्ने/प्रश्न का 100% सही और संपूर्ण उत्तर बच्चों के समझने लायक सरल भाषा में बिंदुवार लिखें:\n"
+            "सीधे इस किताब के पन्ने/प्रश्न का 100% सही, वैज्ञानिक और संपूर्ण उत्तर बच्चों के समझने लायक सरल भाषा में बिंदुवार लिखें:\n"
             "📖 मुख्य विषय: [पन्ने का शीर्षक/विषय]\n"
             "👉 पॉइंट 1: [पहला मुख्य बिंदु/उत्तर]\n"
             "👉 पॉइंट 2: [दूसरा मुख्य बिंदु/उत्तर]\n"
@@ -661,7 +661,7 @@ async def process_gemini_vision(file: UploadFile, lang: str):
 
         last_error = ""
 
-        # Key Rotation Loop
+        # Key Rotation
         for key in api_keys:
             target_url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key={key}"
             try:
@@ -704,6 +704,86 @@ async def process_gemini_vision(file: UploadFile, lang: str):
         err_msg = f"त्रुटि: फोटो का विश्लेषण नहीं हो सका ({str(e)})" if lang == "hi" else f"Error: Unable to analyze image ({str(e)})"
         return JSONResponse(content={"success": False, "solution": err_msg})
 
+# ------------------------------------------------------------------------------
+# 7. ऑटो-क्विज़ जनरेटर एपीआई (5 MCQs Generator)
+# ------------------------------------------------------------------------------
+@app.post("/generate-quiz")
+async def generate_quiz_endpoint(file: UploadFile = File(...), lang: str = Form("hi")):
+    api_keys = get_all_gemini_keys()
+    if not api_keys:
+        return JSONResponse(content={"success": False, "quiz": []})
+
+    try:
+        image_bytes = await file.read()
+        mime_type = file.content_type or "image/jpeg"
+        base64_image = base64.b64encode(image_bytes).decode("utf-8")
+
+        prompt = (
+            "इस किताब के पन्ने से बच्चों (कक्षा 1 से 8) के लिए 5 बहुविकल्पीय प्रश्न (MCQs) बनाएं। "
+            "उत्तर सिर्फ और सिर्फ एक वैध JSON Array में दें। कोई अतिरिक्त टेक्स्ट या मार्कडाउन बैक-टिक्स न लगाएं।\n"
+            "Format:\n"
+            "[\n"
+            '  {"q": "प्रश्न 1", "options": ["A", "B", "C", "D"], "answer": "A", "explain": "सरल कारण"}\n'
+            "]"
+            if lang == "hi"
+            else
+            "Create 5 MCQ questions for young students based on this textbook page. "
+            "Return ONLY a pure valid JSON array without markdown ticks or intro.\n"
+            "Format:\n"
+            "[\n"
+            '  {"q": "Question 1", "options": ["A", "B", "C", "D"], "answer": "A", "explain": "Simple explanation"}\n'
+            "]"
+        )
+
+        payload = {
+            "contents": [
+                {
+                    "parts": [
+                        {"text": prompt},
+                        {
+                            "inlineData": {
+                                "mimeType": mime_type,
+                                "data": base64_image
+                            }
+                        }
+                    ]
+                }
+            ],
+            "generationConfig": {
+                "maxOutputTokens": 1500,
+                "temperature": 0.2
+            }
+        }
+
+        for key in api_keys:
+            target_url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key={key}"
+            try:
+                req = urllib.request.Request(
+                    target_url,
+                    data=json.dumps(payload).encode("utf-8"),
+                    headers={"Content-Type": "application/json"},
+                    method="POST"
+                )
+
+                with urllib.request.urlopen(req, timeout=45) as response:
+                    res_data = json.loads(response.read().decode("utf-8"))
+                    raw_text = res_data["candidates"][0]["content"]["parts"][0]["text"].strip()
+                    if raw_text.startswith("```json"):
+                        raw_text = raw_text[7:]
+                    if raw_text.startswith("```"):
+                        raw_text = raw_text[3:]
+                    if raw_text.endswith("```"):
+                        raw_text = raw_text[:-3]
+                    
+                    quiz_data = json.loads(raw_text.strip())
+                    return JSONResponse(content={"success": True, "quiz": quiz_data})
+            except Exception:
+                continue
+
+        return JSONResponse(content={"success": False, "quiz": []})
+    except Exception as e:
+        return JSONResponse(content={"success": False, "quiz": [], "error": str(e)})
+
 @app.post("/analyze-homework")
 async def analyze_homework_endpoint(file: UploadFile = File(...), lang: str = Form("hi")):
     return await process_gemini_vision(file, lang)
@@ -717,7 +797,7 @@ async def upload_alias_endpoint(file: UploadFile = File(...), lang: str = Form("
     return await process_gemini_vision(file, lang)
 
 # ------------------------------------------------------------------------------
-# 7. एडमिन डेटा मॉनिटर व किड्स ज़ोन
+# 8. एडमिन डेटा मॉनिटर व किड्स ज़ोन
 # ------------------------------------------------------------------------------
 @app.get("/admin", response_class=HTMLResponse)
 async def master_admin_panel(user: AdminUser = Depends(get_current_admin), db: Session = Depends(get_db)):
@@ -726,7 +806,7 @@ async def master_admin_panel(user: AdminUser = Depends(get_current_admin), db: S
     
     return f"""
     <html>
-    <head><meta charset="UTF-8"><title>Admin Monitor</title><script src="https://cdn.tailwindcss.com"></script></head>
+    <head><meta charset="UTF-8"><title>Admin Monitor</title><script src="[https://cdn.tailwindcss.com](https://cdn.tailwindcss.com)"></script></head>
     <body class="bg-slate-950 text-white p-6 sm:p-10 font-sans">
         <div class="max-w-6xl mx-auto space-y-8">
             <div class="flex justify-between items-center border-b border-gray-800 pb-4">
@@ -750,7 +830,7 @@ async def master_upload_endpoint(module_name: str = Form(...), file: UploadFile 
     db.add(AcademyMasterRecord(module_name=module_name, filename=file.filename))
     db.commit()
     return HTMLResponse(content="""
-    <html><head><script src="https://cdn.tailwindcss.com"></script></head>
+    <html><head><script src="[https://cdn.tailwindcss.com](https://cdn.tailwindcss.com)"></script></head>
     <body class="bg-slate-950 text-white flex items-center justify-center h-screen font-sans">
         <div class="bg-slate-900 p-8 rounded-3xl border border-cyan-500/50 text-center space-y-4 max-w-md shadow-2xl">
             <h2 class="text-2xl font-bold text-emerald-400">सफलतापूर्वक अपलोड हुआ!</h2>
@@ -769,7 +849,7 @@ async def kids_zone():
         return f.read()
 
 # ------------------------------------------------------------------------------
-# 8. सर्वर एक्ज़ीक्यूशन
+# 9. सर्वर एक्ज़ीक्यूशन
 # ------------------------------------------------------------------------------
 if __name__ == "__main__":
     import uvicorn
