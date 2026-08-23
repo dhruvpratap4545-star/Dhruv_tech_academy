@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 # ==============================================================================
-# main.py - Dhruv Academy Master Ecosystem (Resolved 404 Payload Fix)
+# main.py - Dhruv Academy Master Ecosystem (100% v1beta Verified Vision Engine)
 # ==============================================================================
 
 import os
@@ -589,7 +589,7 @@ def master_ecosystem_dashboard():
     """
 
 # ------------------------------------------------------------------------------
-# 6. एआई विजन एपीआई (100% Fixed Official Rest Structure)
+# 6. एआई विजन एपीआई (100% v1beta Verified Architecture)
 # ------------------------------------------------------------------------------
 async def process_gemini_vision(file: UploadFile, lang: str):
     api_key = (
@@ -616,7 +616,6 @@ async def process_gemini_vision(file: UploadFile, lang: str):
             else "You are Nebula AI Teacher. Explain and solve this school textbook question for young kids in 2-3 simple, engaging sentences suitable for a classroom blackboard."
         )
 
-        # Google Gemini Vision के लिए बिल्कुल सही JSON स्ट्रक्चर (CamelCase)
         payload = {
             "contents": [
                 {
@@ -633,16 +632,15 @@ async def process_gemini_vision(file: UploadFile, lang: str):
             ]
         }
 
-        # Google Cloud Gemini Verified URLs
-        candidate_urls = [
-            f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={api_key}",
-            f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={api_key}",
+        # केवल शुद्ध v1beta एंडपॉइंट्स (v1 पूरी तरह हटा दिया गया है)
+        verified_v1beta_endpoints = [
             f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={api_key}",
-            f"https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key={api_key}"
+            f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-8b:generateContent?key={api_key}",
+            f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={api_key}"
         ]
 
         last_error = ""
-        for target_url in candidate_urls:
+        for target_url in verified_v1beta_endpoints:
             try:
                 req = urllib.request.Request(
                     target_url,
