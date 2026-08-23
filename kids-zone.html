@@ -607,7 +607,6 @@
             }
         }
 
-        // 100% गारंटीड स्कोर रीसेट (0 / 100 Instant Reset)
         function resetScoreProgress() {
             if (confirm(currentLang === 'hi' ? "क्या आप अपना स्कोर रीसेट करके 0 करना चाहते हैं?" : "Do you want to reset your score to 0?")) {
                 studentScore = 0;
@@ -646,7 +645,6 @@
             document.getElementById('visionTitle').innerText = d.visionTitle;
             document.getElementById('visionDesc').innerText = d.visionDesc;
             document.getElementById('uploadBtnText').innerText = d.uploadBtnText;
-            document.getElementById('explainBtnText').innerText = d.explainBtnText;
             document.getElementById('homeworkTitle').innerText = d.hwTitle;
             document.getElementById('hwBtnText').innerText = d.hwBtn;
             document.getElementById('submitTitle').innerText = d.subTitleText;
@@ -666,7 +664,6 @@
             scrollToBlackboard();
         }
 
-        // एआई टीचर की शांत, मधुर और धीमी आवाज़
         function speakText(text) {
             try {
                 if ('speechSynthesis' in window) {
@@ -679,9 +676,8 @@
 
                     let utterance = new SpeechSynthesisUtterance(cleanText);
                     utterance.lang = (currentLang === 'en') ? 'en-US' : 'hi-IN';
-                    
-                    utterance.rate = 0.75;
-                    utterance.pitch = 1.15;
+                    utterance.rate = 0.8;
+                    utterance.pitch = 1.1;
 
                     let voices = window.speechSynthesis.getVoices();
                     if (voices.length > 0) {
@@ -778,7 +774,7 @@
             }
             else if (category === 'poem') {
                 let po = getRandomQuestion(poemBank[currentLang]);
-                textToShow = po.q;
+                textToShow = po.q; 
                 currentCorrectAnswer = po.a;
             }
 
@@ -875,37 +871,6 @@
                 <div style="color:#67e8f9; font-size:16px; font-weight:600;">${congratsText}</div>
             `;
             updateBlackboard(html);
-            playClappingSound();
-        }
-
-        function playClappingSound() {
-            try {
-                const AudioCtx = window.AudioContext || window.webkitAudioContext;
-                if (!AudioCtx) return;
-                const ctx = new AudioCtx();
-                for (let i = 0; i < 12; i++) {
-                    let delay = i * 0.15;
-                    let bufferSize = ctx.sampleRate * 0.05;
-                    let buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
-                    let data = buffer.getChannelData(0);
-                    for (let j = 0; j < bufferSize; j++) data[j] = Math.random() * 2 - 1;
-
-                    let noise = ctx.createBufferSource();
-                    noise.buffer = buffer;
-                    let filter = ctx.createBiquadFilter();
-                    filter.type = 'bandpass';
-                    filter.frequency.value = 1200;
-
-                    let gain = ctx.createGain();
-                    gain.gain.setValueAtTime(0.35, ctx.currentTime + delay);
-                    gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + delay + 0.05);
-
-                    noise.connect(filter);
-                    filter.connect(gain);
-                    gain.connect(ctx.destination);
-                    noise.start(ctx.currentTime + delay);
-                }
-            } catch (e) {}
         }
 
         function startVoiceInput() {
@@ -929,7 +894,6 @@
             }
         }
 
-        // 100% क्रैश-प्रूफ इमेज कंप्रेसर (Lightweight 750px Canvas Stream)
         function compressCrashProof(file, callback) {
             const img = new Image();
             const objectUrl = URL.createObjectURL(file);
@@ -981,8 +945,6 @@
                 uploadedImageBlob = blob;
                 document.getElementById('uploadedImagePreview').src = dataUrl;
                 document.getElementById('imagePreviewContainer').classList.remove('hidden');
-                
-                // दोनों एक्शन बटन्स (सॉल्यूशन व क्विज़) दिखाना
                 document.getElementById('scannerActionButtons').classList.remove('hidden');
                 
                 let readyMsg = currentLang === 'hi' 
@@ -1056,7 +1018,6 @@
                     if (solText.includes("विश्राम") || solText.includes("कोटा") || solText.includes("429") || solText.includes("quota")) {
                         startAutoRetryCountdown(35, () => explainBookPage(null));
                     } else {
-                        // फोटो स्कैन सफल होने पर +20 अंक और 100/100 स्कोर
                         if (studentScore < 100) {
                             studentScore = Math.min(100, studentScore + 20);
                             localStorage.setItem('dhruv_student_score', studentScore.toString());
@@ -1066,7 +1027,7 @@
                                 triggerCelebration();
                                 setTimeout(() => {
                                     updateBlackboard(solText);
-                                }, 3000);
+                                }, 2500);
                                 return;
                             }
                         }
@@ -1081,9 +1042,6 @@
             }
         }
 
-        // ----------------------------------------------------------------------
-        // स्मार्ट क्विज़ और एंटी-चीट कियोस्क इंजन
-        // ----------------------------------------------------------------------
         async function generateSmartQuiz(e) {
             if (e) e.preventDefault();
             if (!uploadedImageBlob) {
@@ -1108,7 +1066,7 @@
                     activeQuizList = res.quiz;
                     renderQuizModule();
                 } else {
-                    alert(currentLang === 'hi' ? "क्विज़ बनाने में समस्या हुई। कृपया दोबारा प्रयास करें।" : "Could not generate quiz. Try again.");
+                    alert(currentLang === 'hi' ? "क्विज़ लोड करने में समस्या हुई।" : "Could not load quiz.");
                 }
             } catch (err) {
                 console.error(err);
@@ -1121,7 +1079,7 @@
             container.innerHTML = "";
 
             activeQuizList.forEach((item, qIdx) => {
-                let optsHtml = item.options.map((opt, oIdx) => `
+                let optsHtml = item.options.map((opt) => `
                     <label style="display:flex; align-items:center; gap:8px; padding:8px 12px; background:#0f172a; border:1px solid #334155; border-radius:10px; cursor:pointer;">
                         <input type="radio" name="quiz_q_${qIdx}" value="${opt}" style="accent-color:#f59e0b;">
                         <span style="color:#f8fafc;">${opt}</span>
@@ -1140,7 +1098,6 @@
 
             document.getElementById('smartQuizModule').classList.remove('hidden');
             
-            // एंटी-चीट व फोकस मोड शुरू करना
             isQuizActive = true;
             cheatWarnings = 0;
             document.getElementById('cheatWarningBadge').innerText = "चेतावनी: 0 / 2";
@@ -1186,7 +1143,6 @@
             window.open("https://wa.me/?text=" + encodeURIComponent(quizText), '_blank');
         }
 
-        // एंटी-चीट फोकस मॉनिटरिंग (Tab Switch Detection)
         document.addEventListener("visibilitychange", function() {
             if (isQuizActive && document.hidden) {
                 cheatWarnings++;
