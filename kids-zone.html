@@ -105,7 +105,7 @@
         <h1 id="mainTitle" class="text-2xl md:text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-sky-200 to-indigo-300">
             नेबुला एआई वर्चुअल क्लासरूम
         </h1>
-        <p id="subTitle" class="text-slate-400 text-xs sm:text-sm mt-1">बोलती हुई एआई टीचर और लाइव 3D नेबुला ब्लैकबोर्ड</p>
+        <p id="subTitle" class="text-slate-400 text-xs sm:text-sm mt-1">ध्रुव एकेडमी 100% प्रामाणिक व सत्य शिक्षण प्रणाली | लाइव 3D ब्लैकबोर्ड</p>
     </div>
 
     <!-- मुख्य कंटेनर -->
@@ -121,10 +121,10 @@
                 <div>
                     <div class="flex items-center gap-2">
                         <span id="teacherName" class="text-sm font-bold text-cyan-300">नेबुला एआई टीचर</span>
-                        <span class="text-[10px] bg-cyan-950 border border-cyan-500 text-cyan-400 px-2 py-0.5 rounded-full font-semibold">Live Assistant</span>
+                        <span class="text-[10px] bg-cyan-950 border border-cyan-500 text-cyan-400 px-2 py-0.5 rounded-full font-semibold">100% Verified</span>
                     </div>
-                    <span id="teacherStatus" class="text-xs text-emerald-400 font-medium block mt-0.5">तैयार हूँ! मुझे कोई भी सवाल दें...</span>
-                    <p class="text-[11px] text-slate-400 mt-1">अवतार पर टैप करके प्यारी आवाज़ सुनें</p>
+                    <span id="teacherStatus" class="text-xs text-emerald-400 font-medium block mt-0.5">तैयार हूँ! सटीक व स्पष्ट उत्तर के लिए सवाल चुनें...</span>
+                    <p class="text-[11px] text-slate-400 mt-1">अवतार पर टैप करके मीठी आवाज़ में उत्तर सुनें</p>
                 </div>
             </div>
 
@@ -207,14 +207,14 @@
             </button>
         </div>
 
-        <!-- 5. एआई बुक स्कैनर ('सॉल्यूशन देखें' बटन सहित) -->
+        <!-- 5. एआई बुक स्कैनर (100% यूज़र कंट्रोल्ड 'सॉल्यूशन देखें' बटन) -->
         <div class="w-full bg-slate-950 p-5 rounded-2xl border border-cyan-500/40 shadow-xl space-y-3">
-            <h3 id="visionTitle" class="text-cyan-400 font-bold text-sm text-center">📸 एआई बुक स्कैनर (किताब की फोटो से ब्लैकबोर्ड पर समझें)</h3>
-            <p id="visionDesc" class="text-slate-400 text-xs text-center">कक्षा 1 से 5 तक के किसी भी प्रश्न का फोटो खींचें, नेबुला टीचर पूरा पन्ना पॉइंट-वाइज समझाएगी!</p>
+            <h3 id="visionTitle" class="text-cyan-400 font-bold text-sm text-center">📸 एआई बुक व होमवर्क स्कैनर</h3>
+            <p id="visionDesc" class="text-slate-400 text-xs text-center">कक्षा 1 से 5 तक के किसी भी प्रश्न का फोटो खींचें, नेबुला टीचर बिना किसी फालतू परिचय के सीधे पॉइंट-वाइज पूरा हल बताएगी!</p>
             
             <label class="w-full bg-indigo-600 hover:bg-indigo-500 text-white py-3.5 rounded-xl font-bold text-sm shadow-xl transition cursor-pointer flex items-center justify-center gap-2">
                 📷 <span id="uploadBtnText">कैमरे से किताब की फोटो खींचें / अपलोड करें</span>
-                <input type="file" id="bookImageInput" accept="image/*" capture="environment" class="hidden" onchange="handleImageUpload(event)">
+                <input type="file" id="bookImageInput" accept="image/*" capture="environment" class="hidden" onchange="handleCrashProofUpload(event)">
             </label>
 
             <!-- यूजर के लिए साफ़ 'सॉल्यूशन देखें' बटन -->
@@ -289,9 +289,9 @@
             hi: {
                 portal: "मुख्य पोर्टल",
                 mainTitle: "नेबुला एआई वर्चुअल क्लासरूम",
-                subTitle: "बोलती हुई एआई टीचर और लाइव 3D नेबुला ब्लैकबोर्ड",
+                subTitle: "ध्रुव एकेडमी 100% प्रामाणिक व सत्य शिक्षण प्रणाली | लाइव 3D ब्लैकबोर्ड",
                 teacher: "नेबुला एआई टीचर",
-                statusText: "तैयार हूँ! मुझे कोई भी सवाल दें...",
+                statusText: "तैयार हूँ! सटीक व स्पष्ट उत्तर के लिए सवाल चुनें...",
                 scoreLabel: "जीनियस स्कोर",
                 boardHeader: "नेबुला डिजिटल ब्लैकबोर्ड (Live Chalkboard)",
                 welcome: "नमस्ते प्यारे बच्चों! 🌟 नीचे दिए गए 5 विषयों में से कोई भी विषय चुनें या अपनी किताब की फोटो खींचें!",
@@ -304,8 +304,8 @@
                 inputPh: "यहाँ उत्तर लिखें या माइक से बोलें...",
                 micBtn: "बोलें",
                 submitBtn: "उत्तर की पुष्टि करें (Check Answer) 🚀",
-                visionTitle: "📸 एआई बुक स्कैनर (किताब की फोटो से ब्लैकबोर्ड पर समझें)",
-                visionDesc: "कक्षा 1 से 5 तक के किसी भी प्रश्न का फोटो खींचें, नेबुला टीचर पूरा पन्ना पॉइंट-वाइज समझाएगी!",
+                visionTitle: "📸 एआई बुक व होमवर्क स्कैनर",
+                visionDesc: "कक्षा 1 से 5 तक के किसी भी प्रश्न का फोटो खींचें, नेबुला टीचर बिना किसी फालतू परिचय के सीधे पॉइंट-वाइज पूरा हल बताएगी!",
                 uploadBtnText: "कैमरे से किताब की फोटो खींचें / अपलोड करें",
                 explainBtnText: "नेबुला एआई से ब्लैकबोर्ड पर पूरा सॉल्यूशन देखें 🚀",
                 hwTitle: "🏫 स्कूल / ट्यूटर व्हाट्सएप होमवर्क पोर्टल",
@@ -321,9 +321,9 @@
             en: {
                 portal: "Main Portal",
                 mainTitle: "Nebula AI Virtual Classroom",
-                subTitle: "Interactive Speaking AI Teacher with Live 3D Blackboard",
+                subTitle: "Dhruv Academy 100% Fact-Checked Education System | Live 3D Blackboard",
                 teacher: "Nebula AI Teacher",
-                statusText: "Ready! Ask me any question...",
+                statusText: "Ready! Select a question for an accurate solution...",
                 scoreLabel: "Genius Score",
                 boardHeader: "Nebula Digital Blackboard (Live Chalkboard)",
                 welcome: "Hello smart kids! 🌟 Choose any subject below or snap your book photo to start learning!",
@@ -336,8 +336,8 @@
                 inputPh: "Type answer or use mic...",
                 micBtn: "Speak",
                 submitBtn: "Verify Answer 🚀",
-                visionTitle: "📸 AI Book Scanner (Learn on Blackboard from Photo)",
-                visionDesc: "Snap any textbook page, Nebula Teacher will explain the entire page step-by-step!",
+                visionTitle: "📸 AI Book & Homework Scanner",
+                visionDesc: "Snap any textbook page, Nebula Teacher will explain the complete point-to-point solution directly!",
                 uploadBtnText: "Snap Book Photo with Camera / Upload",
                 explainBtnText: "View Complete Solution on Blackboard 🚀",
                 hwTitle: "🏫 School / Tutor Homework Portal",
@@ -449,6 +449,7 @@
             ]
         };
 
+        // मार्कडाउन क्लीनर (स्क्रीन पर सुंदर फॉर्मेटिंग)
         function formatBlackboardText(text) {
             if (!text) return "";
             return text
@@ -799,24 +800,28 @@
             }
         }
 
-        // 100% क्रैश-प्रूफ कैनवस कंप्रेसर (Lightweight 750px)
-        function safeCompress(file, callback) {
+        // 100% क्रैश-प्रूफ इमेज कंप्रेसर (Lightweight 750px Canvas Stream)
+        function compressCrashProof(file, callback) {
             const img = new Image();
-            const url = URL.createObjectURL(file);
+            const objectUrl = URL.createObjectURL(file);
+            
             img.onload = function() {
-                URL.revokeObjectURL(url);
+                URL.revokeObjectURL(objectUrl);
                 let w = img.width;
                 let h = img.height;
                 const maxDim = 750; // मोबाइल मेमोरी सेफ साइज
+                
                 if (w > maxDim || h > maxDim) {
                     if (w > h) { h = Math.round((h * maxDim) / w); w = maxDim; }
                     else { w = Math.round((w * maxDim) / h); h = maxDim; }
                 }
+
                 const canvas = document.createElement('canvas');
                 canvas.width = w;
                 canvas.height = h;
                 const ctx = canvas.getContext('2d');
                 ctx.drawImage(img, 0, 0, w, h);
+                
                 canvas.toBlob(function(blob) {
                     const reader = new FileReader();
                     reader.onloadend = function() {
@@ -825,23 +830,25 @@
                     reader.readAsDataURL(blob);
                 }, 'image/jpeg', 0.65);
             };
+            
             img.onerror = function() {
-                URL.revokeObjectURL(url);
-                alert("फोटो लोड करने में त्रुटि हुई।");
+                URL.revokeObjectURL(objectUrl);
+                alert("फोटो लोड करने में त्रुटि हुई। कृपया दोबारा प्रयास करें।");
             };
-            img.src = url;
+            
+            img.src = objectUrl;
         }
 
-        function handleImageUpload(e) {
+        function handleCrashProofUpload(e) {
             if (e) e.preventDefault();
             const file = e.target.files[0];
             if (!file) return;
 
             if (retryIntervalTimer) clearInterval(retryIntervalTimer);
 
-            updateBlackboard("📸 फोटो लोड हो रही है... कृपया प्रतीक्षा करें!");
+            updateBlackboard("📸 फोटो तैयार की जा रही है... कृपया प्रतीक्षा करें!");
 
-            safeCompress(file, function(blob, dataUrl) {
+            compressCrashProof(file, function(blob, dataUrl) {
                 uploadedImageBlob = blob;
                 document.getElementById('uploadedImagePreview').src = dataUrl;
                 document.getElementById('imagePreviewContainer').classList.remove('hidden');
