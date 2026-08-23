@@ -590,7 +590,7 @@ def master_ecosystem_dashboard():
     """
 
 # ------------------------------------------------------------------------------
-# 6. एआई विजन व ऑटो-क्विज़ इंजन (Direct Point-Wise & Smart MCQ Generator)
+# 6. एआई विजन व ऑटो-क्विज़ इंजन (Direct Point-Wise with gemini-3.6-flash)
 # ------------------------------------------------------------------------------
 def get_all_gemini_keys() -> List[str]:
     keys = []
@@ -662,8 +662,9 @@ async def process_gemini_vision(file: UploadFile, lang: str):
 
         last_error = ""
 
+        # Use gemini-3.6-flash
         for key in api_keys:
-            target_url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={key}"
+            target_url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key={key}"
             try:
                 req = urllib.request.Request(
                     target_url,
@@ -705,7 +706,7 @@ async def process_gemini_vision(file: UploadFile, lang: str):
         return JSONResponse(content={"success": False, "solution": err_msg})
 
 # ------------------------------------------------------------------------------
-# 7. ऑटो-क्विज़ जनरेटर एपीआई (Robust JSON Extraction + Certified Fallback)
+# 7. ऑटो-क्विज़ जनरेटर एपीआई (gemini-3.6-flash + Regex Parser + Certified Fallback)
 # ------------------------------------------------------------------------------
 @app.post("/generate-quiz")
 async def generate_quiz_endpoint(file: UploadFile = File(...), lang: str = Form("hi")):
@@ -763,7 +764,7 @@ async def generate_quiz_endpoint(file: UploadFile = File(...), lang: str = Form(
         }
 
         for key in api_keys:
-            target_url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={key}"
+            target_url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key={key}"
             try:
                 req = urllib.request.Request(
                     target_url,
