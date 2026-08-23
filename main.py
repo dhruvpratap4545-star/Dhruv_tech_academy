@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 # ==============================================================================
-# main.py - Dhruv Academy Master Ecosystem (100% Complete & Error-Free Engine)
+# main.py - Dhruv Academy Master Ecosystem (Direct Point-Wise Full Answer Engine)
 # ==============================================================================
 
 import os
@@ -589,11 +589,10 @@ def master_ecosystem_dashboard():
     """
 
 # ------------------------------------------------------------------------------
-# 6. ऑटो एपीआई कीज़ रोटेशन व पूर्ण समाधान इंजन
+# 6. नो-इंट्रो व 100% पूर्ण समाधान विजन इंजन
 # ------------------------------------------------------------------------------
 def get_all_gemini_keys() -> List[str]:
     keys = []
-    # Render में सेट GEMINI_API_KEY1, GEMINI_API_KEY2, GEMINI_API_KEY3 पढ़ना
     for i in range(1, 6):
         k_val = (os.environ.get(f"GEMINI_API_KEY{i}") or os.environ.get(f"GEMINI_API_KEY_{i}") or "").strip().strip('"').strip("'")
         if k_val and k_val not in keys:
@@ -623,9 +622,21 @@ async def process_gemini_vision(file: UploadFile, lang: str):
         base64_image = base64.b64encode(image_bytes).decode("utf-8")
 
         prompt = (
-            "आप नेबुला एआई टीचर हैं। इस किताब के पन्ने/प्रश्न का पूरा, सटीक और विस्तृत समाधान कक्षा 1 से 5 के बच्चों के लिए पॉइंट-टू-पॉइंट (पॉइंट 1, पॉइंट 2, पॉइंट 3...) सरल हिंदी और आसान शब्दों में समझाकर लिखें। अधूरा उत्तर बिल्कुल न दें, पूरे पन्ने के मुख्य विषय और सभी सवालों का हल साफ-साफ स्पष्ट करें।"
+            "सख्त निर्देश: अपना कोई परिचय या अभिवादन (जैसे 'नमस्ते, मैं नेबुला टीचर हूँ') बिल्कुल न दें। "
+            "सीधे इस किताब के पन्ने/प्रश्न का 100% सही और संपूर्ण उत्तर बच्चों के समझने लायक सरल भाषा में बिंदुवार लिखें:\n"
+            "📖 मुख्य विषय: [पन्ने का शीर्षक/विषय]\n"
+            "👉 पॉइंट 1: [पहला मुख्य बिंदु/उत्तर]\n"
+            "👉 पॉइंट 2: [दूसरा मुख्य बिंदु/उत्तर]\n"
+            "👉 पॉइंट 3: [तीसरा मुख्य बिंदु/निष्कर्ष]\n"
+            "उत्तर अधूरा नहीं होना चाहिए, पूरा और स्पष्ट होना चाहिए।"
             if lang == "hi"
-            else "You are Nebula AI Teacher. Provide a complete, accurate, and step-by-step point-to-point (Point 1, Point 2, Point 3...) solution for this textbook page for young school kids. Explain the entire topic and questions completely in simple everyday English without leaving out anything."
+            else
+            "STRICT INSTRUCTION: Do NOT introduce yourself or say greetings. Start directly with the complete, accurate point-to-point solution in simple English for young kids:\n"
+            "📖 Topic: [Page topic]\n"
+            "👉 Point 1: [First point/answer]\n"
+            "👉 Point 2: [Second point/answer]\n"
+            "👉 Point 3: [Third point/conclusion]\n"
+            "Provide the complete solution without cutting off."
         )
 
         payload = {
@@ -643,14 +654,14 @@ async def process_gemini_vision(file: UploadFile, lang: str):
                 }
             ],
             "generationConfig": {
-                "maxOutputTokens": 1024,
-                "temperature": 0.3
+                "maxOutputTokens": 2048,
+                "temperature": 0.2
             }
         }
 
         last_error = ""
 
-        # Multi-Key Rotation
+        # Key Rotation Loop
         for key in api_keys:
             target_url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key={key}"
             try:
@@ -661,7 +672,7 @@ async def process_gemini_vision(file: UploadFile, lang: str):
                     method="POST"
                 )
 
-                with urllib.request.urlopen(req, timeout=40) as response:
+                with urllib.request.urlopen(req, timeout=45) as response:
                     res_data = json.loads(response.read().decode("utf-8"))
                     solution_text = res_data["candidates"][0]["content"]["parts"][0]["text"]
                     return JSONResponse(content={"success": True, "solution": solution_text.strip()})
