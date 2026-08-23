@@ -590,7 +590,7 @@ def master_ecosystem_dashboard():
     """
 
 # ------------------------------------------------------------------------------
-# 6. एआई विजन व ऑटो-क्विज़ इंजन (Direct Point-Wise with gemini-3.6-flash)
+# 6. एआई विजन व ऑटो-क्विज़ इंजन (gemini-3.6-flash Rotation Engine)
 # ------------------------------------------------------------------------------
 def get_all_gemini_keys() -> List[str]:
     keys = []
@@ -614,7 +614,7 @@ async def process_gemini_vision(file: UploadFile, lang: str):
     if not api_keys:
         return JSONResponse(content={
             "success": False,
-            "solution": "⚠️ सर्वर पर GEMINI_API_KEY1 उपलब्ध नहीं है।" if lang == "hi" else "⚠️ GEMINI_API_KEY1 is not configured."
+            "solution": "⚠️ सर्वर पर GEMINI_API_KEY उपलब्ध नहीं है।" if lang == "hi" else "⚠️ GEMINI_API_KEY is not configured."
         })
 
     try:
@@ -662,7 +662,7 @@ async def process_gemini_vision(file: UploadFile, lang: str):
 
         last_error = ""
 
-        # Use gemini-3.6-flash
+        # Using gemini-3.6-flash engine
         for key in api_keys:
             target_url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key={key}"
             try:
@@ -706,7 +706,7 @@ async def process_gemini_vision(file: UploadFile, lang: str):
         return JSONResponse(content={"success": False, "solution": err_msg})
 
 # ------------------------------------------------------------------------------
-# 7. ऑटो-क्विज़ जनरेटर एपीआई (gemini-3.6-flash + Regex Parser + Certified Fallback)
+# 7. ऑटो-क्विज़ जनरेटर एपीआई (gemini-3.6-flash + Smart Fallback)
 # ------------------------------------------------------------------------------
 @app.post("/generate-quiz")
 async def generate_quiz_endpoint(file: UploadFile = File(...), lang: str = Form("hi")):
@@ -828,11 +828,12 @@ async def master_admin_panel(user: AdminUser = Depends(get_current_admin), db: S
 
 @app.post("/api/master-upload")
 async def master_upload_endpoint(module_name: str = Form(...), file: UploadFile = File(...), db: Session = Depends(get_db)):
-    destination = UPLOAD_DIR / file.filename
+    safe_filename = os.path.basename(file.filename)
+    destination = UPLOAD_DIR / safe_filename
     with open(destination, "wb") as buffer:
         shutil.copyfileobj(file.file, buffer)
     
-    db.add(AcademyMasterRecord(module_name=module_name, filename=file.filename))
+    db.add(AcademyMasterRecord(module_name=module_name, filename=safe_filename))
     db.commit()
     return HTMLResponse(content="""
     <html><head><script src="https://cdn.tailwindcss.com"></script></head>
@@ -849,7 +850,7 @@ async def master_upload_endpoint(module_name: str = Form(...), file: UploadFile 
 async def kids_zone():
     file_path = Path("kids-zone.html")
     if not file_path.exists():
-        return HTMLResponse(content="<h1>kids-zone.html file missing</h1>")
+        return HTMLResponse(content="<h1>kids-zone.html file missing</h1>", status_code=404)
     with open(file_path, "r", encoding="utf-8") as f:
         return f.read()
 
