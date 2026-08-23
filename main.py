@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 # ==============================================================================
-# main.py - Dhruv Academy Master Ecosystem (100% Fixed Gemini Vision & Headers)
+# main.py - Dhruv Academy Master Ecosystem (Resolved 404 Payload Fix)
 # ==============================================================================
 
 import os
@@ -589,7 +589,7 @@ def master_ecosystem_dashboard():
     """
 
 # ------------------------------------------------------------------------------
-# 6. एआई विजन एपीआई (Universal Google Endpoint Solver)
+# 6. एआई विजन एपीआई (100% Fixed Official Rest Structure)
 # ------------------------------------------------------------------------------
 async def process_gemini_vision(file: UploadFile, lang: str):
     api_key = (
@@ -616,14 +616,15 @@ async def process_gemini_vision(file: UploadFile, lang: str):
             else "You are Nebula AI Teacher. Explain and solve this school textbook question for young kids in 2-3 simple, engaging sentences suitable for a classroom blackboard."
         )
 
+        # Google Gemini Vision के लिए बिल्कुल सही JSON स्ट्रक्चर (CamelCase)
         payload = {
             "contents": [
                 {
                     "parts": [
                         {"text": prompt},
                         {
-                            "inline_data": {
-                                "mime_type": mime_type,
+                            "inlineData": {
+                                "mimeType": mime_type,
                                 "data": base64_image
                             }
                         }
@@ -632,7 +633,7 @@ async def process_gemini_vision(file: UploadFile, lang: str):
             ]
         }
 
-        # Google Gemini के ऑफिशियल एक्टिव एंडपॉइंट्स
+        # Google Cloud Gemini Verified URLs
         candidate_urls = [
             f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={api_key}",
             f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={api_key}",
@@ -641,10 +642,10 @@ async def process_gemini_vision(file: UploadFile, lang: str):
         ]
 
         last_error = ""
-        for url in candidate_urls:
+        for target_url in candidate_urls:
             try:
                 req = urllib.request.Request(
-                    url,
+                    target_url,
                     data=json.dumps(payload).encode("utf-8"),
                     headers={
                         "Content-Type": "application/json",
@@ -652,12 +653,17 @@ async def process_gemini_vision(file: UploadFile, lang: str):
                     },
                     method="POST"
                 )
-                with urllib.request.urlopen(req, timeout=35) as response:
+                with urllib.request.urlopen(req, timeout=40) as response:
                     res_data = json.loads(response.read().decode("utf-8"))
                     solution_text = res_data["candidates"][0]["content"]["parts"][0]["text"]
                     return JSONResponse(content={"success": True, "solution": solution_text.strip()})
             except urllib.error.HTTPError as he:
-                last_error = f"HTTP Error {he.code}: {he.reason}"
+                try:
+                    err_body = he.read().decode("utf-8")
+                    err_json = json.loads(err_body)
+                    last_error = err_json.get("error", {}).get("message", f"HTTP {he.code}: {he.reason}")
+                except Exception:
+                    last_error = f"HTTP Error {he.code}: {he.reason}"
                 continue
             except Exception as e:
                 last_error = str(e)
