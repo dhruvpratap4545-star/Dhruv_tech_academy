@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 # ==============================================================================
-# main.py - Dhruv Academy Master Ecosystem (Complete Production Architecture)
+# main.py - Dhruv Academy Master Ecosystem (100% Fixed Gemini Vision & Headers)
 # ==============================================================================
 
 import os
@@ -15,13 +15,6 @@ from typing import Optional, List
 
 import urllib.request
 import urllib.error
-
-# Google Generative AI SDK
-try:
-    import google.generativeai as genai
-    GENAI_AVAILABLE = True
-except ImportError:
-    GENAI_AVAILABLE = False
 
 from fastapi import FastAPI, UploadFile, File, Form, Depends, HTTPException, Request, Response, status
 from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse
@@ -639,10 +632,11 @@ async def process_gemini_vision(file: UploadFile, lang: str):
             ]
         }
 
-        # 404 Error से बचने के लिए Google के 3 प्रमुख एंडपॉइंट्स (v1beta और v1)
+        # Google Gemini के ऑफिशियल एक्टिव एंडपॉइंट्स
         candidate_urls = [
             f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={api_key}",
-            f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key={api_key}",
+            f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={api_key}",
+            f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={api_key}",
             f"https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key={api_key}"
         ]
 
