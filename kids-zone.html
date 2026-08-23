@@ -85,7 +85,7 @@
 </head>
 <body class="bg-slate-950 text-white min-h-screen flex flex-col items-center justify-between p-3 sm:p-5">
 
-    <!-- शीर्ष बार: मुख्य पोर्टल और भाषा स्विच -->
+    <!-- शीर्ष बार -->
     <div class="w-full max-w-3xl flex justify-between items-center my-3 px-2">
         <a href="/" class="bg-red-600 hover:bg-red-500 text-white px-4 py-2 rounded-xl text-xs font-bold shadow-lg transition flex items-center gap-1.5">
             ← <span id="portalText">मुख्य पोर्टल</span>
@@ -128,7 +128,7 @@
                 </div>
             </div>
 
-            <!-- लाइव स्कोर बॉक्स (LocalStorage Integrated) -->
+            <!-- लाइव स्कोर बॉक्स (LocalStorage) -->
             <div class="bg-slate-950 border border-cyan-500/50 px-4 py-2.5 rounded-2xl text-center sm:text-right shadow-inner w-full sm:w-auto">
                 <div class="flex items-center justify-between sm:justify-end gap-3">
                     <span id="scoreLabel" class="text-[10px] text-cyan-400 block font-bold uppercase tracking-wider">जीनियस स्कोर</span>
@@ -149,7 +149,7 @@
                 </span>
             </div>
 
-            <!-- ब्लैकबोर्ड कंटेंट / क्लीन फॉर्मेटेड राइटिंग -->
+            <!-- ब्लैकबोर्ड कंटेंट -->
             <div id="aiText" class="chalk-font text-cyan-100 text-base sm:text-xl min-h-[140px] flex flex-col items-center justify-center text-center p-3 leading-relaxed tracking-wide space-y-2">
                 नमस्ते प्यारे बच्चों! 🌟 नीचे दिए गए 5 विषयों में से कोई भी विषय चुनें या अपनी किताब की फोटो अपलोड करें!
             </div>
@@ -207,7 +207,7 @@
             </button>
         </div>
 
-        <!-- 5. एआई बुक स्कैनर (Safe Image Processing + Auto-Retry) -->
+        <!-- 5. एआई बुक स्कैनर -->
         <div class="w-full bg-slate-950 p-5 rounded-2xl border border-cyan-500/40 shadow-xl space-y-3">
             <h3 id="visionTitle" class="text-cyan-400 font-bold text-sm text-center">📸 एआई बुक स्कैनर (किताब की फोटो से ब्लैकबोर्ड पर समझें)</h3>
             <p id="visionDesc" class="text-slate-400 text-xs text-center">कक्षा 1 से 5 तक के किसी भी प्रश्न का फोटो खींचें, नेबुला टीचर ब्लैकबोर्ड पर लिखकर समझाएगी!</p>
@@ -272,7 +272,6 @@
 
     <!-- जावास्क्रिप्ट इंजन -->
     <script>
-        // LocalStorage से सुरक्षित स्कोर लोड करना
         let studentScore = parseInt(localStorage.getItem('dhruv_student_score') || '0', 10);
         let currentLang = 'hi';
         let currentCorrectAnswer = "";
@@ -280,7 +279,7 @@
         let currentQuestionText = "";
         let solvedQuestions = JSON.parse(localStorage.getItem('dhruv_solved_questions') || '{}');
         let uploadedImageBlob = null;
-        let retryIntervalTimer = null; // ऑटो-रीट्राई टाइमर हैंडलर
+        let retryIntervalTimer = null;
 
         const siteData = {
             hi: {
@@ -446,7 +445,7 @@
             ]
         };
 
-        // मार्कडाउन सिंटैक्स को साफ़ और सुंदर HTML में बदलने वाला क्लीनर
+        // मार्कडाउन क्लीनर (स्क्रीन पर सुंदर फॉर्मेटिंग)
         function formatBlackboardText(text) {
             if (!text) return "";
             return text
@@ -530,19 +529,24 @@
             scrollToBlackboard();
         }
 
-        // एआई टीचर की मीठी, स्पष्ट और प्राकृतिक आवाज़
+        // एआई टीचर की धीमी, मधुर और शांत आवाज़ (Smart Math-Safe Sign Cleaner)
         function speakText(text) {
             try {
                 if ('speechSynthesis' in window) {
                     window.speechSynthesis.cancel();
                     
-                    let cleanText = text.replace(/[*_#~🎵➕🤔🌍🌿📸💡⭐🏆❌⚠️👉]/g, '').trim();
+                    // केवल डेकोरेशन चिन्ह हटाएं, गणित के चिन्ह (+, -, ×, ÷, =, %) सुरक्षित रखें
+                    let cleanText = text
+                        .replace(/[*_#~🎵🤔🌍🌿📸💡⭐🏆❌⚠️👉]/g, '')
+                        .replace(/\s+/g, ' ')
+                        .trim();
+
                     let utterance = new SpeechSynthesisUtterance(cleanText);
                     utterance.lang = (currentLang === 'en') ? 'en-US' : 'hi-IN';
                     
-                    // बच्चों के लिए मधुर व स्पष्ट टोन
-                    utterance.rate = 0.90;
-                    utterance.pitch = 1.15;
+                    // बच्चों के स्तर की शांत, मीठी और धीमी आवाज़
+                    utterance.rate = 0.75;   // शांत व धीमी गति
+                    utterance.pitch = 1.15;  // मधुर टोन
 
                     let voices = window.speechSynthesis.getVoices();
                     if (voices.length > 0) {
@@ -584,8 +588,8 @@
 
         function speakGreeting() {
             let msg = currentLang === 'hi' 
-                ? "नमस्ते! मैं आपकी नेबुला एआई टीचर हूँ। नीचे दिए गए बटन दबाकर मुझसे सवाल पूछें!" 
-                : "Hello! I am your Nebula AI Teacher. Click any subject button below to start learning!";
+                ? "नमस्ते प्यारे बच्चों! मैं आपकी नेबुला टीचर हूँ। नीचे दिए गए बटन दबाकर कोई भी विषय चुनें!" 
+                : "Hello smart kids! I am your Nebula Teacher. Click any subject below to learn!";
             updateBlackboard(msg);
         }
 
@@ -605,7 +609,7 @@
             let textToShow = "";
 
             if (category === 'math') {
-                let num1 = Math.floor(Math.random() * 35) + 10;
+                let num1 = Math.floor(Math.random() * 20) + 5;
                 let num2 = Math.floor(Math.random() * 9) + 1;
                 let isAddition = Math.random() > 0.5;
 
@@ -655,7 +659,7 @@
 
             let hintText = "";
             if (currentLang === 'hi') {
-                if (currentActiveCategory === 'math') hintText = "💡 संकेत: संख्याओं को ध्यान से उंगलियों पर जोड़ें या घटाएं!";
+                if (currentActiveCategory === 'math') hintText = "💡 संकेत: संख्याओं को ध्यान से जोड़ें या घटाएं!";
                 else if (currentActiveCategory === 'gk') hintText = "💡 संकेत: अपने देश और आसपास की चीजों को याद करें!";
                 else if (currentActiveCategory === 'evs') hintText = "💡 संकेत: प्रकृति और पेड़-पौधों के बारे में सोचें!";
                 else hintText = "💡 संकेत: सवाल को एक बार फिर ध्यान से पढ़ें, जवाब आसान है!";
@@ -685,8 +689,8 @@
             if (studentScore >= 100) {
                 if (userVal.includes(currentCorrectAnswer.toLowerCase())) {
                     let alreadyWonMsg = currentLang === 'hi' 
-                        ? "🎉 आप पहले ही 100 अंक जीत चुके हैं! आप पहले से ही जीनियस चैंपियन हैं!" 
-                        : "🎉 You have already won 100 points! You are already a Genius Champion!";
+                        ? "🎉 आप पहले ही 100 अंक जीत चुके हैं! आप जीनियस चैंपियन हैं!" 
+                        : "🎉 You have already won 100 points! You are a Genius Champion!";
                     updateBlackboard(`<span class="text-yellow-300 font-bold text-xl">${alreadyWonMsg}</span>`);
                 } else {
                     let tokenMsg = currentLang === 'hi'
@@ -708,7 +712,6 @@
                 studentScore = Math.min(100, studentScore + 20);
                 solvedQuestions[uniqueKey] = true;
                 
-                // LocalStorage में सुरक्षित सेव करना
                 localStorage.setItem('dhruv_student_score', studentScore.toString());
                 localStorage.setItem('dhruv_solved_questions', JSON.stringify(solvedQuestions));
                 updateScoreDisplay();
@@ -720,7 +723,7 @@
                 }
             } else {
                 let warnFeedback = currentLang === 'hi'
-                    ? `❌ गलत जवाब! '${userVal}' सही नहीं है। सही उत्तर '${currentCorrectAnswer}' है। ध्यान से सोचें!`
+                    ? `❌ गलत जवाब! '${userVal}' सही नहीं है। सही उत्तर '${currentCorrectAnswer}' है।`
                     : `❌ Wrong answer! '${userVal}' is incorrect. Correct is '${currentCorrectAnswer}'.`;
                 updateBlackboard(`<span class="text-rose-400 font-bold text-xl">${warnFeedback}</span><br><span class="text-xs text-slate-300 mt-2 block">अगले प्रश्न में सही उत्तर देने का प्रयास करें!</span>`);
             }
@@ -791,7 +794,7 @@
             }
         }
 
-        // मोबाइल रैम क्रैश रोकने के लिए सुरक्षित 800px कैनवस कंप्रेसर
+        // मोबाइल रैम क्रैश रोकने के लिए 800px कैनवस कंप्रेसर
         function safeCompress(file, callback) {
             const img = new Image();
             const url = URL.createObjectURL(file);
@@ -799,7 +802,7 @@
                 URL.revokeObjectURL(url);
                 let w = img.width;
                 let h = img.height;
-                const maxDim = 800; // मोबाइल को रीस्टार्ट होने से बचाने के लिए सुरक्षित सीमा
+                const maxDim = 800;
                 if (w > maxDim || h > maxDim) {
                     if (w > h) { h = Math.round((h * maxDim) / w); w = maxDim; }
                     else { w = Math.round((w * maxDim) / h); h = maxDim; }
@@ -834,7 +837,7 @@
             });
         }
 
-        // ऑटो-रीट्राई टाइमर फ़ंक्शन (लाइव काउंटडाउन और स्वतः समाधान प्राप्ति)
+        // ऑटो-रीट्राई टाइमर फ़ंक्शन
         function startAutoRetryCountdown(seconds, retryFn) {
             if (retryIntervalTimer) clearInterval(retryIntervalTimer);
             let timeLeft = seconds;
@@ -871,7 +874,7 @@
                 } else {
                     clearInterval(retryIntervalTimer);
                     retryIntervalTimer = null;
-                    retryFn(); // बिना किसी क्लिक के अपने-आप फ़ंक्शन दोबारा चलेगा
+                    retryFn();
                 }
             }, 1000);
         }
@@ -911,7 +914,6 @@
 
                 if (result.solution) {
                     let solText = result.solution;
-                    // अगर रिस्पॉन्स में कोटा/रेट लिमिट या इंतज़ार की सूचना आए तो लाइव काउंटडाउन शुरू करें
                     if (solText.includes("विश्राम") || solText.includes("कोटा") || solText.includes("429") || solText.includes("quota") || solText.includes("exceeded")) {
                         startAutoRetryCountdown(35, () => explainBookPage(null));
                     } else {
@@ -970,7 +972,6 @@
             window.open("https://wa.me/?text=" + encodeURIComponent(message), '_blank');
         }
 
-        // पेज लोड होने पर स्कोर और वॉइस इनिशियलाइज़ करना
         window.addEventListener('DOMContentLoaded', () => {
             updateScoreDisplay();
             if ('speechSynthesis' in window) {
