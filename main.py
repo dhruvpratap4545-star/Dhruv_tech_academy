@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 # ==============================================================================
-# main.py - Dhruv Academy Master Ecosystem (Production Server)
+# main.py - Dhruv Academy Master Ecosystem (Fixed Gemini Vision Endpoints)
 # ==============================================================================
 
 import os
@@ -595,7 +595,7 @@ def master_ecosystem_dashboard():
     """
 
 # ------------------------------------------------------------------------------
-# 6. एआई विजन एपीआई (Robust Configuration & Execution)
+# 6. एआई विजन एपीआई (Fixed Multi-URL Fallback Logic)
 # ------------------------------------------------------------------------------
 async def process_gemini_vision(file: UploadFile, lang: str):
     api_key = (
@@ -608,11 +608,12 @@ async def process_gemini_vision(file: UploadFile, lang: str):
     if not api_key:
         return JSONResponse(content={
             "success": False,
-            "solution": "⚠️ सर्वर पर GEMINI_API_KEY उपलब्ध नहीं है। कृपया Render Dashboard -> Environment Variables में GEMINI_API_KEY जोड़ें।" if lang == "hi" else "⚠️ GEMINI_API_KEY is not configured in server environment variables."
+            "solution": "⚠️ सर्वर पर GEMINI_API_KEY उपलब्ध नहीं है। कृपया Render Dashboard -> Environment Variables में GEMINI_API_KEY जोड़ें।" if lang == "hi" else "⚠️ GEMINI_API_KEY is not configured."
         })
 
     try:
         image_bytes = await file.read()
+        base64_image = base64.b64encode(image_bytes).decode("utf-8")
         mime_type = file.content_type or "image/jpeg"
 
         prompt = (
@@ -621,26 +622,6 @@ async def process_gemini_vision(file: UploadFile, lang: str):
             else "You are Nebula AI Teacher. Explain and solve this school textbook question for young kids in 2-3 simple, engaging sentences suitable for a classroom blackboard."
         )
 
-        # 1. Primary: Google Generative AI SDK
-        if GENAI_AVAILABLE:
-            try:
-                genai.configure(api_key=api_key)
-                model = genai.GenerativeModel("gemini-1.5-flash")
-                contents = [
-                    prompt,
-                    {
-                        "mime_type": mime_type,
-                        "data": image_bytes
-                    }
-                ]
-                res = model.generate_content(contents)
-                if res and res.text:
-                    return JSONResponse(content={"success": True, "solution": res.text.strip()})
-            except Exception as sdk_err:
-                print("SDK Attempt Error, trying REST Fallback:", str(sdk_err))
-
-        # 2. Secondary: Direct REST API Fallback
-        base64_image = base64.b64encode(image_bytes).decode("utf-8")
         payload = {
             "contents": [
                 {
@@ -657,18 +638,35 @@ async def process_gemini_vision(file: UploadFile, lang: str):
             ]
         }
 
-        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={api_key}"
-        req = urllib.request.Request(
-            url,
-            data=json.dumps(payload).encode("utf-8"),
-            headers={"Content-Type": "application/json"},
-            method="POST"
-        )
+        # Google Gemini Vision के मुख्य और बैकअप URLs (404 से बचने के लिए)
+        candidate_urls = [
+            f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={api_key}",
+            f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key={api_key}",
+            f"https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key={api_key}"
+        ]
 
-        with urllib.request.urlopen(req, timeout=35) as response:
-            res_data = json.loads(response.read().decode("utf-8"))
-            solution_text = res_data["candidates"][0]["content"]["parts"][0]["text"]
-            return JSONResponse(content={"success": True, "solution": solution_text.strip()})
+        last_error = ""
+        for url in candidate_urls:
+            try:
+                req = urllib.request.Request(
+                    url,
+                    data=json.dumps(payload).encode("utf-8"),
+                    headers={"Content-Type": "application/json"},
+                    method="POST"
+                )
+                with urllib.request.urlopen(req, timeout=35) as response:
+                    res_data = json.loads(response.read().decode("utf-8"))
+                    solution_text = res_data["candidates"][0]["content"]["parts"][0]["text"]
+                    return JSONResponse(content={"success": True, "solution": solution_text.strip()})
+            except urllib.error.HTTPError as he:
+                last_error = f"HTTP Error {he.code}: {he.reason}"
+                continue
+            except Exception as e:
+                last_error = str(e)
+                continue
+
+        err_msg = f"त्रुटि: फोटो का विश्लेषण नहीं हो सका ({last_error})" if lang == "hi" else f"Error: Unable to analyze image ({last_error})"
+        return JSONResponse(content={"success": False, "solution": err_msg})
 
     except Exception as e:
         err_msg = f"त्रुटि: फोटो का विश्लेषण नहीं हो सका ({str(e)})" if lang == "hi" else f"Error: Unable to analyze image ({str(e)})"
