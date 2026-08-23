@@ -207,7 +207,7 @@
             </button>
         </div>
 
-        <!-- 5. एआई बुक स्कैनर (Canvas Image Compressor Integrated) -->
+        <!-- 5. एआई बुक स्कैनर (Canvas Image Compressor + Auto-Retry) -->
         <div class="w-full bg-slate-950 p-5 rounded-2xl border border-cyan-500/40 shadow-xl space-y-3">
             <h3 id="visionTitle" class="text-cyan-400 font-bold text-sm text-center">📸 एआई बुक स्कैनर (किताब की फोटो से ब्लैकबोर्ड पर समझें)</h3>
             <p id="visionDesc" class="text-slate-400 text-xs text-center">कक्षा 1 से 5 तक के किसी भी प्रश्न का फोटो खींचें, नेबुला टीचर ब्लैकबोर्ड पर लिखकर समझाएगी!</p>
@@ -280,6 +280,7 @@
         let currentQuestionText = "";
         let solvedQuestions = JSON.parse(localStorage.getItem('dhruv_solved_questions') || '{}');
         let uploadedImageBlob = null;
+        let retryIntervalTimer = null; // ऑटो-रीट्राई टाइमर हैंडलर
 
         const siteData = {
             hi: {
@@ -529,7 +530,7 @@
             scrollToBlackboard();
         }
 
-        // एआई टीचर की मीठी, स्पष्ट और प्राकृतिक आवाज़ का इंजन
+        // एआई टीचर की मीठी, स्पष्ट और प्राकृतिक आवाज़
         function speakText(text) {
             try {
                 if ('speechSynthesis' in window) {
@@ -681,7 +682,6 @@
 
             let uniqueKey = currentActiveCategory + "_" + currentQuestionText;
 
-            // अगर 100 अंक पहले ही प्राप्त हो चुके हैं
             if (studentScore >= 100) {
                 if (userVal.includes(currentCorrectAnswer.toLowerCase())) {
                     let alreadyWonMsg = currentLang === 'hi' 
@@ -698,7 +698,6 @@
                 return;
             }
 
-            // सामान्य जाँच (स्कोर 100 से कम होने पर)
             if (userVal.includes(currentCorrectAnswer.toLowerCase())) {
                 if (solvedQuestions[uniqueKey]) {
                     updateBlackboard(`<span class="text-amber-400">${d.alreadySolvedMsg}</span>`);
@@ -831,6 +830,9 @@
         function handleImageUpload(event) {
             let file = event.target.files[0];
             if (file) {
+                // अगर कोई पुराना टाइमर चल रहा हो तो उसे रोकें
+                if (retryIntervalTimer) clearInterval(retryIntervalTimer);
+
                 let processMsg = currentLang === 'hi' ? "📸 फोटो तैयार की जा रही है..." : "📸 Preparing photo...";
                 updateBlackboard(processMsg);
 
@@ -849,11 +851,55 @@
             }
         }
 
+        // ऑटो-रीट्राई टाइमर फ़ंक्शन (लाइव काउंटडाउन और स्वतः समाधान प्राप्ति)
+        function startAutoRetryCountdown(seconds, retryFn) {
+            if (retryIntervalTimer) clearInterval(retryIntervalTimer);
+            let timeLeft = seconds;
+
+            const updateTimerText = () => {
+                let timerHtml = currentLang === 'hi' 
+                    ? `<div class="space-y-3">
+                         <div class="inline-block animate-pulse text-amber-300 text-2xl font-bold">⏳ नेबुला टीचर विश्राम कर रही हैं...</div>
+                         <p class="text-sm text-cyan-200">फ़्री कोटा लिमिट के कारण स्वतः प्रतीक्षा जारी है।</p>
+                         <div class="text-3xl font-extrabold text-yellow-300 bg-slate-950/80 px-5 py-2.5 rounded-2xl border border-amber-500/50 inline-block shadow-lg">
+                            ${timeLeft}s बाद ऑटोमैटिक समाधान आएगा
+                         </div>
+                         <p class="text-xs text-slate-400">आपको कोई बटन दबाने की ज़रूरत नहीं है!</p>
+                       </div>`
+                    : `<div class="space-y-3">
+                         <div class="inline-block animate-pulse text-amber-300 text-2xl font-bold">⏳ Nebula Teacher is taking a short rest...</div>
+                         <p class="text-sm text-cyan-200">Auto-retry in progress due to free tier rate limit.</p>
+                         <div class="text-3xl font-extrabold text-yellow-300 bg-slate-950/80 px-5 py-2.5 rounded-2xl border border-amber-500/50 inline-block shadow-lg">
+                            Fetching in ${timeLeft}s
+                         </div>
+                         <p class="text-xs text-slate-400">No need to click anything!</p>
+                       </div>`;
+
+                let board = document.getElementById('aiText');
+                if (board) board.innerHTML = timerHtml;
+            };
+
+            updateTimerText();
+
+            retryIntervalTimer = setInterval(() => {
+                timeLeft--;
+                if (timeLeft > 0) {
+                    updateTimerText();
+                } else {
+                    clearInterval(retryIntervalTimer);
+                    retryIntervalTimer = null;
+                    retryFn(); // बिना किसी क्लिक के अपने-आप फ़ंक्शन दोबारा चलेगा
+                }
+            }, 1000);
+        }
+
         async function explainBookPage() {
             if (!uploadedImageBlob) {
                 alert(currentLang === 'hi' ? "कृपया पहले फोटो खींचें या अपलोड करें!" : "Please upload a photo first!");
                 return;
             }
+
+            if (retryIntervalTimer) clearInterval(retryIntervalTimer);
 
             let scanMsg = currentLang === 'hi' 
                 ? "🔄 नेबुला एआई सर्वर पर किताब का सॉल्यूशन प्रोसेस कर रही है..." 
@@ -880,17 +926,21 @@
                 let result = await response.json();
 
                 if (result.solution) {
-                    updateBlackboard(result.solution);
+                    let solText = result.solution;
+                    // अगर रिस्पॉन्स में कोटा/रेट लिमिट या इंतज़ार की सूचना आए तो लाइव काउंटडाउन शुरू करें
+                    if (solText.includes("विश्राम") || solText.includes("कोटा") || solText.includes("429") || solText.includes("quota") || solText.includes("exceeded")) {
+                        startAutoRetryCountdown(35, explainBookPage);
+                    } else {
+                        updateBlackboard(solText);
+                    }
                 } else {
                     updateBlackboard("सॉल्यूशन प्राप्त नहीं हुआ। कृपया दोबारा प्रयास करें।");
                 }
 
             } catch (error) {
                 console.error("Analysis Error:", error);
-                let errText = currentLang === 'hi' 
-                    ? "⚠️ सर्वर से कनेक्ट करने में समस्या हुई। कृपया इंटरनेट कनेक्शन जाँचें।" 
-                    : "⚠️ Connection error. Please check your internet connection.";
-                updateBlackboard(errText);
+                // नेटवर्क/सर्वर ग्लिच पर भी 15 सेकंड का सुरक्षित ऑटो-रीट्राई
+                startAutoRetryCountdown(15, explainBookPage);
             }
         }
 
