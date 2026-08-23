@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 # ==============================================================================
-# main.py - Dhruv Academy Master Ecosystem (100% Fixed Gemini Vision & Routes)
+# main.py - Dhruv Academy Master Ecosystem (100% Fixed Gemini Vision & Headers)
 # ==============================================================================
 
 import os
@@ -589,7 +589,7 @@ def master_ecosystem_dashboard():
     """
 
 # ------------------------------------------------------------------------------
-# 6. एआई विजन एपीआई (Universal Google Endpoint Solver)
+# 6. एआई विजन एपीआई (100% Fixed Header-Auth & Vision Architecture)
 # ------------------------------------------------------------------------------
 async def process_gemini_vision(file: UploadFile, lang: str):
     api_key = (
@@ -632,24 +632,27 @@ async def process_gemini_vision(file: UploadFile, lang: str):
             ]
         }
 
-        # Google Gemini के ऑफिशियल एक्टिव एंडपॉइंट्स (404 से बचने के लिए)
-        candidate_urls = [
-            f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={api_key}",
-            f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={api_key}",
-            f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={api_key}",
-            f"https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key={api_key}"
+        # Google Cloud Gemini Verified Endpoints
+        candidate_endpoints = [
+            "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent",
+            "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent",
+            "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent",
+            "https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent"
         ]
 
         last_error = ""
-        for url in candidate_urls:
+        for endpoint in candidate_endpoints:
             try:
                 req = urllib.request.Request(
-                    url,
+                    endpoint,
                     data=json.dumps(payload).encode("utf-8"),
-                    headers={"Content-Type": "application/json"},
+                    headers={
+                        "Content-Type": "application/json",
+                        "x-goog-api-key": api_key
+                    },
                     method="POST"
                 )
-                with urllib.request.urlopen(req, timeout=35) as response:
+                with urllib.request.urlopen(req, timeout=40) as response:
                     res_data = json.loads(response.read().decode("utf-8"))
                     solution_text = res_data["candidates"][0]["content"]["parts"][0]["text"]
                     return JSONResponse(content={"success": True, "solution": solution_text.strip()})
