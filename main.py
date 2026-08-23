@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 # ==============================================================================
-# main.py - Dhruv Academy Master Ecosystem (Gemini 2.5 Flash Production Engine)
+# main.py - Dhruv Academy Master Ecosystem (Gemini 3.6 Flash Engine)
 # ==============================================================================
 
 import os
@@ -589,7 +589,7 @@ def master_ecosystem_dashboard():
     """
 
 # ------------------------------------------------------------------------------
-# 6. एआई विजन एपीआई (Targeted to Active gemini-2.5-flash)
+# 6. एआई विजन एपीआई (Targeted to Active gemini-3.6-flash)
 # ------------------------------------------------------------------------------
 async def process_gemini_vision(file: UploadFile, lang: str):
     api_key = (
@@ -632,8 +632,8 @@ async def process_gemini_vision(file: UploadFile, lang: str):
             ]
         }
 
-        # Google Gemini Active Models
-        target_url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={api_key}"
+        # Google Gemini Active Model: gemini-3.6-flash
+        target_url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key={api_key}"
 
         req = urllib.request.Request(
             target_url,
