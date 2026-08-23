@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 # ==============================================================================
-# main.py - Dhruv Academy Master Ecosystem (100% Fixed Gemini Vision & Headers)
+# main.py - Dhruv Academy Master Ecosystem (Complete Production Architecture)
 # ==============================================================================
 
 import os
@@ -15,6 +15,13 @@ from typing import Optional, List
 
 import urllib.request
 import urllib.error
+
+# Google Generative AI SDK
+try:
+    import google.generativeai as genai
+    GENAI_AVAILABLE = True
+except ImportError:
+    GENAI_AVAILABLE = False
 
 from fastapi import FastAPI, UploadFile, File, Form, Depends, HTTPException, Request, Response, status
 from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse
@@ -589,7 +596,7 @@ def master_ecosystem_dashboard():
     """
 
 # ------------------------------------------------------------------------------
-# 6. एआई विजन एपीआई (100% Fixed Header-Auth & Vision Architecture)
+# 6. एआई विजन एपीआई (Universal Google Endpoint Solver)
 # ------------------------------------------------------------------------------
 async def process_gemini_vision(file: UploadFile, lang: str):
     api_key = (
@@ -607,8 +614,8 @@ async def process_gemini_vision(file: UploadFile, lang: str):
 
     try:
         image_bytes = await file.read()
-        base64_image = base64.b64encode(image_bytes).decode("utf-8")
         mime_type = file.content_type or "image/jpeg"
+        base64_image = base64.b64encode(image_bytes).decode("utf-8")
 
         prompt = (
             "आप नेबुला एआई टीचर हैं। इस स्कूल की किताब के पन्ने/प्रश्न को छोटे बच्चों के लिए ब्लैकबोर्ड पर समझाने के अंदाज़ में बहुत सरल, स्पष्ट और रोचक तरीके से 2-3 वाक्यों में स्टेप-बाय-स्टेप हल करें।"
@@ -632,19 +639,18 @@ async def process_gemini_vision(file: UploadFile, lang: str):
             ]
         }
 
-        # Google Cloud Gemini Verified Endpoints
-        candidate_endpoints = [
-            "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent",
-            "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent",
-            "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent",
-            "https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent"
+        # 404 Error से बचने के लिए Google के 3 प्रमुख एंडपॉइंट्स (v1beta और v1)
+        candidate_urls = [
+            f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={api_key}",
+            f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key={api_key}",
+            f"https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key={api_key}"
         ]
 
         last_error = ""
-        for endpoint in candidate_endpoints:
+        for url in candidate_urls:
             try:
                 req = urllib.request.Request(
-                    endpoint,
+                    url,
                     data=json.dumps(payload).encode("utf-8"),
                     headers={
                         "Content-Type": "application/json",
@@ -652,7 +658,7 @@ async def process_gemini_vision(file: UploadFile, lang: str):
                     },
                     method="POST"
                 )
-                with urllib.request.urlopen(req, timeout=40) as response:
+                with urllib.request.urlopen(req, timeout=35) as response:
                     res_data = json.loads(response.read().decode("utf-8"))
                     solution_text = res_data["candidates"][0]["content"]["parts"][0]["text"]
                     return JSONResponse(content={"success": True, "solution": solution_text.strip()})
