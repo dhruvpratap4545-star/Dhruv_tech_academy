@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 # ==============================================================================
-# main.py - Dhruv Academy Master Ecosystem (Direct Gemini 3.6 Flash Architecture)
+# main.py - Dhruv Academy Master Ecosystem (API Key Rotation Pool Architecture)
 # ==============================================================================
 
 import os
@@ -589,17 +589,36 @@ def master_ecosystem_dashboard():
     """
 
 # ------------------------------------------------------------------------------
-# 6. एआई विजन एपीआई (Direct & Pure Gemini 3.6 Flash Engine)
+# 6. एआई विजन एपीआई (Multiple API Key Rotation Engine)
 # ------------------------------------------------------------------------------
-async def process_gemini_vision(file: UploadFile, lang: str):
-    api_key = (
+def get_all_gemini_keys() -> List[str]:
+    keys = []
+    # 1. Check comma-separated environment variables
+    env_keys_raw = (
+        os.environ.get("GEMINI_API_KEYS") or 
         os.environ.get("GEMINI_API_KEY") or 
         os.getenv("GEMINI_API_KEY") or 
         os.environ.get("GOOGLE_API_KEY") or 
         ""
-    ).strip().strip('"').strip("'")
+    )
+    if env_keys_raw:
+        for k in env_keys_raw.split(","):
+            cleaned = k.strip().strip('"').strip("'")
+            if cleaned and cleaned not in keys:
+                keys.append(cleaned)
     
-    if not api_key:
+    # 2. Check individual key names (GEMINI_API_KEY_1, GEMINI_API_KEY_2, etc.)
+    for i in range(1, 6):
+        k_val = os.environ.get(f"GEMINI_API_KEY_{i}", "").strip().strip('"').strip("'")
+        if k_val and k_val not in keys:
+            keys.append(k_val)
+            
+    return keys
+
+async def process_gemini_vision(file: UploadFile, lang: str):
+    api_keys = get_all_gemini_keys()
+    
+    if not api_keys:
         return JSONResponse(content={
             "success": False,
             "solution": "⚠️ सर्वर पर GEMINI_API_KEY उपलब्ध नहीं है। कृपया Render Dashboard -> Environment Variables में GEMINI_API_KEY जोड़ें।" if lang == "hi" else "⚠️ GEMINI_API_KEY is not configured."
@@ -632,41 +651,52 @@ async def process_gemini_vision(file: UploadFile, lang: str):
             ]
         }
 
-        # Google Gemini का एकमात्र आधिकारिक एक्टिव मॉडल
-        target_url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key={api_key}"
+        last_error = ""
 
-        req = urllib.request.Request(
-            target_url,
-            data=json.dumps(payload).encode("utf-8"),
-            headers={
-                "Content-Type": "application/json"
-            },
-            method="POST"
-        )
+        # Key Rotation Loop: यदि एक Key पर रेट लिमिट (429) आए, तो तुरंत अगली Key पर स्विच होगा
+        for idx, key in enumerate(api_keys):
+            target_url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key={key}"
+            try:
+                req = urllib.request.Request(
+                    target_url,
+                    data=json.dumps(payload).encode("utf-8"),
+                    headers={
+                        "Content-Type": "application/json"
+                    },
+                    method="POST"
+                )
 
-        with urllib.request.urlopen(req, timeout=40) as response:
-            res_data = json.loads(response.read().decode("utf-8"))
-            solution_text = res_data["candidates"][0]["content"]["parts"][0]["text"]
-            return JSONResponse(content={"success": True, "solution": solution_text.strip()})
+                with urllib.request.urlopen(req, timeout=35) as response:
+                    res_data = json.loads(response.read().decode("utf-8"))
+                    solution_text = res_data["candidates"][0]["content"]["parts"][0]["text"]
+                    return JSONResponse(content={"success": True, "solution": solution_text.strip()})
 
-    except urllib.error.HTTPError as he:
-        try:
-            err_body = he.read().decode("utf-8")
-            err_json = json.loads(err_body)
-            raw_err = err_json.get("error", {}).get("message", f"HTTP {he.code}: {he.reason}")
-        except Exception:
-            raw_err = f"HTTP Error {he.code}: {he.reason}"
+            except urllib.error.HTTPError as he:
+                try:
+                    err_body = he.read().decode("utf-8")
+                    err_json = json.loads(err_body)
+                    raw_err = err_json.get("error", {}).get("message", f"HTTP {he.code}: {he.reason}")
+                except Exception:
+                    raw_err = f"HTTP Error {he.code}: {he.reason}"
 
-        # यदि फ़्री कोटा लिमिट (429) आ जाए तो स्पष्ट संदेश
-        if he.code == 429 or "quota" in raw_err.lower():
+                last_error = raw_err
+                # यदि 429 (Rate Limit), 403 या 400 आता है, तो तुरंत अगली Key का प्रयोग करें
+                continue
+
+            except Exception as e:
+                last_error = str(e)
+                continue
+
+        # यदि पूल की सभी Keys का कोटा समाप्त हो गया हो
+        if "quota" in last_error.lower() or "429" in last_error:
             rate_limit_msg = (
                 "⏳ नेबुला टीचर थोड़ा विश्राम ले रही हैं (फ़्री कोटा लिमिट)। कृपया 30-40 सेकंड बाद दोबारा 'सॉल्यूशन देखें' दबाएँ! 🌟"
                 if lang == "hi"
                 else "⏳ Nebula Teacher is taking a short rest (Free Quota Limit). Please retry in 30-40 seconds! 🌟"
             )
             return JSONResponse(content={"success": False, "solution": rate_limit_msg})
-        
-        err_msg = f"त्रुटि: फोटो का विश्लेषण नहीं हो सका ({raw_err})" if lang == "hi" else f"Error: Unable to analyze image ({raw_err})"
+
+        err_msg = f"त्रुटि: फोटो का विश्लेषण नहीं हो सका ({last_error})" if lang == "hi" else f"Error: Unable to analyze image ({last_error})"
         return JSONResponse(content={"success": False, "solution": err_msg})
 
     except Exception as e:
