@@ -197,7 +197,6 @@
 <body>
 
     <div class="main-wrapper">
-        <!-- शीर्ष बार: मुख्य पोर्टल और भाषा स्विच -->
         <div style="display:flex; justify-content:space-between; align-items:center; width:100%; padding:0 4px;">
             <a href="/" style="background:#dc2626; color:#fff; padding:6px 14px; border-radius:10px; text-decoration:none; font-size:12px; font-weight:bold; display:flex; align-items:center; gap:6px;">
                 ← <span id="portalText">मुख्य पोर्टल</span>
@@ -212,7 +211,6 @@
             </div>
         </div>
 
-        <!-- हेडर -->
         <div style="text-align:center;">
             <h1 id="mainTitle" style="font-size:24px; font-weight:800; color:#38bdf8; margin-bottom:4px;">
                 नेबुला एआई वर्चुअल क्लासरूम
@@ -220,10 +218,8 @@
             <p id="subTitle" style="font-size:12px; color:#94a3b8;">ध्रुव एकेडमी 100% प्रामाणिक व सत्य शिक्षण प्रणाली | लाइव 3D ब्लैकबोर्ड</p>
         </div>
 
-        <!-- मुख्य कंटेनर -->
         <div class="card">
 
-            <!-- 1. इंटरैक्टिव 3D एआई अवतार कार्ड -->
             <div style="display:flex; flex-wrap:wrap; justify-content:space-between; align-items:center; gap:12px; background:#020617; padding:14px; border-radius:18px; border:1px solid rgba(56,189,248,0.3);">
                 <div style="display:flex; align-items:center; gap:12px;">
                     <div id="teacherAvatar" onclick="speakGreeting()" class="avatar-glow" style="width:60px; height:60px; background:linear-gradient(135deg, #0284c7, #4f46e5); border:3px solid #38bdf8; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:30px; cursor:pointer; position:relative;" title="मुझसे बात करने के लिए क्लिक करें!">
@@ -240,7 +236,6 @@
                     </div>
                 </div>
 
-                <!-- लाइव स्कोर बॉक्स (100% Guaranteed Reset) -->
                 <div style="background:#0b1329; border:1px solid rgba(56,189,248,0.4); padding:8px 16px; border-radius:14px; text-align:right;">
                     <div style="display:flex; align-items:center; justify-content:flex-end; gap:8px;">
                         <span id="scoreLabel" style="font-size:10px; color:#38bdf8; font-weight:bold; text-transform:uppercase;">जीनियस स्कोर</span>
@@ -250,7 +245,6 @@
                 </div>
             </div>
 
-            <!-- 2. नेबुला ब्लैकबोर्ड (Live Chalkboard Display) -->
             <div id="nebulaBlackboardSection" class="nebula-board board-frame">
                 <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid rgba(51,65,85,0.6); padding-bottom:6px; margin-bottom:8px; font-size:12px; color:#94a3b8;">
                     <span style="display:flex; align-items:center; gap:6px; font-weight:bold; color:#38bdf8;">
@@ -261,19 +255,16 @@
                     </span>
                 </div>
 
-                <!-- ब्लैकबोर्ड कंटेंट -->
                 <div id="aiText" class="chalk-font" style="color:#e0f2fe; font-size:14px; min-height:140px; max-height:380px; overflow-y:auto; display:flex; flex-direction:column; align-items:flex-start; justify-content:flex-start; text-align:left; padding:6px; line-height:1.7; width:100%;">
                     नमस्ते प्यारे बच्चों! 🌟 नीचे दिए गए 5 विषयों में से कोई भी विषय चुनें या अपनी किताब की फोटो खींचें!
                 </div>
 
-                <!-- किताब की फोटो का लाइव प्रीव्यू -->
                 <div id="imagePreviewContainer" class="hidden" style="width:100%; margin-top:10px; padding:10px; background:rgba(2,6,23,0.8); border-radius:12px; border:1px solid rgba(56,189,248,0.4); text-align:center;">
                     <p style="font-size:12px; color:#38bdf8; margin-bottom:6px; font-weight:bold;">📷 स्कैन किया गया किताब का पन्ना:</p>
                     <img id="uploadedImagePreview" src="" alt="Book Preview" style="max-height:180px; margin:0 auto; border-radius:8px; border:1px solid #334155; object-fit:contain; box-shadow:0 4px 6px rgba(0,0,0,0.3);">
                 </div>
             </div>
 
-            <!-- 3. विषय व चैलेंज बटन्स -->
             <div class="grid-2">
                 <button onclick="loadChallenge('math')" class="btn-action" style="color:#67e8f9;">
                     <span>➕</span> <span id="btnMath">गणित चैलेंज (+20)</span>
@@ -292,14 +283,12 @@
                 </button>
             </div>
 
-            <!-- हिंट बटन -->
             <div style="display:flex; justify-content:flex-end;">
                 <button onclick="giveHint()" style="background:#d97706; color:#fff; padding:6px 14px; border-radius:8px; font-size:11px; font-weight:bold; border:none; cursor:pointer; display:flex; align-items:center; gap:6px;">
                     💡 <span id="hintBtnText">नेबुला टीचर से संकेत (Hint) लें</span>
                 </button>
             </div>
 
-            <!-- 4. इनपुट, वॉइस माइक और उत्तर जाँच -->
             <div style="display:flex; flex-direction:column; gap:8px;">
                 <div style="display:flex; gap:8px;">
                     <input type="text" id="userInput" placeholder="यहाँ उत्तर लिखें या माइक से बोलें..." class="text-input">
@@ -312,14 +301,12 @@
                 </button>
             </div>
 
-            <!-- व्हाट्सएप रिपोर्ट शेयर -->
             <div style="text-align:center;">
                 <button onclick="sendWhatsAppReport()" style="background:#16a34a; color:#fff; border:none; padding:10px 18px; border-radius:12px; font-size:12px; font-weight:bold; cursor:pointer; display:inline-flex; align-items:center; gap:6px;">
                     💬 <span>WhatsApp पर लाइव रिपोर्ट भेजें</span>
                 </button>
             </div>
 
-            <!-- 5. एआई बुक स्कैनर -->
             <div style="background:#020617; padding:16px; border-radius:18px; border:1px solid rgba(56,189,248,0.4); display:flex; flex-direction:column; gap:10px;">
                 <h3 id="visionTitle" style="color:#38bdf8; font-weight:bold; font-size:14px; text-align:center;">📸 एआई बुक व होमवर्क स्कैनर</h3>
                 <p id="visionDesc" style="color:#94a3b8; font-size:11px; text-align:center;">कक्षा 1 से 5 तक के किसी भी प्रश्न का फोटो खींचें, नेबुला टीचर बिना किसी फालतू परिचय के सीधे पॉइंट-वाइज पूरा हल बताएगी!</p>
@@ -329,7 +316,6 @@
                     <input type="file" id="bookImageInput" accept="image/*" capture="environment" class="hidden" onchange="handleCrashProofUpload(event)">
                 </label>
 
-                <!-- एक्शन बटन्स -->
                 <div id="scannerActionButtons" class="grid-2 hidden">
                     <button id="explainVisionBtn" onclick="explainBookPage(event)" type="button" class="btn-solution">
                         ✨ <span>पूरा सॉल्यूशन देखें 🚀</span>
@@ -340,7 +326,6 @@
                 </div>
             </div>
 
-            <!-- 6. स्मार्ट क्विज़ और एंटी-चीट कियोस्क मॉड्यूल -->
             <div id="smartQuizModule" class="hidden" style="background:#020617; padding:16px; border-radius:18px; border:1px solid rgba(245,158,11,0.5); display:flex; flex-direction:column; gap:12px;">
                 <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #1e293b; padding-bottom:8px;">
                     <div>
@@ -366,7 +351,6 @@
                 </div>
             </div>
 
-            <!-- 7. स्कूल व ट्यूटर व्हाट्सएप होमवर्क पोर्टल -->
             <div style="background:#020617; padding:16px; border-radius:18px; border:1px solid rgba(56,189,248,0.4); display:flex; flex-direction:column; gap:10px;">
                 <h3 id="homeworkTitle" style="color:#38bdf8; font-weight:bold; font-size:13px; text-align:center;">🏫 स्कूल / ट्यूटर व्हाट्सएप होमवर्क पोर्टल</h3>
                 <div class="grid-2">
@@ -390,7 +374,6 @@
                 </button>
             </div>
 
-            <!-- 8. छात्र होमवर्क सबमिशन -->
             <div style="background:#020617; padding:16px; border-radius:18px; border:1px solid rgba(52,211,153,0.4); display:flex; flex-direction:column; gap:10px;">
                 <h3 id="submitTitle" style="color:#34d399; font-weight:bold; font-size:13px; text-align:center;">📝 छात्र होमवर्क सबमिशन (होमवर्क वापस भेजें)</h3>
                 <div style="display:flex; flex-direction:column; gap:8px;">
@@ -408,7 +391,6 @@
 
         </div>
 
-        <!-- फुटर -->
         <footer style="text-align:center; padding:16px 0; font-size:11px; color:#64748b; border-top:1px solid #0f172a; width:100%;">
             <p>© 2026 Dhruv Academy Master Ecosystem. सर्वाधिकार सुरक्षित।
                 <a href="/secret-admin-login-dhruv" style="color:#0f172a; text-decoration:none; margin-left:4px;" title="सिस्टम गेटवे">•</a>
@@ -416,7 +398,6 @@
         </footer>
     </div>
 
-    <!-- जावास्क्रिप्ट इंजन -->
     <script>
         let studentScore = parseInt(localStorage.getItem('dhruv_student_score') || '0', 10);
         if (isNaN(studentScore)) studentScore = 0;
