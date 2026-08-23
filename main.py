@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 # ==============================================================================
-# main.py - Dhruv Academy Master Ecosystem (Robust Gemini Vision Integration)
+# main.py - Dhruv Academy Master Ecosystem (Production Server)
 # ==============================================================================
 
 import os
@@ -16,7 +16,6 @@ from typing import Optional, List
 import urllib.request
 import urllib.error
 
-# Google Generative AI SDK (Safely imported)
 try:
     import google.generativeai as genai
     GENAI_AVAILABLE = True
@@ -599,7 +598,6 @@ def master_ecosystem_dashboard():
 # 6. एआई विजन एपीआई (Robust Configuration & Execution)
 # ------------------------------------------------------------------------------
 async def process_gemini_vision(file: UploadFile, lang: str):
-    # Retrieve and clean API Key
     api_key = (
         os.environ.get("GEMINI_API_KEY") or 
         os.getenv("GEMINI_API_KEY") or 
