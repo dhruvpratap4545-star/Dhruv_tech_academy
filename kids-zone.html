@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AI Virtual Classroom & Nebula Blackboard - Dhruv Academy Master Ecosystem</title>
-    <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Yantramanav:wght@500;700&display=swap');
         
@@ -104,19 +103,108 @@
         .lang-pill-inactive:hover { color: #f8fafc !important; }
 
         .hidden { display: none !important; }
+
+        .card {
+            background: #0f172a;
+            border: 1px solid #1e293b;
+            border-radius: 24px;
+            padding: 20px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+        .grid-2 {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 10px;
+        }
+        .btn-action {
+            background: #1e293b;
+            color: #7dd3fc;
+            border: 1px solid #334155;
+            padding: 12px 16px;
+            border-radius: 14px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            text-align: left;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .btn-action:hover { background: #334155; }
+        .text-input {
+            width: 100%;
+            background: #020617;
+            border: 1px solid #334155;
+            color: #fff;
+            padding: 12px 16px;
+            border-radius: 12px;
+            font-size: 13px;
+            outline: none;
+        }
+        .text-input:focus { border-color: #38bdf8; }
+        .btn-submit {
+            background: #059669;
+            color: #fff;
+            border: none;
+            padding: 14px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            width: 100%;
+            transition: background 0.2s;
+        }
+        .btn-submit:hover { background: #10b981; }
+        .btn-scanner {
+            background: #4f46e5;
+            color: #fff;
+            padding: 14px;
+            border-radius: 12px;
+            text-align: center;
+            font-size: 13px;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: background 0.2s;
+        }
+        .btn-scanner:hover { background: #6366f1; }
+        .btn-solution {
+            background: #9333ea;
+            color: #fff;
+            border: none;
+            padding: 14px;
+            border-radius: 12px;
+            font-size: 13px;
+            font-weight: bold;
+            cursor: pointer;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: background 0.2s;
+        }
+        .btn-solution:hover { background: #a855f7; }
     </style>
 </head>
-<body class="bg-slate-950 text-white min-h-screen flex flex-col items-center justify-between p-3 sm:p-5">
+<body>
 
     <div class="main-wrapper">
         <!-- शीर्ष बार: मुख्य पोर्टल और भाषा स्विच -->
-        <div class="w-full flex justify-between items-center px-1">
-            <a href="/" class="bg-red-600 hover:bg-red-500 text-white px-4 py-2 rounded-xl text-xs font-bold shadow-lg transition flex items-center gap-1.5">
+        <div style="display:flex; justify-content:space-between; align-items:center; width:100%; padding:0 4px;">
+            <a href="/" style="background:#dc2626; color:#fff; padding:6px 14px; border-radius:10px; text-decoration:none; font-size:12px; font-weight:bold; display:flex; align-items:center; gap:6px;">
                 ← <span id="portalText">मुख्य पोर्टल</span>
             </a>
 
-            <div class="flex items-center gap-2">
-                <span class="text-xs font-bold text-slate-400">Lang:</span>
+            <div style="display:flex; align-items:center; gap:8px;">
+                <span style="font-size:12px; font-weight:bold; color:#94a3b8;">Lang:</span>
                 <div class="lang-pill-container">
                     <button type="button" onclick="switchLanguage('hi')" id="hiBtn" class="lang-pill-btn lang-pill-active">हिंदी</button>
                     <button type="button" onclick="switchLanguage('en')" id="enBtn" class="lang-pill-btn lang-pill-inactive">English</button>
@@ -125,197 +213,195 @@
         </div>
 
         <!-- हेडर -->
-        <div class="w-full text-center">
-            <h1 id="mainTitle" class="text-2xl md:text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-sky-200 to-indigo-300">
+        <div style="text-align:center;">
+            <h1 id="mainTitle" style="font-size:24px; font-weight:800; color:#38bdf8; margin-bottom:4px;">
                 नेबुला एआई वर्चुअल क्लासरूम
             </h1>
-            <p id="subTitle" class="text-slate-400 text-xs sm:text-sm mt-1">ध्रुव एकेडमी 100% प्रामाणिक व सत्य शिक्षण प्रणाली | लाइव 3D ब्लैकबोर्ड</p>
+            <p id="subTitle" style="font-size:12px; color:#94a3b8;">ध्रुव एकेडमी 100% प्रामाणिक व सत्य शिक्षण प्रणाली | लाइव 3D ब्लैकबोर्ड</p>
         </div>
 
-        <!-- मुख्य कंटेनर कार्ड -->
-        <div class="w-full bg-slate-900 border border-slate-800 rounded-3xl p-5 sm:p-7 shadow-2xl space-y-6">
+        <!-- मुख्य कंटेनर -->
+        <div class="card">
 
             <!-- 1. इंटरैक्टिव 3D एआई अवतार कार्ड -->
-            <div class="w-full bg-gradient-to-r from-slate-950 via-slate-900 to-slate-950 border border-cyan-500/30 rounded-2xl p-4 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-lg">
-                <div class="flex items-center gap-4">
-                    <div id="teacherAvatar" onclick="speakGreeting()" class="w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-tr from-cyan-500 via-indigo-600 to-amber-400 rounded-full flex items-center justify-center text-3xl sm:text-4xl avatar-glow border-4 border-cyan-400 cursor-pointer transition-all duration-300 relative" title="मुझसे बात करने के लिए क्लिक करें!">
+            <div style="display:flex; flex-wrap:wrap; justify-content:space-between; align-items:center; gap:12px; background:#020617; padding:14px; border-radius:18px; border:1px solid rgba(56,189,248,0.3);">
+                <div style="display:flex; align-items:center; gap:12px;">
+                    <div id="teacherAvatar" onclick="speakGreeting()" class="avatar-glow" style="width:60px; height:60px; background:linear-gradient(135deg, #0284c7, #4f46e5); border:3px solid #38bdf8; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:30px; cursor:pointer; position:relative;" title="मुझसे बात करने के लिए क्लिक करें!">
                         👩‍🏫
-                        <span class="absolute bottom-0 right-0 w-4 h-4 bg-emerald-500 border-2 border-slate-950 rounded-full"></span>
+                        <span style="position:absolute; bottom:0; right:0; width:14px; height:14px; background:#10b981; border:2px solid #020617; border-radius:50%;"></span>
                     </div>
                     <div>
-                        <div class="flex items-center gap-2">
-                            <span id="teacherName" class="text-sm font-bold text-cyan-300">नेबुला एआई टीचर</span>
-                            <span class="text-[10px] bg-cyan-950 border border-cyan-500 text-cyan-400 px-2 py-0.5 rounded-full font-semibold">100% Verified</span>
+                        <div style="display:flex; align-items:center; gap:6px;">
+                            <span id="teacherName" style="font-size:14px; font-weight:bold; color:#38bdf8;">नेबुला एआई टीचर</span>
+                            <span style="font-size:10px; background:#082f49; border:1px solid #0284c7; color:#38bdf8; padding:2px 6px; border-radius:10px; font-weight:600;">100% Verified</span>
                         </div>
-                        <span id="teacherStatus" class="text-xs text-emerald-400 font-medium block mt-0.5">तैयार हूँ! सटीक व स्पष्ट उत्तर के लिए सवाल चुनें...</span>
-                        <p class="text-[11px] text-slate-400 mt-1">अवतार पर टैप करके मीठी आवाज़ में उत्तर सुनें</p>
+                        <span id="teacherStatus" style="font-size:11px; color:#34d399; display:block; margin-top:2px;">तैयार हूँ! सटीक व स्पष्ट उत्तर के लिए सवाल चुनें...</span>
+                        <p style="font-size:11px; color:#64748b; margin-top:2px;">अवतार पर टैप करके मीठी आवाज़ में उत्तर सुनें</p>
                     </div>
                 </div>
 
                 <!-- लाइव स्कोर बॉक्स (100% Guaranteed Reset) -->
-                <div class="bg-slate-950 border border-cyan-500/50 px-4 py-2.5 rounded-2xl text-center sm:text-right shadow-inner w-full sm:w-auto">
-                    <div class="flex items-center justify-between sm:justify-end gap-3">
-                        <span id="scoreLabel" class="text-[10px] text-cyan-400 block font-bold uppercase tracking-wider">जीनियस स्कोर</span>
-                        <button onclick="resetScoreProgress()" type="button" class="text-[10px] text-rose-400 hover:text-rose-300 font-extrabold underline cursor-pointer" title="स्कोर रीसेट करें">रीसेट ✕</button>
+                <div style="background:#0b1329; border:1px solid rgba(56,189,248,0.4); padding:8px 16px; border-radius:14px; text-align:right;">
+                    <div style="display:flex; align-items:center; justify-content:flex-end; gap:8px;">
+                        <span id="scoreLabel" style="font-size:10px; color:#38bdf8; font-weight:bold; text-transform:uppercase;">जीनियस स्कोर</span>
+                        <button onclick="resetScoreProgress()" type="button" style="color:#f43f5e; text-decoration:underline; font-weight:bold; font-size:10px; background:transparent; border:none; cursor:pointer;" title="स्कोर रीसेट करें">रीसेट ✕</button>
                     </div>
-                    <span id="scoreDisplay" class="text-lg font-extrabold text-yellow-300">⭐ 0 / 100</span>
+                    <span id="scoreDisplay" style="font-size:20px; font-weight:800; color:#facc15;">⭐ 0 / 100</span>
                 </div>
             </div>
 
             <!-- 2. नेबुला ब्लैकबोर्ड (Live Chalkboard Display) -->
             <div id="nebulaBlackboardSection" class="nebula-board board-frame">
-                <div class="flex justify-between items-center border-b border-slate-700/60 pb-2 mb-3 text-xs text-slate-400">
-                    <span class="flex items-center gap-1.5 font-bold text-cyan-300">
+                <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid rgba(51,65,85,0.6); padding-bottom:6px; margin-bottom:8px; font-size:12px; color:#94a3b8;">
+                    <span style="display:flex; align-items:center; gap:6px; font-weight:bold; color:#38bdf8;">
                         <span>📋</span> <span id="boardHeader">नेबुला डिजिटल ब्लैकबोर्ड (Live Chalkboard)</span>
                     </span>
-                    <span class="text-[11px] text-emerald-400 font-semibold flex items-center gap-1">
-                        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span> AI Active
+                    <span style="font-size:11px; color:#34d399; font-weight:600; display:flex; align-items:center; gap:4px;">
+                        <span style="width:8px; height:8px; border-radius:50%; background:#34d399; display:inline-block;"></span> AI Active
                     </span>
                 </div>
 
-                <!-- ब्लैकबोर्ड कंटेंट (फुल और स्क्रॉल-फ्रेंडली) -->
-                <div id="aiText" class="chalk-font text-cyan-100 text-sm sm:text-base min-h-[140px] max-h-[380px] overflow-y-auto flex flex-col items-start justify-start text-left p-3 leading-relaxed tracking-wide space-y-2 w-full">
+                <!-- ब्लैकबोर्ड कंटेंट -->
+                <div id="aiText" class="chalk-font" style="color:#e0f2fe; font-size:14px; min-height:140px; max-height:380px; overflow-y:auto; display:flex; flex-direction:column; align-items:flex-start; justify-content:flex-start; text-align:left; padding:6px; line-height:1.7; width:100%;">
                     नमस्ते प्यारे बच्चों! 🌟 नीचे दिए गए 5 विषयों में से कोई भी विषय चुनें या अपनी किताब की फोटो खींचें!
                 </div>
 
                 <!-- किताब की फोटो का लाइव प्रीव्यू -->
-                <div id="imagePreviewContainer" class="w-full hidden mt-3 p-3 bg-slate-950/80 rounded-xl border border-cyan-500/40 text-center">
-                    <p class="text-xs text-cyan-300 mb-2 font-bold">📷 स्कैन किया गया किताब का पन्ना:</p>
-                    <img id="uploadedImagePreview" src="" alt="Book Preview" class="max-h-48 mx-auto rounded-lg border border-slate-700 object-contain shadow-md">
+                <div id="imagePreviewContainer" class="hidden" style="width:100%; margin-top:10px; padding:10px; background:rgba(2,6,23,0.8); border-radius:12px; border:1px solid rgba(56,189,248,0.4); text-align:center;">
+                    <p style="font-size:12px; color:#38bdf8; margin-bottom:6px; font-weight:bold;">📷 स्कैन किया गया किताब का पन्ना:</p>
+                    <img id="uploadedImagePreview" src="" alt="Book Preview" style="max-height:180px; margin:0 auto; border-radius:8px; border:1px solid #334155; object-fit:contain; box-shadow:0 4px 6px rgba(0,0,0,0.3);">
                 </div>
             </div>
 
             <!-- 3. विषय व चैलेंज बटन्स -->
-            <div class="w-full grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <button onclick="loadChallenge('math')" class="bg-slate-800 hover:bg-slate-700 text-cyan-300 p-3.5 rounded-xl text-left font-semibold transition flex items-center gap-2.5 border border-slate-700 shadow">
-                    <span class="text-lg">➕</span> <span id="btnMath">गणित चैलेंज (+20)</span>
+            <div class="grid-2">
+                <button onclick="loadChallenge('math')" class="btn-action" style="color:#67e8f9;">
+                    <span>➕</span> <span id="btnMath">गणित चैलेंज (+20)</span>
                 </button>
-                <button onclick="loadChallenge('puzzle')" class="bg-slate-800 hover:bg-slate-700 text-pink-300 p-3.5 rounded-xl text-left font-semibold transition flex items-center gap-2.5 border border-slate-700 shadow">
-                    <span class="text-lg">🤔</span> <span id="btnPuzzle">सुपर पहेली (+20)</span>
+                <button onclick="loadChallenge('puzzle')" class="btn-action" style="color:#f472b6;">
+                    <span>🤔</span> <span id="btnPuzzle">सुपर पहेली (+20)</span>
                 </button>
-                <button onclick="loadChallenge('gk')" class="bg-slate-800 hover:bg-slate-700 text-sky-300 p-3.5 rounded-xl text-left font-semibold transition flex items-center gap-2.5 border border-slate-700 shadow">
-                    <span class="text-lg">🌍</span> <span id="btnGk">सामान्य ज्ञान / GK (+20)</span>
+                <button onclick="loadChallenge('gk')" class="btn-action" style="color:#38bdf8;">
+                    <span>🌍</span> <span id="btnGk">सामान्य ज्ञान / GK (+20)</span>
                 </button>
-                <button onclick="loadChallenge('evs')" class="bg-slate-800 hover:bg-slate-700 text-emerald-300 p-3.5 rounded-xl text-left font-semibold transition flex items-center gap-2.5 border border-slate-700 shadow">
-                    <span class="text-lg">🌿</span> <span id="btnEvs">विज्ञान / EVS (+20)</span>
+                <button onclick="loadChallenge('evs')" class="btn-action" style="color:#34d399;">
+                    <span>🌿</span> <span id="btnEvs">विज्ञान / EVS (+20)</span>
                 </button>
-                <button onclick="loadChallenge('poem')" class="bg-slate-800 hover:bg-slate-700 text-yellow-300 p-3.5 rounded-xl text-left font-semibold transition flex items-center gap-2.5 border border-slate-700 shadow sm:col-span-2 justify-center">
-                    <span class="text-lg">🎵</span> <span id="btnPoem">कविता: मछली जल की रानी (+20)</span>
+                <button onclick="loadChallenge('poem')" class="btn-action" style="color:#facc15; grid-column:1/-1; justify-content:center;">
+                    <span>🎵</span> <span id="btnPoem">कविता: मछली जल की रानी (+20)</span>
                 </button>
             </div>
 
             <!-- हिंट बटन -->
-            <div class="w-full flex justify-end">
-                <button onclick="giveHint()" class="bg-amber-600/80 hover:bg-amber-500 text-white px-3.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 shadow">
+            <div style="display:flex; justify-content:flex-end;">
+                <button onclick="giveHint()" style="background:#d97706; color:#fff; padding:6px 14px; border-radius:8px; font-size:11px; font-weight:bold; border:none; cursor:pointer; display:flex; align-items:center; gap:6px;">
                     💡 <span id="hintBtnText">नेबुला टीचर से संकेत (Hint) लें</span>
                 </button>
             </div>
 
             <!-- 4. इनपुट, वॉइस माइक और उत्तर जाँच -->
-            <div class="w-full space-y-3">
-                <div class="flex gap-2">
-                    <input type="text" id="userInput" placeholder="यहाँ उत्तर लिखें या माइक से बोलें..." class="w-full bg-slate-950 border border-slate-700 text-white px-4 py-3.5 rounded-xl focus:outline-none focus:border-cyan-500 shadow-inner text-sm">
-                    <button onclick="startVoiceInput()" class="bg-blue-600 hover:bg-blue-500 text-white px-4 py-3.5 rounded-xl font-bold shadow transition flex items-center gap-1.5 text-xs whitespace-nowrap" title="बोलकर उत्तर दें">
+            <div style="display:flex; flex-direction:column; gap:8px;">
+                <div style="display:flex; gap:8px;">
+                    <input type="text" id="userInput" placeholder="यहाँ उत्तर लिखें या माइक से बोलें..." class="text-input">
+                    <button onclick="startVoiceInput()" style="background:#2563eb; color:#fff; border:none; padding:10px 16px; border-radius:12px; font-weight:bold; cursor:pointer; font-size:12px; display:flex; align-items:center; gap:4px; white-space:nowrap;" title="बोलकर उत्तर दें">
                         🎤 <span id="micText">बोलें</span>
                     </button>
                 </div>
-                <button onclick="verifyAnswer()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white py-3.5 rounded-xl font-bold shadow-lg transition text-sm">
+                <button onclick="verifyAnswer()" class="btn-submit">
                     <span id="btnSubmit">उत्तर की पुष्टि करें (Check Answer) 🚀</span>
                 </button>
             </div>
 
             <!-- व्हाट्सएप रिपोर्ट शेयर -->
-            <div class="w-full text-center">
-                <button onclick="sendWhatsAppReport()" class="bg-green-600 hover:bg-green-500 text-white px-5 py-2.5 rounded-xl text-xs font-bold transition inline-flex items-center gap-2 shadow-lg">
+            <div style="text-align:center;">
+                <button onclick="sendWhatsAppReport()" style="background:#16a34a; color:#fff; border:none; padding:10px 18px; border-radius:12px; font-size:12px; font-weight:bold; cursor:pointer; display:inline-flex; align-items:center; gap:6px;">
                     💬 <span>WhatsApp पर लाइव रिपोर्ट भेजें</span>
                 </button>
             </div>
 
-            <!-- 5. एआई बुक स्कैनर (100% यूज़र कंट्रोल्ड 'सॉल्यूशन देखें' व 'क्विज़ बनाएं' बटन) -->
-            <div class="w-full bg-slate-950 p-5 rounded-2xl border border-cyan-500/40 shadow-xl space-y-3">
-                <h3 id="visionTitle" class="text-cyan-400 font-bold text-sm text-center">📸 एआई बुक व होमवर्क स्कैनर</h3>
-                <p id="visionDesc" class="text-slate-400 text-xs text-center">कक्षा 1 से 5 तक के किसी भी प्रश्न का फोटो खींचें, नेबुला टीचर बिना किसी फालतू परिचय के सीधे पॉइंट-वाइज पूरा हल बताएगी!</p>
+            <!-- 5. एआई बुक स्कैनर -->
+            <div style="background:#020617; padding:16px; border-radius:18px; border:1px solid rgba(56,189,248,0.4); display:flex; flex-direction:column; gap:10px;">
+                <h3 id="visionTitle" style="color:#38bdf8; font-weight:bold; font-size:14px; text-align:center;">📸 एआई बुक व होमवर्क स्कैनर</h3>
+                <p id="visionDesc" style="color:#94a3b8; font-size:11px; text-align:center;">कक्षा 1 से 5 तक के किसी भी प्रश्न का फोटो खींचें, नेबुला टीचर बिना किसी फालतू परिचय के सीधे पॉइंट-वाइज पूरा हल बताएगी!</p>
                 
-                <label class="w-full bg-indigo-600 hover:bg-indigo-500 text-white py-3.5 rounded-xl font-bold text-sm shadow-xl transition cursor-pointer flex items-center justify-center gap-2">
+                <label class="btn-scanner">
                     📷 <span id="uploadBtnText">कैमरे से किताब की फोटो खींचें / अपलोड करें</span>
                     <input type="file" id="bookImageInput" accept="image/*" capture="environment" class="hidden" onchange="handleCrashProofUpload(event)">
                 </label>
 
-                <!-- एक्शन बटन्स (सॉल्यूशन देखें और क्विज़ जनरेट करें) -->
-                <div id="scannerActionButtons" class="grid grid-cols-1 sm:grid-cols-2 gap-2 hidden">
-                    <button id="explainVisionBtn" onclick="explainBookPage(event)" type="button" class="w-full bg-purple-600 hover:bg-purple-500 text-white py-3 rounded-xl font-bold text-xs sm:text-sm shadow-xl transition flex items-center justify-center gap-2">
-                        ✨ <span>ब्लैकबोर्ड पर पूरा सॉल्यूशन देखें 🚀</span>
+                <!-- एक्शन बटन्स -->
+                <div id="scannerActionButtons" class="grid-2 hidden">
+                    <button id="explainVisionBtn" onclick="explainBookPage(event)" type="button" class="btn-solution">
+                        ✨ <span>पूरा सॉल्यूशन देखें 🚀</span>
                     </button>
-                    <button id="generateQuizBtn" onclick="generateSmartQuiz(event)" type="button" class="w-full bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 text-white py-3 rounded-xl font-bold text-xs sm:text-sm shadow-xl transition flex items-center justify-center gap-2">
-                        🎯 <span>इस पन्ने से ऑटो-क्विज़ बनाएं (5 MCQs)</span>
+                    <button id="generateQuizBtn" onclick="generateSmartQuiz(event)" type="button" style="background:linear-gradient(135deg, #d97706, #ea580c); color:#fff; border:none; padding:14px; border-radius:12px; font-size:13px; font-weight:bold; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px;">
+                        🎯 <span>ऑटो-क्विज़ बनाएं (5 MCQs)</span>
                     </button>
                 </div>
             </div>
 
-            <!-- 6. नया स्मार्ट क्विज़ और एंटी-चीट कियोस्क मॉड्यूल (Anti-Cheat Focus Mode) -->
-            <div id="smartQuizModule" class="w-full bg-slate-950 p-5 rounded-2xl border border-amber-500/40 shadow-xl space-y-4 hidden">
-                <div class="flex flex-wrap justify-between items-center border-b border-gray-800 pb-3 gap-2">
+            <!-- 6. स्मार्ट क्विज़ और एंटी-चीट कियोस्क मॉड्यूल -->
+            <div id="smartQuizModule" class="hidden" style="background:#020617; padding:16px; border-radius:18px; border:1px solid rgba(245,158,11,0.5); display:flex; flex-direction:column; gap:12px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #1e293b; padding-bottom:8px;">
                     <div>
-                        <h3 class="text-amber-400 font-extrabold text-sm flex items-center gap-1.5">
+                        <h3 style="color:#fbbf24; font-weight:800; font-size:13px; display:flex; align-items:center; gap:6px;">
                             <span>🛡️</span> <span>ध्रुव एकेडमी सिक्योर क्विज़ (Anti-Cheat Kiosk)</span>
                         </h3>
-                        <p class="text-[11px] text-gray-400">फोकस मोड ऑन: ऐप या टैब बदलने पर क्विज़ स्वतः लॉक हो जाएगा!</p>
+                        <p style="font-size:10px; color:#94a3b8; margin-top:2px;">फोकस मोड ऑन: ऐप या टैब बदलने पर क्विज़ स्वतः लॉक हो जाएगा!</p>
                     </div>
-                    <span id="cheatWarningBadge" class="text-[10px] bg-rose-950 border border-rose-500 text-rose-300 px-2.5 py-1 rounded-full font-bold">
+                    <span id="cheatWarningBadge" style="font-size:10px; background:#4c0519; border:1px solid #f43f5e; color:#fda4af; padding:4px 8px; border-radius:12px; font-weight:bold;">
                         चेतावनी: 0 / 2
                     </span>
                 </div>
 
-                <!-- लाइव क्विज़ एरिया -->
-                <div id="quizContainerArea" class="space-y-4 text-xs sm:text-sm"></div>
+                <div id="quizContainerArea" style="display:flex; flex-direction:column; gap:10px; font-size:13px;"></div>
 
-                <!-- क्विज़ फुटर व शेयरिंग -->
-                <div class="flex flex-wrap justify-between items-center pt-3 border-t border-gray-800 gap-2">
-                    <button onclick="submitQuizAnswers()" type="button" class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl shadow-lg transition">
+                <div style="display:flex; flex-wrap:wrap; justify-content:space-between; align-items:center; padding-top:10px; border-top:1px solid #1e293b; gap:8px;">
+                    <button onclick="submitQuizAnswers()" type="button" style="background:#059669; color:#fff; padding:10px 16px; border-radius:10px; font-size:12px; font-weight:bold; border:none; cursor:pointer;">
                         ✅ क्विज़ सबमिट करें (Submit Quiz)
                     </button>
-                    <button onclick="shareQuizToWhatsApp()" type="button" class="px-4 py-2.5 bg-green-600 hover:bg-green-500 text-white font-bold text-xs rounded-xl shadow-lg transition flex items-center gap-1.5">
+                    <button onclick="shareQuizToWhatsApp()" type="button" style="background:#16a34a; color:#fff; padding:10px 16px; border-radius:10px; font-size:12px; font-weight:bold; border:none; cursor:pointer; display:flex; align-items:center; gap:6px;">
                         📱 <span>WhatsApp Class Groups पर शेयर करें</span>
                     </button>
                 </div>
             </div>
 
             <!-- 7. स्कूल व ट्यूटर व्हाट्सएप होमवर्क पोर्टल -->
-            <div class="w-full bg-slate-950 p-5 rounded-2xl border border-cyan-500/40 shadow-xl space-y-3">
-                <h3 id="homeworkTitle" class="text-cyan-400 font-bold text-sm text-center">🏫 स्कूल / ट्यूटर व्हाट्सएप होमवर्क पोर्टल</h3>
-                <div class="grid grid-cols-2 gap-2">
-                    <select id="selectClass" class="bg-slate-900 border border-slate-700 text-white px-3 py-2 rounded-xl text-xs outline-none">
+            <div style="background:#020617; padding:16px; border-radius:18px; border:1px solid rgba(56,189,248,0.4); display:flex; flex-direction:column; gap:10px;">
+                <h3 id="homeworkTitle" style="color:#38bdf8; font-weight:bold; font-size:13px; text-align:center;">🏫 स्कूल / ट्यूटर व्हाट्सएप होमवर्क पोर्टल</h3>
+                <div class="grid-2">
+                    <select id="selectClass" style="background:#0f172a; border:1px solid #334155; color:#fff; padding:8px; border-radius:10px; font-size:12px; outline:none;">
                         <option value="Class 5">कक्षा 5 (Class 5)</option>
                         <option value="Class 4">कक्षा 4 (Class 4)</option>
                         <option value="Class 3">कक्षा 3 (Class 3)</option>
                         <option value="Middle School">जूनियर (Middle School)</option>
                     </select>
-                    <select id="selectMedium" class="bg-slate-900 border border-slate-700 text-white px-3 py-2 rounded-xl text-xs outline-none">
+                    <select id="selectMedium" style="background:#0f172a; border:1px solid #334155; color:#fff; padding:8px; border-radius:10px; font-size:12px; outline:none;">
                         <option value="हिंदी मीडियम (Hindi Medium)">हिंदी मीडियम (Hindi Medium)</option>
                         <option value="इंग्लिश मीडियम (English Medium)">इंग्लिश मीडियम (English Medium)</option>
                     </select>
                 </div>
-                <div class="space-y-2">
-                    <input type="text" id="schoolNameInput" placeholder="संस्थान/ट्यूटर का नाम" class="w-full bg-slate-900 border border-slate-700 text-white px-3 py-2.5 rounded-xl text-xs outline-none focus:border-cyan-500">
-                    <input type="text" id="homeworkDescInput" placeholder="आज का होमवर्क विवरण" class="w-full bg-slate-900 border border-slate-700 text-white px-3 py-2.5 rounded-xl text-xs outline-none focus:border-cyan-500">
+                <div style="display:flex; flex-direction:column; gap:8px;">
+                    <input type="text" id="schoolNameInput" placeholder="संस्थान/ट्यूटर का नाम" class="text-input" style="padding:8px 12px; font-size:12px;">
+                    <input type="text" id="homeworkDescInput" placeholder="आज का होमवर्क विवरण" class="text-input" style="padding:8px 12px; font-size:12px;">
                 </div>
-                <button onclick="sendSchoolHomework()" class="w-full bg-sky-600 hover:bg-sky-500 text-white py-2.5 rounded-xl font-bold text-xs shadow transition">
+                <button onclick="sendSchoolHomework()" style="background:#0284c7; color:#fff; border:none; padding:10px; border-radius:10px; font-size:12px; font-weight:bold; cursor:pointer;">
                     📤 <span id="hwBtnText">व्हाट्सएप पर होमवर्क भेजें</span>
                 </button>
             </div>
 
             <!-- 8. छात्र होमवर्क सबमिशन -->
-            <div class="w-full bg-slate-950 p-5 rounded-2xl border border-emerald-500/40 shadow-xl space-y-3">
-                <h3 id="submitTitle" class="text-emerald-400 font-bold text-sm text-center">📝 छात्र होमवर्क सबमिशन (होमवर्क वापस भेजें)</h3>
-                <div class="space-y-2">
-                    <input type="text" id="studentNameInput" placeholder="छात्र का नाम (Student Name)" class="w-full bg-slate-900 border border-slate-700 text-white px-3 py-2.5 rounded-xl text-xs outline-none focus:border-emerald-500">
-                    <input type="text" id="studentClassInput" placeholder="कक्षा (Class, e.g. Class 5)" class="w-full bg-slate-900 border border-slate-700 text-white px-3 py-2.5 rounded-xl text-xs outline-none focus:border-emerald-500">
-                    <input type="text" id="studentAnswerInput" placeholder="हल किया गया काम / उत्तर" class="w-full bg-slate-900 border border-slate-700 text-white px-3 py-2.5 rounded-xl text-xs outline-none focus:border-emerald-500">
+            <div style="background:#020617; padding:16px; border-radius:18px; border:1px solid rgba(52,211,153,0.4); display:flex; flex-direction:column; gap:10px;">
+                <h3 id="submitTitle" style="color:#34d399; font-weight:bold; font-size:13px; text-align:center;">📝 छात्र होमवर्क सबमिशन (होमवर्क वापस भेजें)</h3>
+                <div style="display:flex; flex-direction:column; gap:8px;">
+                    <input type="text" id="studentNameInput" placeholder="छात्र का नाम (Student Name)" class="text-input" style="padding:8px 12px; font-size:12px;">
+                    <input type="text" id="studentClassInput" placeholder="कक्षा (Class, e.g. Class 5)" class="text-input" style="padding:8px 12px; font-size:12px;">
+                    <input type="text" id="studentAnswerInput" placeholder="हल किया गया काम / उत्तर" class="text-input" style="padding:8px 12px; font-size:12px;">
                 </div>
-                <button onclick="submitStudentWork()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white py-2.5 rounded-xl font-bold text-xs shadow transition">
+                <button onclick="submitStudentWork()" style="background:#059669; color:#fff; border:none; padding:10px; border-radius:10px; font-size:12px; font-weight:bold; cursor:pointer;">
                     ✅ <span id="submitHwBtnText">शिक्षक को व्हाट्सएप पर होमवर्क जमा करें</span>
                 </button>
-                <button onclick="shareToWhatsApp()" class="w-full bg-green-600 hover:bg-green-500 text-white py-2.5 rounded-xl font-bold text-xs shadow transition flex items-center justify-center gap-1.5">
+                <button onclick="shareToWhatsApp()" style="background:#16a34a; color:#fff; border:none; padding:10px; border-radius:10px; font-size:12px; font-weight:bold; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px;">
                     📱 <span id="whatsappBtnText">छात्र अपना स्कोर दोस्तों को शेयर करें</span>
                 </button>
             </div>
@@ -323,9 +409,9 @@
         </div>
 
         <!-- फुटर -->
-        <footer class="w-full text-center py-4 text-xs text-slate-500 my-4 border-t border-slate-900">
+        <footer style="text-align:center; padding:16px 0; font-size:11px; color:#64748b; border-top:1px solid #0f172a; width:100%;">
             <p>© 2026 Dhruv Academy Master Ecosystem. सर्वाधिकार सुरक्षित।
-                <a href="/secret-admin-login-dhruv" class="text-slate-900 hover:text-cyan-400 transition ml-1 text-xs" title="सिस्टम गेटवे">•</a>
+                <a href="/secret-admin-login-dhruv" style="color:#0f172a; text-decoration:none; margin-left:4px;" title="सिस्टम गेटवे">•</a>
             </p>
         </footer>
     </div>
@@ -515,9 +601,9 @@
         function formatBlackboardText(text) {
             if (!text) return "";
             return text
-                .replace(/\*\*(.*?)\*\*/g, '<strong class="text-yellow-300 font-bold">$1</strong>')
-                .replace(/\*(.*?)\*/g, '<span class="text-cyan-200 font-medium">$1</span>')
-                .replace(/👉/g, '<span class="text-amber-400 mr-1">👉</span>')
+                .replace(/\*\*(.*?)\*\*/g, '<strong style="color:#facc15; font-weight:bold;">$1</strong>')
+                .replace(/\*(.*?)\*/g, '<span style="color:#67e8f9; font-weight:500;">$1</span>')
+                .replace(/👉/g, '<span style="color:#fbbf24; margin-right:4px;">👉</span>')
                 .replace(/\n\n/g, '<br><br>')
                 .replace(/\n/g, '<br>');
         }
@@ -716,7 +802,7 @@
             }
 
             currentQuestionText = textToShow;
-            updateBlackboard(`<span class="text-yellow-200">${textToShow.replace(/\n/g, '<br>')}</span>`);
+            updateBlackboard(`<span style="color:#fef08a;">${textToShow.replace(/\n/g, '<br>')}</span>`);
         }
 
         function giveHint() {
@@ -735,7 +821,7 @@
                 hintText = "💡 Hint: Think carefully, the answer is simple!";
             }
 
-            updateBlackboard(`<span class="text-amber-300 font-bold">${hintText}</span>`);
+            updateBlackboard(`<span style="color:#fcd34d; font-weight:bold;">${hintText}</span>`);
         }
 
         function verifyAnswer() {
@@ -759,12 +845,12 @@
                     let alreadyWonMsg = currentLang === 'hi' 
                         ? "🎉 आप पहले ही 100 अंक जीत चुके हैं! आप जीनियस चैंपियन हैं!" 
                         : "🎉 You have already won 100 points! You are a Genius Champion!";
-                    updateBlackboard(`<span class="text-yellow-300 font-bold text-xl">${alreadyWonMsg}</span>`);
+                    updateBlackboard(`<span style="color:#facc15; font-weight:bold; font-size:18px;">${alreadyWonMsg}</span>`);
                 } else {
                     let tokenMsg = currentLang === 'hi'
                         ? `⚠️ गलत उत्तर! सही उत्तर था: '${currentCorrectAnswer}'। ध्यान देकर हल करें!`
                         : `⚠️ Incorrect! The right answer was: '${currentCorrectAnswer}'. Try to focus!`;
-                    updateBlackboard(`<span class="text-rose-400 font-bold text-xl">${tokenMsg}</span>`);
+                    updateBlackboard(`<span style="color:#fb7185; font-weight:bold; font-size:18px;">${tokenMsg}</span>`);
                 }
                 userField.value = "";
                 return;
@@ -772,7 +858,7 @@
 
             if (userVal.includes(currentCorrectAnswer.toLowerCase())) {
                 if (solvedQuestions[uniqueKey]) {
-                    updateBlackboard(`<span class="text-amber-400">${d.alreadySolvedMsg}</span>`);
+                    updateBlackboard(`<span style="color:#fbbf24;">${d.alreadySolvedMsg}</span>`);
                     userField.value = "";
                     return;
                 }
@@ -787,13 +873,13 @@
                 if (studentScore >= 100) {
                     triggerCelebration();
                 } else {
-                    updateBlackboard(`<span class="text-emerald-300 font-bold text-2xl">${d.correctMsg}</span><br><span class="text-sm text-slate-300 mt-2 block">सही उत्तर: ${currentCorrectAnswer}</span>`);
+                    updateBlackboard(`<span style="color:#6ee7b7; font-weight:bold; font-size:20px;">${d.correctMsg}</span><br><span style="font-size:13px; color:#cbd5e1; margin-top:6px; display:block;">सही उत्तर: ${currentCorrectAnswer}</span>`);
                 }
             } else {
                 let warnFeedback = currentLang === 'hi'
                     ? `❌ गलत जवाब! '${userVal}' सही नहीं है। सही उत्तर '${currentCorrectAnswer}' है।`
                     : `❌ Wrong answer! '${userVal}' is incorrect. Correct is '${currentCorrectAnswer}'.`;
-                updateBlackboard(`<span class="text-rose-400 font-bold text-xl">${warnFeedback}</span><br><span class="text-xs text-slate-300 mt-2 block">अगले प्रश्न में सही उत्तर देने का प्रयास करें!</span>`);
+                updateBlackboard(`<span style="color:#fb7185; font-weight:bold; font-size:18px;">${warnFeedback}</span><br><span style="font-size:12px; color:#cbd5e1; margin-top:6px; display:block;">अगले प्रश्न में सही उत्तर देने का प्रयास करें!</span>`);
             }
             userField.value = "";
         }
@@ -804,8 +890,8 @@
                 : "Amazing! You scored 100 out of 100! You are a true Genius Champion!";
             
             let html = `
-                <div class="animate-bounce text-yellow-300 font-extrabold text-2xl mb-2">🏆 100 / 100 - GENIUS CHAMPION! 🏆</div>
-                <div class="text-cyan-200 text-lg font-semibold">${congratsText}</div>
+                <div style="color:#facc15; font-weight:800; font-size:22px; margin-bottom:8px;">🏆 100 / 100 - GENIUS CHAMPION! 🏆</div>
+                <div style="color:#67e8f9; font-size:16px; font-weight:600;">${congratsText}</div>
             `;
             updateBlackboard(html);
             playClappingSound();
@@ -919,7 +1005,7 @@
                 document.getElementById('scannerActionButtons').classList.remove('hidden');
                 
                 let readyMsg = currentLang === 'hi' 
-                    ? "📸 फोटो तैयार है! अब नीचे 'सॉल्यूशन देखें' या 'ऑटो-क्विज़ बनाएं' बटन दबाएं।" 
+                    ? "📸 फोटो तैयार है! अब नीचे 'पूरा सॉल्यूशन देखें' या 'ऑटो-क्विज़ बनाएं' बटन दबाएं।" 
                     : "📸 Photo ready! Click 'View Solution' or 'Generate Quiz' button below.";
                 updateBlackboard(readyMsg);
             });
@@ -930,9 +1016,9 @@
             let timeLeft = seconds;
 
             const updateTimerText = () => {
-                let timerHtml = `<div class="space-y-3">
-                     <div class="animate-pulse text-amber-300 text-xl font-bold">⏳ नेबुला टीचर विश्राम कर रही हैं...</div>
-                     <div class="text-2xl font-extrabold text-yellow-300">${timeLeft}s बाद ऑटोमैटिक समाधान आएगा</div>
+                let timerHtml = `<div style="display:flex; flex-direction:column; gap:8px;">
+                     <div style="color:#fcd34d; font-size:18px; font-weight:bold;">⏳ नेबुला टीचर विश्राम कर रही हैं...</div>
+                     <div style="font-size:20px; font-weight:800; color:#facc15;">${timeLeft}s बाद ऑटोमैटिक समाधान आएगा</div>
                    </div>`;
                 document.getElementById('aiText').innerHTML = timerHtml;
             };
@@ -1055,17 +1141,17 @@
 
             activeQuizList.forEach((item, qIdx) => {
                 let optsHtml = item.options.map((opt, oIdx) => `
-                    <label class="flex items-center gap-2 p-2 bg-slate-900 border border-slate-700 rounded-xl cursor-pointer hover:border-amber-500 transition">
-                        <input type="radio" name="quiz_q_${qIdx}" value="${opt}" class="accent-amber-500">
-                        <span class="text-gray-200">${opt}</span>
+                    <label style="display:flex; align-items:center; gap:8px; padding:8px 12px; background:#0f172a; border:1px solid #334155; border-radius:10px; cursor:pointer;">
+                        <input type="radio" name="quiz_q_${qIdx}" value="${opt}" style="accent-color:#f59e0b;">
+                        <span style="color:#f8fafc;">${opt}</span>
                     </label>
                 `).join("");
 
                 let qCard = `
-                    <div class="p-4 bg-slate-900/80 border border-slate-800 rounded-2xl space-y-2">
-                        <p class="font-bold text-amber-300">प्रश्न ${qIdx + 1}: ${item.q}</p>
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">${optsHtml}</div>
-                        <div id="quiz_explain_${qIdx}" class="hidden text-xs text-emerald-400 pt-1 font-semibold"></div>
+                    <div style="padding:12px; background:rgba(15,23,42,0.8); border:1px solid #1e293b; border-radius:14px; display:flex; flex-direction:column; gap:8px;">
+                        <p style="font-weight:bold; color:#fbbf24;">प्रश्न ${qIdx + 1}: ${item.q}</p>
+                        <div class="grid-2">${optsHtml}</div>
+                        <div id="quiz_explain_${qIdx}" class="hidden" style="font-size:11px; color:#34d399; font-weight:600; padding-top:4px;"></div>
                     </div>
                 `;
                 container.innerHTML += qCard;
@@ -1092,10 +1178,10 @@
                 if (selected && selected.value.trim().toLowerCase().startsWith(item.answer.trim().toLowerCase())) {
                     score++;
                     expBox.innerHTML = `✅ सही! (${item.explain || 'सटीक उत्तर'})`;
-                    expBox.className = "text-xs text-emerald-400 pt-1 font-semibold block";
+                    expBox.style.color = "#34d399";
                 } else {
                     expBox.innerHTML = `❌ सही उत्तर: <b>${item.answer}</b> (${item.explain || ''})`;
-                    expBox.className = "text-xs text-rose-400 pt-1 font-semibold block";
+                    expBox.style.color = "#fb7185";
                 }
             });
 
