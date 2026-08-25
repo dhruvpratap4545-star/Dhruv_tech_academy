@@ -102,7 +102,7 @@
 
     <div class="main-wrapper">
         
-        <!-- टॉप बार (मोबाइल रिस्पॉन्सिव फिक्स) -->
+        <!-- टॉप बार (मोबाइल रिस्पॉन्सिव) -->
         <div class="flex flex-wrap justify-between items-center pb-2 border-b border-gray-800 w-full gap-2">
             <div class="flex items-center gap-2">
                 <a href="/" class="px-3 py-1.5 bg-red-700 hover:bg-red-600 text-white rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow">
@@ -123,15 +123,14 @@
         <!-- 3D फेस-टू-फेस लाइव होलोग्राफिक क्लासरूम स्टेज -->
         <div class="hologram-stage holo-grid-lines p-4 sm:p-7 flex flex-col lg:flex-row items-center justify-between gap-6">
             
-            <!-- 3D AI लाइव टीचर होलोग्राफिक अवतार (फोटोरियलिस्टिक टीचर स्टाइल) -->
+            <!-- 3D AI लाइव टीचर होलोग्राफिक अवतार (Canvas Real-Time Animated Face) -->
             <div class="flex flex-col items-center gap-3 text-center">
                 <div class="relative flex items-center justify-center">
-                    <!-- होलोग्राफिक बीम बेस -->
                     <div class="absolute -bottom-3 w-40 h-8 bg-cyan-500/25 rounded-full blur-xl animate-pulse"></div>
                     
                     <div id="aiLiveAvatar" onclick="playMentorWelcome()" class="holo-circle-beam w-36 h-36 sm:w-44 sm:h-44 rounded-full bg-slate-900 border-4 border-cyan-400 overflow-hidden relative cursor-pointer shadow-2xl transition flex items-center justify-center" title="मुझसे लाइव बात करने के लिए क्लिक करें!">
-                        <!-- 3D मॉडल / फोटोरियलिस्टिक टीचर अवतार विजुअल -->
-                        <img id="avatarImage" src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=400&q=80" alt="Miss Emily 3D Teacher" class="w-full h-full object-cover">
+                        <!-- डायनामिक 3D कैनवास जो पलकें और होंठ लाइव चलाएगा -->
+                        <canvas id="avatarCanvas" width="200" height="200" class="w-full h-full object-cover"></canvas>
                         <span class="absolute bottom-1 right-3 px-2 py-0.5 bg-emerald-500 border border-slate-900 rounded-full text-[9px] font-extrabold text-slate-950 shadow">LIVE 3D</span>
                     </div>
                 </div>
@@ -142,7 +141,7 @@
                     <p class="text-[10px] text-gray-400 mt-0.5">अवतार पर टैप करके लाइव वॉइस सुनें</p>
                 </div>
 
-                <!-- कॉन्फिडेंस व फ्लुएंसी मीटर -->
+                <!-- कॉन्फिडेंस व उच्चारण मीटर -->
                 <div class="flex gap-4 p-2 bg-slate-900/90 border border-slate-800 rounded-2xl text-xs shadow">
                     <div>
                         <span class="text-gray-400 text-[10px] block">Confidence:</span>
@@ -233,7 +232,102 @@
         let currentLanguage = 'hi';
         let currentScenario = 'daily';
         let isSpeakingActive = false;
+        let isTeacherTalking = false;
         let speechRecognizer = null;
+
+        // ==========================================
+        // 3D Canvas Live Lip-Sync & Blink Renderer
+        // ==========================================
+        const canvas = document.getElementById('avatarCanvas');
+        const ctx = canvas.getContext('2d');
+        let mouthOpenness = 0;
+        let eyeBlinkState = 0;
+
+        function renderAvatarFrame() {
+            ctx.clearRect(0, 0, 200, 200);
+
+            // बैकग्राउंड ग्लो
+            let bgGrad = ctx.createRadialGradient(100, 100, 20, 100, 100, 100);
+            bgGrad.addColorStop(0, '#1e293b');
+            bgGrad.addColorStop(1, '#020617');
+            ctx.fillStyle = bgGrad;
+            ctx.fillRect(0, 0, 200, 200);
+
+            // बाल
+            ctx.fillStyle = '#3e2723';
+            ctx.beginPath();
+            ctx.arc(100, 95, 58, 0, Math.PI * 2);
+            ctx.fill();
+
+            // चेहरा
+            ctx.fillStyle = '#fed7aa';
+            ctx.beginPath();
+            ctx.ellipse(100, 105, 42, 50, 0, 0, Math.PI * 2);
+            ctx.fill();
+
+            // चश्मा
+            ctx.strokeStyle = '#0284c7';
+            ctx.lineWidth = 3.5;
+            ctx.strokeRect(70, 90, 24, 18);
+            ctx.strokeRect(106, 90, 24, 18);
+            ctx.beginPath();
+            ctx.moveTo(94, 99);
+            ctx.lineTo(106, 99);
+            ctx.stroke();
+
+            // आँखें (Blinking Logic)
+            ctx.fillStyle = '#0f172a';
+            if (eyeBlinkState > 0.8) {
+                ctx.fillRect(74, 98, 16, 3);
+                ctx.fillRect(110, 98, 16, 3);
+            } else {
+                ctx.beginPath();
+                ctx.arc(82, 99, 5, 0, Math.PI * 2);
+                ctx.arc(118, 99, 5, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            // होंठ (Live Lip-Sync)
+            ctx.fillStyle = '#e11d48';
+            ctx.beginPath();
+            let mouthHeight = isTeacherTalking ? 4 + mouthOpenness * 12 : 3;
+            ctx.ellipse(100, 132, 14, mouthHeight, 0, 0, Math.PI * 2);
+            ctx.fill();
+
+            // दांत (जब मुँह खुला हो)
+            if (mouthHeight > 8) {
+                ctx.fillStyle = '#ffffff';
+                ctx.fillRect(92, 128, 16, 4);
+            }
+
+            // कोट / पोशाक
+            ctx.fillStyle = '#4338ca';
+            ctx.beginPath();
+            ctx.moveTo(50, 195);
+            ctx.quadraticCurveTo(100, 160, 150, 195);
+            ctx.lineTo(150, 200);
+            ctx.lineTo(50, 200);
+            ctx.fill();
+
+            requestAnimationFrame(renderAvatarFrame);
+        }
+
+        // ब्लिंक लूप
+        setInterval(() => {
+            eyeBlinkState = 1;
+            setTimeout(() => { eyeBlinkState = 0; }, 180);
+        }, 3200);
+
+        // लिप-सिंक वेव ऑसिलेटर
+        setInterval(() => {
+            if (isTeacherTalking) {
+                mouthOpenness = Math.random();
+            } else {
+                mouthOpenness = 0;
+            }
+        }, 110);
+
+        renderAvatarFrame();
 
         function setSpokenLanguage(lang) {
             currentLanguage = lang;
@@ -314,9 +408,18 @@
                     utterance.pitch = 1.05;
 
                     let avatar = document.getElementById('aiLiveAvatar');
-                    utterance.onstart = () => avatar.classList.add('talking-pulse');
-                    utterance.onend = () => avatar.classList.remove('talking-pulse');
-                    utterance.onerror = () => avatar.classList.remove('talking-pulse');
+                    utterance.onstart = () => {
+                        isTeacherTalking = true;
+                        avatar.classList.add('talking-pulse');
+                    };
+                    utterance.onend = () => {
+                        isTeacherTalking = false;
+                        avatar.classList.remove('talking-pulse');
+                    };
+                    utterance.onerror = () => {
+                        isTeacherTalking = false;
+                        avatar.classList.remove('talking-pulse');
+                    };
 
                     window.speechSynthesis.speak(utterance);
                 }
