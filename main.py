@@ -652,9 +652,9 @@ def master_ecosystem_dashboard(request: Request, db: Session = Depends(get_db)):
                         <h3 class="font-bold text-lg mb-2">5. 3D Blackboard</h3>
                         <p class="text-xs">डिजिटल कक्षाओं के लिए 3डी ब्लैकबोर्ड और टीवी कास्ट।</p>
                     </div>
-                    <div onclick="openModulePortal(6, 'Digital Library')" class="master-card p-6 rounded-2xl cursor-pointer">
-                        <h3 class="font-bold text-lg mb-2">6. Digital Library</h3>
-                        <p class="text-xs">एनक्रिप्टेड ई-बुक्स और सुरक्षित डिजिटल वॉलेट।</p>
+                    <div onclick="window.location.href='/digital-library'" class="master-card p-6 rounded-2xl cursor-pointer border border-cyan-500/40 hover:border-cyan-400 transition-all">
+                        <h3 class="font-bold text-lg mb-2 text-cyan-300">6. Digital Library</h3>
+                        <p class="text-xs">एनक्रिप्टेड ई-बुक्स, नोट्स और डिजिटल वॉलेट वॉल्ट।</p>
                     </div>
                     <div onclick="window.location.href='/legal-ai'" class="master-card p-6 rounded-2xl cursor-pointer border border-rose-500/40 hover:border-rose-400 transition-all">
                         <h3 class="font-bold text-lg mb-2 text-rose-400">7. Legal AI (All Laws)</h3>
@@ -809,6 +809,7 @@ def master_ecosystem_dashboard(request: Request, db: Session = Depends(get_db)):
                     } else {
                         if (modId === 1) { actionCall = `window.location.href='/kids-zone'`; }
                         else if (modId === 2) { actionCall = `window.location.href='/ai-core'`; }
+                        else if (modId === 6) { actionCall = `window.location.href='/digital-library'`; }
                         else if (modId === 7) { actionCall = `window.location.href='/legal-ai'`; }
                         else if (modId === 11) { actionCall = `window.location.href='/spoken-english'`; }
                         else { actionCall = `alert('${f.name} सक्रिय है!')`; }
@@ -1336,7 +1337,7 @@ async def legal_generate_draft_endpoint(
 
     api_keys = get_all_gemini_keys()
     
-    # फॉल्ट-टॉलरेंट मॉडल राउटर्स (फिक्स किए गए मॉडल नाम)
+    # फॉल्ट-टॉलरेंट मॉडल राउटर्स
     router_models = ["gemini-1.5-flash", "gemini-pro"]
     
     for model_name in router_models:
@@ -1354,7 +1355,7 @@ async def legal_generate_draft_endpoint(
                 print(f"Draft generation error with {model_name}: {e}")
                 continue
 
-    # यदि API पर रेट लिमिट या कोई बाधा हो, तो तुरंत सुरक्षित फॉलबैक ड्राफ्ट प्रदान करें (Never fail)
+    # सुरक्षित फॉलबैक ड्राफ्ट
     if draft_type == "rti":
         fallback_draft = (
             "सेवा में,\n"
@@ -1476,6 +1477,16 @@ async def ai_core_page(request: Request, db: Session = Depends(get_db)):
     file_path = Path("ai-core.html")
     if not file_path.exists():
         return HTMLResponse(content="<h1>ai-core.html file missing</h1>", status_code=404)
+    with open(file_path, "r", encoding="utf-8") as f:
+        return f.read()
+
+@app.get("/digital-library", response_class=HTMLResponse)
+async def digital_library_page(request: Request, db: Session = Depends(get_db)):
+    client_ip = request.client.host if request.client else "Unknown"
+    log_activity(db, "Page Visited", "Digital Library", "Opened Encrypted Notes Vault", "Student", client_ip)
+    file_path = Path("digital-library.html")
+    if not file_path.exists():
+        return HTMLResponse(content="<h1>digital-library.html file missing</h1>", status_code=404)
     with open(file_path, "r", encoding="utf-8") as f:
         return f.read()
 
