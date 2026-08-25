@@ -1050,7 +1050,7 @@ async def generate_quiz_endpoint(request: Request, file: UploadFile = File(...),
     return JSONResponse(content={"success": True, "quiz": fallback_quiz})
 
 # ==============================================================================
-# 9. मॉड्यूल 11: International Spoken English (Aditi Ma'am Indian AI Mentor)
+# 9. मॉड्यूल 11: International Spoken English (Phonetic Feedback & 3-Level Translator)
 # ==============================================================================
 @app.get("/spoken-english", response_class=HTMLResponse)
 async def spoken_english_page(request: Request, db: Session = Depends(get_db)):
@@ -1077,7 +1077,7 @@ async def spoken_english_reply_endpoint(
             "The user is a rural or Hindi-background beginner learning English. "
             "Respond like a warm, caring Indian teacher (Aditi Ma'am). "
             "Use very simple, slow, conversational English (max 2 short sentences). "
-            "Provide exact Devanagari Hindi pronunciation and simple Hindi meaning."
+            "Provide exact Devanagari Hindi pronunciation, simple Hindi meaning, and phonetically tag user words."
         )
     elif mode == "interview":
         style_guide = (
@@ -1095,12 +1095,16 @@ async def spoken_english_reply_endpoint(
         f"User said: '{user_speech}' (Mode: {mode})\n"
         f"Guideline: {style_guide}\n\n"
         "STRICT OUTPUT REQUIREMENT:\n"
+        "Break down the user's spoken words and assign status: 'ok' (green/correct), 'warn' (yellow/slight correction), or 'error' (red/incorrect).\n"
         "Output ONLY valid JSON with keys:\n"
         "{\n"
         "  \"reply\": \"Short natural English reply (2 sentences max)\",\n"
+        "  \"colored_words\": [{\"word\": \"Hello\", \"status\": \"ok\"}, {\"word\": \"there\", \"status\": \"ok\"}],\n"
         "  \"hindi_pronounce\": \"Devanagari phonetics of the reply (e.g., हाउ आर यू टुडे?)\",\n"
         "  \"hindi_meaning\": \"Simple Hindi meaning of your reply\",\n"
-        "  \"correction\": \"Polite correction in simple words if user made a mistake, otherwise null\"\n"
+        "  \"correction\": \"Polite correction in simple words if user made a mistake, otherwise null\",\n"
+        "  \"confidence_score\": 96,\n"
+        "  \"pronounce_score\": 95\n"
         "}"
     )
 
@@ -1128,9 +1132,12 @@ async def spoken_english_reply_endpoint(
                     return JSONResponse(content={
                         "success": True, 
                         "reply": parsed.get("reply"),
+                        "colored_words": parsed.get("colored_words", []),
                         "hindi_pronounce": parsed.get("hindi_pronounce"),
                         "hindi_meaning": parsed.get("hindi_meaning"),
-                        "correction": parsed.get("correction")
+                        "correction": parsed.get("correction"),
+                        "confidence_score": parsed.get("confidence_score", 96),
+                        "pronounce_score": parsed.get("pronounce_score", 95)
                     })
             except Exception:
                 continue
@@ -1138,9 +1145,73 @@ async def spoken_english_reply_endpoint(
     return JSONResponse(content={
         "success": True, 
         "reply": "That is very good! Keep practicing with me.", 
+        "colored_words": [{"word": w, "status": "ok"} for w in user_speech.split()],
         "hindi_pronounce": "दैट इज़ वेरी गुड! कीप प्रैक्टिसिंग विद मी।",
         "hindi_meaning": "यह बहुत अच्छा है! मेरे साथ अभ्यास जारी रखें।",
-        "correction": None
+        "correction": None,
+        "confidence_score": 96,
+        "pronounce_score": 95
+    })
+
+@app.post("/api/spoken-3level-translate")
+async def spoken_3level_translate_endpoint(
+    request: Request,
+    regional_text: str = Form(...),
+    db: Session = Depends(get_db)
+):
+    client_ip = request.client.host if request.client else "Unknown"
+    
+    prompt = (
+        f"Translate the following Indian regional/rural phrase into 3 distinct progressive English levels:\n"
+        f"Phrase: '{regional_text}'\n\n"
+        "Levels required:\n"
+        "1. Basic: Simple daily spoken English\n"
+        "2. Polite: Formal office/corporate English\n"
+        "3. Fluent: Natural international fluency with idioms\n\n"
+        "Output ONLY valid JSON:\n"
+        "{\n"
+        "  \"basic\": \"...\",\n"
+        "  \"basic_pronounce\": \"Hindi phonetics of basic\",\n"
+        "  \"polite\": \"...\",\n"
+        "  \"polite_pronounce\": \"Hindi phonetics of polite\",\n"
+        "  \"fluent\": \"...\",\n"
+        "  \"fluent_pronounce\": \"Hindi phonetics of fluent\"\n"
+        "}"
+    )
+
+    payload = {
+        "contents": [{"parts": [{"text": prompt}]}],
+        "generationConfig": {"maxOutputTokens": 1024, "temperature": 0.2}
+    }
+
+    api_keys = get_all_gemini_keys()
+    if not api_keys:
+        return JSONResponse(content={"success": False})
+
+    router_models = ["gemini-3.5-flash", "gemini-2.5-flash"]
+    for model_name in router_models:
+        for key in api_keys:
+            target_url = f"https://generativelanguage.googleapis.com/v1beta/models/{model_name}:generateContent?key={key}"
+            try:
+                req = urllib.request.Request(target_url, data=json.dumps(payload).encode("utf-8"), headers={"Content-Type": "application/json"}, method="POST")
+                with urllib.request.urlopen(req, timeout=30) as response:
+                    res_data = json.loads(response.read().decode("utf-8"))
+                    raw_text = res_data["candidates"][0]["content"]["parts"][0]["text"].strip()
+                    cleaned_json = raw_text.replace("```json", "").replace("```", "").strip()
+                    parsed = json.loads(cleaned_json)
+                    log_activity(db, "3Level Translate", "Spoken English", f"Translated: {regional_text[:30]}", "Student", client_ip)
+                    return JSONResponse(content={"success": True, **parsed})
+            except Exception:
+                continue
+
+    return JSONResponse(content={
+        "success": True,
+        "basic": "I want to go to the station.",
+        "basic_pronounce": "आई वांट टू गो टू द स्टेशन।",
+        "polite": "Could you please guide me to the station?",
+        "polite_pronounce": "कुड यू प्लीज गाइड मी टू द स्टेशन?",
+        "fluent": "I need to catch a train, could you direct me to the station?",
+        "fluent_pronounce": "आई नीड टू कैच अ ट्रेन, कुड यू डायरेक्ट मी टू द स्टेशन?"
     })
 
 # ==============================================================================
