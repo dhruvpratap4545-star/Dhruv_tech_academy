@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 # ==============================================================================
-# main.py - Dhruv Academy Master Ecosystem (World-Class 400-AI Core Architecture)
-# 11 Modules | Sub-Feature Paywalls | Live Activity Logger | Multi-Agent Neural Engine
+# main.py - Dhruv Academy Master Ecosystem (Universal Multi-Model Support)
+# Complete 11 Modules | Dynamic Key-Pool | Auto-Fallback (2.5 / 2.0 / 1.5)
 # ==============================================================================
 
 import os
@@ -182,7 +182,7 @@ def init_default_data():
             {"p_id": 10, "parent": "10. Nebula Visual Hub", "key": "nebula_visual_status", "name": "सिस्टम विज़ुअल मैट्रिक्स व ट्रैफिक स्टेटस", "paywall": False},
             {"p_id": 10, "parent": "10. Nebula Visual Hub", "key": "nebula_server_telemetry", "name": "डीप सर्वर टेलीमेट्री व लाइव नोड मॉनिटरिंग", "paywall": True},
 
-            # 11. International Spoken English (New 11th Module)
+            # 11. International Spoken English
             {"p_id": 11, "parent": "11. Spoken English Master", "key": "spoken_basic_phrases", "name": "डेली स्पोकन इंग्लिश व वोकैबुलरी (Free Tier)", "paywall": False},
             {"p_id": 11, "parent": "11. Spoken English Master", "key": "spoken_accent_trainer", "name": "3D AI वॉइस एक्सेंट व प्रोनंसिएशन मेंटर", "paywall": True},
             {"p_id": 11, "parent": "11. Spoken English Master", "key": "spoken_ielts_fluent", "name": "IELTS/TOEFL लाइव इंटरव्यू व फ्लुएंसी टेस्ट", "paywall": True}
@@ -206,7 +206,7 @@ def init_default_data():
 init_default_data()
 
 # ------------------------------------------------------------------------------
-# 2. सुरक्षा और डेटाबेस आधारित सत्र प्रबंधन
+# 2. सुरक्षा और सत्र प्रबंधन
 # ------------------------------------------------------------------------------
 def get_current_admin(request: Request, db: Session = Depends(get_db)) -> AdminUser:
     session_token = request.cookies.get("dhruv_auth_token")
@@ -321,7 +321,7 @@ def admin_logout(request: Request, db: Session = Depends(get_db)):
     return res
 
 # ------------------------------------------------------------------------------
-# 4. सुपर-एडमिन मास्टर डैशबोर्ड (सब-फीचर पेवॉल कंट्रोल)
+# 4. सुपर-एडमिन मास्टर डैशबोर्ड
 # ------------------------------------------------------------------------------
 @app.get("/admin/super-dashboard", response_class=HTMLResponse)
 def super_admin_dashboard(user: AdminUser = Depends(get_current_admin), db: Session = Depends(get_db)):
@@ -880,7 +880,7 @@ def get_all_gemini_keys() -> List[str]:
     return keys
 
 # ==============================================================================
-# 400-AI Multi-Agent Neural Core Solver API (Module 2)
+# 400-AI Multi-Agent Neural Core Solver API (Auto-Model Fallback & Error-Proof)
 # ==============================================================================
 @app.post("/api/ai-core-solve")
 async def ai_core_solve_endpoint(request: Request, query: str = Form(...), mode: str = Form("standard"), db: Session = Depends(get_db)):
@@ -902,36 +902,54 @@ async def ai_core_solve_endpoint(request: Request, query: str = Form(...), mode:
         "उपयोगकर्ता के इस प्रश्न का गहन, 100% सटीक, वैज्ञानिक और चरणबद्ध (Step-by-Step) विश्लेषण बिंदुवार प्रस्तुत करें:\n\n"
         f"प्रश्न: {query}\n\n"
         "संरचना:\n"
-        "👉 मुख्य निष्कर्ष / सारांश:\n"
-        "👉 चरण 1 (मूल अवधारणा व सूत्र / सिद्धांत):\n"
-        "👉 चरण 2 (विस्तृत व्याख्या व गणितीय/तार्किक प्रमाण):\n"
-        "👉 चरण 3 (व्यावहारिक उपयोग व महत्वपूर्ण बिंदु):\n"
+        "👉 मुख्य निष्कर्ष / परिचय:\n"
+        "👉 चरण 1 (मूल अवधारणा व कार्यप्रणाली):\n"
+        "👉 चरण 2 (विस्तृत विश्लेषण व मुख्य विशेषताएं):\n"
+        "👉 चरण 3 (उपयोग व महत्व):\n"
     )
     if mode == "multilingual":
         prompt_instruction += "\nनिर्देश: हिंदी और अंग्रेजी दोनों भाषाओं के महत्वपूर्ण पारिभाषिक शब्दों का उपयोग करें।"
 
     api_keys = get_all_gemini_keys()
     if not api_keys:
-        return JSONResponse(content={"success": False, "solution": "⚠️ सर्वर पर GEMINI_API_KEY उपलब्ध नहीं है।"})
+        return JSONResponse(content={"success": False, "solution": "⚠️ सर्वर पर GEMINI_API_KEY उपलब्ध नहीं है। Render Environment Variables चेक करें।"})
 
     payload = {
         "contents": [{"parts": [{"text": prompt_instruction}]}],
         "generationConfig": {"maxOutputTokens": 2048, "temperature": 0.2}
     }
 
-    for key in api_keys:
-        target_url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key={key}"
-        try:
-            req = urllib.request.Request(target_url, data=json.dumps(payload).encode("utf-8"), headers={"Content-Type": "application/json"}, method="POST")
-            with urllib.request.urlopen(req, timeout=45) as response:
-                res_data = json.loads(response.read().decode("utf-8"))
-                solution_text = res_data["candidates"][0]["content"]["parts"][0]["text"]
-                log_activity(db, "AI Core Solved", "AI Engine Core", f"Query solved in {mode} mode", "Student", client_ip)
-                return JSONResponse(content={"success": True, "solution": solution_text.strip()})
-        except Exception:
-            continue
+    # मल्टी-मॉडल ऑटो-फ़ॉलबैक (सभी प्रकार की कीज़ का समर्थन)
+    models_to_try = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-1.5-flash"]
+    last_error = ""
 
-    return JSONResponse(content={"success": False, "solution": "⏳ न्यूरल कोर व्यस्त है। कृपया 20 सेकंड बाद पुनः प्रयास करें!"})
+    for model_name in models_to_try:
+        for key in api_keys:
+            target_url = f"https://generativelanguage.googleapis.com/v1beta/models/{model_name}:generateContent?key={key}"
+            try:
+                req = urllib.request.Request(
+                    target_url,
+                    data=json.dumps(payload).encode("utf-8"),
+                    headers={"Content-Type": "application/json"},
+                    method="POST"
+                )
+                with urllib.request.urlopen(req, timeout=30) as response:
+                    res_data = json.loads(response.read().decode("utf-8"))
+                    solution_text = res_data["candidates"][0]["content"]["parts"][0]["text"]
+                    log_activity(db, "AI Core Solved", "AI Engine Core", f"Solved using {model_name} in {mode} mode", "Student", client_ip)
+                    return JSONResponse(content={"success": True, "solution": solution_text.strip()})
+            except urllib.error.HTTPError as he:
+                try:
+                    err_body = json.loads(he.read().decode("utf-8"))
+                    last_error = err_body.get("error", {}).get("message", f"HTTP {he.code}")
+                except Exception:
+                    last_error = f"HTTP Error {he.code}"
+                continue
+            except Exception as e:
+                last_error = str(e)
+                continue
+
+    return JSONResponse(content={"success": False, "solution": f"⚠️ न्यूरल इंजन त्रुटि: {last_error} (कृपया API Key या कोटा चेक करें)"})
 
 async def process_gemini_vision(file: UploadFile, lang: str, request: Request, db: Session):
     client_ip = request.client.host if request.client else "Unknown"
@@ -969,17 +987,19 @@ async def process_gemini_vision(file: UploadFile, lang: str, request: Request, d
             "generationConfig": {"maxOutputTokens": 2048, "temperature": 0.2}
         }
 
-        for key in api_keys:
-            target_url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key={key}"
-            try:
-                req = urllib.request.Request(target_url, data=json.dumps(payload).encode("utf-8"), headers={"Content-Type": "application/json"}, method="POST")
-                with urllib.request.urlopen(req, timeout=45) as response:
-                    res_data = json.loads(response.read().decode("utf-8"))
-                    solution_text = res_data["candidates"][0]["content"]["parts"][0]["text"]
-                    log_activity(db, "Book Scan Success", "Kids Zone", "Textbook image analyzed with AI", "Student", client_ip)
-                    return JSONResponse(content={"success": True, "solution": solution_text.strip()})
-            except Exception:
-                continue
+        models_to_try = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-1.5-flash"]
+        for model_name in models_to_try:
+            for key in api_keys:
+                target_url = f"https://generativelanguage.googleapis.com/v1beta/models/{model_name}:generateContent?key={key}"
+                try:
+                    req = urllib.request.Request(target_url, data=json.dumps(payload).encode("utf-8"), headers={"Content-Type": "application/json"}, method="POST")
+                    with urllib.request.urlopen(req, timeout=45) as response:
+                        res_data = json.loads(response.read().decode("utf-8"))
+                        solution_text = res_data["candidates"][0]["content"]["parts"][0]["text"]
+                        log_activity(db, "Book Scan Success", "Kids Zone", f"Textbook image analyzed via {model_name}", "Student", client_ip)
+                        return JSONResponse(content={"success": True, "solution": solution_text.strip()})
+                except Exception:
+                    continue
 
         return JSONResponse(content={"success": False, "solution": "⏳ नेबुला टीचर थोड़ा विश्राम ले रही हैं। कृपया 20-30 सेकंड बाद पुनः प्रयास करें! 🌟"})
     except Exception as e:
