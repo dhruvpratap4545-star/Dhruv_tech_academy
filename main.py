@@ -880,7 +880,7 @@ def get_all_gemini_keys() -> List[str]:
     return keys
 
 # ==============================================================================
-# 400-AI Multi-Agent Neural Core Solver API (Direct 3.5-Flash Core Endpoint)
+# 400-AI Multi-Agent Neural Core Solver API (Smart High-Demand Fallback Pipeline)
 # ==============================================================================
 @app.post("/api/ai-core-solve")
 async def ai_core_solve_endpoint(request: Request, query: str = Form(...), mode: str = Form("standard"), db: Session = Depends(get_db)):
@@ -919,36 +919,40 @@ async def ai_core_solve_endpoint(request: Request, query: str = Form(...), mode:
         "generationConfig": {"maxOutputTokens": 2048, "temperature": 0.2}
     }
 
+    # हाई-डिमांड (503 / 429) से बचने के लिए प्राथमिक व सेकंडरी मॉडल्स
+    primary_models = ["gemini-3.5-flash", "gemini-2.5-flash"]
     last_error = ""
-    for key in api_keys:
-        target_url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key={key}"
-        try:
-            req = urllib.request.Request(
-                target_url,
-                data=json.dumps(payload).encode("utf-8"),
-                headers={"Content-Type": "application/json"},
-                method="POST"
-            )
-            with urllib.request.urlopen(req, timeout=35) as response:
-                res_data = json.loads(response.read().decode("utf-8"))
-                solution_text = res_data["candidates"][0]["content"]["parts"][0]["text"]
-                log_activity(db, "AI Core Solved", "AI Engine Core", f"Solved using gemini-3.5-flash in {mode} mode", "Student", client_ip)
-                return JSONResponse(content={"success": True, "solution": solution_text.strip()})
-        except urllib.error.HTTPError as he:
+
+    for model_name in primary_models:
+        for key in api_keys:
+            target_url = f"https://generativelanguage.googleapis.com/v1beta/models/{model_name}:generateContent?key={key}"
             try:
-                err_body = json.loads(he.read().decode("utf-8"))
-                last_error = err_body.get("error", {}).get("message", f"HTTP {he.code}")
-            except Exception:
-                last_error = f"HTTP Error {he.code}"
-            continue
-        except Exception as e:
-            last_error = str(e)
-            continue
+                req = urllib.request.Request(
+                    target_url,
+                    data=json.dumps(payload).encode("utf-8"),
+                    headers={"Content-Type": "application/json"},
+                    method="POST"
+                )
+                with urllib.request.urlopen(req, timeout=35) as response:
+                    res_data = json.loads(response.read().decode("utf-8"))
+                    solution_text = res_data["candidates"][0]["content"]["parts"][0]["text"]
+                    log_activity(db, "AI Core Solved", "AI Engine Core", f"Solved using {model_name} in {mode} mode", "Student", client_ip)
+                    return JSONResponse(content={"success": True, "solution": solution_text.strip()})
+            except urllib.error.HTTPError as he:
+                try:
+                    err_body = json.loads(he.read().decode("utf-8"))
+                    last_error = err_body.get("error", {}).get("message", f"HTTP {he.code}")
+                except Exception:
+                    last_error = f"HTTP Error {he.code}"
+                continue
+            except Exception as e:
+                last_error = str(e)
+                continue
 
-    if "quota" in last_error.lower() or "exceeded" in last_error.lower():
-        return JSONResponse(content={"success": False, "solution": "⏳ सभी उपलब्ध API Keys का प्रति-मिनट कोटा पूरा हो गया है। कृपया 15-20 सेकंड प्रतीक्षा करके पुनः प्रयास करें या Render में अतिरिक्त Key जोड़ें!"})
+    if "demand" in last_error.lower() or "quota" in last_error.lower() or "503" in str(last_error):
+        return JSONResponse(content={"success": False, "solution": "⏳ Google सर्वर पर अभी अत्यधिक लोड है। कृपया 10-15 सेकंड बाद 'हल करें' बटन पुनः दबाएं!"})
 
-    return JSONResponse(content={"success": False, "solution": f"⚠️ न्यूरल इंजन त्रुटि: {last_error} (कृपया API Key या कोटा चेक करें)"})
+    return JSONResponse(content={"success": False, "solution": f"⚠️ न्यूरल इंजन सूचना: {last_error}"})
 
 async def process_gemini_vision(file: UploadFile, lang: str, request: Request, db: Session):
     client_ip = request.client.host if request.client else "Unknown"
@@ -986,17 +990,19 @@ async def process_gemini_vision(file: UploadFile, lang: str, request: Request, d
             "generationConfig": {"maxOutputTokens": 2048, "temperature": 0.2}
         }
 
-        for key in api_keys:
-            target_url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key={key}"
-            try:
-                req = urllib.request.Request(target_url, data=json.dumps(payload).encode("utf-8"), headers={"Content-Type": "application/json"}, method="POST")
-                with urllib.request.urlopen(req, timeout=45) as response:
-                    res_data = json.loads(response.read().decode("utf-8"))
-                    solution_text = res_data["candidates"][0]["content"]["parts"][0]["text"]
-                    log_activity(db, "Book Scan Success", "Kids Zone", "Textbook image analyzed via gemini-3.5-flash", "Student", client_ip)
-                    return JSONResponse(content={"success": True, "solution": solution_text.strip()})
-            except Exception:
-                continue
+        vision_models = ["gemini-3.5-flash", "gemini-2.5-flash"]
+        for model_name in vision_models:
+            for key in api_keys:
+                target_url = f"https://generativelanguage.googleapis.com/v1beta/models/{model_name}:generateContent?key={key}"
+                try:
+                    req = urllib.request.Request(target_url, data=json.dumps(payload).encode("utf-8"), headers={"Content-Type": "application/json"}, method="POST")
+                    with urllib.request.urlopen(req, timeout=45) as response:
+                        res_data = json.loads(response.read().decode("utf-8"))
+                        solution_text = res_data["candidates"][0]["content"]["parts"][0]["text"]
+                        log_activity(db, "Book Scan Success", "Kids Zone", f"Textbook image analyzed via {model_name}", "Student", client_ip)
+                        return JSONResponse(content={"success": True, "solution": solution_text.strip()})
+                except Exception:
+                    continue
 
         return JSONResponse(content={"success": False, "solution": "⏳ नेबुला टीचर थोड़ा विश्राम ले रही हैं। कृपया 20-30 सेकंड बाद पुनः प्रयास करें! 🌟"})
     except Exception as e:
