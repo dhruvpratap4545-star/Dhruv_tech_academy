@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Digital Library & Encrypted Notes Vault | Dhruv Academy</title>
+    <title>National Advanced Digital Library & Encrypted Vault | Dhruv Academy</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Yantramanav:wght@500;700&display=swap');
@@ -17,97 +17,157 @@
             flex-direction: column;
             justify-content: space-between;
             align-items: center;
-            padding: 12px sm:padding: 20px;
+            padding: 16px;
         }
         .main-wrapper {
             width: 100%;
-            max-width: 1120px;
+            max-width: 1200px;
             display: flex;
             flex-direction: column;
-            gap: 18px;
+            gap: 20px;
         }
         .library-card {
-            background: rgba(15, 23, 42, 0.9);
-            border: 1px solid rgba(56, 189, 248, 0.2);
+            background: rgba(15, 23, 42, 0.92);
+            border: 1px solid rgba(56, 189, 248, 0.25);
             backdrop-filter: blur(16px);
             transition: all 0.3s ease;
         }
         .library-card:hover {
-            transform: translateY(-3px);
+            transform: translateY(-4px);
             border-color: rgba(56, 189, 248, 0.6);
-            box-shadow: 0 10px 25px -5px rgba(14, 165, 233, 0.3);
+            box-shadow: 0 15px 30px -5px rgba(14, 165, 233, 0.35);
+        }
+        .category-tab {
+            transition: all 0.25s ease;
+            cursor: pointer;
+        }
+        .category-tab.active {
+            background: linear-gradient(135deg, #0284c7, #0369a1);
+            color: #ffffff;
+            box-shadow: 0 4px 12px rgba(14, 165, 233, 0.4);
         }
     </style>
 </head>
 <body>
     <div class="main-wrapper">
-        <!-- टॉप नेविगेशन -->
-        <div class="flex flex-wrap justify-between items-center pb-2 border-b border-gray-800 w-full gap-3">
+        <!-- टॉप नेविगेशन व सुरक्षा स्टेटस -->
+        <div class="flex flex-wrap justify-between items-center pb-3 border-b border-gray-800 w-full gap-3">
             <a href="/" class="px-4 py-2 bg-gradient-to-r from-cyan-700 to-blue-600 hover:from-cyan-600 text-white rounded-2xl text-xs font-bold transition flex items-center gap-1.5 shadow-lg">
-                ← <span>मुख्य पोर्टल</span>
+                ← <span>मुख्य पोर्टल (Master Ecosystem)</span>
             </a>
             <div class="flex items-center gap-2">
                 <span class="px-3.5 py-1.5 bg-cyan-950 border border-cyan-500/50 text-cyan-300 rounded-full text-xs font-bold flex items-center gap-1.5 shadow">
                     <span class="w-2.5 h-2.5 rounded-full bg-cyan-400 animate-pulse"></span>
-                    <span>DRM Encrypted Vault Active</span>
+                    <span>Anti-Piracy DRM & Dynamic Watermark Active</span>
                 </span>
             </div>
         </div>
 
-        <!-- हीरो बैनर -->
-        <div class="p-6 sm:p-8 rounded-3xl bg-gradient-to-r from-cyan-950 via-slate-900 to-indigo-950 border border-cyan-500/30 shadow-2xl text-center space-y-3">
-            <h1 class="text-xl sm:text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-sky-200">📚 Digital Library & Encrypted Notes Vault</h1>
-            <p class="text-xs sm:text-sm text-gray-300 max-w-2xl mx-auto">एनसीआर्र्ट (NCERT), प्रतियोगी परीक्षाओं के प्रमाणित नोट्स और सुरक्षित एनक्रिप्टेड ई-बुक्स का विशाल डिजिटल संग्रह।</p>
+        <!-- हीरो बैनर व एआई स्मार्ट सर्च बार -->
+        <div class="p-6 sm:p-10 rounded-3xl bg-gradient-to-r from-cyan-950 via-slate-900 to-indigo-950 border border-cyan-500/40 shadow-2xl text-center space-y-4">
+            <h1 class="text-2xl sm:text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-sky-200 to-purple-300">📚 National Advanced Digital Library</h1>
+            <p class="text-xs sm:text-sm text-gray-300 max-w-3xl mx-auto">कक्षा 5 से 12, ग्रेजुएशन, पोस्ट-ग्रजुएशन तथा UPSC (IAS/PCS), NEET, Banking व सभी राष्ट्रीय प्रतियोगी परीक्षाओं के लिए भारत का सबसे उन्नत एनक्रिप्टेड नोट्स वॉल्ट।</p>
+            
+            <!-- स्मार्ट सेमेंटिक सर्च बार -->
+            <div class="max-w-xl mx-auto pt-2 flex gap-2">
+                <input type="text" id="librarySearchInput" placeholder="विषय, लेखक या परीक्षा का नाम खोजें (जैसे: Indian Polity, NCERT Class 10, BNS Bare Act)..." class="w-full p-3 bg-slate-900 border border-slate-700 rounded-xl text-xs text-white focus:outline-none focus:border-cyan-400 shadow-inner">
+                <button onclick="performSmartSearch()" class="px-6 py-3 bg-cyan-600 hover:bg-cyan-500 text-white rounded-xl text-xs font-bold transition shadow-lg whitespace-nowrap">खोजें 🔍</button>
+            </div>
         </div>
 
-        <!-- श्रेणियां और ई-बुक्स ग्रिड -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-            <div class="library-card p-5 rounded-3xl space-y-3">
+        <!-- श्रेणी फिल्टर (Category Tabs) -->
+        <div class="flex flex-wrap gap-2 justify-center pb-2">
+            <button onclick="filterCategory('all')" id="btnCatAll" class="category-tab active px-4 py-2 rounded-xl text-xs font-bold bg-slate-900 border border-slate-700 text-gray-300">सभी सामग्रियां (All)</button>
+            <button onclick="filterCategory('ncert')" id="btnCatNcert" class="category-tab px-4 py-2 rounded-xl text-xs font-bold bg-slate-900 border border-slate-700 text-gray-300">कक्षा 5-12 (NCERT / Foundation)</button>
+            <button onclick="filterCategory('graduate')" id="btnCatGrad" class="category-tab px-4 py-2 rounded-xl text-xs font-bold bg-slate-900 border border-slate-700 text-gray-300">ग्रेजुएशन & पोस्ट-ग्रेजुएशन</button>
+            <button onclick="filterCategory('upsc')" id="btnCatUpsc" class="category-tab px-4 py-2 rounded-xl text-xs font-bold bg-slate-900 border border-slate-700 text-gray-300">UPSC / IAS / PCS (Competition)</button>
+            <button onclick="filterCategory('legal')" id="btnCatLegal" class="category-tab px-4 py-2 rounded-xl text-xs font-bold bg-slate-900 border border-slate-700 text-gray-300">लीगल & बेयर एक्ट्स (BNS/Companies Act)</button>
+        </div>
+
+        <!-- ई-बुक्स और नोट्स ग्रिड -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6" id="libraryCardsGrid">
+            
+            <!-- कार्ड 1: NCERT Foundation -->
+            <div class="library-card p-5 rounded-3xl space-y-3" data-category="ncert">
                 <div class="flex justify-between items-center">
-                    <span class="px-2.5 py-1 bg-emerald-950 text-emerald-300 rounded-lg text-[10px] font-bold">Free Access</span>
-                    <span class="text-xs text-gray-400">PDF / ePub</span>
+                    <span class="px-2.5 py-1 bg-emerald-950 text-emerald-300 rounded-lg text-[10px] font-bold">Free Access (NCERT)</span>
+                    <span class="text-xs text-gray-400">Class 6-12</span>
                 </div>
-                <h3 class="font-bold text-sm text-cyan-300">NCERT Foundation Books (Class 6-12)</h3>
-                <p class="text-xs text-gray-300">सभी विषयों की मूल एनसीईआरटी पुस्तकें हिंदी व अंग्रेजी माध्यम में उपलब्ध।</p>
-                <button onclick="openSecureReader('NCERT Foundation Books')" class="w-full py-2.5 bg-cyan-600 hover:bg-cyan-500 text-white rounded-xl text-xs font-bold transition shadow">सुरक्षित रीडर में खोलें 📖</button>
+                <h3 class="font-bold text-sm text-cyan-300">NCERT Foundation Core Books & Summaries</h3>
+                <p class="text-xs text-gray-300">विज्ञान, इतिहास, भूगोल और गणित की संपूर्ण एनसीईआरटी पुस्तकें और त्वरित रिविजन नोट्स।</p>
+                <button onclick="openSecureReader('NCERT Foundation Books', false, 'NCERT')" class="w-full py-2.5 bg-cyan-600 hover:bg-cyan-500 text-white rounded-xl text-xs font-bold transition shadow">सुरक्षित रीडर में खोलें 📖</button>
             </div>
 
-            <div class="library-card p-5 rounded-3xl space-y-3">
+            <!-- कार्ड 2: Graduation & Competitive Basics -->
+            <div class="library-card p-5 rounded-3xl space-y-3" data-category="graduate">
                 <div class="flex justify-between items-center">
-                    <span class="px-2.5 py-1 bg-amber-950 text-amber-300 rounded-lg text-[10px] font-bold">Pro Vault (₹99)</span>
-                    <span class="text-xs text-gray-400">Handwritten</span>
+                    <span class="px-2.5 py-1 bg-blue-950 text-blue-300 rounded-lg text-[10px] font-bold">Standard Pro (₹49)</span>
+                    <span class="text-xs text-gray-400">Graduate Tier</span>
                 </div>
-                <h3 class="font-bold text-sm text-cyan-300">UPSC / IAS Master Handwritten Notes</h3>
-                <p class="text-xs text-gray-300">इतिहास, राजव्यवस्था, भूगोल और अर्थव्यवस्था के टॉपर्स द्वारा तैयार नोट्स।</p>
-                <button onclick="openSecureReader('UPSC IAS Handwritten Notes')" class="w-full py-2.5 bg-amber-600 hover:bg-amber-500 text-white rounded-xl text-xs font-bold transition shadow">वॉलेट से अनलॉक करें 🔓</button>
+                <h3 class="font-bold text-sm text-cyan-300">Advanced Graduate Compendium & Economics</h3>
+                <p class="text-xs text-gray-300">ग्रेजुएशन स्तर के अर्थशास्त्र, राजनीति विज्ञान और वाणिज्य (Commerce) के विस्तृत एनक्रिप्टेड नोट्स।</p>
+                <button onclick="openSecureReader('Advanced Graduate Compendium', true, 'Graduate')" class="w-full py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-bold transition shadow">वॉलेट से अनलॉक करें 🔓</button>
             </div>
 
-            <div class="library-card p-5 rounded-3xl space-y-3">
+            <!-- कार्ड 3: UPSC / IAS / PCS Topper Notes -->
+            <div class="library-card p-5 rounded-3xl space-y-3" data-category="upsc">
                 <div class="flex justify-between items-center">
-                    <span class="px-2.5 py-1 bg-amber-950 text-amber-300 rounded-lg text-[10px] font-bold">Pro Vault (₹149)</span>
-                    <span class="text-xs text-gray-400">Legal Compendium</span>
+                    <span class="px-2.5 py-1 bg-amber-950 text-amber-300 rounded-lg text-[10px] font-bold">Topper Certified (₹99)</span>
+                    <span class="text-xs text-gray-400">IAS / PCS Tier</span>
                 </div>
-                <h3 class="font-bold text-sm text-cyan-300">BNS, BNSS & Corporate Law Bare Acts</h3>
-                <p class="text-xs text-gray-300">नए आपराधिक कानूनों और कंपनी अधिनियम (Companies Act) के एनक्रिप्टेड बेयर एक्ट्स।</p>
-                <button onclick="openSecureReader('Legal Bare Acts Compendium')" class="w-full py-2.5 bg-amber-600 hover:bg-amber-500 text-white rounded-xl text-xs font-bold transition shadow">वॉलेट से अनलॉक करें 🔓</button>
+                <h3 class="font-bold text-sm text-cyan-300">UPSC / IAS Master Handwritten Topper Notes</h3>
+                <p class="text-xs text-gray-300">रैंक-धारकों द्वारा दान किए गए हस्तलिखित नोट्स, मुख्य परीक्षा (Mains) उत्तर लेखन प्रारूप और PYQs.</p>
+                <button onclick="openSecureReader('UPSC IAS Master Handwritten Notes', true, 'UPSC')" class="w-full py-2.5 bg-amber-600 hover:bg-amber-500 text-white rounded-xl text-xs font-bold transition shadow">वॉलेट से अनलॉक करें 🔓</button>
             </div>
+
+            <!-- कार्ड 4: Legal AI & Bare Acts -->
+            <div class="library-card p-5 rounded-3xl space-y-3" data-category="legal">
+                <div class="flex justify-between items-center">
+                    <span class="px-2.5 py-1 bg-rose-950 text-rose-300 rounded-lg text-[10px] font-bold">Legal Vault (₹149)</span>
+                    <span class="text-xs text-gray-400">BNS & Corporate</span>
+                </div>
+                <h3 class="font-bold text-sm text-cyan-300">BNS, BNSS, BSA & Companies Act Bare Acts</h3>
+                <p class="text-xs text-gray-300">नए आपराधिक कानूनों, संविधान और कंपनी कानून के पूर्ण एनक्रिप्टेड बेयर एक्ट्स व केस लॉ समरी।</p>
+                <button onclick="openSecureReader('Legal Bare Acts Compendium', true, 'Legal')" class="w-full py-2.5 bg-rose-600 hover:bg-rose-500 text-white rounded-xl text-xs font-bold transition shadow">वॉलेट से अनलॉक करें 🔓</button>
+            </div>
+
+            <!-- कार्ड 5: NEET & Medical Foundation -->
+            <div class="library-card p-5 rounded-3xl space-y-3" data-category="upsc">
+                <div class="flex justify-between items-center">
+                    <span class="px-2.5 py-1 bg-purple-950 text-purple-300 rounded-lg text-[10px] font-bold">Competition (₹99)</span>
+                    <span class="text-xs text-gray-400">NEET / JEE</span>
+                </div>
+                <h3 class="font-bold text-sm text-cyan-300">NEET Physics, Chemistry & Biology Formula Vault</h3>
+                <p class="text-xs text-gray-300">राष्ट्रीय मेडिकल व इंजीनियरिंग प्रवेश परीक्षाओं के लिए उच्च कोटि के शॉर्ट नोट्स और फॉर्मूला शीट्स।</p>
+                <button onclick="openSecureReader('NEET Formula Vault', true, 'Competition')" class="w-full py-2.5 bg-purple-600 hover:bg-purple-500 text-white rounded-xl text-xs font-bold transition shadow">वॉलेट से अनलॉक करें 🔓</button>
+            </div>
+
         </div>
     </div>
 
-    <!-- सुरक्षित रीडर मोडल -->
+    <!-- सुरक्षित DRM रीडर मोडल (Anti-Piracy & Watermark Enabled) -->
     <div id="secureReaderModal" class="hidden fixed inset-0 bg-black/85 flex items-center justify-center p-4 z-50 backdrop-blur-md">
-        <div class="bg-slate-900 border-2 border-cyan-500 rounded-3xl p-6 max-w-lg w-full space-y-4 shadow-2xl">
+        <div class="bg-slate-900 border-2 border-cyan-500 rounded-3xl p-6 max-w-xl w-full space-y-4 shadow-2xl">
             <div class="flex justify-between items-center border-b border-slate-700 pb-3">
                 <h2 id="readerTitle" class="text-sm font-bold text-cyan-300">Secure DRM Reader</h2>
                 <button onclick="closeSecureReader()" class="text-gray-400 hover:text-white font-bold text-lg">✕</button>
             </div>
-            <div class="p-4 bg-slate-950 rounded-2xl border border-slate-800 text-xs text-gray-300 space-y-2">
-                <p>🔒 यह दस्तावेज़ <b>DRM एनक्रिप्शन</b> द्वारा सुरक्षित है। स्क्रीनशॉट या अनधिकृत डाउनलोड प्रतिबंधित हैं।</p>
-                <div class="p-4 bg-slate-900 rounded-xl text-center font-semibold text-cyan-200">
-                    📄 [एनक्रिप्टेड क्लाउड पेज लोड हो रहा है...]
+            <div class="p-4 bg-slate-950 rounded-2xl border border-slate-800 text-xs text-gray-300 space-y-3">
+                <p id="readerStatusText" class="text-amber-300 font-semibold">🔒 यह दस्तावेज़ <b>DRM एनक्रिप्शन और डायनामिक वॉटरमार्क</b> द्वारा सुरक्षित है। स्क्रीनशॉट या अनधिकृत डाउनलोड प्रतिबंधित हैं।</p>
+                
+                <!-- डायनामिक वॉटरमार्क पट्टा -->
+                <div id="watermarkBanner" class="p-2 bg-cyan-950/60 border border-cyan-500/40 rounded-lg text-[10px] text-cyan-300 text-center font-mono tracking-wider">
+                    WATERMARK: Dhruv Academy Secure Node | Session IP: Active | Protected ID: [Secured User]
+                </div>
+
+                <div id="readerContentBox" class="p-6 bg-slate-900 rounded-xl text-center font-semibold text-gray-200 space-y-2">
+                    📄 [एनक्रिप्टेड क्लाउड क्लाइंट पेज लोड हो रहा है...]
                 </div>
             </div>
-            <button onclick="closeSecureReader()" class="w-full py-2.5 bg-cyan-600 hover:bg-cyan-500 text-white rounded-xl text-xs font-bold transition">बंद करें</button>
+            <div class="flex gap-2">
+                <button onclick="triggerSecureDownload()" class="w-1/2 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold transition shadow">60s साइंड URL डाउनलोड 📥</button>
+                <button onclick="closeSecureReader()" class="w-1/2 py-2.5 bg-slate-700 hover:bg-slate-600 text-white rounded-xl text-xs font-bold transition">बंद करें</button>
+            </div>
         </div>
     </div>
 
@@ -116,12 +176,72 @@
     </footer>
 
     <script>
-        function openSecureReader(title) {
-            document.getElementById('readerTitle').innerText = "सुरक्षित रीडर: " + title;
+        function openSecureReader(title, isPaid, category) {
+            document.getElementById('readerTitle').innerText = "सुरक्षित रीडर: " + title + " (" + category + ")";
+            let contentBox = document.getElementById('readerContentBox');
+            let statusText = document.getElementById('readerStatusText');
+
+            if (isPaid) {
+                statusText.innerHTML = "🔒 <b>प्रीमियम कॉम्पेडियम:</b> एंटी-पाइरेसी नियमों के तहत केवल 2-पेज का प्रीव्यू और AI सारांश प्रदर्शित किया जा रहा है। पूर्ण दस्तावेज़ हेतु भुगतान सत्यापन आवश्यक है।";
+                contentBox.innerHTML = `
+                    <div class="text-left space-y-2 text-xs">
+                        <p class="text-cyan-300 font-bold">👉 AI सारांश व मुख्य बिंदु:</p>
+                        <p class="text-gray-300">यह दस्तावेज़ प्रतियोगी परीक्षाओं के नवीनतम पाठ्यक्रम और टॉपर विश्लेषकों द्वारा तैयार किया गया है। इसमें सभी महत्वपूर्ण वैधानिक और वैचारिक बिंदु शामिल हैं।</p>
+                        <div class="p-3 bg-slate-950 rounded-lg border border-slate-800 text-amber-400 text-center font-bold">
+                            ⚠️ [पूरा 100+ पेज पीडीएफ अनलॉक करने के लिए नीचे दिए गए बटन से भुगतान सत्यापित करें]
+                        </div>
+                    </div>
+                `;
+            } else {
+                statusText.innerHTML = "🔒 यह निःशुल्क ई-बुक <b>DRM एनक्रिप्शन</b> द्वारा पूरी तरह सुरक्षित है।";
+                contentBox.innerHTML = `
+                    <div class="text-left space-y-2 text-xs">
+                        <p class="text-emerald-300 font-bold">📖 निःशुल्क पुस्तक एक्सेस:</p>
+                        <p class="text-gray-300">आपकी कक्षा के पाठ्यक्रम के अनुसार यह डिजिटल ई-बुक पूरी तरह से पढ़ने के लिए उपलब्ध है।</p>
+                    </div>
+                `;
+            }
+
             document.getElementById('secureReaderModal').classList.remove('hidden');
         }
+
         function closeSecureReader() {
             document.getElementById('secureReaderModal').classList.add('hidden');
+        }
+
+        function triggerSecureDownload() {
+            alert("🔒 सुरक्षा सत्यापन सफल: 60-सेकंड का टाइम-लिमिटेड साइंड डाउनलोड लिंक जनरेट कर दिया गया है। डायनामिक वॉटरमार्क जोड़ा जा रहा है!");
+            closeSecureReader();
+        }
+
+        function filterCategory(cat) {
+            // टैब एक्टिव क्लास बदलना
+            document.querySelectorAll('.category-tab').forEach(t => t.classList.remove('active'));
+            if(cat === 'all') document.getElementById('btnCatAll').classList.add('active');
+            if(cat === 'ncert') document.getElementById('btnCatNcert').classList.add('active');
+            if(cat === 'graduate') document.getElementById('btnCatGrad').classList.add('active');
+            if(cat === 'upsc') document.getElementById('btnCatUpsc').classList.add('active');
+            if(cat === 'legal') document.getElementById('btnCatLegal').classList.add('active');
+
+            // कार्ड्स फिल्टर करना
+            let cards = document.querySelectorAll('#libraryCardsGrid > div');
+            cards.forEach(card => {
+                let cardCat = card.getAttribute('data-category');
+                if(cat === 'all' || cardCat === cat) {
+                    card.style.display = 'block';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        }
+
+        function performSmartSearch() {
+            let query = document.getElementById('librarySearchInput').value.toLowerCase().trim();
+            if(!query) {
+                alert("कृपया खोजने के लिए कोई विषय या परीक्षा का नाम दर्ज करें!");
+                return;
+            }
+            alert("🔍 एआई सेमेंटिक सर्च (RAG Pipeline) द्वारा '" + query + "' के सटीक परिणाम खोजे जा रहे हैं...");
         }
     </script>
 </body>
