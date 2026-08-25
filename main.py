@@ -945,6 +945,9 @@ async def ai_core_solve_endpoint(request: Request, query: str = Form(...), mode:
             last_error = str(e)
             continue
 
+    if "quota" in last_error.lower() or "exceeded" in last_error.lower():
+        return JSONResponse(content={"success": False, "solution": "⏳ सभी उपलब्ध API Keys का प्रति-मिनट कोटा पूरा हो गया है। कृपया 15-20 सेकंड प्रतीक्षा करके पुनः प्रयास करें या Render में अतिरिक्त Key जोड़ें!"})
+
     return JSONResponse(content={"success": False, "solution": f"⚠️ न्यूरल इंजन त्रुटि: {last_error} (कृपया API Key या कोटा चेक करें)"})
 
 async def process_gemini_vision(file: UploadFile, lang: str, request: Request, db: Session):
