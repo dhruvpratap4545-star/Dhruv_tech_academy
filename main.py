@@ -165,7 +165,7 @@ def init_default_data():
             {"p_id": 6, "parent": "6. Digital Library", "key": "library_premium_notes", "name": "एनक्रिप्टेड प्रीमियम नोट्स व डिजिटल वॉलेट डाउनलोड", "paywall": True},
 
             # 7. Legal AI (All Laws)
-            {"p_id": 7, "parent": "7. Legal AI (All Laws)", "key": "legal_bare_acts", "name": "भारतीय कानून व बेयर एक्ट्स (BNS, BNSS, BSA, IPC, CrPC)", "paywall": False},
+            {"p_id": 7, "parent": "7. Legal AI (All Laws)", "key": "legal_bare_acts", "name": "भारतीय कानून व बेयर एक्ट्स (BNS, BNSS, BSA, Companies Act)", "paywall": False},
             {"p_id": 7, "parent": "7. Legal AI (All Laws)", "key": "legal_case_law_ai", "name": "सुप्रीम कोर्ट / हाईकोर्ट जजमेंट रिसर्च व ड्राफ्टिंग", "paywall": True},
             {"p_id": 7, "parent": "7. Legal AI (All Laws)", "key": "legal_contract_analyzer", "name": "कंपनी कॉर्पोरेट अनुपालन व एग्रीमेंट विश्लेषक", "paywall": True},
 
@@ -185,7 +185,7 @@ def init_default_data():
             # 11. International Spoken English
             {"p_id": 11, "parent": "11. Spoken English Master", "key": "spoken_basic_phrases", "name": "डेली स्पोकन इंग्लिश व वोकैबुलरी (Free Tier)", "paywall": False},
             {"p_id": 11, "parent": "11. Spoken English Master", "key": "spoken_accent_trainer", "name": "3D AI वॉइस एक्सेंट व प्रोनंसिएशन मेंटर", "paywall": True},
-            {"p_id": 11, "parent": "11. Spoken English Master", "key": "spoken_ielts_fluent", "name": "IELTS/TOEFL लाइव इंटरव्यू व फ्लुएंसी टेस्ट", "paywall": True}
+            {"p_id": 11, "parent": "11. Spoken English Master", "key": "spoken_accent_trainer", "name": "IELTS/TOEFL लाइव इंटरव्यू व फ्लुएंसी टेस्ट", "paywall": True}
         ]
 
         for sf in all_master_sub_features:
@@ -1294,12 +1294,30 @@ async def legal_generate_draft_endpoint(
 ):
     client_ip = request.client.host if request.client else "Unknown"
     
+    # विधिक अनुपालन फ़िल्टर (Strict RTI 2(f) and Malicious Prosecution Guardrails)
+    if draft_type == "rti":
+        legal_instruction = (
+            "STRICT RTI ACT 2005 SECTION 2(f) & SUPREME COURT COMPLIANCE:\n"
+            "1. RTI cannot be used to ask 'Why' (क्यों), 'How' (कैसे), reasons, or opinions.\n"
+            "2. Draft only admissible requests for certified copies of material records, files, memos, circulars, or register entries.\n"
+            "3. Add mandatory reference to Section 6(1) and Section 7(1)."
+        )
+    elif draft_type == "fir":
+        legal_instruction = (
+            "STRICT POLICE COMPLAINT / FIR DRAFTING RULES:\n"
+            "1. Include clear statutory warning against malicious/false FIRs under BNS Sections 217/229.\n"
+            "2. In corporate/company disputes, mandate reference to Companies Act Sections 88, 118, 128, 136, 206 (Inquiry) and 447/448 (False statements) to avoid premature criminalization."
+        )
+    else:
+        legal_instruction = "Draft a formal, legally enforceable, professional demand notice under CPC / Relevant Acts."
+
     prompt = (
-        f"You are a Senior High Court / Supreme Court Advocate Drafting Engine for Dhruv Academy.\n"
+        f"You are a Senior Supreme Court Advocate Drafting Engine for Dhruv Academy.\n"
         f"Draft Type: {draft_type}\n"
-        f"Context/Subject: {details}\n\n"
-        "Draft a formal, legally enforceable, professional standard legal notice/RTI/Complaint in Hindi/English with standard placeholders ([नाम], [पता], [दिनांक]).\n"
-        "Output ONLY the complete draft text directly."
+        f"Context/Subject: {details}\n"
+        f"Compliance Rules: {legal_instruction}\n\n"
+        "Draft a formal, comprehensive, legally binding document in clear Hindi/English with standard placeholders ([नाम], [पता], [दिनांक]).\n"
+        "Output ONLY the complete draft text directly without preamble."
     )
 
     payload = {
@@ -1309,7 +1327,7 @@ async def legal_generate_draft_endpoint(
 
     api_keys = get_all_gemini_keys()
     if not api_keys:
-        return JSONResponse(content={"success": False})
+        return JSONResponse(content={"success": False, "draft_text": "API Key not configured."})
 
     router_models = ["gemini-3.5-flash", "gemini-2.5-flash"]
     for model_name in router_models:
@@ -1317,7 +1335,7 @@ async def legal_generate_draft_endpoint(
             target_url = f"https://generativelanguage.googleapis.com/v1beta/models/{model_name}:generateContent?key={key}"
             try:
                 req = urllib.request.Request(target_url, data=json.dumps(payload).encode("utf-8"), headers={"Content-Type": "application/json"}, method="POST")
-                with urllib.request.urlopen(req, timeout=35) as response:
+                with urllib.request.urlopen(req, timeout=40) as response:
                     res_data = json.loads(response.read().decode("utf-8"))
                     draft_text = res_data["candidates"][0]["content"]["parts"][0]["text"].strip()
                     log_activity(db, "Legal Draft Generated", "Legal AI Hub", f"Type: {draft_type}", "Student", client_ip)
@@ -1325,7 +1343,7 @@ async def legal_generate_draft_endpoint(
             except Exception:
                 continue
 
-    return JSONResponse(content={"success": False, "draft_text": "ड्राफ्ट तैयार नहीं हो सका।"})
+    return JSONResponse(content={"success": False, "draft_text": "⚠️ सर्वर पर लोड है। कृपया पुनः प्रयास करें।"})
 
 @app.post("/api/legal-advice-solve")
 async def legal_advice_solve_endpoint(
@@ -1336,13 +1354,13 @@ async def legal_advice_solve_endpoint(
     client_ip = request.client.host if request.client else "Unknown"
     
     prompt = (
-        f"You are Advocate Nyay Mitra, an AI Legal Expert for Indian Law at Dhruv Academy.\n"
+        f"You are Advocate Nyay Mitra, a Senior Corporate & Criminal Law Specialist at Dhruv Academy.\n"
         f"User legal query: '{query}'\n\n"
-        "Provide a structured, practical, and legally accurate advice in simple Hindi covering:\n"
-        "1. लागू कानून व मुख्य धाराएं (BNS/BNSS/Corporate/Civil)\n"
-        "2. पीड़ित / नागरिक के तात्कालिक अधिकार व कानूनी कदम\n"
-        "3. दस्तावेज़ व साक्ष्य की तैयारी\n"
-        "4. महत्वपूर्ण कानूनी सावधानी\n\n"
+        "Analyze this issue deeply and provide structured, practically enforceable advice in Hindi covering:\n"
+        "1. लागू कानून व धाराएं (BNS, BNSS, BSA, या Companies Act 2013 Sections 88, 118, 128, 206, 210, 447)\n"
+        "2. दुर्भावनापूर्ण एफआईआर व झूठी गवाही से बचाव (Protection against false criminal prosecution under BNS 217/229)\n"
+        "3. दस्तावेजी साक्ष्य व कानूनी प्रक्रिया (Checklist of Registers, MCA Master Data, Audit Trail)\n"
+        "4. पीड़ित / नागरिक के तात्कालिक अधिकार व उचित न्यायालय\n\n"
         "Output ONLY valid JSON with keys:\n"
         "{\n"
         "  \"advice\": \"Complete structured legal opinion text\",\n"
@@ -1357,7 +1375,7 @@ async def legal_advice_solve_endpoint(
 
     api_keys = get_all_gemini_keys()
     if not api_keys:
-        return JSONResponse(content={"success": False})
+        return JSONResponse(content={"success": False, "advice": "API Key not configured."})
 
     router_models = ["gemini-3.5-flash", "gemini-2.5-flash"]
     for model_name in router_models:
@@ -1365,7 +1383,7 @@ async def legal_advice_solve_endpoint(
             target_url = f"https://generativelanguage.googleapis.com/v1beta/models/{model_name}:generateContent?key={key}"
             try:
                 req = urllib.request.Request(target_url, data=json.dumps(payload).encode("utf-8"), headers={"Content-Type": "application/json"}, method="POST")
-                with urllib.request.urlopen(req, timeout=35) as response:
+                with urllib.request.urlopen(req, timeout=40) as response:
                     res_data = json.loads(response.read().decode("utf-8"))
                     raw_text = res_data["candidates"][0]["content"]["parts"][0]["text"].strip()
                     cleaned_json = raw_text.replace("```json", "").replace("```", "").strip()
@@ -1377,8 +1395,8 @@ async def legal_advice_solve_endpoint(
 
     return JSONResponse(content={
         "success": True,
-        "advice": "कानूनी प्रावधानों के तहत संबंधित थाने अथवा सक्षम न्यायालय में उचित आवेदन प्रस्तुत किया जा सकता है।",
-        "summary": "आप अपने अधिकारों की सुरक्षा हेतु कानूनी नोटिस या पुलिस शिकायत दर्ज कर सकते हैं।"
+        "advice": "कंपनी अथवा आपराधिक मामलों में किसी भी कार्रवाई से पूर्व संबंधित संविधिक अभिलेखों व कंपनी अधिनियम के अनिवार्य प्रावधानों (Sec 88, 118, 206) का सत्यापन आवश्यक है।",
+        "summary": "विवादों में दुर्भावनापूर्ण अभियोजन से बचने हेतु पहले विधिक प्रक्रिया और रजिस्टर्ड दस्तावेजों का परीक्षण करें।"
     })
 
 # ==============================================================================
