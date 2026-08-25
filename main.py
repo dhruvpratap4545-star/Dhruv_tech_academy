@@ -880,7 +880,7 @@ def get_all_gemini_keys() -> List[str]:
     return keys
 
 # ==============================================================================
-# 400-AI Multi-Agent Neural Core Solver API (Universal Google Models Pipeline)
+# 400-AI Multi-Agent Neural Core Solver API (Universal gemini-3.5-flash & 1.5 Pipeline)
 # ==============================================================================
 @app.post("/api/ai-core-solve")
 async def ai_core_solve_endpoint(request: Request, query: str = Form(...), mode: str = Form("standard"), db: Session = Depends(get_db)):
@@ -919,14 +919,13 @@ async def ai_core_solve_endpoint(request: Request, query: str = Form(...), mode:
         "generationConfig": {"maxOutputTokens": 2048, "temperature": 0.2}
     }
 
-    # यूनिवर्सल एक्टिव मॉडल लिस्ट (v1beta / v1 सपोर्टेड)
+    # 3.5-flash को सबसे पहले रखा गया है
     models_to_try = [
+        "gemini-3.5-flash",
         "gemini-1.5-flash-latest",
         "gemini-1.5-flash",
-        "gemini-1.5-pro",
         "gemini-2.0-flash",
-        "gemini-2.0-flash-exp",
-        "gemini-pro"
+        "gemini-1.5-pro"
     ]
     last_error = ""
 
@@ -995,11 +994,11 @@ async def process_gemini_vision(file: UploadFile, lang: str, request: Request, d
         }
 
         models_to_try = [
+            "gemini-3.5-flash",
             "gemini-1.5-flash-latest",
             "gemini-1.5-flash",
             "gemini-2.0-flash",
-            "gemini-1.5-pro",
-            "gemini-pro"
+            "gemini-1.5-pro"
         ]
         for model_name in models_to_try:
             for key in api_keys:
