@@ -1096,10 +1096,11 @@ async def spoken_english_reply_endpoint(
         f"Guideline: {style_guide}\n\n"
         "STRICT OUTPUT REQUIREMENT:\n"
         "Break down the user's spoken words and assign status: 'ok' (green/correct), 'warn' (yellow/slight correction), or 'error' (red/incorrect).\n"
+        "For warn/error words, provide a very practical anatomy guide in simple Hindi (e.g., 'जीभ को ऊपर के दांतों से हल्का स्पर्श कराएं').\n"
         "Output ONLY valid JSON with keys:\n"
         "{\n"
         "  \"reply\": \"Short natural English reply (2 sentences max)\",\n"
-        "  \"colored_words\": [{\"word\": \"Hello\", \"status\": \"ok\"}, {\"word\": \"there\", \"status\": \"ok\"}],\n"
+        "  \"colored_words\": [{\"word\": \"Hello\", \"status\": \"ok\", \"anatomy\": \"\"}, {\"word\": \"there\", \"status\": \"ok\", \"anatomy\": \"\"}],\n"
         "  \"hindi_pronounce\": \"Devanagari phonetics of the reply (e.g., हाउ आर यू टुडे?)\",\n"
         "  \"hindi_meaning\": \"Simple Hindi meaning of your reply\",\n"
         "  \"correction\": \"Polite correction in simple words if user made a mistake, otherwise null\",\n"
@@ -1145,7 +1146,7 @@ async def spoken_english_reply_endpoint(
     return JSONResponse(content={
         "success": True, 
         "reply": "That is very good! Keep practicing with me.", 
-        "colored_words": [{"word": w, "status": "ok"} for w in user_speech.split()],
+        "colored_words": [{"word": w, "status": "ok", "anatomy": ""} for w in user_speech.split()],
         "hindi_pronounce": "दैट इज़ वेरी गुड! कीप प्रैक्टिसिंग विद मी।",
         "hindi_meaning": "यह बहुत अच्छा है! मेरे साथ अभ्यास जारी रखें।",
         "correction": None,
