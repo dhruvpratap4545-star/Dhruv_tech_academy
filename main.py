@@ -133,6 +133,8 @@ def init_default_data():
         else:
             sub_admin.password = "LegalPass2026!"
 
+        db.commit()
+
         all_master_sub_features = [
             # 1. Kids Zone (NC-5)
             {"p_id": 1, "parent": "1. Foundation: NC-5 Kids Tier", "key": "kids_basic_blackboard", "name": "बेसिक गणित, पहेली व कविता बोर्ड (Free Tier)", "paywall": False},
@@ -182,24 +184,31 @@ def init_default_data():
             {"p_id": 10, "parent": "10. Nebula Visual Hub", "key": "nebula_visual_status", "name": "सिस्टम विज़ुअल मैट्रिक्स व ट्रैफिक स्टेटस", "paywall": False},
             {"p_id": 10, "parent": "10. Nebula Visual Hub", "key": "nebula_server_telemetry", "name": "डीप सर्वर टेलीमेट्री व लाइव नोड मॉनिटरिंग", "paywall": True},
 
-            # 11. International Spoken English
+            # 11. International Spoken English (प्रत्येक की पूरी तरह यूनिक)
             {"p_id": 11, "parent": "11. Spoken English Master", "key": "spoken_basic_phrases", "name": "डेली स्पोकन इंग्लिश व वोकैबुलरी (Free Tier)", "paywall": False},
             {"p_id": 11, "parent": "11. Spoken English Master", "key": "spoken_accent_trainer", "name": "3D AI वॉइस एक्सेंट व प्रोनंसिएशन मेंटर", "paywall": True},
-            {"p_id": 11, "parent": "11. Spoken English Master", "key": "spoken_accent_trainer", "name": "IELTS/TOEFL लाइव इंटरव्यू व फ्लुएंसी टेस्ट", "paywall": True}
+            {"p_id": 11, "parent": "11. Spoken English Master", "key": "spoken_ielts_fluent", "name": "IELTS/TOEFL लाइव इंटरव्यू व फ्लुएंसी टेस्ट", "paywall": True}
         ]
 
         for sf in all_master_sub_features:
-            existing = db.query(SubFeatureToggle).filter_by(feature_key=sf["key"]).first()
-            if not existing:
-                db.add(SubFeatureToggle(
-                    parent_module_id=sf["p_id"],
-                    parent_module_name=sf["parent"],
-                    feature_key=sf["key"],
-                    feature_name=sf["name"],
-                    is_enabled=True,
-                    is_paywalled=sf["paywall"]
-                ))
-        db.commit()
+            try:
+                existing = db.query(SubFeatureToggle).filter_by(feature_key=sf["key"]).first()
+                if not existing:
+                    db.add(SubFeatureToggle(
+                        parent_module_id=sf["p_id"],
+                        parent_module_name=sf["parent"],
+                        feature_key=sf["key"],
+                        feature_name=sf["name"],
+                        is_enabled=True,
+                        is_paywalled=sf["paywall"]
+                    ))
+                    db.commit()
+            except Exception:
+                db.rollback()
+                continue
+    except Exception as e:
+        db.rollback()
+        print(f"init_default_data safe log: {e}")
     finally:
         db.close()
 
