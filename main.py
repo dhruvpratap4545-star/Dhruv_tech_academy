@@ -79,6 +79,7 @@ def get_db():
 def init_default_data():
     db = SessionLocal()
     try:
+        # सुपरएडमिन क्रेडेंशियल्स को जबरन फ्रेश अपडेट करना
         superadmin = db.query(AdminUser).filter_by(username="dhruv_superadmin").first()
         if not superadmin:
             superadmin = AdminUser(
@@ -102,6 +103,8 @@ def init_default_data():
                 permissions=["legal_ai", "digital_library"]
             )
             db.add(sub_admin)
+        else:
+            sub_admin.password = "LegalPass2026!"
 
         default_features = [
             {"key": "mod_1_kids", "name": "1. Kids Zone (NC-5)", "is_paywalled": False},
@@ -196,7 +199,28 @@ def secret_login_page(error: Optional[str] = None):
 
 @app.post("/secret-admin-login-dhruv")
 def process_secret_login(response: Response, username: str = Form(...), password: str = Form(...), db: Session = Depends(get_db)):
-    user = db.query(AdminUser).filter(AdminUser.username == username.strip(), AdminUser.password == password.strip()).first()
+    u_clean = username.strip()
+    p_clean = password.strip()
+
+    # 100% गारंटीड सुपर-एडमिन बाईपास और ऑटो-सिंक
+    if u_clean == "dhruv_superadmin" and p_clean == "DhruvSuperSecure2026!":
+        user = db.query(AdminUser).filter(AdminUser.username == "dhruv_superadmin").first()
+        if not user:
+            user = AdminUser(username="dhruv_superadmin", password=p_clean, role="superadmin", permissions=["all"])
+            db.add(user)
+            db.commit()
+        elif user.password != p_clean:
+            user.password = p_clean
+            db.commit()
+    elif u_clean == "teacher_legal" and p_clean == "LegalPass2026!":
+        user = db.query(AdminUser).filter(AdminUser.username == "teacher_legal").first()
+        if not user:
+            user = AdminUser(username="teacher_legal", password=p_clean, role="subadmin", permissions=["legal_ai", "digital_library"])
+            db.add(user)
+            db.commit()
+    else:
+        user = db.query(AdminUser).filter(AdminUser.username == u_clean, AdminUser.password == p_clean).first()
+
     if not user:
         return HTMLResponse(content=secret_login_page(error="अमान्य क्रेडेंशियल्स! सही यूजरनेम व पासवर्ड दर्ज करें।"), status_code=401)
     
