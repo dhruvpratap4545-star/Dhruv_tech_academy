@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>अदिति मैम - Ultra-Realistic 4D AI English Mentor | Dhruv Academy</title>
+    <title>अदिति मैम - 4D Ultra Live AI English Mentor | Dhruv Academy</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
@@ -19,35 +19,37 @@
             flex-direction: column;
             justify-content: space-between;
             align-items: center;
-            padding: 10px sm:padding: 16px;
+            padding: 12px sm:padding: 20px;
             overflow-x: hidden;
         }
 
         .main-wrapper {
             width: 100%;
-            max-width: 1100px;
+            max-width: 1120px;
             display: flex;
             flex-direction: column;
-            gap: 16px;
+            gap: 18px;
         }
 
+        /* अल्ट्रा-प्रीमियम ग्लास स्टेज */
         .stage-box {
             background: radial-gradient(circle at center, #0f172a 0%, #030712 100%);
-            border: 2px solid rgba(56, 189, 248, 0.45);
-            border-radius: 24px;
-            box-shadow: 0 0 35px rgba(14, 165, 233, 0.25), inset 0 0 30px rgba(0, 0, 0, 0.95);
+            border: 2px solid rgba(56, 189, 248, 0.4);
+            border-radius: 28px;
+            box-shadow: 0 10px 40px rgba(14, 165, 233, 0.2), inset 0 0 30px rgba(0, 0, 0, 0.9);
             position: relative;
             overflow: hidden;
         }
 
         .stage-grid {
-            background-image: linear-gradient(rgba(56, 189, 248, 0.08) 1px, transparent 1px),
-                              linear-gradient(90deg, rgba(56, 189, 248, 0.08) 1px, transparent 1px);
-            background-size: 28px 28px;
+            background-image: linear-gradient(rgba(56, 189, 248, 0.06) 1px, transparent 1px),
+                              linear-gradient(90deg, rgba(56, 189, 248, 0.06) 1px, transparent 1px);
+            background-size: 26px 26px;
         }
 
+        /* 4D सजीव मानवीय फ्लोट एनिमेशन */
         .avatar-4d-glow {
-            box-shadow: 0 0 30px rgba(56, 189, 248, 0.8), inset 0 0 20px rgba(255, 255, 255, 0.4);
+            box-shadow: 0 0 35px rgba(56, 189, 248, 0.8), inset 0 0 20px rgba(255, 255, 255, 0.35);
             animation: humanFloat 4s ease-in-out infinite;
         }
         @keyframes humanFloat {
@@ -58,7 +60,7 @@
         .talking-pulse {
             animation: humanTalkGlow 0.35s infinite alternate ease-in-out;
             border-color: #facc15 !important;
-            box-shadow: 0 0 40px #facc15, inset 0 0 20px rgba(250, 204, 21, 0.6) !important;
+            box-shadow: 0 0 45px #facc15, inset 0 0 25px rgba(250, 204, 21, 0.6) !important;
         }
         @keyframes humanTalkGlow {
             0% { transform: scale(1); }
@@ -68,7 +70,7 @@
         .dim-btn-active {
             background: linear-gradient(135deg, #0284c7, #0369a1) !important;
             color: #ffffff !important;
-            box-shadow: 0 2px 8px rgba(14, 165, 233, 0.5);
+            box-shadow: 0 2px 10px rgba(14, 165, 233, 0.5);
         }
 
         .custom-scrollbar::-webkit-scrollbar { width: 5px; }
@@ -80,74 +82,75 @@
 
     <div class="main-wrapper">
         
-        <!-- टॉप नेविगेशन बार -->
-        <div class="flex flex-wrap justify-between items-center pb-2 border-b border-gray-800 w-full gap-2">
-            <a href="/" class="px-3.5 py-1.5 bg-red-700 hover:bg-red-600 text-white rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow">
+        <!-- टॉप नेविगेशन बार (एर्गोनॉमिक डिज़ाइन) -->
+        <div class="flex flex-wrap justify-between items-center pb-2 border-b border-gray-800 w-full gap-3">
+            <a href="/" class="px-4 py-2 bg-gradient-to-r from-red-700 to-rose-600 hover:from-red-600 hover:to-rose-500 text-white rounded-2xl text-xs font-bold transition flex items-center gap-1.5 shadow-lg">
                 ← <span>मुख्य पोर्टल</span>
             </a>
             
             <div class="flex items-center gap-2">
-                <button onclick="openDiagnosticModal()" class="px-3 py-1.5 bg-indigo-700 hover:bg-indigo-600 text-white rounded-xl text-xs font-bold transition flex items-center gap-1 shadow">
-                    📊 <span>प्रोग्रेस व रिपोर्ट कार्ड</span>
+                <button onclick="openDiagnosticModal()" class="px-3.5 py-2 bg-gradient-to-r from-indigo-700 to-blue-700 hover:from-indigo-600 rounded-2xl text-white text-xs font-bold transition flex items-center gap-1.5 shadow-lg">
+                    📊 <span>प्रोग्रेस रिपोर्ट</span>
                 </button>
                 <div class="flex items-center gap-1 bg-slate-900 border border-cyan-500/40 p-1 rounded-2xl shadow">
-                    <span class="text-[10px] text-gray-400 font-bold px-2">अवतार:</span>
+                    <span class="text-[10px] text-gray-400 font-bold px-1.5">अवतार:</span>
                     <button type="button" onclick="setAvatarDimension('2d')" id="btn2D" class="px-2.5 py-1 rounded-xl text-xs font-bold text-gray-300 hover:text-white transition">2D</button>
                     <button type="button" onclick="setAvatarDimension('3d')" id="btn3D" class="px-2.5 py-1 rounded-xl text-xs font-bold text-gray-300 hover:text-white transition">3D</button>
-                    <button type="button" onclick="setAvatarDimension('4d')" id="btn4D" class="px-2.5 py-1 rounded-xl text-xs font-bold dim-btn-active transition">4D Ultra</button>
+                    <button type="button" onclick="setAvatarDimension('4d')" id="btn4D" class="px-2.5 py-1 rounded-xl text-xs font-bold dim-btn-active transition">4D Live</button>
                 </div>
             </div>
         </div>
 
-        <!-- 3D/4D लाइव टीचर क्लासरूम स्टेज -->
+        <!-- 3D/4D लाइव क्लासरूम स्टेज -->
         <div class="stage-box stage-grid p-4 sm:p-7 flex flex-col lg:flex-row items-center justify-between gap-6">
             
+            <!-- सजीव AI भारतीय टीचर अवतार -->
             <div class="flex flex-col items-center gap-3 text-center">
                 <div class="relative flex items-center justify-center">
                     <div class="absolute -bottom-3 w-40 h-8 bg-cyan-500/25 rounded-full blur-xl animate-pulse"></div>
                     
                     <div id="teacherAvatarFrame" onclick="playFriendlyGreeting()" class="avatar-4d-glow w-36 h-36 sm:w-44 sm:h-44 rounded-full bg-slate-900 border-4 border-cyan-400 overflow-hidden relative cursor-pointer shadow-2xl transition flex items-center justify-center" title="मुझसे लाइव बात करने के लिए क्लिक करें!">
                         <canvas id="liveHumanCanvas" width="200" height="200" class="w-full h-full object-cover"></canvas>
-                        <span id="dimensionBadge" class="absolute bottom-1 right-3 px-2 py-0.5 bg-emerald-500 border border-slate-900 rounded-full text-[9px] font-extrabold text-slate-950 shadow">4D ULTRA</span>
+                        <span id="dimensionBadge" class="absolute bottom-1 right-3 px-2 py-0.5 bg-emerald-500 border border-slate-900 rounded-full text-[9px] font-extrabold text-slate-950 shadow">4D LIVE</span>
                     </div>
                 </div>
 
                 <div>
                     <h2 class="text-base sm:text-lg font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 via-sky-200 to-indigo-300">अदिति मैम (Aditi Ma'am)</h2>
-                    <p id="teacherStateDesc" class="text-xs text-emerald-400 font-semibold mt-0.5">🟢 लाइव फोनेटिक व एनाटॉमी विश्लेषक सक्रिय</p>
+                    <p id="teacherStateDesc" class="text-xs text-emerald-400 font-semibold mt-0.5">🟢 लाइव वॉयस मेंटर व एनाटॉमी गाइड</p>
                     <p class="text-[10px] text-gray-400 mt-0.5">अदिति मैम पर टैप करके लाइव आवाज़ सुनें</p>
                 </div>
 
-                <!-- आत्मविश्वास व उच्चारण स्कोर -->
-                <div class="flex gap-4 p-2 bg-slate-900/90 border border-slate-800 rounded-2xl text-xs shadow">
+                <!-- लाइव कॉन्फिडेंस व उच्चारण स्कोर -->
+                <div class="flex gap-3 p-2.5 bg-slate-900/90 border border-slate-800 rounded-2xl text-xs shadow-lg">
                     <div>
                         <span class="text-gray-400 text-[10px] block">आत्मविश्वास:</span>
                         <span id="metricConfidence" class="font-extrabold text-emerald-400">96%</span>
                     </div>
-                    <div class="border-l border-gray-700 pl-4">
+                    <div class="border-l border-gray-700 pl-3">
                         <span class="text-gray-400 text-[10px] block">उच्चारण:</span>
                         <span id="metricPronounce" class="font-extrabold text-cyan-400">95%</span>
                     </div>
-                    <div class="border-l border-gray-700 pl-4">
+                    <div class="border-l border-gray-700 pl-3">
                         <span class="text-gray-400 text-[10px] block">फ्लुएंसी:</span>
-                        <span id="metricFluency" class="font-extrabold text-amber-400">92%</span>
+                        <span id="metricFluency" class="font-extrabold text-amber-400">B2 स्तर</span>
                     </div>
                 </div>
             </div>
 
             <!-- लाइव बातचीत और फोनेटिक कलर-कोडिंग बोर्ड -->
-            <div class="w-full lg:w-3/5 bg-slate-950/90 border border-slate-800/90 rounded-2xl p-4 sm:p-5 space-y-3 shadow-2xl flex flex-col justify-between">
+            <div class="w-full lg:w-3/5 bg-slate-950/95 border border-slate-800/90 rounded-3xl p-4 sm:p-5 space-y-3 shadow-2xl flex flex-col justify-between">
                 <div class="flex justify-between items-center border-b border-slate-800 pb-2">
                     <span class="text-xs font-bold text-sky-400 flex items-center gap-1.5">
                         <span>💬</span> <span>Live Conversation & Color-Coded Guidance</span>
                     </span>
-                    <button onclick="clearChatBoard()" class="text-[11px] text-gray-400 hover:text-white px-2 py-0.5 rounded bg-slate-900 border border-slate-800">सफ़ाई 🧹</button>
+                    <button onclick="clearChatBoard()" class="text-[11px] text-gray-400 hover:text-white px-2.5 py-1 rounded-xl bg-slate-900 border border-slate-800 shadow">सफ़ाई 🧹</button>
                 </div>
 
                 <div id="liveChatArea" class="min-h-[200px] max-h-[260px] overflow-y-auto custom-scrollbar text-xs sm:text-sm space-y-3">
-                    <p class="text-cyan-300 font-medium">👋 "नमस्ते! मैं अदिति मैम हूँ। नीचे माइक दबाकर बेझिझक बोलिए। जो शब्द कठिन लगे, उस पर क्लिक करें—मैं जीभ और होंठ की सही स्थिति के साथ बोलना सिखाऊँगी!"</p>
+                    <p class="text-cyan-300 font-medium">👋 "नमस्ते! मैं अदिति मैम हूँ। नीचे माइक ऑन करके बिना किसी झिझक के बोलिए। अगर किसी शब्द पर लाल या पीला रंग दिखे, तो उस पर क्लिक करें—मैं जीभ और होंठ की सही स्थिति के साथ उसे बोलना सिखाऊँगी!"</p>
                     
-                    <div class="p-2.5 bg-slate-900/80 rounded-xl border border-slate-800 text-[11px] text-gray-300 space-y-1">
+                    <div class="p-2.5 bg-slate-900/80 rounded-2xl border border-slate-800 text-[11px] text-gray-300 space-y-1">
                         <p class="font-bold text-amber-300">🌟 फोनेटिक कलर गाइड:</p>
                         <p>• <span class="text-emerald-400 font-bold">हरा शब्द</span> = 100% सही उच्चारण</p>
                         <p>• <span class="text-yellow-300 font-bold">पीला शब्द</span> = हल्का सुधार आवश्यक</p>
@@ -168,45 +171,73 @@
                     <p id="anatomyInstruction" class="text-[11px] text-gray-300 mt-0.5">जीभ और दांतों की स्थिति यहाँ दिखेगी...</p>
                 </div>
             </div>
-            <button onclick="document.getElementById('mouthAnatomyBox').classList.add('hidden')" class="text-gray-400 hover:text-white text-xs font-bold">✕ बंद करें</button>
+            <button onclick="document.getElementById('mouthAnatomyBox').classList.add('hidden')" class="text-gray-400 hover:text-white text-xs font-bold px-2 py-1 bg-slate-800 rounded-lg">✕ बंद करें</button>
         </div>
 
-        <!-- 3-लेवल देहाती से इंग्लिश ट्रांसलेटर कियोस्क -->
+        <!-- रोज़मर्रा की सिचुएशन्स 1-क्लिक बोलचाल बोर्ड -->
+        <div class="bg-slate-900 p-4 sm:p-5 rounded-3xl border border-slate-800 space-y-3 shadow-xl">
+            <div class="flex justify-between items-center">
+                <h3 class="text-xs sm:text-sm font-bold text-amber-300 flex items-center gap-1.5">
+                    <span>⚡</span> <span>रोज़मर्रा की 1-क्लिक बोलचाल (Daily Practice Situations)</span>
+                </h3>
+                <span class="text-[10px] text-gray-400">टैप करके तुरंत बोलें व सुनें</span>
+            </div>
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
+                <button onclick="triggerSituation('market')" class="p-2.5 rounded-2xl bg-slate-950 border border-slate-800 hover:border-amber-400 text-left transition space-y-0.5">
+                    <p class="font-bold text-amber-300">🛒 बाज़ार व दुकान</p>
+                    <p class="text-[10px] text-gray-400">ताज़ी सब्ज़ियाँ हैं क्या?</p>
+                </button>
+                <button onclick="triggerSituation('school')" class="p-2.5 rounded-2xl bg-slate-950 border border-slate-800 hover:border-cyan-400 text-left transition space-y-0.5">
+                    <p class="font-bold text-cyan-300">📚 स्कूल व कॉलेज</p>
+                    <p class="text-[10px] text-gray-400">मुझे यह सवाल समझाइए</p>
+                </button>
+                <button onclick="triggerSituation('doctor')" class="p-2.5 rounded-2xl bg-slate-950 border border-slate-800 hover:border-emerald-400 text-left transition space-y-0.5">
+                    <p class="font-bold text-emerald-300">🏥 डॉक्टर व क्लिनिक</p>
+                    <p class="text-[10px] text-gray-400">सिरदर्द और बुखार है</p>
+                </button>
+                <button onclick="triggerSituation('interview')" class="p-2.5 rounded-2xl bg-slate-950 border border-slate-800 hover:border-purple-400 text-left transition space-y-0.5">
+                    <p class="font-bold text-purple-300">💼 जॉब व इंटरव्यू</p>
+                    <p class="text-[10px] text-gray-400">मेरा परिचय और अनुभव</p>
+                </button>
+            </div>
+        </div>
+
+        <!-- 3-लेवल क्षेत्रीय से इंग्लिश ट्रांसलेटर कियोस्क (सुधारे गए स्पष्ट उदाहरणों के साथ) -->
         <div class="bg-slate-900 p-4 sm:p-5 rounded-3xl border border-cyan-500/30 space-y-3 shadow-xl">
             <div class="flex justify-between items-center">
                 <h3 class="text-xs sm:text-sm font-bold text-cyan-300 flex items-center gap-1.5">
-                    <span>🔄</span> <span>देहाती/क्षेत्रीय से 3-लेवल इंग्लिश कियोस्क (Simple $\rightarrow$ Polite $\rightarrow$ Fluency)</span>
+                    <span>🔄</span> <span>क्षेत्रीय भाषा से 3-लेवल इंग्लिश ट्रांसलेटर (Simple $\rightarrow$ Polite $\rightarrow$ Fluency)</span>
                 </h3>
                 <span class="text-[10px] text-emerald-400 font-semibold">1-क्लिक ट्रांसलेटर</span>
             </div>
             
             <div class="flex flex-col sm:flex-row gap-2">
-                <input type="text" id="regionalInputText" placeholder="अपनी भाषा में लिखें जैसे: 'मुझे स्टेशन जाना है' या 'हमार तबियत ठीक नइखे'..." class="w-full p-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white text-xs focus:outline-none focus:border-cyan-500">
-                <button onclick="processRegionalTranslation()" class="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-500 rounded-xl text-xs font-bold text-white transition whitespace-nowrap shadow">
+                <input type="text" id="regionalInputText" placeholder="अपनी भाषा में लिखें, जैसे: 'मुझे स्टेशन का रास्ता बताइए' या 'मेरी तबीयत ठीक नहीं है'..." class="w-full p-3 rounded-2xl bg-slate-950 border border-slate-700 text-white text-xs focus:outline-none focus:border-cyan-500">
+                <button onclick="processRegionalTranslation()" class="px-6 py-3 bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-500 rounded-2xl text-xs font-bold text-white transition whitespace-nowrap shadow-lg">
                     3 लेवल में बदलें 🚀
                 </button>
             </div>
             
-            <div id="threeLevelOutputBox" class="hidden p-3 bg-slate-950 rounded-2xl border border-slate-800 text-xs space-y-2"></div>
+            <div id="threeLevelOutputBox" class="hidden p-3.5 bg-slate-950 rounded-2xl border border-slate-800 text-xs space-y-2.5"></div>
         </div>
 
-        <!-- बातचीत नियंत्रण, मोड व एक्शन एरिया -->
+        <!-- बातचीत नियंत्रण, मोड व लाइव माइक एरिया -->
         <div class="bg-slate-900 p-4 sm:p-5 rounded-3xl border border-gray-800 space-y-3 shadow-xl">
             <div class="flex flex-wrap gap-2 justify-center pb-1">
-                <button onclick="selectSpeakingScenario('daily')" id="btnScenarioDaily" class="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-cyan-600 text-white shadow">
-                    ☕ <span>डेली बोलचाल (देहाती/क्षेत्रीय से सिंपल)</span>
+                <button onclick="selectSpeakingScenario('daily')" id="btnScenarioDaily" class="px-4 py-2 rounded-2xl text-xs font-bold bg-cyan-600 text-white shadow">
+                    ☕ <span>डेली बोलचाल (सिंपल इंग्लिश)</span>
                 </button>
-                <button onclick="selectSpeakingScenario('interview')" id="btnScenarioInterview" class="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-slate-800 text-gray-300 hover:text-white">
+                <button onclick="selectSpeakingScenario('interview')" id="btnScenarioInterview" class="px-4 py-2 rounded-2xl text-xs font-bold bg-slate-800 text-gray-300 hover:text-white">
                     💼 <span>जॉब इंटरव्यू मॉक (कॉर्पोरेट)</span>
                 </button>
-                <button onclick="selectSpeakingScenario('ielts')" id="btnScenarioIelts" class="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-slate-800 text-gray-300 hover:text-white">
+                <button onclick="selectSpeakingScenario('ielts')" id="btnScenarioIelts" class="px-4 py-2 rounded-2xl text-xs font-bold bg-slate-800 text-gray-300 hover:text-white">
                     🎓 <span>IELTS / TOEFL फ्लुएंसी</span>
                 </button>
             </div>
 
             <div class="flex flex-col sm:flex-row items-center justify-between gap-3 pt-2 border-t border-gray-800/80">
                 <div class="flex items-center gap-2">
-                    <button onclick="showInstantHindiHint()" class="px-3 py-1.5 bg-amber-600/90 hover:bg-amber-500 rounded-xl text-xs font-bold text-white transition flex items-center gap-1 shadow">
+                    <button onclick="showInstantHindiHint()" class="px-3.5 py-2 bg-amber-600/90 hover:bg-amber-500 rounded-2xl text-xs font-bold text-white transition flex items-center gap-1 shadow">
                         💡 <span>हिंदी हेल्प व हिंट</span>
                     </button>
                     <span class="text-[11px] text-gray-400">हैंड्स-फ्री नेचुरल वॉयस लूप सक्रिय</span>
@@ -300,7 +331,7 @@
         let speechRecognizer = null;
 
         // =======================================================
-        // 4D / 3D / 2D Live Indian Teacher Canvas Avatar
+        // 4D Live Indian Teacher Canvas Avatar
         // =======================================================
         const canvas = document.getElementById('liveHumanCanvas');
         const ctx = canvas.getContext('2d');
@@ -403,7 +434,7 @@
             b3.className = "px-2.5 py-1 rounded-xl text-xs font-bold " + (dim === '3d' ? "dim-btn-active" : "text-gray-300 hover:text-white");
             b4.className = "px-2.5 py-1 rounded-xl text-xs font-bold " + (dim === '4d' ? "dim-btn-active" : "text-gray-300 hover:text-white");
 
-            badge.innerText = dim.toUpperCase() + (dim === '4d' ? " ULTRA" : "");
+            badge.innerText = dim.toUpperCase() + (dim === '4d' ? " LIVE" : "");
             badge.className = "absolute bottom-1 right-3 px-2 py-0.5 " + (dim === '4d' ? "bg-emerald-500" : (dim === '3d' ? "bg-cyan-500" : "bg-purple-500")) + " border border-slate-900 rounded-full text-[9px] font-extrabold text-slate-950 shadow";
         }
 
@@ -413,9 +444,9 @@
             let iBtn = document.getElementById('btnScenarioInterview');
             let fBtn = document.getElementById('btnScenarioIelts');
 
-            dBtn.className = "px-3.5 py-1.5 rounded-xl text-xs font-bold " + (mode === 'daily' ? "bg-cyan-600 text-white shadow" : "bg-slate-800 text-gray-300 hover:text-white");
-            iBtn.className = "px-3.5 py-1.5 rounded-xl text-xs font-bold " + (mode === 'interview' ? "bg-indigo-600 text-white shadow" : "bg-slate-800 text-gray-300 hover:text-white");
-            fBtn.className = "px-3.5 py-1.5 rounded-xl text-xs font-bold " + (mode === 'ielts' ? "bg-purple-600 text-white shadow" : "bg-slate-800 text-gray-300 hover:text-white");
+            dBtn.className = "px-4 py-2 rounded-2xl text-xs font-bold " + (mode === 'daily' ? "bg-cyan-600 text-white shadow" : "bg-slate-800 text-gray-300 hover:text-white");
+            iBtn.className = "px-4 py-2 rounded-2xl text-xs font-bold " + (mode === 'interview' ? "bg-indigo-600 text-white shadow" : "bg-slate-800 text-gray-300 hover:text-white");
+            fBtn.className = "px-4 py-2 rounded-2xl text-xs font-bold " + (mode === 'ielts' ? "bg-purple-600 text-white shadow" : "bg-slate-800 text-gray-300 hover:text-white");
 
             if (mode === 'interview' || mode === 'ielts') {
                 verifyPaywall(mode === 'interview' ? 'spoken_accent_trainer' : 'spoken_ielts_fluent', mode === 'interview' ? 'जॉब इंटरव्यू मॉक' : 'IELTS फ्लुएंसी टेस्ट');
@@ -440,7 +471,7 @@
 
         function playFriendlyGreeting() {
             let msg = "नमस्ते! मैं अदिति मैम हूँ। बिना किसी झिझक के मुझसे बात कीजिए। माइक दबाइए और कुछ भी बोलिए, मैं आपको बहुत प्यार से एक-एक शब्द सिखाऊँगी!";
-            speakStudioDSPVoice(msg);
+            speakStudioDSPVoice(msg, 0.82);
         }
 
         function getBestIndianVoice() {
@@ -450,18 +481,18 @@
             return indVoice || voices.find(v => v.lang.startsWith("en-IN")) || voices.find(v => v.lang.startsWith("en")) || null;
         }
 
-        function speakStudioDSPVoice(text) {
+        function speakStudioDSPVoice(text, customRate = null) {
             try {
                 if ('speechSynthesis' in window) {
                     window.speechSynthesis.cancel();
-                    let clean = text.replace(/[*_#~👩‍🏫💡👉•☕💼🎓]/g, '').trim();
+                    let clean = text.replace(/[*_#~👩‍🏫💡👉•☕💼🎓🛒📚🏥]/g, '').trim();
                     let utterance = new SpeechSynthesisUtterance(clean);
                     
                     let voice = getBestIndianVoice();
                     if (voice) utterance.voice = voice;
                     
                     utterance.lang = 'en-IN';
-                    utterance.rate = (currentScenario === 'daily') ? 0.82 : 0.90;
+                    utterance.rate = customRate || ((currentScenario === 'daily') ? 0.82 : 0.90);
                     utterance.pitch = 1.02;
 
                     let avatar = document.getElementById('teacherAvatarFrame');
@@ -571,7 +602,10 @@
                     }
 
                     out.innerHTML += `<div class="p-3 bg-cyan-950/60 rounded-xl border border-cyan-500/40 text-slate-100 space-y-2 shadow">
-                        <p class="font-bold text-cyan-300">👩‍🏫 अदिति मैम:</p>
+                        <div class="flex justify-between items-center">
+                            <p class="font-bold text-cyan-300">👩‍🏫 अदिति मैम:</p>
+                            <button onclick="speakStudioDSPVoice('${data.reply}', 0.6)" class="px-2 py-0.5 bg-slate-800 hover:bg-slate-700 text-[10px] text-amber-300 rounded-lg border border-slate-700">🐢 स्लो-मो उच्चारण</button>
+                        </div>
                         <p class="text-sm font-medium">${data.reply}</p>
                         ${colorHtml}
                         ${data.hindi_pronounce ? `<p class="text-[11px] text-amber-300 font-mono">🗣️ उच्चारण: ${data.hindi_pronounce}</p>` : ''}
@@ -591,11 +625,22 @@
         }
 
         function showAnatomyGuide(word, guideText) {
-            speakStudioDSPVoice(word);
+            speakStudioDSPVoice(word, 0.65);
             let box = document.getElementById('mouthAnatomyBox');
-            document.getElementById('anatomyWordTitle').innerText = "शब्द: '" + word + "' का उच्चारण गाइड";
-            document.getElementById('anatomyInstruction').innerText = guideText || "जीभ को तालू से हल्का स्पर्श कराएं और धीरे से हवा बाहर छोड़ें।";
+            document.getElementById('anatomyWordTitle').innerText = "शब्द: '" + word + "' का सही उच्चारण गाइड";
+            document.getElementById('anatomyInstruction').innerText = guideText || "जीभ को दांतों के पीछे हल्का स्पर्श कराएं और धीरे से हवा बाहर छोड़ें।";
             box.classList.remove('hidden');
+        }
+
+        function triggerSituation(type) {
+            let samplePhrase = "";
+            if (type === 'market') samplePhrase = "भैया, ताज़ी हरी सब्ज़ियाँ हैं क्या?";
+            else if (type === 'school') samplePhrase = "मैम, मुझे इस सवाल का मतलब समझ नहीं आया।";
+            else if (type === 'doctor') samplePhrase = "डॉक्टर साहब, मुझे कल से बुखार और सिरदर्द है।";
+            else if (type === 'interview') samplePhrase = "सर, मेरा नाम रोहित है और मुझे 2 साल का अनुभव है।";
+
+            document.getElementById('regionalInputText').value = samplePhrase;
+            processRegionalTranslation();
         }
 
         async function processRegionalTranslation() {
@@ -621,19 +666,28 @@
 
                 if (d.success) {
                     outBox.innerHTML = `
-                        <div class="space-y-2">
-                            <div class="p-2.5 bg-slate-900 rounded-xl border border-emerald-500/40">
-                                <span class="px-2 py-0.5 rounded bg-emerald-950 text-emerald-300 font-bold text-[10px]">1. Basic (आसान बोलचाल)</span>
+                        <div class="space-y-2.5">
+                            <div class="p-3 bg-slate-900 rounded-2xl border border-emerald-500/40 shadow">
+                                <div class="flex justify-between items-center">
+                                    <span class="px-2 py-0.5 rounded bg-emerald-950 text-emerald-300 font-bold text-[10px]">1. Basic (आसान बोलचाल)</span>
+                                    <button onclick="speakStudioDSPVoice('${d.basic}', 0.65)" class="text-[10px] text-amber-300">🐢 स्लो सुनें</button>
+                                </div>
                                 <p class="text-sm font-semibold text-white mt-1 cursor-pointer hover:text-cyan-300" onclick="speakStudioDSPVoice('${d.basic}')">🗣️ "${d.basic}"</p>
                                 <p class="text-[10px] text-gray-400 font-mono">उच्चारण: ${d.basic_pronounce}</p>
                             </div>
-                            <div class="p-2.5 bg-slate-900 rounded-xl border border-cyan-500/40">
-                                <span class="px-2 py-0.5 rounded bg-cyan-950 text-cyan-300 font-bold text-[10px]">2. Polite (ऑफिस व फॉर्मल)</span>
+                            <div class="p-3 bg-slate-900 rounded-2xl border border-cyan-500/40 shadow">
+                                <div class="flex justify-between items-center">
+                                    <span class="px-2 py-0.5 rounded bg-cyan-950 text-cyan-300 font-bold text-[10px]">2. Polite (ऑफिस व फॉर्मल)</span>
+                                    <button onclick="speakStudioDSPVoice('${d.polite}', 0.65)" class="text-[10px] text-amber-300">🐢 स्लो सुनें</button>
+                                </div>
                                 <p class="text-sm font-semibold text-white mt-1 cursor-pointer hover:text-cyan-300" onclick="speakStudioDSPVoice('${d.polite}')">🗣️ "${d.polite}"</p>
                                 <p class="text-[10px] text-gray-400 font-mono">उच्चारण: ${d.polite_pronounce}</p>
                             </div>
-                            <div class="p-2.5 bg-slate-900 rounded-xl border border-purple-500/40">
-                                <span class="px-2 py-0.5 rounded bg-purple-950 text-purple-300 font-bold text-[10px]">3. Fluency (इंटरनेशनल एक्सेंट)</span>
+                            <div class="p-3 bg-slate-900 rounded-2xl border border-purple-500/40 shadow">
+                                <div class="flex justify-between items-center">
+                                    <span class="px-2 py-0.5 rounded bg-purple-950 text-purple-300 font-bold text-[10px]">3. Fluency (इंटरनेशनल एक्सेंट)</span>
+                                    <button onclick="speakStudioDSPVoice('${d.fluent}', 0.65)" class="text-[10px] text-amber-300">🐢 स्लो सुनें</button>
+                                </div>
                                 <p class="text-sm font-semibold text-white mt-1 cursor-pointer hover:text-cyan-300" onclick="speakStudioDSPVoice('${d.fluent}')">🗣️ "${d.fluent}"</p>
                                 <p class="text-[10px] text-gray-400 font-mono">उच्चारण: ${d.fluent_pronounce}</p>
                             </div>
@@ -674,7 +728,7 @@
 
         function showInstantHindiHint() {
             let out = document.getElementById('liveChatArea');
-            out.innerHTML += `<div class="p-3 bg-amber-950/70 rounded-xl border border-amber-500/50 text-amber-200 text-xs space-y-1 shadow">
+            out.innerHTML += `<div class="p-3.5 bg-amber-950/70 rounded-2xl border border-amber-500/50 text-amber-200 text-xs space-y-1 shadow">
                 <p class="font-bold">💡 तुरंत बोलने के आसान वाक्य (Daily Hints):</p>
                 <p>• <b>"How are you?"</b> (हाउ आर यू?) = आप कैसे हैं?</p>
                 <p>• <b>"I want to learn English."</b> (आई वांट टू लर्न इंग्लिश) = मैं अंग्रेजी सीखना चाहता हूँ।</p>
