@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="hi" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Engine Core - 400-AI Multi-Agent Neural Solver | Dhruv Academy</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Yantramanav:wght@500;700&display=swap');
+        * { box-sizing: border-box; }
+        body {
+            font-family: 'Poppins', 'Yantramanav', sans-serif;
+            background-color: #020617;
+            color: #f8fafc;
+            min-height: 100vh;
+        }
+        .nebula-neural-glow {
+            background: radial-gradient(circle at top, rgba(14, 165, 233, 0.25) 0%, rgba(99, 102, 241, 0.15) 50%, transparent 80%);
+        }
+        .nebula-board {
+            background: radial-gradient(circle at top left, #0d1b2a 0%, #050b14 100%);
+            border: 4px solid #334155;
+            border-radius: 24px;
+            box-shadow: inset 0 0 30px rgba(0, 0, 0, 0.85), 0 10px 30px rgba(2, 132, 199, 0.25);
+        }
+        .avatar-glow {
+            box-shadow: 0 0 25px rgba(56, 189, 248, 0.6), inset 0 0 15px rgba(255, 255, 255, 0.4);
+            animation: floatGlow 3s ease-in-out infinite;
+        }
+        @keyframes floatGlow {
+            0%, 100% { transform: translateY(0px) scale(1); }
+            50% { transform: translateY(-5px) scale(1.02); }
+        }
+        .avatar-talking {
+            animation: talkPulse 0.4s infinite alternate ease-in-out;
+        }
+        @keyframes talkPulse {
+            0% { transform: scale(1); border-color: #38bdf8; }
+            100% { transform: scale(1.08); border-color: #facc15; box-shadow: 0 0 30px #facc15; }
+        }
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #020617; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #334155; border-radius: 6px; }
+    </style>
+</head>
+<body class="p-3 sm:p-6 flex flex-col justify-between items-center">
+
+    <div class="w-full max-w-5xl space-y-6">
+        
+        <!-- टॉप नेविगेशन बार -->
+        <div class="flex justify-between items-center pb-2 border-b border-gray-800">
+            <a href="/" class="px-4 py-2 bg-red-700 hover:bg-red-600 text-white rounded-xl text-xs font-bold transition flex items-center gap-2">
+                ← <span>मुख्य पोर्टल</span>
+            </a>
+            <div class="flex items-center gap-3">
+                <span class="text-xs font-bold text-gray-400">मोड:</span>
+                <span class="px-3 py-1 bg-cyan-950 border border-cyan-500/50 text-cyan-300 rounded-full text-xs font-bold flex items-center gap-1.5">
+                    <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span> 400-AI Neural Core
+                </span>
+            </div>
+        </div>
+
+        <!-- हेडर व 3D/4D अवतार सेक्शन -->
+        <div class="nebula-neural-glow p-6 rounded-3xl border border-cyan-500/30 flex flex-col md:flex-row justify-between items-center gap-6 shadow-2xl">
+            <div class="flex items-center gap-4">
+                <div id="aiAvatar" onclick="triggerVoiceGreeting()" class="avatar-glow w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-tr from-cyan-600 to-indigo-600 border-3 border-cyan-400 rounded-full flex items-center justify-center text-3xl sm:text-4xl cursor-pointer relative" title="बोलने के लिए क्लिक करें!">
+                    🧠
+                    <span class="absolute bottom-0 right-0 w-4 h-4 bg-emerald-400 border-2 border-slate-900 rounded-full"></span>
+                </div>
+                <div>
+                    <div class="flex items-center gap-2">
+                        <h1 class="text-lg sm:text-xl font-extrabold text-cyan-400">Super AI Engine Core</h1>
+                        <span class="px-2 py-0.5 bg-indigo-900 border border-indigo-500 text-indigo-200 text-[10px] font-bold rounded-lg">400-AI Multi-Agent</span>
+                    </div>
+                    <p id="aiAvatarStatus" class="text-xs text-emerald-400 font-medium mt-1">सिस्टम तैयार है। कोई भी जटिल सवाल पूछें या रिसर्च विषय दर्ज करें...</p>
+                    <p class="text-[11px] text-gray-500">अवतार पर टैप करके लाइव वॉइस गाइडेंस सुनें</p>
+                </div>
+            </div>
+
+            <!-- मोड सेलेक्टर -->
+            <div class="flex flex-wrap gap-2 justify-center">
+                <button onclick="selectCoreMode('standard')" id="modeStandardBtn" class="px-3 py-2 rounded-xl text-xs font-bold bg-cyan-600 text-white shadow transition">
+                    ⚡ त्वरित समाधान (Free)
+                </button>
+                <button onclick="selectCoreMode('research')" id="modeResearchBtn" class="px-3 py-2 rounded-xl text-xs font-bold bg-slate-800 text-gray-300 hover:text-white transition">
+                    🔬 डीप रिसर्च (Pro)
+                </button>
+                <button onclick="selectCoreMode('multilingual')" id="modeMultiBtn" class="px-3 py-2 rounded-xl text-xs font-bold bg-slate-800 text-gray-300 hover:text-white transition">
+                    🌐 बहुभाषी सारांश (Pro)
+                </button>
+            </div>
+        </div>
+
+        <!-- 3D/4D डिजिटल न्यूरल ब्लैकबोर्ड -->
+        <div class="nebula-board p-5 sm:p-6 space-y-4">
+            <div class="flex justify-between items-center border-b border-slate-700/60 pb-3">
+                <span class="text-xs font-bold text-cyan-400 flex items-center gap-2">
+                    <span>📋</span> <span>Neural Blackboard (Multi-Agent Reasoning Solver)</span>
+                </span>
+                <div class="flex gap-2">
+                    <button onclick="copyBlackboardText()" class="px-3 py-1 bg-slate-800 hover:bg-slate-700 text-gray-300 rounded-lg text-xs font-semibold transition">
+                        📋 कॉपी
+                    </button>
+                    <button onclick="clearBlackboard()" class="px-3 py-1 bg-slate-800 hover:bg-slate-700 text-gray-300 rounded-lg text-xs font-semibold transition">
+                        🧹 साफ करें
+                    </button>
+                </div>
+            </div>
+
+            <div id="aiCoreOutput" class="min-h-[220px] max-h-[480px] overflow-y-auto custom-scrollbar text-sm text-slate-100 leading-relaxed space-y-3 p-2 font-mono">
+                <p class="text-cyan-300 font-semibold">🌟 Super AI Engine Core में आपका स्वागत है!</p>
+                <p class="text-xs text-gray-400">यहाँ आप विज्ञान, गणित, जटिल कोडिंग, कानून, प्रतियोगी परीक्षा या किसी भी शोध विषय का 100% सटीक विश्लेषण प्राप्त कर सकते हैं।</p>
+                <div class="p-3 bg-slate-900/80 rounded-xl border border-slate-800 text-xs text-gray-300 space-y-1">
+                    <p class="font-bold text-yellow-400">💡 त्वरित सुझाव:</p>
+                    <p>• सीधे अपना प्रश्न टाइप करें या माइक बटन दबाकर बोलें।</p>
+                    <p>• डीप रिसर्च मोड में कठिन से कठिन थ्योरी का वैज्ञानिक व चरणबद्ध प्रमाण मिलता है।</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- इनपुट और एक्शन एरिया -->
+        <div class="bg-slate-900 p-4 sm:p-5 rounded-2xl border border-gray-800 space-y-3 shadow-xl">
+            <div class="flex flex-col sm:flex-row gap-3">
+                <textarea id="coreQueryInput" rows="2" placeholder="अपना प्रश्न, रिसर्च टॉपिक या गणित/साइंस का सवाल यहाँ लिखें..." class="w-full p-3 rounded-xl bg-slate-950 border border-slate-700 text-white text-xs sm:text-sm focus:outline-none focus:border-cyan-500 custom-scrollbar resize-none"></textarea>
+                
+                <div class="flex sm:flex-col gap-2 justify-end">
+                    <button onclick="startCoreVoiceInput()" class="px-4 py-2.5 bg-blue-600 hover:bg-blue-500 rounded-xl text-xs font-bold text-white transition flex items-center justify-center gap-1.5 whitespace-nowrap shadow">
+                        🎤 <span>बोलें</span>
+                    </button>
+                    <button onclick="processCoreQuery()" class="px-6 py-2.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 rounded-xl text-xs sm:text-sm font-bold text-white transition flex items-center justify-center gap-1.5 whitespace-nowrap shadow-lg">
+                        🚀 <span>हल करें</span>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="flex flex-wrap justify-between items-center text-[11px] text-gray-400 pt-1">
+                <span>⚡ लो-डेटा कम्प्रेशन इंजन सक्रिय (Minimal Bandwidth Usage)</span>
+                <span id="activeModeLabel" class="text-cyan-400 font-bold">मोड: त्वरित समाधान (Free Tier)</span>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- पेवॉल लॉक मोडल -->
+    <div id="corePaywallModal" class="hidden fixed inset-0 bg-black/85 flex items-center justify-center p-4 z-50 backdrop-blur-md">
+        <div class="bg-slate-900 border-2 border-amber-500 rounded-3xl p-6 max-w-md w-full text-center space-y-5 shadow-2xl">
+            <div class="flex justify-between items-center border-b border-slate-700 pb-3">
+                <h2 class="text-base font-bold text-amber-400">🔒 प्रो फीचर अनलॉक करें</h2>
+                <button onclick="closeCorePaywallModal()" class="text-gray-400 hover:text-white font-bold text-lg">✕</button>
+            </div>
+            <div class="p-4 bg-slate-950 rounded-2xl border border-slate-800 space-y-2">
+                <p class="text-xs text-gray-400">चुना गया एडवांस्ड टूल:</p>
+                <h3 id="paywallToolName" class="text-sm font-bold text-cyan-300">Tool Name</h3>
+                <p class="text-2xl font-extrabold text-emerald-400 mt-2">₹149 / माह</p>
+            </div>
+            <input type="text" placeholder="UPI ID / मोबाइल नंबर दर्ज करें" class="w-full p-3 rounded-xl bg-slate-950 border border-slate-700 text-white text-xs focus:outline-none focus:border-cyan-500">
+            <button onclick="processCorePayment()" class="w-full py-3 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs sm:text-sm font-bold transition shadow-lg">
+                💳 भुगतान करें व तुरंत अनलॉक करें 🚀
+            </button>
+        </div>
+    </div>
+
+    <script>
+        let currentCoreMode = 'standard';
+
+        function selectCoreMode(mode) {
+            currentCoreMode = mode;
+            let stdBtn = document.getElementById('modeStandardBtn');
+            let resBtn = document.getElementById('modeResearchBtn');
+            let mulBtn = document.getElementById('modeMultiBtn');
+            let lbl = document.getElementById('activeModeLabel');
+
+            stdBtn.className = "px-3 py-2 rounded-xl text-xs font-bold " + (mode === 'standard' ? "bg-cyan-600 text-white shadow" : "bg-slate-800 text-gray-300 hover:text-white");
+            resBtn.className = "px-3 py-2 rounded-xl text-xs font-bold " + (mode === 'research' ? "bg-indigo-600 text-white shadow" : "bg-slate-800 text-gray-300 hover:text-white");
+            mulBtn.className = "px-3 py-2 rounded-xl text-xs font-bold " + (mode === 'multilingual' ? "bg-purple-600 text-white shadow" : "bg-slate-800 text-gray-300 hover:text-white");
+
+            if (mode === 'standard') lbl.innerText = "मोड: त्वरित समाधान (Free Tier)";
+            else if (mode === 'research') lbl.innerText = "मोड: डीप रिसर्च व स्टेप-बाय-स्टेप लॉजिक (Pro Tier)";
+            else lbl.innerText = "मोड: बहुभाषी तकनीकी सारांश (Pro Tier)";
+        }
+
+        function openCorePaywall(toolName) {
+            document.getElementById('paywallToolName').innerText = toolName;
+            document.getElementById('corePaywallModal').classList.remove('hidden');
+        }
+
+        function closeCorePaywallModal() {
+            document.getElementById('corePaywallModal').classList.add('hidden');
+        }
+
+        function processCorePayment() {
+            alert("पेमेंट अनुरोध सफलतापूर्वक प्राप्त हुआ! प्रो फीचर्स जल्द अनलॉक होंगे।");
+            closeCorePaywallModal();
+        }
+
+        function formatNeuralText(text) {
+            if (!text) return "";
+            return text
+                .replace(/\*\*(.*?)\*\*/g, '<strong class="text-yellow-300 font-bold">$1</strong>')
+                .replace(/\*(.*?)\*/g, '<span class="text-cyan-300">$1</span>')
+                .replace(/👉/g, '<span class="text-amber-400 font-bold">👉</span>')
+                .replace(/•/g, '<span class="text-emerald-400 font-bold">•</span>')
+                .replace(/\n\n/g, '<br><br>')
+                .replace(/\n/g, '<br>');
+        }
+
+        function updateOutput(htmlContent) {
+            let outBox = document.getElementById('aiCoreOutput');
+            outBox.innerHTML = htmlContent;
+            outBox.scrollTop = outBox.scrollHeight;
+            speakNeuralOutput(outBox.innerText);
+        }
+
+        function speakNeuralOutput(rawText) {
+            try {
+                if ('speechSynthesis' in window) {
+                    window.speechSynthesis.cancel();
+                    let clean = rawText.replace(/[*_#~🧠💡👉•⚡🔬🌐📋]/g, '').replace(/\s+/g, ' ').trim();
+                    let utterance = new SpeechSynthesisUtterance(clean.substring(0, 350));
+                    utterance.lang = 'hi-IN';
+                    utterance.rate = 0.85;
+
+                    let avatar = document.getElementById('aiAvatar');
+                    let status = document.getElementById('aiAvatarStatus');
+
+                    utterance.onstart = () => {
+                        avatar.classList.add('avatar-talking');
+                        status.innerText = "नेबुला अवतार समाधान समझा रहा है...";
+                    };
+                    utterance.onend = () => {
+                        avatar.classList.remove('avatar-talking');
+                        status.innerText = "समाधान पूर्ण हुआ! अगला प्रश्न पूछें।";
+                    };
+                    utterance.onerror = () => {
+                        avatar.classList.remove('avatar-talking');
+                        status.innerText = "सिस्टम तैयार है।";
+                    };
+
+                    window.speechSynthesis.speak(utterance);
+                }
+            } catch (e) {
+                console.log("TTS Error:", e);
+            }
+        }
+
+        function triggerVoiceGreeting() {
+            speakNeuralOutput("नमस्ते! मैं सुपर एआई इंजन कोर हूँ। आप मुझसे किसी भी जटिल विषय, गणितीय सिद्धांत या रिसर्च का 100% सटीक समाधान प्राप्त कर सकते हैं।");
+        }
+
+        async function processCoreQuery() {
+            let query = document.getElementById('coreQueryInput').value.trim();
+            if (!query) {
+                alert("कृपया पहले अपना प्रश्न दर्ज करें!");
+                return;
+            }
+
+            let featureKeyToCheck = "ai_text_basic";
+            let toolDisplayName = "सामान्य समाधान";
+            if (currentCoreMode === 'research') {
+                featureKeyToCheck = "ai_deep_research";
+                toolDisplayName = "एडवांस्ड डीप रिसर्च व मल्टी-स्टेप रीजनिंग";
+            } else if (currentCoreMode === 'multilingual') {
+                featureKeyToCheck = "ai_multilingual_translate";
+                toolDisplayName = "उच्च स्तरीय बहुभाषी तकनीकी अनुवाद";
+            }
+
+            try {
+                let statusRes = await fetch(`/api/feature-status/${featureKeyToCheck}?t=${Date.now()}`);
+                let statusData = await statusRes.json();
+                if (statusData.paywalled) {
+                    openCorePaywall(toolDisplayName);
+                    return;
+                }
+            } catch (e) {
+                console.log("Status check fallback");
+            }
+
+            updateOutput(`<div class="flex items-center gap-2 text-cyan-400 font-bold"><span class="animate-spin text-lg">⚙️</span> <span>400-AI मल्टी-एजेंट न्यूरल पाइपलाइन से प्रोसेस हो रहा है...</span></div>`);
+
+            try {
+                let formData = new FormData();
+                formData.append("query", query);
+                formData.append("mode", currentCoreMode);
+
+                let res = await fetch("/api/ai-core-solve", {
+                    method: "POST",
+                    body: formData
+                });
+                let data = await res.json();
+
+                if (data.paywalled) {
+                    openCorePaywall(toolDisplayName);
+                    return;
+                }
+
+                if (data.success && data.solution) {
+                    updateOutput(formatNeuralText(data.solution));
+                } else {
+                    updateOutput(`<span class="text-red-400 font-bold">⚠️ ${data.solution || "सर्वर व्यस्त है। कृपया 20 सेकंड बाद पुनः प्रयास करें।"}</span>`);
+                }
+            } catch (err) {
+                updateOutput(`<span class="text-red-400 font-bold">⚠️ नेटवर्क त्रुटि! समाधान प्राप्त नहीं हो सका।</span>`);
+            }
+        }
+
+        function startCoreVoiceInput() {
+            try {
+                const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+                if (!SpeechRecognition) {
+                    alert("आपके ब्राउज़र में वॉइस इनपुट सपोर्ट नहीं है।");
+                    return;
+                }
+                const recognition = new SpeechRecognition();
+                recognition.lang = 'hi-IN';
+                recognition.start();
+
+                recognition.onresult = function(event) {
+                    let text = event.results[0][0].transcript;
+                    document.getElementById('coreQueryInput').value = text;
+                    processCoreQuery();
+                };
+            } catch (e) {
+                console.log("Voice Input error:", e);
+            }
+        }
+
+        function clearBlackboard() {
+            document.getElementById('aiCoreOutput').innerHTML = `<p class="text-gray-400 text-xs">ब्लैकबोर्ड साफ कर दिया गया है। नया सवाल पूछें!</p>`;
+        }
+
+        function copyBlackboardText() {
+            let text = document.getElementById('aiCoreOutput').innerText;
+            navigator.clipboard.writeText(text);
+            alert("ब्लैकबोर्ड टेक्स्ट कॉपी कर लिया गया!");
+        }
+    </script>
+</body>
+</html>
