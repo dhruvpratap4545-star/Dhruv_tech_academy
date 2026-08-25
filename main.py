@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 # ==============================================================================
-# main.py - Dhruv Academy Master Ecosystem (AI Vision & Smart Quiz Engine)
+# main.py - Dhruv Academy Master Ecosystem (Admin Panel & AI Vision Engine)
 # ==============================================================================
 
 import os
@@ -13,6 +13,7 @@ import json
 import re
 from pathlib import Path
 from typing import Optional, List
+import itertools
 
 import urllib.request
 import urllib.error
@@ -52,6 +53,13 @@ class AdminUser(Base):
     role = Column(String, default="subadmin")
     permissions = Column(JSON, default=list)
 
+class AdminSession(Base):
+    __tablename__ = "admin_sessions"
+    id = Column(Integer, primary_key=True, index=True)
+    session_token = Column(String, unique=True, index=True)
+    username = Column(String, index=True)
+    created_at = Column(DateTime, default=datetime.datetime.utcnow)
+
 class FeatureToggle(Base):
     __tablename__ = "feature_toggles"
     id = Column(Integer, primary_key=True, index=True)
@@ -61,8 +69,6 @@ class FeatureToggle(Base):
     is_paywalled = Column(Boolean, default=False)
 
 Base.metadata.create_all(bind=engine)
-
-ACTIVE_SESSIONS = {}
 
 def get_db():
     db = SessionLocal()
@@ -74,20 +80,31 @@ def get_db():
 def init_default_data():
     db = SessionLocal()
     try:
-        if not db.query(AdminUser).filter_by(username="dhruv_superadmin").first():
-            super_admin = AdminUser(
+        # सुपरएडमिन क्रेडेंशियल्स सुनिश्चित करना
+        superadmin = db.query(AdminUser).filter_by(username="dhruv_superadmin").first()
+        if not superadmin:
+            superadmin = AdminUser(
                 username="dhruv_superadmin",
                 password="DhruvSuperSecure2026!",
                 role="superadmin",
                 permissions=["all"]
             )
+            db.add(superadmin)
+        else:
+            # पासवर्ड सुनिश्चित करना
+            superadmin.password = "DhruvSuperSecure2026!"
+            superadmin.role = "superadmin"
+            superadmin.permissions = ["all"]
+
+        sub_admin = db.query(AdminUser).filter_by(username="teacher_legal").first()
+        if not sub_admin:
             sub_admin = AdminUser(
                 username="teacher_legal",
                 password="LegalPass2026!",
                 role="subadmin",
                 permissions=["legal_ai", "digital_library"]
             )
-            db.add_all([super_admin, sub_admin])
+            db.add(sub_admin)
 
         default_features = [
             {"key": "mod_1_kids", "name": "1. Kids Zone (NC-5)", "is_paywalled": False},
@@ -117,17 +134,20 @@ def init_default_data():
 init_default_data()
 
 # ------------------------------------------------------------------------------
-# 2. सुरक्षा और प्रमाणीकरण
+# 2. सुरक्षा और डेटाबेस आधारित सत्र प्रबंधन
 # ------------------------------------------------------------------------------
 def get_current_admin(request: Request, db: Session = Depends(get_db)) -> AdminUser:
     session_token = request.cookies.get("dhruv_auth_token")
-    if not session_token or session_token not in ACTIVE_SESSIONS:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="अनधिकृत एक्सेस")
+    if not session_token:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="सत्र समाप्त हो गया है।")
     
-    username = ACTIVE_SESSIONS[session_token]
-    user = db.query(AdminUser).filter(AdminUser.username == username).first()
-    if not user:
+    sess_record = db.query(AdminSession).filter(AdminSession.session_token == session_token).first()
+    if not sess_record:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="अमान्य सत्र")
+    
+    user = db.query(AdminUser).filter(AdminUser.username == sess_record.username).first()
+    if not user:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="उपयोगकर्ता उपलब्ध नहीं है")
     return user
 
 def require_superadmin(current_user: AdminUser = Depends(get_current_admin)):
@@ -136,21 +156,22 @@ def require_superadmin(current_user: AdminUser = Depends(get_current_admin)):
     return current_user
 
 # ------------------------------------------------------------------------------
-# 3. सीक्रेट एडमिन लॉगिन रूट्स
+# 3. एडमिन लॉगिन व लॉगआउट रूट्स
 # ------------------------------------------------------------------------------
 @app.get("/secret-admin-login-dhruv", response_class=HTMLResponse)
 def secret_login_page(error: Optional[str] = None):
-    err_box = f"<div class='p-3 bg-red-900/50 border border-red-500 rounded-xl text-red-300 text-xs'>{error}</div>" if error else ""
+    err_box = f"<div class='p-3 bg-red-900/50 border border-red-500 rounded-xl text-red-300 text-xs font-bold'>{error}</div>" if error else ""
     return f"""
     <!DOCTYPE html>
     <html lang="hi">
     <head>
         <meta charset="UTF-8">
-        <title>Dhruv Academy - Admin Login</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Dhruv Academy - Admin Gateway</title>
         <script src="https://cdn.tailwindcss.com"></script>
     </head>
     <body class="bg-slate-950 text-white min-h-screen flex items-center justify-center p-4">
-        <div class="bg-slate-900/90 border border-cyan-500/40 rounded-3xl p-8 max-w-md w-full shadow-2xl space-y-6">
+        <div class="bg-slate-900/95 border border-cyan-500/40 rounded-3xl p-8 max-w-md w-full shadow-2xl space-y-6">
             <div class="text-center space-y-2">
                 <span class="text-4xl">🔐</span>
                 <h1 class="text-xl font-extrabold text-cyan-400">Dhruv Admin Gateway</h1>
@@ -160,7 +181,7 @@ def secret_login_page(error: Optional[str] = None):
             <form action="/secret-admin-login-dhruv" method="POST" class="space-y-4 text-xs">
                 <div>
                     <label class="block mb-1 font-bold text-gray-300">यूजरनेम</label>
-                    <input type="text" name="username" required placeholder="dhruv_superadmin" class="w-full p-3 rounded-xl bg-slate-800 border border-slate-700 focus:border-cyan-500 focus:outline-none text-white">
+                    <input type="text" name="username" required value="dhruv_superadmin" class="w-full p-3 rounded-xl bg-slate-800 border border-slate-700 focus:border-cyan-500 focus:outline-none text-white">
                 </div>
                 <div>
                     <label class="block mb-1 font-bold text-gray-300">पासवर्ड</label>
@@ -169,7 +190,7 @@ def secret_login_page(error: Optional[str] = None):
                 <button type="submit" class="w-full py-3 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 rounded-xl font-bold text-white shadow-lg transition">लॉगिन करें</button>
             </form>
             <div class="text-center pt-2">
-                <a href="/" class="text-[11px] text-gray-500 hover:text-cyan-400">← मुख्य पोर्टल</a>
+                <a href="/" class="text-[11px] text-gray-500 hover:text-cyan-400">← मुख्य पोर्टल पर वापस जाएं</a>
             </div>
         </div>
     </body>
@@ -178,28 +199,37 @@ def secret_login_page(error: Optional[str] = None):
 
 @app.post("/secret-admin-login-dhruv")
 def process_secret_login(response: Response, username: str = Form(...), password: str = Form(...), db: Session = Depends(get_db)):
-    user = db.query(AdminUser).filter(AdminUser.username == username, AdminUser.password == password).first()
+    user = db.query(AdminUser).filter(AdminUser.username == username.strip(), AdminUser.password == password.strip()).first()
     if not user:
-        return HTMLResponse(content=secret_login_page(error="अमान्य क्रेडेंशियल्स!"), status_code=401)
+        return HTMLResponse(content=secret_login_page(error="अमान्य क्रेडेंशियल्स! सही यूजरनेम व पासवर्ड दर्ज करें।"), status_code=401)
     
     session_token = secrets.token_hex(32)
-    ACTIVE_SESSIONS[session_token] = user.username
+    db.add(AdminSession(session_token=session_token, username=user.username))
+    db.commit()
     
     res = RedirectResponse(url="/admin/super-dashboard", status_code=status.HTTP_303_SEE_OTHER)
-    res.set_cookie(key="dhruv_auth_token", value=session_token, httponly=True, max_age=86400, samesite="lax", secure=False)
+    res.set_cookie(
+        key="dhruv_auth_token",
+        value=session_token,
+        httponly=True,
+        max_age=86400 * 7,
+        samesite="lax",
+        secure=False
+    )
     return res
 
 @app.get("/admin-logout")
-def admin_logout(request: Request):
+def admin_logout(request: Request, db: Session = Depends(get_db)):
     token = request.cookies.get("dhruv_auth_token")
-    if token and token in ACTIVE_SESSIONS:
-        del ACTIVE_SESSIONS[token]
-    res = RedirectResponse(url="/", status_code=status.HTTP_303_SEE_OTHER)
+    if token:
+        db.query(AdminSession).filter(AdminSession.session_token == token).delete()
+        db.commit()
+    res = RedirectResponse(url="/secret-admin-login-dhruv", status_code=status.HTTP_303_SEE_OTHER)
     res.delete_cookie("dhruv_auth_token")
     return res
 
 # ------------------------------------------------------------------------------
-# 4. सुपर-एडमिन डैशबोर्ड
+# 4. सुपर-एडमिन मास्टर डैशबोर्ड
 # ------------------------------------------------------------------------------
 @app.get("/admin/super-dashboard", response_class=HTMLResponse)
 def super_admin_dashboard(user: AdminUser = Depends(get_current_admin), db: Session = Depends(get_db)):
@@ -239,61 +269,100 @@ def super_admin_dashboard(user: AdminUser = Depends(get_current_admin), db: Sess
     <html lang="hi">
     <head>
         <meta charset="UTF-8">
-        <title>Super Admin Control</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Super Admin Control - Dhruv Academy</title>
         <script src="https://cdn.tailwindcss.com"></script>
     </head>
-    <body class="bg-slate-950 text-white p-6 sm:p-10 font-sans">
+    <body class="bg-slate-950 text-white p-4 sm:p-8 font-sans">
         <div class="max-w-6xl mx-auto space-y-8">
             <div class="flex flex-wrap justify-between items-center border-b border-gray-800 pb-4 gap-4">
                 <div>
                     <h1 class="text-2xl sm:text-3xl font-extrabold text-cyan-400">🛡️ Super-Admin Master Control</h1>
-                    <p class="text-xs text-gray-400 mt-1">लॉगिन यूजर: <span class="text-emerald-400 font-bold">{user.username}</span></p>
+                    <p class="text-xs text-gray-400 mt-1">लॉगिन यूजर: <span class="text-emerald-400 font-bold">{user.username}</span> | रोल: <span class="text-cyan-300 font-bold">{user.role}</span></p>
                 </div>
-                <div class="flex gap-2">
+                <div class="flex flex-wrap gap-2">
                     <a href="/admin" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-xs font-bold rounded-xl transition">📂 डेटा मॉनिटर</a>
                     <a href="/" class="px-4 py-2 bg-cyan-700 hover:bg-cyan-600 text-xs font-bold rounded-xl transition">मुख्य पोर्टल</a>
                     <a href="/admin-logout" class="px-4 py-2 bg-red-900 hover:bg-red-800 text-xs font-bold rounded-xl transition">लॉगआउट ✕</a>
                 </div>
             </div>
 
-            <div class="bg-slate-900 p-6 rounded-2xl border border-gray-800 space-y-4">
+            <!-- पेवॉल व मॉड्यूल मैनेजर -->
+            <div class="bg-slate-900 p-6 rounded-2xl border border-gray-800 space-y-4 shadow-xl">
                 <div class="flex justify-between items-center">
                     <h2 class="text-lg font-bold text-cyan-300">⚙️ Paywall & Feature Manager</h2>
                 </div>
                 <form action="/admin/save-toggles" method="POST">
-                    <table class="w-full text-left border-collapse">
-                        <thead>
-                            <tr class="border-b border-gray-700 text-xs text-gray-400">
-                                <th class="py-3 px-4">मॉड्यूल नाम</th>
-                                <th class="py-3 px-4 text-center">सक्रिय (Enabled)</th>
-                                <th class="py-3 px-4 text-center">पेवॉल (Paywalled)</th>
-                            </tr>
-                        </thead>
-                        <tbody>{feat_rows}</tbody>
-                    </table>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="border-b border-gray-700 text-xs text-gray-400">
+                                    <th class="py-3 px-4">मॉड्यूल नाम</th>
+                                    <th class="py-3 px-4 text-center">सक्रिय (Enabled)</th>
+                                    <th class="py-3 px-4 text-center">पेवॉल (Paywalled)</th>
+                                </tr>
+                            </thead>
+                            <tbody>{feat_rows}</tbody>
+                        </table>
+                    </div>
                     <div class="pt-4 text-right">
                         <button type="submit" class="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-500 rounded-xl font-bold text-xs shadow-lg transition">सेटिंग्स सेव करें 💾</button>
                     </div>
                 </form>
             </div>
 
-            <div class="bg-slate-900 p-6 rounded-2xl border border-gray-800 space-y-4">
-                <h2 class="text-lg font-bold text-indigo-400">👥 सब-एडमिन रोल्स</h2>
-                <table class="w-full text-left border-collapse">
-                    <thead>
-                        <tr class="border-b border-gray-700 text-xs text-gray-400">
-                            <th class="py-3 px-4">यूजरनेम</th>
-                            <th class="py-3 px-4">रोल</th>
-                            <th class="py-3 px-4">अनुमतियाँ</th>
-                        </tr>
-                    </thead>
-                    <tbody>{admin_rows}</tbody>
-                </table>
+            <!-- सब-एडमिन मैनेजमेंट व नया सबएडमिन जोड़ना -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div class="lg:col-span-2 bg-slate-900 p-6 rounded-2xl border border-gray-800 space-y-4 shadow-xl">
+                    <h2 class="text-lg font-bold text-indigo-400">👥 सक्रिय एडमिन व शिक्षक रोल्स</h2>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="border-b border-gray-700 text-xs text-gray-400">
+                                    <th class="py-3 px-4">यूजरनेम</th>
+                                    <th class="py-3 px-4">रोल</th>
+                                    <th class="py-3 px-4">अनुमतियाँ</th>
+                                </tr>
+                            </thead>
+                            <tbody>{admin_rows}</tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="bg-slate-900 p-6 rounded-2xl border border-gray-800 space-y-4 shadow-xl">
+                    <h2 class="text-lg font-bold text-emerald-400">➕ नया सब-एडमिन जोड़ें</h2>
+                    <form action="/admin/create-subadmin" method="POST" class="space-y-3 text-xs">
+                        <div>
+                            <label class="block mb-1 text-gray-400">यूजरनेम</label>
+                            <input type="text" name="new_username" required class="w-full p-2.5 rounded-lg bg-slate-800 border border-slate-700 focus:outline-none focus:border-cyan-500 text-white">
+                        </div>
+                        <div>
+                            <label class="block mb-1 text-gray-400">पासवर्ड</label>
+                            <input type="password" name="new_password" required class="w-full p-2.5 rounded-lg bg-slate-800 border border-slate-700 focus:outline-none focus:border-cyan-500 text-white">
+                        </div>
+                        <div>
+                            <label class="block mb-1 text-gray-400">अनुमतियाँ (कॉमा से अलग करें)</label>
+                            <input type="text" name="new_permissions" placeholder="legal_ai, kids_zone" class="w-full p-2.5 rounded-lg bg-slate-800 border border-slate-700 focus:outline-none focus:border-cyan-500 text-white">
+                        </div>
+                        <button type="submit" class="w-full py-2.5 bg-indigo-600 hover:bg-indigo-500 rounded-lg font-bold text-white transition">सब-एडमिन बनाएं</button>
+                    </form>
+                </div>
             </div>
         </div>
     </body>
     </html>
     """
+
+@app.post("/admin/create-subadmin")
+def create_subadmin_route(new_username: str = Form(...), new_password: str = Form(...), new_permissions: str = Form(""), user: AdminUser = Depends(require_superadmin), db: Session = Depends(get_db)):
+    clean_username = new_username.strip()
+    if db.query(AdminUser).filter_by(username=clean_username).first():
+        raise HTTPException(status_code=400, detail="यूजरनेम पहले से मौजूद है!")
+    
+    perms = [p.strip() for p in new_permissions.split(",") if p.strip()]
+    db.add(AdminUser(username=clean_username, password=new_password.strip(), role="subadmin", permissions=perms))
+    db.commit()
+    return RedirectResponse(url="/admin/super-dashboard", status_code=status.HTTP_303_SEE_OTHER)
 
 @app.post("/admin/save-toggles")
 async def save_feature_toggles(request: Request, user: AdminUser = Depends(require_superadmin), db: Session = Depends(get_db)):
@@ -422,14 +491,14 @@ def master_ecosystem_dashboard():
                 </div>
 
                 <div class="text-center pt-4 pb-4">
-                    <a href="/admin" class="inline-block px-8 py-3.5 bg-gradient-to-r from-cyan-600 to-blue-600 rounded-xl text-sm font-bold text-white shadow-xl transition">एडमिन डेटा मॉनिटर खोलें</a>
+                    <a href="/secret-admin-login-dhruv" class="inline-block px-8 py-3.5 bg-gradient-to-r from-cyan-600 to-blue-600 rounded-xl text-sm font-bold text-white shadow-xl transition">एडमिन कंट्रोल गेटवे खोलें 🔐</a>
                 </div>
             </div>
         </div>
 
         <footer class="w-full border-t border-gray-800/80 py-4 px-6 text-center text-xs text-gray-500 bg-slate-950/80">
             <p>© 2026 Dhruv Academy Master Ecosystem. सर्वाधिकार सुरक्षित। 
-                <a href="/secret-admin-login-dhruv" class="opacity-20 hover:opacity-100 hover:text-cyan-400 transition ml-2 text-[10px]" title="एडमिन पोर्टल">System Gateway</a>
+                <a href="/secret-admin-login-dhruv" class="opacity-30 hover:opacity-100 hover:text-cyan-400 transition ml-2 text-[10px]" title="एडमिन पोर्टल">System Gateway</a>
             </p>
         </footer>
 
@@ -492,13 +561,11 @@ def master_ecosystem_dashboard():
                     btnEn.className = "lang-pill-btn lang-pill-inactive";
                     document.getElementById('mainHeaderSub').innerText = langDictionary.hi.sub;
                     document.getElementById('heroDesc').innerText = langDictionary.hi.heroDesc;
-                    speakPolite("भाषा बदलकर हिंदी कर दी गई है।");
                 } else {
                     btnEn.className = "lang-pill-btn lang-pill-active";
                     btnHi.className = "lang-pill-btn lang-pill-inactive";
                     document.getElementById('mainHeaderSub').innerText = langDictionary.en.sub;
                     document.getElementById('heroDesc').innerText = langDictionary.en.heroDesc;
-                    speakPolite("Language switched to English.");
                 }
             }
 
@@ -511,14 +578,12 @@ def master_ecosystem_dashboard():
                     bodyEl.classList.add('light-mode');
                     themeBtn.innerText = "Dark Mode";
                     themeBtn.className = "px-3 py-1 bg-slate-200 text-slate-900 hover:bg-slate-300 rounded-lg font-bold shadow transition text-[11px]";
-                    speakPolite("लाइट मोड ऑन किया गया।");
                 } else {
                     currentTheme = 'dark';
                     bodyEl.classList.remove('light-mode');
                     bodyEl.classList.add('dark-mode');
                     themeBtn.innerText = "Light Mode";
                     themeBtn.className = "px-3 py-1 bg-slate-800 text-amber-300 hover:bg-slate-700 rounded-lg font-bold shadow transition text-[11px]";
-                    speakPolite("डार्क मोड ऑन किया गया।");
                 }
             }
 
@@ -529,22 +594,10 @@ def master_ecosystem_dashboard():
                 if (isVoiceGuideActive) {
                     btn.className = "px-3 py-1 bg-emerald-950 border border-emerald-500/50 text-emerald-400 rounded-lg font-bold shadow transition flex items-center gap-1 text-[11px]";
                     statusText.innerText = "ACTIVE (ON)";
-                    speakPolite("नमस्ते, ध्रुव एकेडमी मास्टर इकोसिस्टम में आपका स्वागत है।");
                 } else {
                     btn.className = "px-3 py-1 bg-red-950 border border-red-500/50 text-red-400 rounded-lg font-bold shadow transition flex items-center gap-1 text-[11px]";
                     statusText.innerText = "MUTE (OFF)";
                     if ('speechSynthesis' in window) { window.speechSynthesis.cancel(); }
-                }
-            }
-
-            function speakPolite(text) {
-                if (!isVoiceGuideActive) return;
-                if ('speechSynthesis' in window) {
-                    window.speechSynthesis.cancel();
-                    let u = new SpeechSynthesisUtterance(text);
-                    u.lang = currentLang === 'hi' ? 'hi-IN' : 'en-US';
-                    u.rate = 0.9;
-                    window.speechSynthesis.speak(u);
                 }
             }
 
@@ -554,7 +607,6 @@ def master_ecosystem_dashboard():
                 document.getElementById('paymentActionArea').classList.remove('hidden');
                 document.getElementById('paymentStatusBox').classList.add('hidden');
                 document.getElementById('paymentGatewayModal').classList.remove('hidden');
-                speakPolite(planName + " चुना गया है।");
             }
 
             function closePaymentGateway() { document.getElementById('paymentGatewayModal').classList.add('hidden'); }
@@ -562,11 +614,10 @@ def master_ecosystem_dashboard():
             function processPayment() {
                 document.getElementById('paymentActionArea').classList.add('hidden');
                 document.getElementById('paymentStatusBox').classList.remove('hidden');
-                speakPolite("भुगतान प्रोसेस हो रहा है।");
                 setTimeout(() => {
                     alert("पेमेंट अनुरोध सफलतापूर्वक भेजा गया!");
                     closePaymentGateway();
-                }, 2500);
+                }, 2000);
             }
 
             function openModulePortal(modId) {
@@ -580,7 +631,6 @@ def master_ecosystem_dashboard():
                 document.getElementById('portalModalTitle').innerText = title;
                 document.getElementById('portalModalBody').innerHTML = contentHtml;
                 document.getElementById('modulePortalModal').classList.remove('hidden');
-                speakPolite(title + " खोल दिया गया है।");
             }
 
             function closeModulePortal() { document.getElementById('modulePortalModal').classList.add('hidden'); }
@@ -590,11 +640,11 @@ def master_ecosystem_dashboard():
     """
 
 # ------------------------------------------------------------------------------
-# 6. एआई विजन व ऑटो-क्विज़ इंजन (gemini-3.6-flash Rotation Engine)
+# 6. एआई विजन व ऑटो-क्विज़ इंजन (Round-Robin Key Pool)
 # ------------------------------------------------------------------------------
 def get_all_gemini_keys() -> List[str]:
     keys = []
-    for i in range(1, 6):
+    for i in range(1, 16):
         k_val = (os.environ.get(f"GEMINI_API_KEY{i}") or os.environ.get(f"GEMINI_API_KEY_{i}") or "").strip().strip('"').strip("'")
         if k_val and k_val not in keys:
             keys.append(k_val)
@@ -662,9 +712,9 @@ async def process_gemini_vision(file: UploadFile, lang: str):
 
         last_error = ""
 
-        # Using gemini-3.6-flash engine
+        # Pool Rotation
         for key in api_keys:
-            target_url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key={key}"
+            target_url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key={key}"
             try:
                 req = urllib.request.Request(
                     target_url,
@@ -706,7 +756,7 @@ async def process_gemini_vision(file: UploadFile, lang: str):
         return JSONResponse(content={"success": False, "solution": err_msg})
 
 # ------------------------------------------------------------------------------
-# 7. ऑटो-क्विज़ जनरेटर एपीआई (gemini-3.6-flash + Smart Fallback)
+# 7. ऑटो-क्विज़ जनरेटर एपीआई
 # ------------------------------------------------------------------------------
 @app.post("/generate-quiz")
 async def generate_quiz_endpoint(file: UploadFile = File(...), lang: str = Form("hi")):
@@ -764,7 +814,7 @@ async def generate_quiz_endpoint(file: UploadFile = File(...), lang: str = Form(
         }
 
         for key in api_keys:
-            target_url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key={key}"
+            target_url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key={key}"
             try:
                 req = urllib.request.Request(
                     target_url,
@@ -815,8 +865,14 @@ async def master_admin_panel(user: AdminUser = Depends(get_current_admin), db: S
     <body class="bg-slate-950 text-white p-6 sm:p-10 font-sans">
         <div class="max-w-6xl mx-auto space-y-8">
             <div class="flex justify-between items-center border-b border-gray-800 pb-4">
-                <h1 class="text-2xl font-bold text-cyan-400">Admin Monitor</h1>
-                <a href="/" class="px-4 py-2 bg-cyan-600 rounded-xl text-xs font-bold">← मुख्य पोर्टल</a>
+                <div>
+                    <h1 class="text-2xl font-bold text-cyan-400">Admin Data Monitor</h1>
+                    <p class="text-xs text-gray-400">लॉगिन: {user.username}</p>
+                </div>
+                <div class="flex gap-2">
+                    <a href="/admin/super-dashboard" class="px-4 py-2 bg-indigo-600 rounded-xl text-xs font-bold">🛡️ कंट्रोल पैनल</a>
+                    <a href="/" class="px-4 py-2 bg-cyan-600 rounded-xl text-xs font-bold">← मुख्य पोर्टल</a>
+                </div>
             </div>
             <div class="bg-slate-900 p-6 rounded-2xl border border-gray-800">
                 <table class="w-full text-left border-collapse">{rows}</table>
