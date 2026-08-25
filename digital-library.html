@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="hi" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Digital Library & Encrypted Notes Vault | Dhruv Academy</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Yantramanav:wght@500;700&display=swap');
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Poppins', 'Yantramanav', sans-serif;
+            background-color: #020617;
+            color: #f8fafc;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px sm:padding: 20px;
+        }
+        .main-wrapper {
+            width: 100%;
+            max-width: 1120px;
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+        }
+        .library-card {
+            background: rgba(15, 23, 42, 0.9);
+            border: 1px solid rgba(56, 189, 248, 0.2);
+            backdrop-filter: blur(16px);
+            transition: all 0.3s ease;
+        }
+        .library-card:hover {
+            transform: translateY(-3px);
+            border-color: rgba(56, 189, 248, 0.6);
+            box-shadow: 0 10px 25px -5px rgba(14, 165, 233, 0.3);
+        }
+    </style>
+</head>
+<body>
+    <div class="main-wrapper">
+        <!-- टॉप नेविगेशन -->
+        <div class="flex flex-wrap justify-between items-center pb-2 border-b border-gray-800 w-full gap-3">
+            <a href="/" class="px-4 py-2 bg-gradient-to-r from-cyan-700 to-blue-600 hover:from-cyan-600 text-white rounded-2xl text-xs font-bold transition flex items-center gap-1.5 shadow-lg">
+                ← <span>मुख्य पोर्टल</span>
+            </a>
+            <div class="flex items-center gap-2">
+                <span class="px-3.5 py-1.5 bg-cyan-950 border border-cyan-500/50 text-cyan-300 rounded-full text-xs font-bold flex items-center gap-1.5 shadow">
+                    <span class="w-2.5 h-2.5 rounded-full bg-cyan-400 animate-pulse"></span>
+                    <span>DRM Encrypted Vault Active</span>
+                </span>
+            </div>
+        </div>
+
+        <!-- हीरो बैनर -->
+        <div class="p-6 sm:p-8 rounded-3xl bg-gradient-to-r from-cyan-950 via-slate-900 to-indigo-950 border border-cyan-500/30 shadow-2xl text-center space-y-3">
+            <h1 class="text-xl sm:text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-sky-200">📚 Digital Library & Encrypted Notes Vault</h1>
+            <p class="text-xs sm:text-sm text-gray-300 max-w-2xl mx-auto">एनसीआर्र्ट (NCERT), प्रतियोगी परीक्षाओं के प्रमाणित नोट्स और सुरक्षित एनक्रिप्टेड ई-बुक्स का विशाल डिजिटल संग्रह।</p>
+        </div>
+
+        <!-- श्रेणियां और ई-बुक्स ग्रिड -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+            <div class="library-card p-5 rounded-3xl space-y-3">
+                <div class="flex justify-between items-center">
+                    <span class="px-2.5 py-1 bg-emerald-950 text-emerald-300 rounded-lg text-[10px] font-bold">Free Access</span>
+                    <span class="text-xs text-gray-400">PDF / ePub</span>
+                </div>
+                <h3 class="font-bold text-sm text-cyan-300">NCERT Foundation Books (Class 6-12)</h3>
+                <p class="text-xs text-gray-300">सभी विषयों की मूल एनसीईआरटी पुस्तकें हिंदी व अंग्रेजी माध्यम में उपलब्ध।</p>
+                <button onclick="openSecureReader('NCERT Foundation Books')" class="w-full py-2.5 bg-cyan-600 hover:bg-cyan-500 text-white rounded-xl text-xs font-bold transition shadow">सुरक्षित रीडर में खोलें 📖</button>
+            </div>
+
+            <div class="library-card p-5 rounded-3xl space-y-3">
+                <div class="flex justify-between items-center">
+                    <span class="px-2.5 py-1 bg-amber-950 text-amber-300 rounded-lg text-[10px] font-bold">Pro Vault (₹99)</span>
+                    <span class="text-xs text-gray-400">Handwritten</span>
+                </div>
+                <h3 class="font-bold text-sm text-cyan-300">UPSC / IAS Master Handwritten Notes</h3>
+                <p class="text-xs text-gray-300">इतिहास, राजव्यवस्था, भूगोल और अर्थव्यवस्था के टॉपर्स द्वारा तैयार नोट्स।</p>
+                <button onclick="openSecureReader('UPSC IAS Handwritten Notes')" class="w-full py-2.5 bg-amber-600 hover:bg-amber-500 text-white rounded-xl text-xs font-bold transition shadow">वॉलेट से अनलॉक करें 🔓</button>
+            </div>
+
+            <div class="library-card p-5 rounded-3xl space-y-3">
+                <div class="flex justify-between items-center">
+                    <span class="px-2.5 py-1 bg-amber-950 text-amber-300 rounded-lg text-[10px] font-bold">Pro Vault (₹149)</span>
+                    <span class="text-xs text-gray-400">Legal Compendium</span>
+                </div>
+                <h3 class="font-bold text-sm text-cyan-300">BNS, BNSS & Corporate Law Bare Acts</h3>
+                <p class="text-xs text-gray-300">नए आपराधिक कानूनों और कंपनी अधिनियम (Companies Act) के एनक्रिप्टेड बेयर एक्ट्स।</p>
+                <button onclick="openSecureReader('Legal Bare Acts Compendium')" class="w-full py-2.5 bg-amber-600 hover:bg-amber-500 text-white rounded-xl text-xs font-bold transition shadow">वॉलेट से अनलॉक करें 🔓</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- सुरक्षित रीडर मोडल -->
+    <div id="secureReaderModal" class="hidden fixed inset-0 bg-black/85 flex items-center justify-center p-4 z-50 backdrop-blur-md">
+        <div class="bg-slate-900 border-2 border-cyan-500 rounded-3xl p-6 max-w-lg w-full space-y-4 shadow-2xl">
+            <div class="flex justify-between items-center border-b border-slate-700 pb-3">
+                <h2 id="readerTitle" class="text-sm font-bold text-cyan-300">Secure DRM Reader</h2>
+                <button onclick="closeSecureReader()" class="text-gray-400 hover:text-white font-bold text-lg">✕</button>
+            </div>
+            <div class="p-4 bg-slate-950 rounded-2xl border border-slate-800 text-xs text-gray-300 space-y-2">
+                <p>🔒 यह दस्तावेज़ <b>DRM एनक्रिप्शन</b> द्वारा सुरक्षित है। स्क्रीनशॉट या अनधिकृत डाउनलोड प्रतिबंधित हैं।</p>
+                <div class="p-4 bg-slate-900 rounded-xl text-center font-semibold text-cyan-200">
+                    📄 [एनक्रिप्टेड क्लाउड पेज लोड हो रहा है...]
+                </div>
+            </div>
+            <button onclick="closeSecureReader()" class="w-full py-2.5 bg-cyan-600 hover:bg-cyan-500 text-white rounded-xl text-xs font-bold transition">बंद करें</button>
+        </div>
+    </div>
+
+    <footer class="w-full text-center py-4 text-xs text-gray-500 border-t border-gray-900 mt-6">
+        <p>© 2026 Dhruv Academy Master Ecosystem. सर्वाधिकार सुरक्षित।</p>
+    </footer>
+
+    <script>
+        function openSecureReader(title) {
+            document.getElementById('readerTitle').innerText = "सुरक्षित रीडर: " + title;
+            document.getElementById('secureReaderModal').classList.remove('hidden');
+        }
+        function closeSecureReader() {
+            document.getElementById('secureReaderModal').classList.add('hidden');
+        }
+    </script>
+</body>
+</html>
