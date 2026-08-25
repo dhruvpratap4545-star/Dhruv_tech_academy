@@ -3,8 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Engine Core - 400-AI Multi-Agent Neural Solver | Dhruv Academy</title>
+    <title>Super AI Engine Core - Multi-Agent Neural Solver | Dhruv Academy</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- PDF एक्सपोर्ट लाइब्रेरी -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Yantramanav:wght@500;700&display=swap');
         * { box-sizing: border-box; }
@@ -14,14 +16,14 @@
             color: #f8fafc;
             min-height: 100vh;
         }
-        .nebula-neural-glow {
-            background: radial-gradient(circle at top, rgba(14, 165, 233, 0.25) 0%, rgba(99, 102, 241, 0.15) 50%, transparent 80%);
+        .neural-glow {
+            background: radial-gradient(circle at top, rgba(14, 165, 233, 0.2) 0%, rgba(99, 102, 241, 0.1) 50%, transparent 80%);
         }
-        .nebula-board {
-            background: radial-gradient(circle at top left, #0d1b2a 0%, #050b14 100%);
-            border: 4px solid #334155;
-            border-radius: 24px;
-            box-shadow: inset 0 0 30px rgba(0, 0, 0, 0.85), 0 10px 30px rgba(2, 132, 199, 0.25);
+        .pro-board {
+            background: radial-gradient(circle at top left, #0b1329 0%, #030712 100%);
+            border: 3px solid #334155;
+            border-radius: 20px;
+            box-shadow: inset 0 0 30px rgba(0, 0, 0, 0.9), 0 10px 30px rgba(2, 132, 199, 0.2);
         }
         .avatar-glow {
             box-shadow: 0 0 25px rgba(56, 189, 248, 0.6), inset 0 0 15px rgba(255, 255, 255, 0.4);
@@ -29,14 +31,14 @@
         }
         @keyframes floatGlow {
             0%, 100% { transform: translateY(0px) scale(1); }
-            50% { transform: translateY(-5px) scale(1.02); }
+            50% { transform: translateY(-4px) scale(1.02); }
         }
         .avatar-talking {
             animation: talkPulse 0.4s infinite alternate ease-in-out;
         }
         @keyframes talkPulse {
             0% { transform: scale(1); border-color: #38bdf8; }
-            100% { transform: scale(1.08); border-color: #facc15; box-shadow: 0 0 30px #facc15; }
+            100% { transform: scale(1.06); border-color: #facc15; box-shadow: 0 0 25px #facc15; }
         }
         .custom-scrollbar::-webkit-scrollbar { width: 6px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: #020617; }
@@ -52,90 +54,117 @@
             <a href="/" class="px-4 py-2 bg-red-700 hover:bg-red-600 text-white rounded-xl text-xs font-bold transition flex items-center gap-2">
                 ← <span>मुख्य पोर्टल</span>
             </a>
-            <div class="flex items-center gap-3">
-                <span class="text-xs font-bold text-gray-400">मोड:</span>
+            <div class="flex items-center gap-2">
                 <span class="px-3 py-1 bg-cyan-950 border border-cyan-500/50 text-cyan-300 rounded-full text-xs font-bold flex items-center gap-1.5">
-                    <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span> 400-AI Neural Core
+                    <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span> 400-AI Router Core v5.0
                 </span>
             </div>
         </div>
 
-        <!-- हेडर व 3D/4D अवतार सेक्शन -->
-        <div class="nebula-neural-glow p-6 rounded-3xl border border-cyan-500/30 flex flex-col md:flex-row justify-between items-center gap-6 shadow-2xl">
+        <!-- प्रोफ़ेशनल रिसर्च अवतार व हेडर -->
+        <div class="neural-glow p-5 sm:p-6 rounded-3xl border border-cyan-500/30 flex flex-col md:flex-row justify-between items-center gap-6 shadow-2xl">
             <div class="flex items-center gap-4">
-                <div id="aiAvatar" onclick="triggerVoiceGreeting()" class="avatar-glow w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-tr from-cyan-600 to-indigo-600 border-3 border-cyan-400 rounded-full flex items-center justify-center text-3xl sm:text-4xl cursor-pointer relative" title="बोलने के लिए क्लिक करें!">
-                    🧠
+                <div id="proAvatar" onclick="triggerVoiceGreeting()" class="avatar-glow w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-tr from-cyan-700 to-indigo-800 border-3 border-cyan-400 rounded-full flex items-center justify-center text-3xl sm:text-4xl cursor-pointer relative" title="बोलने के लिए क्लिक करें!">
+                    👨‍🏫
                     <span class="absolute bottom-0 right-0 w-4 h-4 bg-emerald-400 border-2 border-slate-900 rounded-full"></span>
                 </div>
                 <div>
                     <div class="flex items-center gap-2">
                         <h1 class="text-lg sm:text-xl font-extrabold text-cyan-400">Super AI Engine Core</h1>
-                        <span class="px-2 py-0.5 bg-indigo-900 border border-indigo-500 text-indigo-200 text-[10px] font-bold rounded-lg">400-AI Multi-Agent</span>
+                        <span class="px-2 py-0.5 bg-indigo-900 border border-indigo-500 text-indigo-200 text-[10px] font-bold rounded-lg">Research Edition</span>
                     </div>
-                    <p id="aiAvatarStatus" class="text-xs text-emerald-400 font-medium mt-1">सिस्टम तैयार है। कोई भी जटिल सवाल पूछें या रिसर्च विषय दर्ज करें...</p>
-                    <p class="text-[11px] text-gray-500">अवतार पर टैप करके लाइव वॉइस गाइडेंस सुनें</p>
+                    <p id="proAvatarStatus" class="text-xs text-emerald-400 font-medium mt-1">रिसर्च व नोट्स विश्लेषक सक्रिय है। प्रश्न पूछें या नोट्स फ़ोटो अपलोड करें...</p>
+                    <p class="text-[11px] text-gray-500">अवतार पर टैप करके लाइव वॉइस विश्लेषण सुनें</p>
                 </div>
             </div>
 
-            <!-- मोड सेलेक्टर -->
+            <!-- मोड सेलेक्टर पिल्स -->
             <div class="flex flex-wrap gap-2 justify-center">
                 <button onclick="selectCoreMode('standard')" id="modeStandardBtn" class="px-3 py-2 rounded-xl text-xs font-bold bg-cyan-600 text-white shadow transition">
-                    ⚡ त्वरित समाधान (Free)
+                    ⚡ त्वरित समाधान
                 </button>
                 <button onclick="selectCoreMode('research')" id="modeResearchBtn" class="px-3 py-2 rounded-xl text-xs font-bold bg-slate-800 text-gray-300 hover:text-white transition">
-                    🔬 डीप रिसर्च (Pro)
+                    🔬 डीप रिसर्च व प्रमाण
                 </button>
                 <button onclick="selectCoreMode('multilingual')" id="modeMultiBtn" class="px-3 py-2 rounded-xl text-xs font-bold bg-slate-800 text-gray-300 hover:text-white transition">
-                    🌐 बहुभाषी सारांश (Pro)
+                    🌐 बहुभाषी सारांश
                 </button>
             </div>
         </div>
 
         <!-- 3D/4D डिजिटल न्यूरल ब्लैकबोर्ड -->
-        <div class="nebula-board p-5 sm:p-6 space-y-4">
-            <div class="flex justify-between items-center border-b border-slate-700/60 pb-3">
+        <div class="pro-board p-5 sm:p-6 space-y-4">
+            <div class="flex flex-wrap justify-between items-center border-b border-slate-700/60 pb-3 gap-2">
                 <span class="text-xs font-bold text-cyan-400 flex items-center gap-2">
-                    <span>📋</span> <span>Neural Blackboard (Multi-Agent Reasoning Solver)</span>
+                    <span>📋</span> <span>Neural Master Blackboard (Analytical Report View)</span>
                 </span>
-                <div class="flex gap-2">
-                    <button onclick="copyBlackboardText()" class="px-3 py-1 bg-slate-800 hover:bg-slate-700 text-gray-300 rounded-lg text-xs font-semibold transition">
+                
+                <!-- 1-क्लिक एक्सपोर्ट टूल्स (PDF / Copy / WhatsApp / Clear) -->
+                <div class="flex flex-wrap gap-2">
+                    <button onclick="exportToPDF()" class="px-3 py-1.5 bg-red-600 hover:bg-red-500 text-white rounded-lg text-xs font-bold transition flex items-center gap-1 shadow">
+                        📄 <span>PDF डाउनलोड</span>
+                    </button>
+                    <button onclick="shareSolutionWhatsApp()" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-bold transition flex items-center gap-1 shadow">
+                        💬 <span>WhatsApp शेयर</span>
+                    </button>
+                    <button onclick="copyBlackboardText()" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-gray-300 rounded-lg text-xs font-semibold transition">
                         📋 कॉपी
                     </button>
-                    <button onclick="clearBlackboard()" class="px-3 py-1 bg-slate-800 hover:bg-slate-700 text-gray-300 rounded-lg text-xs font-semibold transition">
+                    <button onclick="clearBlackboard()" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-gray-300 rounded-lg text-xs font-semibold transition">
                         🧹 साफ करें
                     </button>
                 </div>
             </div>
 
-            <div id="aiCoreOutput" class="min-h-[220px] max-h-[480px] overflow-y-auto custom-scrollbar text-sm text-slate-100 leading-relaxed space-y-3 p-2 font-mono">
-                <p class="text-cyan-300 font-semibold">🌟 Super AI Engine Core में आपका स्वागत है!</p>
-                <p class="text-xs text-gray-400">यहाँ आप विज्ञान, गणित, जटिल कोडिंग, कानून, प्रतियोगी परीक्षा या किसी भी शोध विषय का 100% सटीक विश्लेषण प्राप्त कर सकते हैं।</p>
-                <div class="p-3 bg-slate-900/80 rounded-xl border border-slate-800 text-xs text-gray-300 space-y-1">
-                    <p class="font-bold text-yellow-400">💡 त्वरित सुझाव:</p>
-                    <p>• सीधे अपना प्रश्न टाइप करें या माइक बटन दबाकर बोलें।</p>
-                    <p>• डीप रिसर्च मोड में कठिन से कठिन थ्योरी का वैज्ञानिक व चरणबद्ध प्रमाण मिलता है।</p>
+            <!-- ब्लैकबोर्ड आउटपुट कंटेनर (PDF एक्सपोर्ट हेतु) -->
+            <div id="blackboardExportArea" class="p-3 bg-slate-950/60 rounded-xl">
+                <div id="aiCoreOutput" class="min-h-[220px] max-h-[460px] overflow-y-auto custom-scrollbar text-sm text-slate-100 leading-relaxed space-y-3 font-mono">
+                    <p class="text-cyan-300 font-semibold">🌟 Super AI Engine Core में आपका स्वागत है!</p>
+                    <p class="text-xs text-gray-400">यहाँ आप विज्ञान, गणित, कानून, दर्शनशास्त्र, कोडिंग या सिविल सेवा परीक्षा के किसी भी जटिल शोध का 100% सटीक, बिंदुवार और प्रामाणिक विश्लेषण प्राप्त कर सकते हैं।</p>
+                    <div class="p-3 bg-slate-900/90 rounded-xl border border-slate-800 text-xs text-gray-300 space-y-1">
+                        <p class="font-bold text-yellow-400">💡 नई सुविधाएं:</p>
+                        <p>• <b>हैंडरिटन नोट्स / फ़ोटोकॉपी स्कैनर:</b> अपने हाथ से लिखे नोट्स की फ़ोटो खींचें और सीधे उसका विस्तृत उत्तर प्राप्त करें।</p>
+                        <p>• <b>1-क्लिक PDF व WhatsApp:</b> किसी भी विश्लेषण को तुरंत PDF बनाएं या शेयर करें।</p>
+                    </div>
                 </div>
+            </div>
+
+            <!-- अपलोड की गई इमेज का प्रीव्यू -->
+            <div id="coreImagePreviewBox" class="hidden p-3 bg-slate-950 border border-slate-800 rounded-xl flex items-center justify-between gap-4">
+                <div class="flex items-center gap-3">
+                    <img id="coreImageThumb" src="" alt="Notes Preview" class="w-16 h-16 object-cover rounded-lg border border-slate-700">
+                    <div>
+                        <p class="text-xs font-bold text-cyan-300">📸 नोट्स / फ़ोटोकॉपी अपलोड हो चुकी है</p>
+                        <p class="text-[10px] text-gray-400">अब नीचे 'हल करें व नोट्स समझाएं' बटन दबाएं</p>
+                    </div>
+                </div>
+                <button onclick="removeAttachedImage()" class="px-3 py-1 bg-red-950 text-red-400 hover:text-red-300 text-xs font-bold rounded-lg border border-red-800">हटाएं ✕</button>
             </div>
         </div>
 
         <!-- इनपुट और एक्शन एरिया -->
         <div class="bg-slate-900 p-4 sm:p-5 rounded-2xl border border-gray-800 space-y-3 shadow-xl">
             <div class="flex flex-col sm:flex-row gap-3">
-                <textarea id="coreQueryInput" rows="2" placeholder="अपना प्रश्न, रिसर्च टॉपिक या गणित/साइंस का सवाल यहाँ लिखें..." class="w-full p-3 rounded-xl bg-slate-950 border border-slate-700 text-white text-xs sm:text-sm focus:outline-none focus:border-cyan-500 custom-scrollbar resize-none"></textarea>
+                <textarea id="coreQueryInput" rows="2" placeholder="अपना प्रश्न यहाँ लिखें या नीचे नोट्स/फ़ोटोकॉपी अपलोड करके पूछें..." class="w-full p-3 rounded-xl bg-slate-950 border border-slate-700 text-white text-xs sm:text-sm focus:outline-none focus:border-cyan-500 custom-scrollbar resize-none"></textarea>
                 
                 <div class="flex sm:flex-col gap-2 justify-end">
-                    <button onclick="startCoreVoiceInput()" class="px-4 py-2.5 bg-blue-600 hover:bg-blue-500 rounded-xl text-xs font-bold text-white transition flex items-center justify-center gap-1.5 whitespace-nowrap shadow">
+                    <!-- नोट्स / फ़ोटोकॉपी अपलोड बटन -->
+                    <label class="px-4 py-2.5 bg-indigo-700 hover:bg-indigo-600 rounded-xl text-xs font-bold text-white transition flex items-center justify-center gap-1.5 whitespace-nowrap shadow cursor-pointer">
+                        📷 <span>नोट्स / फ़ोटोकॉपी</span>
+                        <input type="file" id="coreFileInput" accept="image/*" class="hidden" onchange="handleCoreImageUpload(event)">
+                    </label>
+
+                    <button onclick="startCoreVoiceInput()" class="px-4 py-2 bg-blue-600 hover:bg-blue-500 rounded-xl text-xs font-bold text-white transition flex items-center justify-center gap-1.5 whitespace-nowrap shadow">
                         🎤 <span>बोलें</span>
-                    </button>
-                    <button onclick="processCoreQuery()" class="px-6 py-2.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 rounded-xl text-xs sm:text-sm font-bold text-white transition flex items-center justify-center gap-1.5 whitespace-nowrap shadow-lg">
-                        🚀 <span>हल करें</span>
                     </button>
                 </div>
             </div>
             
-            <div class="flex flex-wrap justify-between items-center text-[11px] text-gray-400 pt-1">
-                <span>⚡ लो-डेटा कम्प्रेशन इंजन सक्रिय (Minimal Bandwidth Usage)</span>
-                <span id="activeModeLabel" class="text-cyan-400 font-bold">मोड: त्वरित समाधान (Free Tier)</span>
+            <div class="flex flex-wrap justify-between items-center gap-2 pt-1">
+                <span class="text-[11px] text-gray-400">⚡ रूटर एआई ऑटो-बैलेंसर सक्रिय (Zero Downtime Router)</span>
+                <button onclick="processCoreQuery()" class="w-full sm:w-auto px-8 py-3 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 rounded-xl text-xs sm:text-sm font-bold text-white transition flex items-center justify-center gap-1.5 shadow-lg">
+                    🚀 <span>हल करें व नोट्स समझाएं</span>
+                </button>
             </div>
         </div>
 
@@ -162,21 +191,17 @@
 
     <script>
         let currentCoreMode = 'standard';
+        let attachedImageBlob = null;
 
         function selectCoreMode(mode) {
             currentCoreMode = mode;
             let stdBtn = document.getElementById('modeStandardBtn');
             let resBtn = document.getElementById('modeResearchBtn');
             let mulBtn = document.getElementById('modeMultiBtn');
-            let lbl = document.getElementById('activeModeLabel');
 
             stdBtn.className = "px-3 py-2 rounded-xl text-xs font-bold " + (mode === 'standard' ? "bg-cyan-600 text-white shadow" : "bg-slate-800 text-gray-300 hover:text-white");
             resBtn.className = "px-3 py-2 rounded-xl text-xs font-bold " + (mode === 'research' ? "bg-indigo-600 text-white shadow" : "bg-slate-800 text-gray-300 hover:text-white");
             mulBtn.className = "px-3 py-2 rounded-xl text-xs font-bold " + (mode === 'multilingual' ? "bg-purple-600 text-white shadow" : "bg-slate-800 text-gray-300 hover:text-white");
-
-            if (mode === 'standard') lbl.innerText = "मोड: त्वरित समाधान (Free Tier)";
-            else if (mode === 'research') lbl.innerText = "मोड: डीप रिसर्च व स्टेप-बाय-स्टेप लॉजिक (Pro Tier)";
-            else lbl.innerText = "मोड: बहुभाषी तकनीकी सारांश (Pro Tier)";
         }
 
         function openCorePaywall(toolName) {
@@ -189,15 +214,34 @@
         }
 
         function processCorePayment() {
-            alert("पेमेंट अनुरोध सफलतापूर्वक प्राप्त हुआ! प्रो फीचर्स जल्द अनलॉक होंगे।");
+            alert("पेमेंट अनुरोध प्राप्त हुआ! प्रो फीचर्स जल्द अनलॉक होंगे।");
             closeCorePaywallModal();
+        }
+
+        function handleCoreImageUpload(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(evt) {
+                document.getElementById('coreImageThumb').src = evt.target.result;
+                document.getElementById('coreImagePreviewBox').classList.remove('hidden');
+                attachedImageBlob = file;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function removeAttachedImage() {
+            attachedImageBlob = null;
+            document.getElementById('coreFileInput').value = "";
+            document.getElementById('coreImagePreviewBox').classList.add('hidden');
         }
 
         function formatNeuralText(text) {
             if (!text) return "";
             return text
                 .replace(/\*\*(.*?)\*\*/g, '<strong class="text-yellow-300 font-bold">$1</strong>')
-                .replace(/\*(.*?)\*/g, '<span class="text-cyan-300">$1</span>')
+                .replace(/\*(.*?)\*/g, '<span class="text-cyan-300 font-semibold">$1</span>')
                 .replace(/👉/g, '<span class="text-amber-400 font-bold">👉</span>')
                 .replace(/•/g, '<span class="text-emerald-400 font-bold">•</span>')
                 .replace(/\n\n/g, '<br><br>')
@@ -208,28 +252,28 @@
             let outBox = document.getElementById('aiCoreOutput');
             outBox.innerHTML = htmlContent;
             outBox.scrollTop = outBox.scrollHeight;
-            speakNeuralOutput(outBox.innerText);
+            speakProOutput(outBox.innerText);
         }
 
-        function speakNeuralOutput(rawText) {
+        function speakProOutput(rawText) {
             try {
                 if ('speechSynthesis' in window) {
                     window.speechSynthesis.cancel();
-                    let clean = rawText.replace(/[*_#~🧠💡👉•⚡🔬🌐📋]/g, '').replace(/\s+/g, ' ').trim();
-                    let utterance = new SpeechSynthesisUtterance(clean.substring(0, 350));
+                    let clean = rawText.replace(/[*_#~👨‍🏫💡👉•⚡🔬🌐📋]/g, '').replace(/\s+/g, ' ').trim();
+                    let utterance = new SpeechSynthesisUtterance(clean.substring(0, 320));
                     utterance.lang = 'hi-IN';
-                    utterance.rate = 0.85;
+                    utterance.rate = 0.88;
 
-                    let avatar = document.getElementById('aiAvatar');
-                    let status = document.getElementById('aiAvatarStatus');
+                    let avatar = document.getElementById('proAvatar');
+                    let status = document.getElementById('proAvatarStatus');
 
                     utterance.onstart = () => {
                         avatar.classList.add('avatar-talking');
-                        status.innerText = "नेबुला अवतार समाधान समझा रहा है...";
+                        status.innerText = "प्रोफ़ेसर अवतार समाधान समझा रहे हैं...";
                     };
                     utterance.onend = () => {
                         avatar.classList.remove('avatar-talking');
-                        status.innerText = "समाधान पूर्ण हुआ! अगला प्रश्न पूछें।";
+                        status.innerText = "विश्लेषण पूर्ण! आप इसे PDF या WhatsApp पर ले सकते हैं।";
                     };
                     utterance.onerror = () => {
                         avatar.classList.remove('avatar-talking');
@@ -244,13 +288,13 @@
         }
 
         function triggerVoiceGreeting() {
-            speakNeuralOutput("नमस्ते! मैं सुपर एआई इंजन कोर हूँ। आप मुझसे किसी भी जटिल विषय, गणितीय सिद्धांत या रिसर्च का 100% सटीक समाधान प्राप्त कर सकते हैं।");
+            speakProOutput("नमस्ते! मैं सुपर एआई रिसर्च इंजन हूँ। आप यहाँ किसी भी कठिन विषय, नोट्स की फ़ोटोकॉपी या हस्तलिखित पन्नों का 100% सटीक विश्लेषण प्राप्त कर सकते हैं।");
         }
 
         async function processCoreQuery() {
             let query = document.getElementById('coreQueryInput').value.trim();
-            if (!query) {
-                alert("कृपया पहले अपना प्रश्न दर्ज करें!");
+            if (!query && !attachedImageBlob) {
+                alert("कृपया पहले अपना प्रश्न लिखें या नोट्स की फ़ोटो अपलोड करें!");
                 return;
             }
 
@@ -258,7 +302,7 @@
             let toolDisplayName = "सामान्य समाधान";
             if (currentCoreMode === 'research') {
                 featureKeyToCheck = "ai_deep_research";
-                toolDisplayName = "एडवांस्ड डीप रिसर्च व मल्टी-स्टेप रीजनिंग";
+                toolDisplayName = "एडवांस्ड डीप रिसर्च व मल्टी-स्टेप लॉजिकल रीजनिंग";
             } else if (currentCoreMode === 'multilingual') {
                 featureKeyToCheck = "ai_multilingual_translate";
                 toolDisplayName = "उच्च स्तरीय बहुभाषी तकनीकी अनुवाद";
@@ -271,16 +315,17 @@
                     openCorePaywall(toolDisplayName);
                     return;
                 }
-            } catch (e) {
-                console.log("Status check fallback");
-            }
+            } catch (e) {}
 
-            updateOutput(`<div class="flex items-center gap-2 text-cyan-400 font-bold"><span class="animate-spin text-lg">⚙️</span> <span>400-AI मल्टी-एजेंट न्यूरल पाइपलाइन से प्रोसेस हो रहा है...</span></div>`);
+            updateOutput(`<div class="flex items-center gap-2 text-cyan-400 font-bold"><span class="animate-spin text-lg">⚙️</span> <span>रूटर एआई द्वारा 400-AI न्यूरल पाइपलाइन से विश्लेषण किया जा रहा है...</span></div>`);
 
             try {
                 let formData = new FormData();
-                formData.append("query", query);
+                formData.append("query", query || "कृपया इस संलग्न नोट्स/फ़ोटोकॉपी का संपूर्ण और बिंदुवार विश्लेषण प्रस्तुत करें।");
                 formData.append("mode", currentCoreMode);
+                if (attachedImageBlob) {
+                    formData.append("file", attachedImageBlob);
+                }
 
                 let res = await fetch("/api/ai-core-solve", {
                     method: "POST",
@@ -296,7 +341,7 @@
                 if (data.success && data.solution) {
                     updateOutput(formatNeuralText(data.solution));
                 } else {
-                    updateOutput(`<span class="text-red-400 font-bold">⚠️ ${data.solution || "सर्वर व्यस्त है। कृपया 20 सेकंड बाद पुनः प्रयास करें।"}</span>`);
+                    updateOutput(`<span class="text-red-400 font-bold">⚠️ ${data.solution || "सर्वर व्यस्त है। कृपया 10 सेकंड बाद पुनः प्रयास करें।"}</span>`);
                 }
             } catch (err) {
                 updateOutput(`<span class="text-red-400 font-bold">⚠️ नेटवर्क त्रुटि! समाधान प्राप्त नहीं हो सका।</span>`);
@@ -307,7 +352,7 @@
             try {
                 const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
                 if (!SpeechRecognition) {
-                    alert("आपके ब्राउज़र में वॉइस इनपुट सपोर्ट नहीं है।");
+                    alert("ब्राउज़र में वॉइस इनपुट सपोर्ट नहीं है।");
                     return;
                 }
                 const recognition = new SpeechRecognition();
@@ -320,18 +365,41 @@
                     processCoreQuery();
                 };
             } catch (e) {
-                console.log("Voice Input error:", e);
+                console.log("Voice error:", e);
             }
         }
 
-        function clearBlackboard() {
-            document.getElementById('aiCoreOutput').innerHTML = `<p class="text-gray-400 text-xs">ब्लैकबोर्ड साफ कर दिया गया है। नया सवाल पूछें!</p>`;
+        function exportToPDF() {
+            let element = document.getElementById('blackboardExportArea');
+            let opt = {
+                margin: 0.5,
+                filename: 'Dhruv_Academy_AI_Analysis.pdf',
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2, backgroundColor: '#020617' },
+                jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
+            };
+            html2pdf().set(opt).from(element).save();
+        }
+
+        function shareSolutionWhatsApp() {
+            let text = document.getElementById('aiCoreOutput').innerText;
+            if (!text || text.includes("स्वागत है")) {
+                alert("पहले कोई प्रश्न हल करें!");
+                return;
+            }
+            let shareMsg = `📚 *ध्रुव एकेडमी - AI Core Research Report* 📚\n\n${text.substring(0, 800)}...\n\n👉 पूरा समाधान देखें: https://dhruv-tech-academy.onrender.com/ai-core`;
+            window.open("https://wa.me/?text=" + encodeURIComponent(shareMsg), '_blank');
         }
 
         function copyBlackboardText() {
             let text = document.getElementById('aiCoreOutput').innerText;
             navigator.clipboard.writeText(text);
-            alert("ब्लैकबोर्ड टेक्स्ट कॉपी कर लिया गया!");
+            alert("ब्लैकबोर्ड का विश्लेषण कॉपी कर लिया गया!");
+        }
+
+        function clearBlackboard() {
+            removeAttachedImage();
+            document.getElementById('aiCoreOutput').innerHTML = `<p class="text-gray-400 text-xs">ब्लैकबोर्ड साफ कर दिया गया है। नया सवाल पूछें या नोट्स जोड़ें!</p>`;
         }
     </script>
 </body>
