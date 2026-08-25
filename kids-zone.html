@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Virtual Classroom & Nebula Blackboard - Dhruv Academy Master Ecosystem</title>
+    <title>AI Virtual Classroom & Nebula Blackboard - Dhruv Academy</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Yantramanav:wght@500;700&display=swap');
         
@@ -28,13 +28,11 @@
             gap: 16px;
         }
 
-        /* चाक-बोर्ड / ब्लैकबोर्ड फॉन्ट */
         .chalk-font { 
             font-family: 'Poppins', 'Yantramanav', sans-serif; 
             letter-spacing: 0.02em;
         }
 
-        /* नेबुला ब्लैकबोर्ड बॉर्डर व बैकग्राउंड */
         .nebula-board {
             background: radial-gradient(circle at top left, #0d1b2a 0%, #050b14 100%);
             border: 6px solid #334155;
@@ -47,7 +45,6 @@
             border: 2px dashed rgba(56, 189, 248, 0.3);
         }
 
-        /* एनिमेटेड एआई अवतार */
         .avatar-glow {
             box-shadow: 0 0 25px rgba(56, 189, 248, 0.6), inset 0 0 15px rgba(255, 255, 255, 0.4);
             animation: floatGlow 3s ease-in-out infinite;
@@ -65,7 +62,6 @@
             100% { transform: scale(1.08); border-color: #facc15; box-shadow: 0 0 30px #facc15; }
         }
 
-        /* भाषा टॉगल पिल्स */
         .lang-pill-container {
             display: inline-flex;
             align-items: center;
@@ -265,20 +261,21 @@
                 </div>
             </div>
 
+            <!-- बेसिक बोर्ड चैलेंजेस -->
             <div class="grid-2">
-                <button onclick="loadChallenge('math')" class="btn-action" style="color:#67e8f9;">
+                <button onclick="handleChallengeClick('math')" class="btn-action" style="color:#67e8f9;">
                     <span>➕</span> <span id="btnMath">गणित चैलेंज (+20)</span>
                 </button>
-                <button onclick="loadChallenge('puzzle')" class="btn-action" style="color:#f472b6;">
+                <button onclick="handleChallengeClick('puzzle')" class="btn-action" style="color:#f472b6;">
                     <span>🤔</span> <span id="btnPuzzle">सुपर पहेली (+20)</span>
                 </button>
-                <button onclick="loadChallenge('gk')" class="btn-action" style="color:#38bdf8;">
+                <button onclick="handleChallengeClick('gk')" class="btn-action" style="color:#38bdf8;">
                     <span>🌍</span> <span id="btnGk">सामान्य ज्ञान / GK (+20)</span>
                 </button>
-                <button onclick="loadChallenge('evs')" class="btn-action" style="color:#34d399;">
+                <button onclick="handleChallengeClick('evs')" class="btn-action" style="color:#34d399;">
                     <span>🌿</span> <span id="btnEvs">विज्ञान / EVS (+20)</span>
                 </button>
-                <button onclick="loadChallenge('poem')" class="btn-action" style="color:#facc15; grid-column:1/-1; justify-content:center;">
+                <button onclick="handleChallengeClick('poem')" class="btn-action" style="color:#facc15; grid-column:1/-1; justify-content:center;">
                     <span>🎵</span> <span id="btnPoem">कविता: मछली जल की रानी (+20)</span>
                 </button>
             </div>
@@ -307,6 +304,7 @@
                 </button>
             </div>
 
+            <!-- एआई बुक स्कैनर -->
             <div style="background:#020617; padding:16px; border-radius:18px; border:1px solid rgba(56,189,248,0.4); display:flex; flex-direction:column; gap:10px;">
                 <h3 id="visionTitle" style="color:#38bdf8; font-weight:bold; font-size:14px; text-align:center;">📸 एआई बुक व होमवर्क स्कैनर</h3>
                 <p id="visionDesc" style="color:#94a3b8; font-size:11px; text-align:center;">कक्षा 1 से 5 तक के किसी भी प्रश्न का फोटो खींचें, नेबुला टीचर बिना किसी फालतू परिचय के सीधे पॉइंट-वाइज पूरा हल बताएगी!</p>
@@ -326,6 +324,7 @@
                 </div>
             </div>
 
+            <!-- ऑटो-क्विज़ कियोस्क -->
             <div id="smartQuizModule" class="hidden" style="background:#020617; padding:16px; border-radius:18px; border:1px solid rgba(245,158,11,0.5); display:flex; flex-direction:column; gap:12px;">
                 <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #1e293b; padding-bottom:8px;">
                     <div>
@@ -351,6 +350,7 @@
                 </div>
             </div>
 
+            <!-- स्कूल व्हाट्सएप होमवर्क पोर्टल -->
             <div style="background:#020617; padding:16px; border-radius:18px; border:1px solid rgba(56,189,248,0.4); display:flex; flex-direction:column; gap:10px;">
                 <h3 id="homeworkTitle" style="color:#38bdf8; font-weight:bold; font-size:13px; text-align:center;">🏫 स्कूल / ट्यूटर व्हाट्सएप होमवर्क पोर्टल</h3>
                 <div class="grid-2">
@@ -369,11 +369,12 @@
                     <input type="text" id="schoolNameInput" placeholder="संस्थान/ट्यूटर का नाम" class="text-input" style="padding:8px 12px; font-size:12px;">
                     <input type="text" id="homeworkDescInput" placeholder="आज का होमवर्क विवरण" class="text-input" style="padding:8px 12px; font-size:12px;">
                 </div>
-                <button onclick="sendSchoolHomework()" style="background:#0284c7; color:#fff; border:none; padding:10px; border-radius:10px; font-size:12px; font-weight:bold; cursor:pointer;">
+                <button onclick="sendSchoolHomework()" type="button" style="background:#0284c7; color:#fff; border:none; padding:10px; border-radius:10px; font-size:12px; font-weight:bold; cursor:pointer;">
                     📤 <span id="hwBtnText">व्हाट्सएप पर होमवर्क भेजें</span>
                 </button>
             </div>
 
+            <!-- छात्र होमवर्क सबमिशन -->
             <div style="background:#020617; padding:16px; border-radius:18px; border:1px solid rgba(52,211,153,0.4); display:flex; flex-direction:column; gap:10px;">
                 <h3 id="submitTitle" style="color:#34d399; font-weight:bold; font-size:13px; text-align:center;">📝 छात्र होमवर्क सबमिशन (होमवर्क वापस भेजें)</h3>
                 <div style="display:flex; flex-direction:column; gap:8px;">
@@ -381,14 +382,33 @@
                     <input type="text" id="studentClassInput" placeholder="कक्षा (Class, e.g. Class 5)" class="text-input" style="padding:8px 12px; font-size:12px;">
                     <input type="text" id="studentAnswerInput" placeholder="हल किया गया काम / उत्तर" class="text-input" style="padding:8px 12px; font-size:12px;">
                 </div>
-                <button onclick="submitStudentWork()" style="background:#059669; color:#fff; border:none; padding:10px; border-radius:10px; font-size:12px; font-weight:bold; cursor:pointer;">
+                <button onclick="submitStudentWork()" type="button" style="background:#059669; color:#fff; border:none; padding:10px; border-radius:10px; font-size:12px; font-weight:bold; cursor:pointer;">
                     ✅ <span id="submitHwBtnText">शिक्षक को व्हाट्सएप पर होमवर्क जमा करें</span>
                 </button>
-                <button onclick="shareToWhatsApp()" style="background:#16a34a; color:#fff; border:none; padding:10px; border-radius:10px; font-size:12px; font-weight:bold; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px;">
+                <button onclick="shareToWhatsApp()" type="button" style="background:#16a34a; color:#fff; border:none; padding:10px; border-radius:10px; font-size:12px; font-weight:bold; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px;">
                     📱 <span id="whatsappBtnText">छात्र अपना स्कोर दोस्तों को शेयर करें</span>
                 </button>
             </div>
 
+        </div>
+
+        <!-- पेमेंट गेटवे मोडल (Paywall Lock) -->
+        <div id="paymentGatewayModal" class="hidden" style="position:fixed; inset:0; background:rgba(0,0,0,0.85); display:flex; align-items:center; justify-content:center; padding:16px; z-index:9999; backdrop-filter:blur(8px);">
+            <div style="background:#0f172a; border:2px solid #10b981; border-radius:24px; padding:24px; max-width:400px; width:100%; text-align:center; box-shadow:0 20px 25px rgba(0,0,0,0.5);">
+                <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #334155; padding-bottom:12px; margin-bottom:16px;">
+                    <h2 style="font-size:18px; font-weight:bold; color:#34d399;">🔒 प्रीमियम फीचर अनलॉक करें</h2>
+                    <button onclick="closePaymentGatewayModal()" style="background:transparent; border:none; color:#fff; font-size:20px; cursor:pointer; font-weight:bold;">✕</button>
+                </div>
+                <div style="background:#020617; padding:16px; border-radius:16px; border:1px solid #334155; margin-bottom:16px;">
+                    <p style="font-size:12px; color:#94a3b8;">चुना गया टूल:</p>
+                    <h3 id="payModalFeatureName" style="font-size:15px; font-weight:bold; color:#facc15; margin-top:4px;">Feature Name</h3>
+                    <p style="font-size:22px; font-weight:800; color:#34d399; margin-top:8px;">₹29 / माह</p>
+                </div>
+                <input type="text" placeholder="UPI ID / मोबाइल नंबर दर्ज करें" class="text-input" style="margin-bottom:12px;">
+                <button onclick="processKidsPayment()" class="btn-submit" style="background:#059669;">
+                    💳 भुगतान करें व तुरंत अनलॉक करें 🚀
+                </button>
+            </div>
         </div>
 
         <footer style="text-align:center; padding:16px 0; font-size:11px; color:#64748b; border-top:1px solid #0f172a; width:100%;">
@@ -410,10 +430,46 @@
         let uploadedImageBlob = null;
         let retryIntervalTimer = null;
 
-        // क्विज़ व एंटी-चीट स्टेट
         let activeQuizList = [];
         let isQuizActive = false;
         let cheatWarnings = 0;
+
+        // ======================================================================
+        // रीयल-टाइम पेवॉल चेक (कैशे-बायपास के साथ)
+        // ======================================================================
+        async function checkFeaturePaywall(featureKey, featureDisplayName) {
+            try {
+                // टाइमस्टैम्प जोड़कर कैशे को बायपास करना
+                let res = await fetch(`/api/feature-status/${featureKey}?t=${Date.now()}`);
+                let data = await res.json();
+                
+                if (data.paywalled === true) {
+                    openPaymentGatewayModal(featureDisplayName || "प्रीमियम टूल");
+                    return true; // लॉक है
+                }
+                return false; // फ्री है
+            } catch (e) {
+                return false;
+            }
+        }
+
+        function openPaymentGatewayModal(featureTitle) {
+            document.getElementById('payModalFeatureName').innerText = featureTitle;
+            let modal = document.getElementById('paymentGatewayModal');
+            modal.classList.remove('hidden');
+            modal.style.display = 'flex';
+        }
+
+        function closePaymentGatewayModal() {
+            let modal = document.getElementById('paymentGatewayModal');
+            modal.classList.add('hidden');
+            modal.style.display = 'none';
+        }
+
+        function processKidsPayment() {
+            alert("पेमेंट अनुरोध भेजा गया! सुविधा जल्द अनलॉक होगी।");
+            closePaymentGatewayModal();
+        }
 
         const siteData = {
             hi: {
@@ -437,16 +493,13 @@
                 visionTitle: "📸 एआई बुक व होमवर्क स्कैनर",
                 visionDesc: "कक्षा 1 से 5 तक के किसी भी प्रश्न का फोटो खींचें, नेबुला टीचर बिना किसी फालतू परिचय के सीधे पॉइंट-वाइज पूरा हल बताएगी!",
                 uploadBtnText: "कैमरे से किताब की फोटो खींचें / अपलोड करें",
-                explainBtnText: "नेबुला एआई से ब्लैकबोर्ड पर पूरा सॉल्यूशन देखें 🚀",
                 hwTitle: "🏫 स्कूल / ट्यूटर व्हाट्सएप होमवर्क पोर्टल",
                 hwBtn: "व्हाट्सएप पर होमवर्क भेजें",
                 subTitleText: "📝 छात्र होमवर्क सबमिशन (होमवर्क वापस भेजें)",
                 subHwBtn: "शिक्षक को व्हाट्सएप पर होमवर्क जमा करें",
                 waBtn: "छात्र अपना स्कोर दोस्तों को शेयर करें",
                 correctMsg: "वाह! बिल्कुल सही जवाब! ब्लैकबोर्ड पर +20 अंक जोड़ दिए गए हैं! 🎉",
-                wrongMsg: "गलत जवाब! ध्यान से सोचकर दोबारा कोशिश करो! 🤔",
-                alreadySolvedMsg: "⚠️ यह प्रश्न आप पहले हल कर चुके हैं! नया स्कोर पाने के लिए दूसरा विषय चुनें!",
-                zeroScoreAlert: "⚠️ पहले कम से कम एक सही जवाब देकर अंक प्राप्त करें!"
+                alreadySolvedMsg: "⚠️ यह प्रश्न आप पहले हल कर चुके हैं! नया स्कोर पाने के लिए दूसरा विषय चुनें!"
             },
             en: {
                 portal: "Main Portal",
@@ -469,16 +522,13 @@
                 visionTitle: "📸 AI Book & Homework Scanner",
                 visionDesc: "Snap any textbook page, Nebula Teacher will explain the complete point-to-point solution directly!",
                 uploadBtnText: "Snap Book Photo with Camera / Upload",
-                explainBtnText: "View Complete Solution on Blackboard 🚀",
                 hwTitle: "🏫 School / Tutor Homework Portal",
                 hwBtn: "Send Homework on WhatsApp",
                 subTitleText: "📝 Student Homework Submission",
                 subHwBtn: "Submit Homework to Teacher on WhatsApp",
                 waBtn: "Share Score with Friends",
                 correctMsg: "Awesome! Correct answer! +20 points added to the blackboard! 🎉",
-                wrongMsg: "Wrong answer! Think carefully and try again! 🤔",
-                alreadySolvedMsg: "⚠️ You have already solved this! Choose another subject for points!",
-                zeroScoreAlert: "⚠️ Please score some points before sharing!"
+                alreadySolvedMsg: "⚠️ You have already solved this! Choose another subject for points!"
             }
         };
 
@@ -735,6 +785,12 @@
             return arr[Math.floor(Math.random() * arr.length)];
         }
 
+        async function handleChallengeClick(category) {
+            let isLocked = await checkFeaturePaywall('kids_basic_blackboard', 'बेसिक गणित, पहेली व कविता बोर्ड');
+            if (isLocked) return;
+            loadChallenge(category);
+        }
+
         function loadChallenge(category) {
             currentActiveCategory = category;
             let textToShow = "";
@@ -954,40 +1010,16 @@
             });
         }
 
-        function startAutoRetryCountdown(seconds, retryFn) {
-            if (retryIntervalTimer) clearInterval(retryIntervalTimer);
-            let timeLeft = seconds;
-
-            const updateTimerText = () => {
-                let timerHtml = `<div style="display:flex; flex-direction:column; gap:8px;">
-                     <div style="color:#fcd34d; font-size:18px; font-weight:bold;">⏳ नेबुला टीचर विश्राम कर रही हैं...</div>
-                     <div style="font-size:20px; font-weight:800; color:#facc15;">${timeLeft}s बाद ऑटोमैटिक समाधान आएगा</div>
-                   </div>`;
-                document.getElementById('aiText').innerHTML = timerHtml;
-            };
-
-            updateTimerText();
-
-            retryIntervalTimer = setInterval(() => {
-                timeLeft--;
-                if (timeLeft > 0) {
-                    updateTimerText();
-                } else {
-                    clearInterval(retryIntervalTimer);
-                    retryIntervalTimer = null;
-                    retryFn();
-                }
-            }, 1000);
-        }
-
         async function explainBookPage(e) {
             if (e) e.preventDefault();
+            
+            let isLocked = await checkFeaturePaywall('kids_ai_scanner', 'एआई बुक व होमवर्क स्कैनर');
+            if (isLocked) return;
+
             if (!uploadedImageBlob) {
                 alert(currentLang === 'hi' ? "कृपया पहले फोटो खींचें या अपलोड करें!" : "Please take a photo first!");
                 return;
             }
-
-            if (retryIntervalTimer) clearInterval(retryIntervalTimer);
 
             let scanMsg = currentLang === 'hi' 
                 ? "🔄 नेबुला एआई सर्वर पर किताब का पूरा सॉल्यूशन प्रोसेस कर रही है..." 
@@ -1004,46 +1036,33 @@
                     body: formData
                 });
 
-                if (response.status === 404) {
-                    response = await fetch("/analyze", {
-                        method: "POST",
-                        body: formData
-                    });
-                }
-
                 let result = await response.json();
+
+                if (result.paywalled) {
+                    openPaymentGatewayModal('एआई बुक व होमवर्क स्कैनर');
+                    return;
+                }
 
                 if (result.solution) {
                     let solText = result.solution;
-                    if (solText.includes("विश्राम") || solText.includes("कोटा") || solText.includes("429") || solText.includes("quota")) {
-                        startAutoRetryCountdown(35, () => explainBookPage(null));
-                    } else {
-                        if (studentScore < 100) {
-                            studentScore = Math.min(100, studentScore + 20);
-                            localStorage.setItem('dhruv_student_score', studentScore.toString());
-                            updateScoreDisplay();
-                            
-                            if (studentScore >= 100) {
-                                triggerCelebration();
-                                setTimeout(() => {
-                                    updateBlackboard(solText);
-                                }, 2500);
-                                return;
-                            }
-                        }
-                        updateBlackboard(solText);
+                    if (studentScore < 100) {
+                        studentScore = Math.min(100, studentScore + 20);
+                        localStorage.setItem('dhruv_student_score', studentScore.toString());
+                        updateScoreDisplay();
                     }
-                } else {
-                    updateBlackboard("सॉल्यूशन प्राप्त नहीं हुआ। कृपया दोबारा प्रयास करें।");
+                    updateBlackboard(solText);
                 }
             } catch (err) {
-                console.error(err);
-                startAutoRetryCountdown(15, () => explainBookPage(null));
+                updateBlackboard("त्रुटि: विश्लेषण पूरा नहीं हो सका। पुनः प्रयास करें।");
             }
         }
 
         async function generateSmartQuiz(e) {
             if (e) e.preventDefault();
+            
+            let isLocked = await checkFeaturePaywall('kids_smart_quiz', 'ऑटो 5 MCQs स्मार्ट क्विज़');
+            if (isLocked) return;
+
             if (!uploadedImageBlob) {
                 alert(currentLang === 'hi' ? "कृपया पहले किताब की फोटो खींचें!" : "Please upload a photo first!");
                 return;
@@ -1062,14 +1081,16 @@
                 });
 
                 let res = await response.json();
+                if (res.paywalled) {
+                    openPaymentGatewayModal('ऑटो 5 MCQs स्मार्ट क्विज़');
+                    return;
+                }
+
                 if (res.success && res.quiz && res.quiz.length > 0) {
                     activeQuizList = res.quiz;
                     renderQuizModule();
-                } else {
-                    alert(currentLang === 'hi' ? "क्विज़ लोड करने में समस्या हुई।" : "Could not load quiz.");
                 }
             } catch (err) {
-                console.error(err);
                 alert("नेटवर्क त्रुटि! क्विज़ लोड नहीं हो सका।");
             }
         }
@@ -1097,11 +1118,10 @@
             });
 
             document.getElementById('smartQuizModule').classList.remove('hidden');
-            
             isQuizActive = true;
             cheatWarnings = 0;
             document.getElementById('cheatWarningBadge').innerText = "चेतावनी: 0 / 2";
-            updateBlackboard("🛡️ क्विज़ तैयार है! फोकस बनाए रखें—स्क्रीन बदलने पर क्विज़ स्वतः लॉक हो जाएगा!");
+            updateBlackboard("🛡️ क्विज़ तैयार है! फोकस बनाए रखें!");
         }
 
         function submitQuizAnswers() {
@@ -1143,29 +1163,15 @@
             window.open("https://wa.me/?text=" + encodeURIComponent(quizText), '_blank');
         }
 
-        document.addEventListener("visibilitychange", function() {
-            if (isQuizActive && document.hidden) {
-                cheatWarnings++;
-                let badge = document.getElementById('cheatWarningBadge');
-                if (badge) badge.innerText = `चेतावनी: ${cheatWarnings} / 2`;
-
-                if (cheatWarnings >= 2) {
-                    alert("⚠️ एंटी-चीट लॉक: आपने 2 बार स्क्रीन बदली! क्विज़ स्वतः सबमिट किया जा रहा है।");
-                    submitQuizAnswers();
-                } else {
-                    alert("⚠️ चेतावनी: क्विज़ के दौरान टैब या ऐप न बदलें! अगली बार क्विज़ लॉक हो जाएगा।");
-                }
+        // ======================================================================
+        // व्हाट्सएप पोर्टल: बिना पेवॉल चेक के विंडो बिल्कुल नहीं खुलेगी
+        // ======================================================================
+        async function sendSchoolHomework() {
+            let isLocked = await checkFeaturePaywall('kids_whatsapp_hw', 'स्कूल / ट्यूटर डिजिटल व्हाट्सएप होमवर्क पोर्टल');
+            if (isLocked) {
+                return; // पेवॉल ऑन होने पर व्हाट्सएप बिल्कुल नहीं खुलेगा
             }
-        });
 
-        function sendWhatsAppReport() {
-            let inputName = document.getElementById('studentNameInput') ? document.getElementById('studentNameInput').value.trim() : "";
-            let studentName = inputName !== "" ? inputName : (currentLang === 'hi' ? "ध्रुव छात्र" : "Dhruv Student");
-            let msg = `🌟 *Nebula AI Classroom Report* 🌟\n\n👤 छात्र: ${studentName}\n⭐ कुल अंक: ${studentScore} / 100\n📚 स्थिति: ${studentScore >= 100 ? "🏆 जीनियस चैंपियन!" : "प्रगति पर है 🌱"}\n\nध्रुव एकेडमी मास्टर इकोसिस्टम वर्चुअल क्लासरूम से प्रेषित!\nhttps://dhruv-tech-academy.onrender.com/`;
-            window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(msg)}`, '_blank');
-        }
-
-        function sendSchoolHomework() {
             let schoolName = document.getElementById('schoolNameInput').value.trim();
             let homeworkDesc = document.getElementById('homeworkDescInput').value.trim();
             let selectedClass = document.getElementById('selectClass').value;
@@ -1179,7 +1185,12 @@
             window.open("https://wa.me/?text=" + encodeURIComponent(message), '_blank');
         }
 
-        function submitStudentWork() {
+        async function submitStudentWork() {
+            let isLocked = await checkFeaturePaywall('kids_student_submit', 'छात्र होमवर्क सबमिशन व स्कोर शेयरिंग');
+            if (isLocked) {
+                return; // पेवॉल ऑन होने पर व्हाट्सएप बिल्कुल नहीं खुलेगा
+            }
+
             let studentName = document.getElementById('studentNameInput').value.trim();
             let studentClass = document.getElementById('studentClassInput').value.trim();
             let studentAnswer = document.getElementById('studentAnswerInput').value.trim();
@@ -1192,13 +1203,25 @@
             window.open("https://wa.me/?text=" + encodeURIComponent(message), '_blank');
         }
 
-        function shareToWhatsApp() {
+        async function shareToWhatsApp() {
+            let isLocked = await checkFeaturePaywall('kids_student_submit', 'छात्र होमवर्क सबमिशन व स्कोर शेयरिंग');
+            if (isLocked) {
+                return;
+            }
+
             if (studentScore <= 0) {
                 alert("पहले अंक प्राप्त करें!");
                 return;
             }
             let message = `🔥 *ध्रुव एकेडमी मास्टर इकोसिस्टम - एआई किड्स ज़ोन* 🔥\nमैंने आज एआई क्लासरूम में ${studentScore} / 100 अंक हासिल किए हैं!\nhttps://dhruv-tech-academy.onrender.com/`;
             window.open("https://wa.me/?text=" + encodeURIComponent(message), '_blank');
+        }
+
+        function sendWhatsAppReport() {
+            let inputName = document.getElementById('studentNameInput') ? document.getElementById('studentNameInput').value.trim() : "";
+            let studentName = inputName !== "" ? inputName : (currentLang === 'hi' ? "ध्रुव छात्र" : "Dhruv Student");
+            let msg = `🌟 *Nebula AI Classroom Report* 🌟\n\n👤 छात्र: ${studentName}\n⭐ कुल अंक: ${studentScore} / 100\n📚 स्थिति: ${studentScore >= 100 ? "🏆 जीनियस चैंपियन!" : "प्रगति पर है 🌱"}\n\nध्रुव एकेडमी मास्टर इकोसिस्टम वर्चुअल क्लासरूम से प्रेषित!\nhttps://dhruv-tech-academy.onrender.com/`;
+            window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(msg)}`, '_blank');
         }
 
         window.addEventListener('DOMContentLoaded', () => {
