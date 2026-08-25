@@ -1,1 +1,547 @@
+<!DOCTYPE html>
+<html lang="hi" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Legal AI Master Hub | Dhruv Academy</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Yantramanav:wght@500;700&display=swap');
+        
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Poppins', 'Yantramanav', sans-serif;
+            background-color: #020617;
+            color: #f8fafc;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px sm:padding: 20px;
+            overflow-x: hidden;
+        }
 
+        .main-wrapper {
+            width: 100%;
+            max-width: 1120px;
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+        }
+
+        .stage-box {
+            background: radial-gradient(circle at center, #0f172a 0%, #030712 100%);
+            border: 2px solid rgba(244, 63, 94, 0.4);
+            border-radius: 28px;
+            box-shadow: 0 10px 40px rgba(244, 63, 94, 0.15), inset 0 0 30px rgba(0, 0, 0, 0.9);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stage-grid {
+            background-image: linear-gradient(rgba(244, 63, 94, 0.06) 1px, transparent 1px),
+                              linear-gradient(90deg, rgba(244, 63, 94, 0.06) 1px, transparent 1px);
+            background-size: 26px 26px;
+        }
+
+        .avatar-glow {
+            box-shadow: 0 0 35px rgba(244, 63, 94, 0.7), inset 0 0 20px rgba(255, 255, 255, 0.3);
+            animation: legalFloat 4s ease-in-out infinite;
+        }
+        @keyframes legalFloat {
+            0%, 100% { transform: translateY(0px) scale(1); }
+            50% { transform: translateY(-5px) scale(1.02); }
+        }
+
+        .talking-pulse {
+            animation: legalTalkGlow 0.35s infinite alternate ease-in-out;
+            border-color: #facc15 !important;
+            box-shadow: 0 0 40px #facc15, inset 0 0 20px rgba(250, 204, 21, 0.6) !important;
+        }
+        @keyframes legalTalkGlow {
+            0% { transform: scale(1); }
+            100% { transform: scale(1.05); }
+        }
+
+        .custom-scrollbar::-webkit-scrollbar { width: 5px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #020617; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #334155; border-radius: 6px; }
+    </style>
+</head>
+<body>
+
+    <div class="main-wrapper">
+        
+        <!-- टॉप बार -->
+        <div class="flex flex-wrap justify-between items-center pb-2 border-b border-gray-800 w-full gap-3">
+            <a href="/" class="px-4 py-2 bg-gradient-to-r from-red-700 to-rose-600 hover:from-red-600 hover:to-rose-500 text-white rounded-2xl text-xs font-bold transition flex items-center gap-1.5 shadow-lg">
+                ← <span>मुख्य पोर्टल</span>
+            </a>
+            
+            <div class="flex items-center gap-2">
+                <span class="px-3 py-1.5 bg-rose-950 border border-rose-500/50 text-rose-300 rounded-full text-xs font-bold flex items-center gap-1.5 shadow">
+                    <span class="w-2.5 h-2.5 rounded-full bg-rose-500 animate-pulse"></span>
+                    <span>BNS, BNSS, BSA & All Laws Active</span>
+                </span>
+            </div>
+        </div>
+
+        <!-- लीगल एडवाइज़र 4D स्टेज -->
+        <div class="stage-box stage-grid p-4 sm:p-7 flex flex-col lg:flex-row items-center justify-between gap-6">
+            
+            <!-- AI अधिवक्ता अवतार -->
+            <div class="flex flex-col items-center gap-3 text-center">
+                <div class="relative flex items-center justify-center">
+                    <div class="absolute -bottom-3 w-40 h-8 bg-rose-500/25 rounded-full blur-xl animate-pulse"></div>
+                    
+                    <div id="legalAvatarFrame" onclick="playLegalGreeting()" class="avatar-glow w-36 h-36 sm:w-44 sm:h-44 rounded-full bg-slate-900 border-4 border-rose-500 overflow-hidden relative cursor-pointer shadow-2xl transition flex items-center justify-center" title="कानूनी सलाह के लिए टैप करें!">
+                        <canvas id="legalHumanCanvas" width="200" height="200" class="w-full h-full object-cover"></canvas>
+                        <span class="absolute bottom-1 right-3 px-2 py-0.5 bg-rose-600 border border-slate-900 rounded-full text-[9px] font-extrabold text-white shadow">ADVOCATE AI</span>
+                    </div>
+                </div>
+
+                <div>
+                    <h2 class="text-base sm:text-lg font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-rose-400 via-amber-200 to-orange-400">एडवोकेट न्याय मित्र (Legal AI Mentor)</h2>
+                    <p class="text-xs text-rose-300 font-semibold mt-0.5">🟢 भारतीय व अंतर्राष्ट्रीय कानून विशेषज्ञ</p>
+                    <p class="text-[10px] text-gray-400 mt-0.5">अवतार पर टैप करके कानूनी सारांश सुनें</p>
+                </div>
+
+                <div class="flex gap-2 p-2 bg-slate-900/90 border border-slate-800 rounded-2xl text-xs">
+                    <span class="px-2 py-0.5 rounded bg-slate-800 text-cyan-300 font-bold">BNS 2023</span>
+                    <span class="px-2 py-0.5 rounded bg-slate-800 text-amber-300 font-bold">BNSS 2023</span>
+                    <span class="px-2 py-0.5 rounded bg-slate-800 text-emerald-300 font-bold">BSA 2023</span>
+                </div>
+            </div>
+
+            <!-- लाइव कानूनी विश्लेषण बोर्ड -->
+            <div class="w-full lg:w-3/5 bg-slate-950/95 border border-slate-800/90 rounded-3xl p-4 sm:p-5 space-y-3 shadow-2xl flex flex-col justify-between">
+                <div class="flex justify-between items-center border-b border-slate-800 pb-2">
+                    <span class="text-xs font-bold text-rose-400 flex items-center gap-1.5">
+                        <span>⚖️</span> <span>Legal Intelligence & Case Analysis Board</span>
+                    </span>
+                    <button onclick="clearLegalBoard()" class="text-[11px] text-gray-400 hover:text-white px-2.5 py-1 rounded-xl bg-slate-900 border border-slate-800 shadow">सफ़ाई 🧹</button>
+                </div>
+
+                <div id="legalOutputBoard" class="min-h-[200px] max-h-[260px] overflow-y-auto custom-scrollbar text-xs sm:text-sm space-y-3">
+                    <p class="text-rose-200 font-medium">👋 "नमस्ते! मैं आपका एआई कानूनी सलाहकार हूँ। आप पुराने IPC/CrPC की धाराएं नए BNS/BNSS में बदल सकते हैं, कोई भी लीगल नोटिस/FIR ड्राफ्ट कर सकते हैं या कंपनी/प्रॉपर्टी कानून पर सवाल पूछ सकते हैं।"</p>
+                    
+                    <div class="p-2.5 bg-slate-900/80 rounded-2xl border border-slate-800 text-[11px] text-gray-300 space-y-1">
+                        <p class="font-bold text-amber-300">📌 त्वरित कानूनी सुविधाएं:</p>
+                        <p>• <b>धारा कन्वर्टर:</b> पुरानी धारा लिखें (उदा. 420, 302) और नया BNS विवरण पाएँ।</p>
+                        <p>• <b>1-क्लिक ड्राफ्टिंग:</b> लीगल नोटिस, उपभोक्ता शिकायत और RTI तैयार करें।</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- नया कानून कन्वर्टर कियोस्क (BNS vs IPC & BNSS vs CrPC) -->
+        <div class="bg-slate-900 p-4 sm:p-5 rounded-3xl border border-rose-500/30 space-y-3 shadow-xl">
+            <div class="flex justify-between items-center">
+                <h3 class="text-xs sm:text-sm font-bold text-rose-300 flex items-center gap-1.5">
+                    <span>🔄</span> <span>न्यू क्रिमिनल लॉज़ कन्वर्टर (BNS $\leftrightarrow$ IPC, BNSS $\leftrightarrow$ CrPC, BSA $\leftrightarrow$ IEA)</span>
+                </h3>
+                <span class="text-[10px] text-amber-400 font-semibold">1-क्लिक सेक्शन फाइंडर</span>
+            </div>
+            
+            <div class="flex flex-col sm:flex-row gap-2">
+                <input type="text" id="sectionSearchInput" placeholder="पुरानी धारा या अपराध का नाम लिखें (जैसे: 'IPC 420' या 'IPC 302' या 'धोखाधड़ी')..." class="w-full p-3 rounded-2xl bg-slate-950 border border-slate-700 text-white text-xs focus:outline-none focus:border-rose-500">
+                <button onclick="convertLawSection()" class="px-6 py-3 bg-gradient-to-r from-rose-600 to-amber-600 hover:from-rose-500 rounded-2xl text-xs font-bold text-white transition whitespace-nowrap shadow-lg">
+                    धारा खोजें व विश्लेषण करें ⚖️
+                </button>
+            </div>
+            
+            <div id="sectionResultBox" class="hidden p-3.5 bg-slate-950 rounded-2xl border border-slate-800 text-xs space-y-2.5"></div>
+        </div>
+
+        <!-- 1-क्लिक लीगल ड्राफ्टिंग कियोस्क (Legal Notices, RTI, Complaints) -->
+        <div class="bg-slate-900 p-4 sm:p-5 rounded-3xl border border-slate-800 space-y-3 shadow-xl">
+            <div class="flex justify-between items-center">
+                <h3 class="text-xs sm:text-sm font-bold text-amber-300 flex items-center gap-1.5">
+                    <span>📑</span> <span>1-क्लिक लीगल ड्राफ्टिंग कियोस्क (Legal Notices & Applications)</span>
+                </h3>
+                <span class="text-[10px] text-gray-400">PDF एक्सपोर्ट योग्य</span>
+            </div>
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
+                <button onclick="triggerDrafting('notice')" class="p-2.5 rounded-2xl bg-slate-950 border border-slate-800 hover:border-rose-400 text-left transition space-y-0.5">
+                    <p class="font-bold text-rose-300">📜 लीगल नोटिस</p>
+                    <p class="text-[10px] text-gray-400">बकाया वसूली / विवाद</p>
+                </button>
+                <button onclick="triggerDrafting('rti')" class="p-2.5 rounded-2xl bg-slate-950 border border-slate-800 hover:border-cyan-400 text-left transition space-y-0.5">
+                    <p class="font-bold text-cyan-300">🏛️ RTI आवेदन</p>
+                    <p class="text-[10px] text-gray-400">सरकारी सूचना प्राप्त करें</p>
+                </button>
+                <button onclick="triggerDrafting('consumer')" class="p-2.5 rounded-2xl bg-slate-950 border border-slate-800 hover:border-emerald-400 text-left transition space-y-0.5">
+                    <p class="font-bold text-emerald-300">🛡️ उपभोक्ता शिकायत</p>
+                    <p class="text-[10px] text-gray-400">दोषपूर्ण उत्पाद / सेवा</p>
+                </button>
+                <button onclick="triggerDrafting('fir')" class="p-2.5 rounded-2xl bg-slate-950 border border-slate-800 hover:border-amber-400 text-left transition space-y-0.5">
+                    <p class="font-bold text-amber-300">🚔 FIR प्रारूप</p>
+                    <p class="text-[10px] text-gray-400">पुलिस शिकायत पत्र</p>
+                </button>
+            </div>
+        </div>
+
+        <!-- कानूनी प्रश्न पूछने का इनपुट व लाइव वॉयस -->
+        <div class="bg-slate-900 p-4 sm:p-5 rounded-3xl border border-gray-800 space-y-3 shadow-xl">
+            <div class="flex flex-col sm:flex-row gap-2">
+                <input type="text" id="legalQueryInput" placeholder="कोई भी कानूनी प्रश्न पूछें (उदा: 'चेक बाउंस होने पर क्या कानूनी कदम उठाएं?')..." class="w-full p-3 rounded-2xl bg-slate-950 border border-slate-700 text-white text-xs focus:outline-none focus:border-rose-500">
+                <div class="flex gap-2">
+                    <button onclick="submitLegalQuestion()" class="px-6 py-3 bg-gradient-to-r from-rose-600 to-red-600 hover:from-rose-500 rounded-2xl text-xs font-bold text-white transition whitespace-nowrap shadow-lg">
+                        सलाह लें 🔍
+                    </button>
+                    <button id="legalMicBtn" onclick="toggleLegalVoice()" class="px-5 py-3 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-2xl text-xs font-bold text-rose-400 transition flex items-center justify-center gap-1 shadow">
+                        🎤
+                    </button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- ड्राफ्टिंग प्रीव्यू व PDF मोडल -->
+    <div id="legalDraftModal" class="hidden fixed inset-0 bg-black/85 flex items-center justify-center p-4 z-50 backdrop-blur-md">
+        <div class="bg-slate-900 border-2 border-rose-500 rounded-3xl p-6 max-w-2xl w-full space-y-4 shadow-2xl">
+            <div class="flex justify-between items-center border-b border-slate-700 pb-3">
+                <h2 id="draftModalHeader" class="text-base font-bold text-rose-400">📑 लीगल ड्राफ्ट प्रीव्यू</h2>
+                <button onclick="closeDraftModal()" class="text-gray-400 hover:text-white font-bold text-lg">✕</button>
+            </div>
+            
+            <div id="draftContentArea" class="p-4 bg-slate-950 rounded-2xl border border-slate-800 max-h-[350px] overflow-y-auto custom-scrollbar text-xs text-gray-200 whitespace-pre-wrap font-sans leading-relaxed">
+            </div>
+
+            <div class="flex justify-end gap-2 pt-2 border-t border-slate-800">
+                <button onclick="downloadDraftPDF()" class="px-5 py-2.5 bg-red-600 hover:bg-red-500 rounded-xl font-bold text-white text-xs transition shadow">
+                    📄 PDF डाउनलोड करें
+                </button>
+                <button onclick="closeDraftModal()" class="px-5 py-2.5 bg-slate-800 hover:bg-slate-700 rounded-xl font-bold text-gray-300 text-xs transition">
+                    बंद करें
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <footer class="w-full text-center py-4 text-xs text-gray-500 border-t border-gray-900 mt-6">
+        <p>© 2026 Dhruv Academy Master Ecosystem. सर्वाधिकार सुरक्षित। (सूचनात्मक कानूनी सहायता प्रणाली)</p>
+    </footer>
+
+    <script>
+        let isLegalTalking = false;
+        let legalRecognizer = null;
+        let isLegalRecording = false;
+
+        // =======================================================
+        // 4D Live Advocate AI Canvas Avatar
+        // =======================================================
+        const canvas = document.getElementById('legalHumanCanvas');
+        const ctx = canvas.getContext('2d');
+        let mouthOpenness = 0;
+        let eyeBlinkState = 0;
+        let headSway = 0;
+
+        function renderAdvocate() {
+            ctx.clearRect(0, 0, 200, 200);
+
+            let bgGrad = ctx.createRadialGradient(100, 100, 20, 100, 100, 100);
+            bgGrad.addColorStop(0, '#1e1b4b');
+            bgGrad.addColorStop(1, '#020617');
+            ctx.fillStyle = bgGrad;
+            ctx.fillRect(0, 0, 200, 200);
+
+            let headX = 100 + Math.sin(headSway) * 2.2;
+
+            // बाल
+            ctx.fillStyle = '#0f172a';
+            ctx.beginPath();
+            ctx.arc(headX, 90, 54, 0, Math.PI * 2);
+            ctx.fill();
+
+            // चेहरा
+            ctx.fillStyle = '#fbd5b5';
+            ctx.beginPath();
+            ctx.ellipse(headX, 105, 40, 48, 0, 0, Math.PI * 2);
+            ctx.fill();
+
+            // आँखें
+            ctx.fillStyle = '#0f172a';
+            if (eyeBlinkState > 0.8) {
+                ctx.fillRect(headX - 24, 100, 14, 3);
+                ctx.fillRect(headX + 10, 100, 14, 3);
+            } else {
+                ctx.beginPath();
+                ctx.arc(headX - 16, 101, 4.5, 0, Math.PI * 2);
+                ctx.arc(headX + 16, 101, 4.5, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            // होंठ
+            ctx.fillStyle = '#be123c';
+            ctx.beginPath();
+            let mouthHeight = isLegalTalking ? 3.5 + mouthOpenness * 11 : 3;
+            ctx.ellipse(headX, 132, 13, mouthHeight, 0, 0, Math.PI * 2);
+            ctx.fill();
+
+            // अधिवक्ता कोट और कॉलर बैंड (White Advocate Band)
+            ctx.fillStyle = '#020617';
+            ctx.beginPath();
+            ctx.moveTo(50, 195);
+            ctx.quadraticCurveTo(headX, 155, 150, 195);
+            ctx.lineTo(150, 200);
+            ctx.lineTo(50, 200);
+            ctx.fill();
+
+            // व्हाइट लीगल बैंड
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(headX - 4, 160, 4, 16);
+            ctx.fillRect(headX + 2, 160, 4, 16);
+
+            headSway += 0.03;
+            requestAnimationFrame(renderAdvocate);
+        }
+
+        setInterval(() => {
+            eyeBlinkState = 1;
+            setTimeout(() => { eyeBlinkState = 0; }, 180);
+        }, 3400);
+
+        setInterval(() => {
+            if (isLegalTalking) {
+                mouthOpenness = Math.random();
+            } else {
+                mouthOpenness = 0;
+            }
+        }, 115);
+
+        renderAdvocate();
+
+        function playLegalGreeting() {
+            let msg = "नमस्ते! मैं आपका एआई कानूनी सलाहकार हूँ। नए भारतीय न्याय संहिता (BNS), कंपनी अनुपालन या लीगल नोटिस ड्राफ्टिंग में मुझसे मदद ले सकते हैं।";
+            speakLegalVoice(msg);
+        }
+
+        function speakLegalVoice(text) {
+            try {
+                if ('speechSynthesis' in window) {
+                    window.speechSynthesis.cancel();
+                    let clean = text.replace(/[*_#~⚖️📜🏛️🛡️🚔]/g, '').trim();
+                    let utterance = new SpeechSynthesisUtterance(clean);
+                    utterance.lang = 'hi-IN';
+                    utterance.rate = 0.88;
+                    utterance.pitch = 1.0;
+
+                    let avatar = document.getElementById('legalAvatarFrame');
+                    utterance.onstart = () => {
+                        isLegalTalking = true;
+                        avatar.classList.add('talking-pulse');
+                    };
+                    utterance.onend = () => {
+                        isLegalTalking = false;
+                        avatar.classList.remove('talking-pulse');
+                    };
+                    utterance.onerror = () => {
+                        isLegalTalking = false;
+                        avatar.classList.remove('talking-pulse');
+                    };
+
+                    window.speechSynthesis.speak(utterance);
+                }
+            } catch (e) {}
+        }
+
+        async function convertLawSection() {
+            let query = document.getElementById('sectionSearchInput').value.trim();
+            if (!query) {
+                alert("कृपया कोई धारा या अपराध का नाम दर्ज करें!");
+                return;
+            }
+
+            let resBox = document.getElementById('sectionResultBox');
+            resBox.classList.remove('hidden');
+            resBox.innerHTML = `<div class="text-rose-400 font-bold animate-pulse">⚖️ BNS / BNSS डेटाबेस से विश्लेषण किया जा रहा है...</div>`;
+
+            try {
+                let formData = new FormData();
+                formData.append("query", query);
+
+                let res = await fetch("/api/legal-convert-section", {
+                    method: "POST",
+                    body: formData
+                });
+                let data = await res.json();
+
+                if (data.success) {
+                    resBox.innerHTML = `
+                        <div class="space-y-2">
+                            <div class="flex justify-between items-center border-b border-gray-800 pb-1.5">
+                                <span class="font-extrabold text-rose-300 text-sm">📌 पुराना कानून: ${data.old_section}</span>
+                                <span class="px-2.5 py-0.5 rounded-full bg-emerald-950 text-emerald-300 border border-emerald-500/40 font-bold text-[11px]">नया कानून: ${data.new_section}</span>
+                            </div>
+                            <p class="text-gray-200"><b>अपराध का विवरण:</b> ${data.description}</p>
+                            <p class="text-amber-300"><b>सज़ा व प्रावधान:</b> ${data.punishment}</p>
+                            <p class="text-cyan-300"><b>मुख्य बदलाव:</b> ${data.key_changes}</p>
+                        </div>
+                    `;
+                    speakLegalVoice(data.description);
+                } else {
+                    resBox.innerHTML = `<span class="text-red-400">⚠️ विवरण प्राप्त नहीं हो सका। कृपया पुनः प्रयास करें।</span>`;
+                }
+            } catch (e) {
+                resBox.innerHTML = `<span class="text-red-400">⚠️ नेटवर्क त्रुटि!</span>`;
+            }
+        }
+
+        async function triggerDrafting(type) {
+            let headerTitle = "लीगल ड्राफ्ट";
+            let defaultPrompt = "";
+
+            if (type === 'notice') {
+                headerTitle = "📜 लीगल नोटिस (Legal Demand Notice)";
+                defaultPrompt = "बकाया राशि वसूली हेतु आधिकारिक लीगल नोटिस";
+            } else if (type === 'rti') {
+                headerTitle = "🏛️ RTI आवेदन (Right to Information Application)";
+                defaultPrompt = "लोक सूचना अधिकारी को आवेदन पत्र";
+            } else if (type === 'consumer') {
+                headerTitle = "🛡️ उपभोक्ता शिकायत (Consumer Forum Complaint)";
+                defaultPrompt = "दोषपूर्ण उत्पाद / सेवा हेतु उपभोक्ता अदालत में शिकायत";
+            } else if (type === 'fir') {
+                headerTitle = "🚔 पुलिस शिकायत / FIR प्रारूप (Police Complaint)";
+                defaultPrompt = "थाना प्रभारी को लिखित शिकायत पत्र";
+            }
+
+            document.getElementById('draftModalHeader').innerText = headerTitle;
+            let contentArea = document.getElementById('draftContentArea');
+            contentArea.innerHTML = `<div class="text-rose-400 font-bold animate-pulse">📑 मानक कानूनी प्रारूप तैयार किया जा रहा है...</div>`;
+            document.getElementById('legalDraftModal').classList.remove('hidden');
+
+            try {
+                let formData = new FormData();
+                formData.append("draft_type", type);
+                formData.append("details", defaultPrompt);
+
+                let res = await fetch("/api/legal-generate-draft", {
+                    method: "POST",
+                    body: formData
+                });
+                let data = await res.json();
+
+                if (data.success && data.draft_text) {
+                    contentArea.innerText = data.draft_text;
+                } else {
+                    contentArea.innerText = "ड्राफ्ट तैयार करने में त्रुटि आई। कृपया पुनः प्रयास करें।";
+                }
+            } catch (e) {
+                contentArea.innerText = "नेटवर्क त्रुटि! कृपया सर्वर कनेक्शन जांचें।";
+            }
+        }
+
+        function closeDraftModal() {
+            document.getElementById('legalDraftModal').classList.add('hidden');
+        }
+
+        function downloadDraftPDF() {
+            let el = document.getElementById('draftContentArea');
+            let opt = {
+                margin: 0.5,
+                filename: 'Legal_Draft_Document.pdf',
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2 },
+                jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
+            };
+            html2pdf().set(opt).from(el).save();
+        }
+
+        async function submitLegalQuestion() {
+            let q = document.getElementById('legalQueryInput').value.trim();
+            if (!q) {
+                alert("कृपया कोई प्रश्न दर्ज करें!");
+                return;
+            }
+
+            let out = document.getElementById('legalOutputBoard');
+            out.innerHTML += `<div class="p-2.5 bg-slate-900 rounded-xl border border-slate-800 text-rose-300 font-semibold">👤 प्रश्न: "${q}"</div>`;
+            out.scrollTop = out.scrollHeight;
+
+            let loadingId = "loader_" + Date.now();
+            out.innerHTML += `<div id="${loadingId}" class="text-rose-400 font-medium animate-pulse">⚖️ एडवोकेट न्याय मित्र विश्लेषण कर रहे हैं...</div>`;
+            out.scrollTop = out.scrollHeight;
+
+            try {
+                let formData = new FormData();
+                formData.append("query", q);
+
+                let res = await fetch("/api/legal-advice-solve", {
+                    method: "POST",
+                    body: formData
+                });
+                let data = await res.json();
+
+                let loadElem = document.getElementById(loadingId);
+                if (loadElem) loadElem.remove();
+
+                if (data.success && data.advice) {
+                    out.innerHTML += `<div class="p-3.5 bg-rose-950/40 rounded-2xl border border-rose-500/40 text-slate-100 space-y-1.5 shadow">
+                        <p class="font-bold text-rose-300">⚖️ कानूनी राय (Legal Opinion):</p>
+                        <p class="text-xs sm:text-sm leading-relaxed whitespace-pre-line">${data.advice}</p>
+                    </div>`;
+                    out.scrollTop = out.scrollHeight;
+                    speakLegalVoice(data.summary || data.advice.slice(0, 120));
+                } else {
+                    out.innerHTML += `<div class="text-red-400 font-bold">⚠️ सर्वर व्यस्त है। कृपया पुनः प्रयास करें।</div>`;
+                }
+            } catch (err) {
+                let loadElem = document.getElementById(loadingId);
+                if (loadElem) loadElem.remove();
+                out.innerHTML += `<div class="text-red-400 font-bold">⚠️ नेटवर्क त्रुटि!</div>`;
+            }
+        }
+
+        function toggleLegalVoice() {
+            const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (!SpeechRec) {
+                alert("कृपया Chrome ब्राउज़र का उपयोग करें।");
+                return;
+            }
+
+            if (isLegalRecording) {
+                if (legalRecognizer) legalRecognizer.stop();
+                isLegalRecording = false;
+                document.getElementById('legalMicBtn').className = "px-5 py-3 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-2xl text-xs font-bold text-rose-400 transition flex items-center justify-center gap-1 shadow";
+                return;
+            }
+
+            legalRecognizer = new SpeechRec();
+            legalRecognizer.lang = 'hi-IN';
+            legalRecognizer.continuous = false;
+            legalRecognizer.interimResults = false;
+
+            legalRecognizer.onstart = () => {
+                isLegalRecording = true;
+                document.getElementById('legalMicBtn').className = "px-5 py-3 bg-rose-600 hover:bg-rose-500 rounded-2xl text-xs font-bold text-white transition flex items-center justify-center gap-1 shadow animate-pulse";
+            };
+
+            legalRecognizer.onresult = (e) => {
+                let spoken = e.results[0][0].transcript;
+                document.getElementById('legalQueryInput').value = spoken;
+                submitLegalQuestion();
+            };
+
+            legalRecognizer.onerror = () => {
+                isLegalRecording = false;
+                document.getElementById('legalMicBtn').className = "px-5 py-3 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-2xl text-xs font-bold text-rose-400 transition flex items-center justify-center gap-1 shadow";
+            };
+
+            legalRecognizer.onend = () => {
+                isLegalRecording = false;
+                document.getElementById('legalMicBtn').className = "px-5 py-3 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-2xl text-xs font-bold text-rose-400 transition flex items-center justify-center gap-1 shadow";
+            };
+
+            legalRecognizer.start();
+        }
+
+        function clearLegalBoard() {
+            document.getElementById('legalOutputBoard').innerHTML = `<p class="text-gray-400 text-xs">बोर्ड साफ कर दिया गया है। कोई भी कानूनी प्रश्न पूछें या धारा खोजें!</p>`;
+        }
+    </script>
+</body>
+</html>
