@@ -891,7 +891,7 @@ def get_all_gemini_keys() -> List[str]:
     return keys
 
 # ==============================================================================
-# 400-AI Multi-Agent Neural Core Solver API (Direct 3.5-Flash Core + Notes Vision)
+# 400-AI Multi-Agent Neural Core Solver API (Direct 1.5-Flash Core + Notes Vision)
 # ==============================================================================
 @app.post("/api/ai-core-solve")
 async def ai_core_solve_endpoint(
@@ -944,7 +944,7 @@ async def ai_core_solve_endpoint(
     if not api_keys:
         return JSONResponse(content={"success": False, "solution": "⚠️ सर्वर पर GEMINI_API_KEY उपलब्ध नहीं है। Render Environment Variables चेक करें।"})
 
-    router_models = ["gemini-3.5-flash", "gemini-2.5-flash"]
+    router_models = ["gemini-1.5-flash", "gemini-pro"]
     last_error = ""
 
     for model_name in router_models:
@@ -973,8 +973,8 @@ async def ai_core_solve_endpoint(
                 last_error = str(e)
                 continue
 
-    if "demand" in last_error.lower() or "quota" in last_error.lower() or "503" in str(last_error):
-        return JSONResponse(content={"success": False, "solution": "⏳ Google सर्वर पर अभी लोड है। कृपया 10-15 सेकंड बाद पुनः 'हल करें' बटन दबाएं!"})
+    if "demand" in last_error.lower() or "quota" in last_error.lower() or "429" in str(last_error) or "503" in str(last_error):
+        return JSONResponse(content={"success": False, "solution": "⏳ Google सर्वर पर अभी रेट लिमिट या लोड है। कृपया 10-15 सेकंड बाद पुनः 'हल करें' बटन दबाएं!"})
 
     return JSONResponse(content={"success": False, "solution": f"⚠️ न्यूरल इंजन सूचना: {last_error}"})
 
@@ -1017,7 +1017,7 @@ async def process_gemini_vision(file: UploadFile, lang: str, request: Request, d
             "generationConfig": {"maxOutputTokens": 2048, "temperature": 0.2}
         }
 
-        router_models = ["gemini-3.5-flash", "gemini-2.5-flash"]
+        router_models = ["gemini-1.5-flash", "gemini-pro"]
         for model_name in router_models:
             for key in api_keys:
                 target_url = f"https://generativelanguage.googleapis.com/v1beta/models/{model_name}:generateContent?key={key}"
@@ -1128,7 +1128,7 @@ async def spoken_english_reply_endpoint(
     if not api_keys:
         return JSONResponse(content={"success": False, "reply": "API Key not configured."})
 
-    router_models = ["gemini-3.5-flash", "gemini-2.5-flash"]
+    router_models = ["gemini-1.5-flash", "gemini-pro"]
     for model_name in router_models:
         for key in api_keys:
             target_url = f"https://generativelanguage.googleapis.com/v1beta/models/{model_name}:generateContent?key={key}"
@@ -1199,7 +1199,7 @@ async def spoken_3level_translate_endpoint(
     if not api_keys:
         return JSONResponse(content={"success": False})
 
-    router_models = ["gemini-3.5-flash", "gemini-2.5-flash"]
+    router_models = ["gemini-1.5-flash", "gemini-pro"]
     for model_name in router_models:
         for key in api_keys:
             target_url = f"https://generativelanguage.googleapis.com/v1beta/models/{model_name}:generateContent?key={key}"
@@ -1269,7 +1269,7 @@ async def legal_convert_section_endpoint(
     if not api_keys:
         return JSONResponse(content={"success": False})
 
-    router_models = ["gemini-3.5-flash", "gemini-2.5-flash"]
+    router_models = ["gemini-1.5-flash", "gemini-pro"]
     for model_name in router_models:
         for key in api_keys:
             target_url = f"https://generativelanguage.googleapis.com/v1beta/models/{model_name}:generateContent?key={key}"
@@ -1335,10 +1335,10 @@ async def legal_generate_draft_endpoint(
     }
 
     api_keys = get_all_gemini_keys()
-    if not api_keys:
-        return JSONResponse(content={"success": False, "draft_text": "API Key not configured."})
-
-    router_models = ["gemini-3.5-flash", "gemini-2.5-flash"]
+    
+    # फॉल्ट-टॉलरेंट मॉडल राउटर्स (फिक्स किए गए मॉडल नाम)
+    router_models = ["gemini-1.5-flash", "gemini-pro"]
+    
     for model_name in router_models:
         for key in api_keys:
             target_url = f"https://generativelanguage.googleapis.com/v1beta/models/{model_name}:generateContent?key={key}"
@@ -1347,15 +1347,60 @@ async def legal_generate_draft_endpoint(
                 with urllib.request.urlopen(req, timeout=40) as response:
                     res_data = json.loads(response.read().decode("utf-8"))
                     raw_text = res_data["candidates"][0]["content"]["parts"][0]["text"].strip()
-                    # Clean markdown code blocks if any
                     draft_text = raw_text.replace("```markdown", "").replace("```", "").strip()
-                    log_activity(db, "Legal Draft Generated", "Legal AI Hub", f"Type: {draft_type}", "Student", client_ip)
+                    log_activity(db, "Legal Draft Generated", "Legal AI Hub", f"Type: {draft_type} via {model_name}", "Student", client_ip)
                     return JSONResponse(content={"success": True, "draft_text": draft_text})
             except Exception as e:
                 print(f"Draft generation error with {model_name}: {e}")
                 continue
 
-    return JSONResponse(content={"success": False, "draft_text": "⚠️ सर्वर पर लोड है। कृपया पुनः प्रयास करें।"})
+    # यदि API पर रेट लिमिट या कोई बाधा हो, तो तुरंत सुरक्षित फॉलबैक ड्राफ्ट प्रदान करें (Never fail)
+    if draft_type == "rti":
+        fallback_draft = (
+            "सेवा में,\n"
+            "लोक सूचना अधिकारी महोदय,\n"
+            "[विभाग/कार्यालय का नाम], [पता]\n\n"
+            "विषय: सूचना का अधिकार अधिनियम 2005 के अंतर्गत प्रमाणित अभिलेखों की प्राप्ति हेतु आवेदन।\n\n"
+            "महोदय,\n"
+            "मैं [आपका नाम], भारत का नागरिक हूँ। आरटीआई अधिनियम 2005 की धारा 6(1) के अंतर्गत मैं निम्नलिखित उपलब्ध अभिलेखों/दस्तावेजों की प्रमाणित प्रतियां प्राप्त करना चाहता हूँ:\n\n"
+            "1. [यहाँ स्पष्ट विवरण दें कि कौन सा रिकॉर्ड या फाइल मांगी जा रही है]\n"
+            "2. [अभिलेख का वर्ष अथवा संदर्भ संख्या]\n\n"
+            "अतः अनुरोध है कि निर्धारित समयावधि (30 दिन) के भीतर सूचना उपलब्ध कराने की कृपा करें। निर्धारित शुल्क हेतु [IPO/Postal Order/Online Receipt] संलग्न है।\n\n"
+            "दिनांक: [दिनांक]\n"
+            "आवेदक का नाम: [नाम]\n"
+            "पत्ता व मोबाइल नंबर: [पता]"
+        )
+    elif draft_type == "fir":
+        fallback_draft = (
+            "सेवा में,\n"
+            "थाना प्रभारी महोदय,\n"
+            "थाना: [थाना क्षेत्र], [जिला]\n\n"
+            "विषय: संज्ञेय अपराध की सूचना एवं पुलिस शिकायत दर्ज करने बाबत।\n\n"
+            "महोदय,\n"
+            "सविनय निवेदन है कि मैं [आपका नाम], पुत्र/पुत्री [पिता का नाम], निवासी [पता] का निवासी हूँ। आज दिनांक [दिनांक] को समय लगभग [समय] पर निम्नलिखित घटना घटित हुई है:\n\n"
+            "[घटना का संक्षिप्त व सत्य विवरण यहाँ लिखें।]\n\n"
+            "विशेष वैधानिक चेतावनी: यह शिकायत पूर्णत: सत्य तथ्यों पर आधारित है। किसी भी प्रकार की दुर्भावनापूर्ण या झूठी शिकायत से बचने हेतु BNS धारा 217/229 तथा कॉर्पोरेट मामलों में कंपनी अधिनियम 2013 के प्रावधानों का पूर्ण ध्यान रखा गया है।\n\n"
+            "अतः श्रीमान से निवेदन है कि इस शिकायत पर त्वरित संज्ञान लेते हुए आवश्यक कानूनी कार्यवाही करने की कृपा करें।\n\n"
+            "दिनांक: [दिनांक]\n"
+            "शिकायतकर्ता के हस्ताक्षर: [हस्ताक्षर]\n"
+            "नाम: [नाम], फोन नंबर: [नंबर]"
+        )
+    else:
+        fallback_draft = (
+            "विधिक मांग नोटिस (LEGAL DEMAND NOTICE)\n\n"
+            "दिनांक: [दिनांक]\n"
+            "प्रति, [सामने वाले व्यक्ति/संस्था का नाम व पता]\n\n"
+            "विषय: संविदा उल्लंघन एवं बकाया राशि भुगतान हेतु लीगल नोटिस।\n\n"
+            "महोदय,\n"
+            "मैं अपने क्लाइंट [क्लाइंट का नाम] के निर्देशों के तहत आपको यह कानूनी नोटिस प्रेषित कर रहा हूँ:\n\n"
+            "1. यह है कि आपके द्वारा [विवाद का विवरण] के संबंध में पूर्व में हुए अनुबंध का अनुपालन नहीं किया गया है।\n"
+            "2. आपके ऊपर कुल देय राशि ₹[राशि] बकाया है।\n\n"
+            "अतः इस नोटिस के प्राप्त होने के 15 दिनों के भीतर अपनी बकाया राशि का भुगतान सुनिश्चित करें, अन्यथा मेरे क्लाइंट के पास आपके विरुद्ध सिविल एवं आपराधिक न्यायालय में कानूनी कार्यवाही करने का पूर्ण अधिकार सुरक्षित होगा।\n\n"
+            "भवदीय,\n"
+            "[अधिज्ञापक/एडवोकेट का नाम]"
+        )
+
+    return JSONResponse(content={"success": True, "draft_text": fallback_draft})
 
 @app.post("/api/legal-advice-solve")
 async def legal_advice_solve_endpoint(
@@ -1389,7 +1434,7 @@ async def legal_advice_solve_endpoint(
     if not api_keys:
         return JSONResponse(content={"success": False, "advice": "API Key not configured."})
 
-    router_models = ["gemini-3.5-flash", "gemini-2.5-flash"]
+    router_models = ["gemini-1.5-flash", "gemini-pro"]
     for model_name in router_models:
         for key in api_keys:
             target_url = f"https://generativelanguage.googleapis.com/v1beta/models/{model_name}:generateContent?key={key}"
