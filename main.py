@@ -827,7 +827,7 @@ def master_ecosystem_dashboard(request: Request, db: Session = Depends(get_db)):
     """
 
 # ------------------------------------------------------------------------------
-# 7. API एंडपॉइंट्स (पेवॉल चेक, लाइव लॉगिंग, AI विजन व 400-AI मल्टी-मॉडल सॉल्वर)
+# 7. API एंडपॉइंट्स (पेवॉल चेक, लाइव लॉगिंग, AI विजन व 400-AI न्यूरल सॉल्वर)
 # ------------------------------------------------------------------------------
 @app.get("/api/module-subfeatures/{module_id}")
 def get_module_subfeatures(module_id: int, request: Request, db: Session = Depends(get_db)):
@@ -880,7 +880,7 @@ def get_all_gemini_keys() -> List[str]:
     return keys
 
 # ==============================================================================
-# 400-AI Multi-Agent Neural Core Solver API (Universal gemini-3.5-flash & 1.5 Pipeline)
+# 400-AI Multi-Agent Neural Core Solver API (Direct 3.5-Flash Core Endpoint)
 # ==============================================================================
 @app.post("/api/ai-core-solve")
 async def ai_core_solve_endpoint(request: Request, query: str = Form(...), mode: str = Form("standard"), db: Session = Depends(get_db)):
@@ -919,41 +919,31 @@ async def ai_core_solve_endpoint(request: Request, query: str = Form(...), mode:
         "generationConfig": {"maxOutputTokens": 2048, "temperature": 0.2}
     }
 
-    # 3.5-flash को सबसे पहले रखा गया है
-    models_to_try = [
-        "gemini-3.5-flash",
-        "gemini-1.5-flash-latest",
-        "gemini-1.5-flash",
-        "gemini-2.0-flash",
-        "gemini-1.5-pro"
-    ]
     last_error = ""
-
-    for model_name in models_to_try:
-        for key in api_keys:
-            target_url = f"https://generativelanguage.googleapis.com/v1beta/models/{model_name}:generateContent?key={key}"
+    for key in api_keys:
+        target_url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key={key}"
+        try:
+            req = urllib.request.Request(
+                target_url,
+                data=json.dumps(payload).encode("utf-8"),
+                headers={"Content-Type": "application/json"},
+                method="POST"
+            )
+            with urllib.request.urlopen(req, timeout=35) as response:
+                res_data = json.loads(response.read().decode("utf-8"))
+                solution_text = res_data["candidates"][0]["content"]["parts"][0]["text"]
+                log_activity(db, "AI Core Solved", "AI Engine Core", f"Solved using gemini-3.5-flash in {mode} mode", "Student", client_ip)
+                return JSONResponse(content={"success": True, "solution": solution_text.strip()})
+        except urllib.error.HTTPError as he:
             try:
-                req = urllib.request.Request(
-                    target_url,
-                    data=json.dumps(payload).encode("utf-8"),
-                    headers={"Content-Type": "application/json"},
-                    method="POST"
-                )
-                with urllib.request.urlopen(req, timeout=30) as response:
-                    res_data = json.loads(response.read().decode("utf-8"))
-                    solution_text = res_data["candidates"][0]["content"]["parts"][0]["text"]
-                    log_activity(db, "AI Core Solved", "AI Engine Core", f"Solved using {model_name} in {mode} mode", "Student", client_ip)
-                    return JSONResponse(content={"success": True, "solution": solution_text.strip()})
-            except urllib.error.HTTPError as he:
-                try:
-                    err_body = json.loads(he.read().decode("utf-8"))
-                    last_error = err_body.get("error", {}).get("message", f"HTTP {he.code}")
-                except Exception:
-                    last_error = f"HTTP Error {he.code}"
-                continue
-            except Exception as e:
-                last_error = str(e)
-                continue
+                err_body = json.loads(he.read().decode("utf-8"))
+                last_error = err_body.get("error", {}).get("message", f"HTTP {he.code}")
+            except Exception:
+                last_error = f"HTTP Error {he.code}"
+            continue
+        except Exception as e:
+            last_error = str(e)
+            continue
 
     return JSONResponse(content={"success": False, "solution": f"⚠️ न्यूरल इंजन त्रुटि: {last_error} (कृपया API Key या कोटा चेक करें)"})
 
@@ -993,25 +983,17 @@ async def process_gemini_vision(file: UploadFile, lang: str, request: Request, d
             "generationConfig": {"maxOutputTokens": 2048, "temperature": 0.2}
         }
 
-        models_to_try = [
-            "gemini-3.5-flash",
-            "gemini-1.5-flash-latest",
-            "gemini-1.5-flash",
-            "gemini-2.0-flash",
-            "gemini-1.5-pro"
-        ]
-        for model_name in models_to_try:
-            for key in api_keys:
-                target_url = f"https://generativelanguage.googleapis.com/v1beta/models/{model_name}:generateContent?key={key}"
-                try:
-                    req = urllib.request.Request(target_url, data=json.dumps(payload).encode("utf-8"), headers={"Content-Type": "application/json"}, method="POST")
-                    with urllib.request.urlopen(req, timeout=45) as response:
-                        res_data = json.loads(response.read().decode("utf-8"))
-                        solution_text = res_data["candidates"][0]["content"]["parts"][0]["text"]
-                        log_activity(db, "Book Scan Success", "Kids Zone", f"Textbook image analyzed via {model_name}", "Student", client_ip)
-                        return JSONResponse(content={"success": True, "solution": solution_text.strip()})
-                except Exception:
-                    continue
+        for key in api_keys:
+            target_url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key={key}"
+            try:
+                req = urllib.request.Request(target_url, data=json.dumps(payload).encode("utf-8"), headers={"Content-Type": "application/json"}, method="POST")
+                with urllib.request.urlopen(req, timeout=45) as response:
+                    res_data = json.loads(response.read().decode("utf-8"))
+                    solution_text = res_data["candidates"][0]["content"]["parts"][0]["text"]
+                    log_activity(db, "Book Scan Success", "Kids Zone", "Textbook image analyzed via gemini-3.5-flash", "Student", client_ip)
+                    return JSONResponse(content={"success": True, "solution": solution_text.strip()})
+            except Exception:
+                continue
 
         return JSONResponse(content={"success": False, "solution": "⏳ नेबुला टीचर थोड़ा विश्राम ले रही हैं। कृपया 20-30 सेकंड बाद पुनः प्रयास करें! 🌟"})
     except Exception as e:
