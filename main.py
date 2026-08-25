@@ -182,7 +182,7 @@ def init_default_data():
             {"p_id": 10, "parent": "10. Nebula Visual Hub", "key": "nebula_visual_status", "name": "सिस्टम विज़ुअल मैट्रिक्स व ट्रैफिक स्टेटस", "paywall": False},
             {"p_id": 10, "parent": "10. Nebula Visual Hub", "key": "nebula_server_telemetry", "name": "डीप सर्वर टेलीमेट्री व लाइव नोड मॉनिटरिंग", "paywall": True},
 
-            # 11. International Spoken English (New 11th Module)
+            # 11. International Spoken English (11th Master Module)
             {"p_id": 11, "parent": "11. Spoken English Master", "key": "spoken_basic_phrases", "name": "डेली स्पोकन इंग्लिश व वोकैबुलरी (Free Tier)", "paywall": False},
             {"p_id": 11, "parent": "11. Spoken English Master", "key": "spoken_accent_trainer", "name": "3D AI वॉइस एक्सेंट व प्रोनंसिएशन मेंटर", "paywall": True},
             {"p_id": 11, "parent": "11. Spoken English Master", "key": "spoken_ielts_fluent", "name": "IELTS/TOEFL लाइव इंटरव्यू व फ्लुएंसी टेस्ट", "paywall": True}
@@ -665,7 +665,7 @@ def master_ecosystem_dashboard(request: Request, db: Session = Depends(get_db)):
                     </div>
                     <div onclick="window.location.href='/spoken-english'" class="master-card p-6 rounded-2xl cursor-pointer border border-emerald-500/40 hover:border-emerald-400 transition-all">
                         <h3 class="font-bold text-lg mb-2 text-emerald-400">11. Spoken English Master</h3>
-                        <p class="text-xs">3D होलोग्राफिक AI अवतार के साथ ग्लोबल एक्सेंट व लाइव वीडियो कॉल मेंटर।</p>
+                        <p class="text-xs">अदिति मैम के साथ 4D Live AI वॉइस एक्सेंट व आसान बोलचाल मेंटर।</p>
                     </div>
                 </div>
 
@@ -1050,12 +1050,12 @@ async def generate_quiz_endpoint(request: Request, file: UploadFile = File(...),
     return JSONResponse(content={"success": True, "quiz": fallback_quiz})
 
 # ==============================================================================
-# 9. मॉड्यूल 11: International Spoken English (Live Video AI Mentor Endpoint)
+# 9. मॉड्यूल 11: International Spoken English (Aditi Ma'am Indian AI Mentor)
 # ==============================================================================
 @app.get("/spoken-english", response_class=HTMLResponse)
 async def spoken_english_page(request: Request, db: Session = Depends(get_db)):
     client_ip = request.client.host if request.client else "Unknown"
-    log_activity(db, "Page Visited", "Spoken English", "Opened 3D Live AI Call Interface", "Student", client_ip)
+    log_activity(db, "Page Visited", "Spoken English", "Opened 4D Ultra Live AI Call Interface", "Student", client_ip)
     file_path = Path("spoken-english.html")
     if not file_path.exists():
         return HTMLResponse(content="<h1>spoken-english.html file missing</h1>", status_code=404)
@@ -1072,14 +1072,36 @@ async def spoken_english_reply_endpoint(
 ):
     client_ip = request.client.host if request.client else "Unknown"
     
+    if mode == "daily":
+        style_guide = (
+            "The user is a rural or Hindi-background beginner learning English. "
+            "Respond like a warm, caring Indian teacher (Aditi Ma'am). "
+            "Use very simple, slow, conversational English (max 2 short sentences). "
+            "Provide exact Devanagari Hindi pronunciation and simple Hindi meaning."
+        )
+    elif mode == "interview":
+        style_guide = (
+            "The user is preparing for a job interview. "
+            "Use polite, clear, simple corporate English with encouraging feedback."
+        )
+    else:
+        style_guide = (
+            "The user is preparing for IELTS/TOEFL. "
+            "Use fluent, natural global English with polite pronunciation guidance."
+        )
+
     prompt = (
-        "You are Miss Emily, an extremely polite, warm, engaging, and encouraging 3D AI English Mentor for Dhruv Academy.\n"
-        f"User said: '{user_speech}' (Conversation Mode: {mode})\n\n"
-        "STRICT INSTRUCTION:\n"
-        "1. Give a natural, conversational, polite English reply (maximum 2-3 sentences) directly continuing the conversation like a real live video call.\n"
-        "2. If the user made a grammar, vocabulary, or accent mistake, provide a very polite and encouraging correction in simple Hindi/English.\n"
-        "Output ONLY in JSON format:\n"
-        "{\"reply\": \"Your conversational reply in English\", \"correction\": \"Friendly polite correction or null\"}"
+        f"You are Aditi Ma'am, an extremely polite, caring, and encouraging AI English Mentor for Indian learners at Dhruv Academy.\n"
+        f"User said: '{user_speech}' (Mode: {mode})\n"
+        f"Guideline: {style_guide}\n\n"
+        "STRICT OUTPUT REQUIREMENT:\n"
+        "Output ONLY valid JSON with keys:\n"
+        "{\n"
+        "  \"reply\": \"Short natural English reply (2 sentences max)\",\n"
+        "  \"hindi_pronounce\": \"Devanagari phonetics of the reply (e.g., हाउ आर यू टुडे?)\",\n"
+        "  \"hindi_meaning\": \"Simple Hindi meaning of your reply\",\n"
+        "  \"correction\": \"Polite correction in simple words if user made a mistake, otherwise null\"\n"
+        "}"
     )
 
     payload = {
@@ -1102,12 +1124,24 @@ async def spoken_english_reply_endpoint(
                     raw_text = res_data["candidates"][0]["content"]["parts"][0]["text"].strip()
                     cleaned_json = raw_text.replace("```json", "").replace("```", "").strip()
                     parsed = json.loads(cleaned_json)
-                    log_activity(db, "Spoken Talk Success", "Spoken English", f"Mentored speech: {user_speech[:30]}", "Student", client_ip)
-                    return JSONResponse(content={"success": True, "reply": parsed.get("reply"), "correction": parsed.get("correction")})
+                    log_activity(db, "Spoken Talk Success", "Spoken English", f"Mentored speech in {mode} mode", "Student", client_ip)
+                    return JSONResponse(content={
+                        "success": True, 
+                        "reply": parsed.get("reply"),
+                        "hindi_pronounce": parsed.get("hindi_pronounce"),
+                        "hindi_meaning": parsed.get("hindi_meaning"),
+                        "correction": parsed.get("correction")
+                    })
             except Exception:
                 continue
 
-    return JSONResponse(content={"success": True, "reply": "That is wonderful! Let's continue practicing. Tell me more about your daily routine!", "correction": None})
+    return JSONResponse(content={
+        "success": True, 
+        "reply": "That is very good! Keep practicing with me.", 
+        "hindi_pronounce": "दैट इज़ वेरी गुड! कीप प्रैक्टिसिंग विद मी।",
+        "hindi_meaning": "यह बहुत अच्छा है! मेरे साथ अभ्यास जारी रखें।",
+        "correction": None
+    })
 
 # ==============================================================================
 # 10. पेज रूट्स
