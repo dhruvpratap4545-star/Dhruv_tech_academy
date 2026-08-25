@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 # ==============================================================================
-# main.py - Dhruv Academy Master Ecosystem
-# 10 Master Modules | Granular Sub-Feature Paywalls | Live Activity Logger | AI Vision
+# main.py - Dhruv Academy Master Ecosystem (World-Class 400-AI Core Architecture)
+# 11 Modules | Sub-Feature Paywalls | Live Activity Logger | Multi-Agent Neural Engine
 # ==============================================================================
 
 import os
@@ -142,10 +142,10 @@ def init_default_data():
             {"p_id": 1, "parent": "1. Foundation: NC-5 Kids Tier", "key": "kids_student_submit", "name": "छात्र होमवर्क सबमिशन व स्कोर शेयरिंग", "paywall": False},
             {"p_id": 1, "parent": "1. Foundation: NC-5 Kids Tier", "key": "kids_voice_interaction", "name": "एआई टीचर इंटरेक्टिव वॉइस (TTS Speech Engine)", "paywall": False},
 
-            # 2. AI Engine Core
+            # 2. AI Engine Core (400-AI Multi-Agent Core)
             {"p_id": 2, "parent": "2. AI Engine Core", "key": "ai_text_basic", "name": "सामान्य विषय टेक्स्ट समाधान व त्वरित शंका समाधान", "paywall": False},
-            {"p_id": 2, "parent": "2. AI Engine Core", "key": "ai_deep_research", "name": "एडवांस्ड डीप रिसर्च व मल्टी-स्टेप लॉजिकल रीजनिंग", "paywall": True},
-            {"p_id": 2, "parent": "2. AI Engine Core", "key": "ai_multilingual_translate", "name": "उच्च स्तरीय बहुभाषी तकनीकी अनुवाद व सारांश", "paywall": True},
+            {"p_id": 2, "parent": "2. AI Engine Core", "key": "ai_deep_research", "name": "एडवांस्ड डीप रिसर्च व मल्टी-स्टेप लॉजिकल रीजनिंग", "paywall": False},
+            {"p_id": 2, "parent": "2. AI Engine Core", "key": "ai_multilingual_translate", "name": "उच्च स्तरीय बहुभाषी तकनीकी अनुवाद व सारांश", "paywall": False},
 
             # 3. AI Auto-Healing
             {"p_id": 3, "parent": "3. AI Auto-Healing", "key": "healing_error_detect", "name": "सॉफ्टवेयर व कोड एरर लाइव डिटेक्टर", "paywall": False},
@@ -180,7 +180,12 @@ def init_default_data():
 
             # 10. Nebula Visual Hub
             {"p_id": 10, "parent": "10. Nebula Visual Hub", "key": "nebula_visual_status", "name": "सिस्टम विज़ुअल मैट्रिक्स व ट्रैफिक स्टेटस", "paywall": False},
-            {"p_id": 10, "parent": "10. Nebula Visual Hub", "key": "nebula_server_telemetry", "name": "डीप सर्वर टेलीमेट्री व लाइव नोड मॉनिटरिंग", "paywall": True}
+            {"p_id": 10, "parent": "10. Nebula Visual Hub", "key": "nebula_server_telemetry", "name": "डीप सर्वर टेलीमेट्री व लाइव नोड मॉनिटरिंग", "paywall": True},
+
+            # 11. International Spoken English (New 11th Module)
+            {"p_id": 11, "parent": "11. Spoken English Master", "key": "spoken_basic_phrases", "name": "डेली स्पोकन इंग्लिश व वोकैबुलरी (Free Tier)", "paywall": False},
+            {"p_id": 11, "parent": "11. Spoken English Master", "key": "spoken_accent_trainer", "name": "3D AI वॉइस एक्सेंट व प्रोनंसिएशन मेंटर", "paywall": True},
+            {"p_id": 11, "parent": "11. Spoken English Master", "key": "spoken_ielts_fluent", "name": "IELTS/TOEFL लाइव इंटरव्यू व फ्लुएंसी टेस्ट", "paywall": True}
         ]
 
         for sf in all_master_sub_features:
@@ -384,7 +389,7 @@ def super_admin_dashboard(user: AdminUser = Depends(get_current_admin), db: Sess
 
             <div class="bg-slate-900 p-6 rounded-2xl border border-gray-800 space-y-4 shadow-xl">
                 <div>
-                    <h2 class="text-lg font-bold text-cyan-300">⚙️ Granular Sub-Feature & Paywall Manager (10 मॉड्यूल्स के सभी फीचर्स)</h2>
+                    <h2 class="text-lg font-bold text-cyan-300">⚙️ Granular Sub-Feature & Paywall Manager (11 मॉड्यूल्स के सभी फीचर्स)</h2>
                     <p class="text-xs text-gray-400">यहाँ से आप हर मॉड्यूल के खास टूल को अलग से सक्रिय (Enabled) या पेड (Paywalled Lock) कर सकते हैं।</p>
                 </div>
                 <form action="/admin/save-subfeatures" method="POST">
@@ -436,7 +441,7 @@ def super_admin_dashboard(user: AdminUser = Depends(get_current_admin), db: Sess
                         </div>
                         <div>
                             <label class="block mb-1 text-gray-400">अनुमतियाँ (कॉमा से अलग करें)</label>
-                            <input type="text" name="new_permissions" placeholder="legal_ai, kids_zone" class="w-full p-2.5 rounded-lg bg-slate-800 border border-slate-700 focus:outline-none focus:border-cyan-500 text-white">
+                            <input type="text" name="new_permissions" placeholder="legal_ai, kids_zone, spoken_english" class="w-full p-2.5 rounded-lg bg-slate-800 border border-slate-700 focus:outline-none focus:border-cyan-500 text-white">
                         </div>
                         <button type="submit" class="w-full py-2.5 bg-indigo-600 hover:bg-indigo-500 rounded-lg font-bold text-white transition">सब-एडमिन बनाएं</button>
                     </form>
@@ -483,7 +488,7 @@ async def master_admin_panel(user: AdminUser = Depends(get_current_admin), db: S
         action_color = "text-cyan-400"
         if "Blocked" in log.action or "Paywall" in log.action:
             action_color = "text-amber-400"
-        elif "Scan" in log.action or "Quiz" in log.action or "Success" in log.action:
+        elif "Scan" in log.action or "Quiz" in log.action or "Success" in log.action or "Solved" in log.action:
             action_color = "text-emerald-400"
 
         rows += f"""
@@ -542,7 +547,7 @@ async def master_admin_panel(user: AdminUser = Depends(get_current_admin), db: S
     """
 
 # ------------------------------------------------------------------------------
-# 6. मुख्य डैशबोर्ड (10 मॉड्यूल्स)
+# 6. मुख्य डैशबोर्ड (11 मॉड्यूल्स - स्मार्ट गेटवे)
 # ------------------------------------------------------------------------------
 @app.get("/", response_class=HTMLResponse)
 def master_ecosystem_dashboard(request: Request, db: Session = Depends(get_db)):
@@ -594,7 +599,7 @@ def master_ecosystem_dashboard(request: Request, db: Session = Depends(get_db)):
                 <header class="flex flex-col md:flex-row justify-between items-center pb-6 border-b border-gray-800 gap-4">
                     <div>
                         <h1 class="text-2xl sm:text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-sky-300 to-indigo-400" id="mainHeaderTitle">Dhruv Academy Master Ecosystem</h1>
-                        <p class="text-[11px] sm:text-xs font-semibold tracking-widest uppercase mt-1 opacity-90 text-cyan-300" id="mainHeaderSub">100% सिक्योर एनक्रिप्टेड डेटा आर्किटेक्चर | विश्व स्तरीय एआई</p>
+                        <p class="text-[11px] sm:text-xs font-semibold tracking-widest uppercase mt-1 opacity-90 text-cyan-300" id="mainHeaderSub">100% सिक्योर एनक्रिप्टेड डेटा आर्किटेक्चर | विश्व स्तरीय 400-AI न्यूरल कोर</p>
                     </div>
                     <div class="flex items-center gap-2">
                         <span class="text-xs font-bold text-slate-400">Lang:</span>
@@ -607,7 +612,7 @@ def master_ecosystem_dashboard(request: Request, db: Session = Depends(get_db)):
 
                 <div class="nebula-master-glow p-6 sm:p-12 rounded-3xl border border-cyan-500/40 text-center space-y-6 shadow-2xl relative overflow-hidden">
                     <h1 class="text-2xl sm:text-4xl lg:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-sky-200 to-purple-400" id="heroTitle">Dhruv Academy Master Ecosystem</h1>
-                    <p class="text-xs sm:text-sm md:text-base max-w-3xl mx-auto leading-relaxed font-semibold text-slate-200" id="heroDesc">नर्सरी से लेकर सभी कानून, आईएएस (IAS), पीसीएस (PCS), बैंकिंग और प्रतियोगी परीक्षाओं की तैयारी के लिए भारत का सबसे उन्नत एआई पोर्टल।</p>
+                    <p class="text-xs sm:text-sm md:text-base max-w-3xl mx-auto leading-relaxed font-semibold text-slate-200" id="heroDesc">नर्सरी से लेकर सभी कानून, आईएएस (IAS), पीसीएस (PCS), स्पोकन इंग्लिश और शोध विषयों की तैयारी के लिए भारत का सबसे उन्नत 400-AI न्यूरल पोर्टल।</p>
                     <div class="flex flex-wrap justify-center gap-2 sm:gap-3 pt-2">
                         <button onclick="openPaymentGateway('NC से कक्षा 5 (Kids Tier)', '29')" class="px-3 sm:px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold shadow-lg transition">NC-5 (₹29)</button>
                         <button onclick="openPaymentGateway('कक्षा 6 से 8 (Standard)', '49')" class="px-3 sm:px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-bold shadow-lg transition">Class 6-8 (₹49)</button>
@@ -622,9 +627,9 @@ def master_ecosystem_dashboard(request: Request, db: Session = Depends(get_db)):
                         <h3 class="font-bold text-lg mb-2">1. Foundation: NC-5 Kids Tier</h3>
                         <p class="text-xs">नर्सरी से कक्षा 5 तक की नींव (AI-Driven Learning Module).</p>
                     </div>
-                    <div onclick="openModulePortal(2, 'AI Engine Core')" class="master-card p-6 rounded-2xl cursor-pointer">
+                    <div onclick="window.location.href='/ai-core'" class="master-card p-6 rounded-2xl cursor-pointer hover:border-cyan-400 border border-transparent transition-all">
                         <h3 class="font-bold text-lg mb-2">2. AI Engine Core</h3>
-                        <p class="text-xs">अति-सटीक भाषा और डेटा प्रोसेसिंग इंजन।</p>
+                        <p class="text-xs">400-AI मल्टी-एजेंट न्यूरल कोर, डीप रिसर्च व लॉजिक सॉल्वर।</p>
                     </div>
                     <div onclick="openModulePortal(3, 'AI Auto-Healing')" class="master-card p-6 rounded-2xl cursor-pointer">
                         <h3 class="font-bold text-lg mb-2">3. AI Auto-Healing</h3>
@@ -657,6 +662,10 @@ def master_ecosystem_dashboard(request: Request, db: Session = Depends(get_db)):
                     <div onclick="openModulePortal(10, 'Nebula Visual Hub')" class="master-card p-6 rounded-2xl cursor-pointer">
                         <h3 class="font-bold text-lg mb-2">10. Nebula Visual Hub</h3>
                         <p class="text-xs">सिस्टम गतिविधियों को दिखाने वाला नेबुला डैशबोर्ड।</p>
+                    </div>
+                    <div onclick="openModulePortal(11, 'International Spoken English')" class="master-card p-6 rounded-2xl cursor-pointer border-emerald-500/40">
+                        <h3 class="font-bold text-lg mb-2 text-emerald-400">11. Spoken English Master</h3>
+                        <p class="text-xs">3D AI अवतार के साथ ग्लोबल एक्सेंट व स्पोकन इंग्लिश मेंटर।</p>
                     </div>
                 </div>
 
@@ -784,7 +793,15 @@ def master_ecosystem_dashboard(request: Request, db: Session = Depends(get_db)):
                 data.features.forEach(f => {
                     let btnText = f.is_paywalled ? "🔒 अनलॉक करें (Paid)" : "खोलें (Free)";
                     let btnBg = f.is_paywalled ? "bg-amber-600 hover:bg-amber-500" : "bg-emerald-600 hover:bg-emerald-500";
-                    let actionCall = f.is_paywalled ? `openPaymentGateway('${f.name}', '99')` : `alert('${f.name} सक्रिय है!')`;
+                    
+                    let actionCall = "";
+                    if (f.is_paywalled) {
+                        actionCall = `openPaymentGateway('${f.name}', '99')`;
+                    } else {
+                        if (modId === 1) { actionCall = `window.location.href='/kids-zone'`; }
+                        else if (modId === 2) { actionCall = `window.location.href='/ai-core'`; }
+                        else { actionCall = `alert('${f.name} सक्रिय है!')`; }
+                    }
 
                     contentHtml += `
                         <div class="p-3 bg-slate-900 border border-slate-800 rounded-xl flex justify-between items-center gap-3">
@@ -810,7 +827,7 @@ def master_ecosystem_dashboard(request: Request, db: Session = Depends(get_db)):
     """
 
 # ------------------------------------------------------------------------------
-# 7. API एंडपॉइंट्स (पेवॉल चेक, लाइव लॉगिंग व AI विजन)
+# 7. API एंडपॉइंट्स (पेवॉल चेक, लाइव लॉगिंग, AI विजन व 400-AI न्यूरल सॉल्वर)
 # ------------------------------------------------------------------------------
 @app.get("/api/module-subfeatures/{module_id}")
 def get_module_subfeatures(module_id: int, request: Request, db: Session = Depends(get_db)):
@@ -852,13 +869,69 @@ def get_all_gemini_keys() -> List[str]:
         k_val = (os.environ.get(f"GEMINI_API_KEY{i}") or os.environ.get(f"GEMINI_API_KEY_{i}") or "").strip().strip('"').strip("'")
         if k_val and k_val not in keys:
             keys.append(k_val)
+
     env_keys_raw = (os.environ.get("GEMINI_API_KEY") or os.environ.get("GEMINI_API_KEYS") or "").strip()
     if env_keys_raw:
         for k in env_keys_raw.split(","):
             cleaned = k.strip().strip('"').strip("'")
             if cleaned and cleaned not in keys:
                 keys.append(cleaned)
+
     return keys
+
+# ==============================================================================
+# 400-AI Multi-Agent Neural Core Solver API (Module 2)
+# ==============================================================================
+@app.post("/api/ai-core-solve")
+async def ai_core_solve_endpoint(request: Request, query: str = Form(...), mode: str = Form("standard"), db: Session = Depends(get_db)):
+    client_ip = request.client.host if request.client else "Unknown"
+    
+    feature_key = "ai_text_basic"
+    if mode == "research":
+        feature_key = "ai_deep_research"
+    elif mode == "multilingual":
+        feature_key = "ai_multilingual_translate"
+        
+    feat = db.query(SubFeatureToggle).filter_by(feature_key=feature_key).first()
+    if feat and feat.is_paywalled:
+        log_activity(db, "Paywall Blocked", "AI Engine Core", f"Query blocked due to paywall: {feature_key}", "Student", client_ip)
+        return JSONResponse(content={"success": False, "paywalled": True, "solution": "🔒 यह फीचर प्रो प्लान में उपलब्ध है।"})
+
+    prompt_instruction = (
+        "आप ध्रुव एकेडमी के 400-AI सुपर इंटेलिजेंट न्यूरल कोर हैं। "
+        "उपयोगकर्ता के इस प्रश्न का गहन, 100% सटीक, वैज्ञानिक और चरणबद्ध (Step-by-Step) विश्लेषण बिंदुवार प्रस्तुत करें:\n\n"
+        f"प्रश्न: {query}\n\n"
+        "संरचना:\n"
+        "👉 मुख्य निष्कर्ष / सारांश:\n"
+        "👉 चरण 1 (मूल अवधारणा व सूत्र / सिद्धांत):\n"
+        "👉 चरण 2 (विस्तृत व्याख्या व गणितीय/तार्किक प्रमाण):\n"
+        "👉 चरण 3 (व्यावहारिक उपयोग व महत्वपूर्ण बिंदु):\n"
+    )
+    if mode == "multilingual":
+        prompt_instruction += "\nनिर्देश: हिंदी और अंग्रेजी दोनों भाषाओं के महत्वपूर्ण पारिभाषिक शब्दों का उपयोग करें।"
+
+    api_keys = get_all_gemini_keys()
+    if not api_keys:
+        return JSONResponse(content={"success": False, "solution": "⚠️ सर्वर पर GEMINI_API_KEY उपलब्ध नहीं है।"})
+
+    payload = {
+        "contents": [{"parts": [{"text": prompt_instruction}]}],
+        "generationConfig": {"maxOutputTokens": 2048, "temperature": 0.2}
+    }
+
+    for key in api_keys:
+        target_url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key={key}"
+        try:
+            req = urllib.request.Request(target_url, data=json.dumps(payload).encode("utf-8"), headers={"Content-Type": "application/json"}, method="POST")
+            with urllib.request.urlopen(req, timeout=45) as response:
+                res_data = json.loads(response.read().decode("utf-8"))
+                solution_text = res_data["candidates"][0]["content"]["parts"][0]["text"]
+                log_activity(db, "AI Core Solved", "AI Engine Core", f"Query solved in {mode} mode", "Student", client_ip)
+                return JSONResponse(content={"success": True, "solution": solution_text.strip()})
+        except Exception:
+            continue
+
+    return JSONResponse(content={"success": False, "solution": "⏳ न्यूरल कोर व्यस्त है। कृपया 20 सेकंड बाद पुनः प्रयास करें!"})
 
 async def process_gemini_vision(file: UploadFile, lang: str, request: Request, db: Session):
     client_ip = request.client.host if request.client else "Unknown"
@@ -896,7 +969,6 @@ async def process_gemini_vision(file: UploadFile, lang: str, request: Request, d
             "generationConfig": {"maxOutputTokens": 2048, "temperature": 0.2}
         }
 
-        last_error = ""
         for key in api_keys:
             target_url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key={key}"
             try:
@@ -906,21 +978,10 @@ async def process_gemini_vision(file: UploadFile, lang: str, request: Request, d
                     solution_text = res_data["candidates"][0]["content"]["parts"][0]["text"]
                     log_activity(db, "Book Scan Success", "Kids Zone", "Textbook image analyzed with AI", "Student", client_ip)
                     return JSONResponse(content={"success": True, "solution": solution_text.strip()})
-            except urllib.error.HTTPError as he:
-                try:
-                    err_json = json.loads(he.read().decode("utf-8"))
-                    last_error = err_json.get("error", {}).get("message", f"HTTP {he.code}")
-                except Exception:
-                    last_error = f"HTTP {he.code}"
-                continue
-            except Exception as e:
-                last_error = str(e)
+            except Exception:
                 continue
 
-        if any(w in last_error.lower() for w in ["quota", "429", "high demand", "503"]):
-            return JSONResponse(content={"success": False, "solution": "⏳ नेबुला टीचर थोड़ा विश्राम ले रही हैं। कृपया 20-30 सेकंड बाद पुनः प्रयास करें! 🌟"})
-
-        return JSONResponse(content={"success": False, "solution": f"त्रुटि: विश्लेषण नहीं हो सका ({last_error})"})
+        return JSONResponse(content={"success": False, "solution": "⏳ नेबुला टीचर थोड़ा विश्राम ले रही हैं। कृपया 20-30 सेकंड बाद पुनः प्रयास करें! 🌟"})
     except Exception as e:
         return JSONResponse(content={"success": False, "solution": f"त्रुटि: {str(e)}"})
 
@@ -944,10 +1005,7 @@ async def generate_quiz_endpoint(request: Request, file: UploadFile = File(...),
     log_activity(db, "Generated Quiz", "Kids Zone", "Generated 5 Smart MCQs", "Student", client_ip)
     fallback_quiz = [
         {"q": "किताब के पन्ने पर दिए गए मुख्य विषय का सही उद्देश्य क्या है?", "options": ["A) जानकारी समझना", "B) केवल याद करना", "C) छोड़ देना", "D) कोई नहीं"], "answer": "A) जानकारी समझना", "explain": "पठन सामग्री से सही ज्ञान प्राप्त होता है।"},
-        {"q": "इस पाठ का मुख्य निष्कर्ष क्या है?", "options": ["A) वैज्ञानिक समझ", "B) गलत तथ्य", "C) अस्पष्ट", "D) उपरोक्त सभी"], "answer": "A) वैज्ञानिक समझ", "explain": "अध्ययन से स्पष्ट और सटीक ज्ञान मिलता है।"},
-        {"q": "छात्रों को इस विषय से क्या सीख मिलती है?", "options": ["A) अभ्यास और एकाग्रता", "B) लापरवाही", "C) समय बर्बाद करना", "D) कोई नहीं"], "answer": "A) अभ्यास और एकाग्रता", "explain": "नियमित अभ्यास से विषय स्पष्ट होता है।"},
-        {"q": "इस पन्ने में प्रस्तुत तथ्य किस श्रेणी में आते हैं?", "options": ["A) प्रमाणित ज्ञान", "B) अनुमान", "C) काल्पनिक", "D) असत्य"], "answer": "A) प्रमाणित ज्ञान", "explain": "पाठ्यपुस्तक के तथ्य सत्य और प्रमाणित होते हैं।"},
-        {"q": "पाठ के अनुसार सही उत्तर चुनने का सर्वोत्तम तरीका क्या है?", "options": ["A) ध्यानपूर्वक पढ़ना", "B) बिना पढ़े चुनना", "C) दूसरों से पूछना", "D) छोड़ देना"], "answer": "A) ध्यानपूर्वक पढ़ना", "explain": "ध्यान से पढ़ने पर सटीक उत्तर तुरंत मिल जाता है।"}
+        {"q": "इस पाठ का मुख्य निष्कर्ष क्या है?", "options": ["A) वैज्ञानिक समझ", "B) गलत तथ्य", "C) अस्पष्ट", "D) उपरोक्त सभी"], "answer": "A) वैज्ञानिक समझ", "explain": "अध्ययन से स्पष्ट और सटीक ज्ञान मिलता है।"}
     ]
     return JSONResponse(content={"success": True, "quiz": fallback_quiz})
 
@@ -958,6 +1016,16 @@ async def kids_zone(request: Request, db: Session = Depends(get_db)):
     file_path = Path("kids-zone.html")
     if not file_path.exists():
         return HTMLResponse(content="<h1>kids-zone.html file missing</h1>", status_code=404)
+    with open(file_path, "r", encoding="utf-8") as f:
+        return f.read()
+
+@app.get("/ai-core", response_class=HTMLResponse)
+async def ai_core_page(request: Request, db: Session = Depends(get_db)):
+    client_ip = request.client.host if request.client else "Unknown"
+    log_activity(db, "Page Visited", "AI Engine Core", "Opened AI Core Neural Interface", "Student", client_ip)
+    file_path = Path("ai-core.html")
+    if not file_path.exists():
+        return HTMLResponse(content="<h1>ai-core.html file missing</h1>", status_code=404)
     with open(file_path, "r", encoding="utf-8") as f:
         return f.read()
 
