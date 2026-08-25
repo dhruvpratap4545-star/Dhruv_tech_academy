@@ -18,7 +18,7 @@
             flex-direction: column;
             justify-content: space-between;
             align-items: center;
-            padding: 12px;
+            padding: 10px sm:padding: 16px;
             overflow-x: hidden;
         }
 
@@ -27,15 +27,15 @@
             max-width: 1100px;
             display: flex;
             flex-direction: column;
-            gap: 18px;
+            gap: 16px;
         }
 
-        /* 3D होलोग्राफिक स्टेज बैकग्राउंड */
+        /* 3D होलोग्राफिक स्टेज */
         .hologram-stage {
             background: radial-gradient(circle at center, #0f172a 0%, #030712 100%);
             border: 2px solid rgba(56, 189, 248, 0.45);
-            border-radius: 28px;
-            box-shadow: 0 0 45px rgba(14, 165, 233, 0.3), inset 0 0 35px rgba(0, 0, 0, 0.95);
+            border-radius: 24px;
+            box-shadow: 0 0 35px rgba(14, 165, 233, 0.25), inset 0 0 30px rgba(0, 0, 0, 0.95);
             position: relative;
             overflow: hidden;
         }
@@ -43,26 +43,28 @@
         .holo-grid-lines {
             background-image: linear-gradient(rgba(56, 189, 248, 0.08) 1px, transparent 1px),
                               linear-gradient(90deg, rgba(56, 189, 248, 0.08) 1px, transparent 1px);
-            background-size: 30px 30px;
+            background-size: 28px 28px;
         }
 
-        /* होलोग्राफिक ग्लो रिंग्स */
+        /* 3D सजीव टीचर रिंग और फ्लोट एनिमेशन */
         .holo-circle-beam {
-            box-shadow: 0 0 35px rgba(56, 189, 248, 0.7), inset 0 0 25px rgba(255, 255, 255, 0.35);
+            box-shadow: 0 0 30px rgba(56, 189, 248, 0.8), inset 0 0 20px rgba(255, 255, 255, 0.4);
             animation: beamFloat 4s ease-in-out infinite;
         }
         @keyframes beamFloat {
             0%, 100% { transform: translateY(0px) scale(1); }
-            50% { transform: translateY(-8px) scale(1.03); }
+            50% { transform: translateY(-6px) scale(1.02); }
         }
 
-        /* अवतार लिप-सिंक और एक्सप्रेशन एनिमेशन */
+        /* बोलते समय लिप-सिंक व वाइब्रेंट पल्स */
         .talking-pulse {
-            animation: talkGlow 0.38s infinite alternate ease-in-out;
+            animation: talkGlow 0.35s infinite alternate ease-in-out;
+            border-color: #facc15 !important;
+            box-shadow: 0 0 45px #facc15, inset 0 0 25px rgba(250, 204, 21, 0.6) !important;
         }
         @keyframes talkGlow {
-            0% { transform: scale(1); border-color: #38bdf8; box-shadow: 0 0 25px #0284c7; }
-            100% { transform: scale(1.08); border-color: #facc15; box-shadow: 0 0 40px #facc15; }
+            0% { transform: scale(1); }
+            100% { transform: scale(1.06); }
         }
 
         .lang-pill-container {
@@ -71,17 +73,18 @@
             background-color: #0b1329;
             border: 1.5px solid #0284c7;
             border-radius: 9999px;
-            padding: 3px;
-            gap: 4px;
+            padding: 2px;
+            gap: 2px;
         }
         .lang-pill-btn {
-            padding: 5px 14px;
+            padding: 4px 12px;
             border-radius: 9999px;
             font-size: 11px;
             font-weight: 700;
             cursor: pointer;
-            transition: all 0.25s ease-in-out;
+            transition: all 0.2s ease-in-out;
             border: none;
+            outline: none;
         }
         .lang-pill-active {
             background: linear-gradient(135deg, #0284c7, #0369a1) !important;
@@ -90,7 +93,7 @@
         }
         .lang-pill-inactive { background: transparent !important; color: #94a3b8 !important; }
 
-        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar { width: 5px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: #020617; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #334155; border-radius: 6px; }
     </style>
@@ -99,54 +102,55 @@
 
     <div class="main-wrapper">
         
-        <!-- टॉप बार -->
-        <div class="flex justify-between items-center pb-2 border-b border-gray-800 w-full">
-            <a href="/" class="px-4 py-2 bg-red-700 hover:bg-red-600 text-white rounded-xl text-xs font-bold transition flex items-center gap-2 shadow">
-                ← <span id="navBackLabel">मुख्य पोर्टल</span>
-            </a>
-            
-            <div class="flex items-center gap-3">
-                <span class="px-3.5 py-1 bg-sky-950 border border-sky-500/50 text-cyan-300 rounded-full text-xs font-bold flex items-center gap-1.5 shadow">
-                    <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span> 
-                    <span id="callStatusBadge">3D Hologram Live Mentor Active</span>
+        <!-- टॉप बार (मोबाइल रिस्पॉन्सिव फिक्स) -->
+        <div class="flex flex-wrap justify-between items-center pb-2 border-b border-gray-800 w-full gap-2">
+            <div class="flex items-center gap-2">
+                <a href="/" class="px-3 py-1.5 bg-red-700 hover:bg-red-600 text-white rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow">
+                    ← <span id="navBackLabel">मुख्य पोर्टल</span>
+                </a>
+                <span class="px-2.5 py-1 bg-sky-950 border border-sky-500/40 text-cyan-300 rounded-full text-[10px] font-bold flex items-center gap-1">
+                    <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span> 
+                    <span id="callStatusBadge">3D Hologram Mentor Active</span>
                 </span>
-                <div class="lang-pill-container">
-                    <button type="button" onclick="setSpokenLanguage('hi')" id="hiLangBtn" class="lang-pill-btn lang-pill-active">हिंदी</button>
-                    <button type="button" onclick="setSpokenLanguage('en')" id="enLangBtn" class="lang-pill-btn lang-pill-inactive">English</button>
-                </div>
+            </div>
+            
+            <div class="lang-pill-container">
+                <button type="button" onclick="setSpokenLanguage('hi')" id="hiLangBtn" class="lang-pill-btn lang-pill-active">हिंदी</button>
+                <button type="button" onclick="setSpokenLanguage('en')" id="enLangBtn" class="lang-pill-btn lang-pill-inactive">English</button>
             </div>
         </div>
 
         <!-- 3D फेस-टू-फेस लाइव होलोग्राफिक क्लासरूम स्टेज -->
-        <div class="hologram-stage holo-grid-lines p-5 sm:p-8 flex flex-col lg:flex-row items-center justify-between gap-6">
+        <div class="hologram-stage holo-grid-lines p-4 sm:p-7 flex flex-col lg:flex-row items-center justify-between gap-6">
             
-            <!-- 3D AI लाइव टीचर होलोग्राफिक अवतार -->
-            <div class="flex flex-col items-center gap-4 text-center">
+            <!-- 3D AI लाइव टीचर होलोग्राफिक अवतार (फोटोरियलिस्टिक टीचर स्टाइल) -->
+            <div class="flex flex-col items-center gap-3 text-center">
                 <div class="relative flex items-center justify-center">
                     <!-- होलोग्राफिक बीम बेस -->
-                    <div class="absolute -bottom-4 w-40 h-8 bg-cyan-500/20 rounded-full blur-xl animate-pulse"></div>
+                    <div class="absolute -bottom-3 w-40 h-8 bg-cyan-500/25 rounded-full blur-xl animate-pulse"></div>
                     
-                    <div id="aiLiveAvatar" onclick="playMentorWelcome()" class="holo-circle-beam w-32 h-32 sm:w-44 sm:h-44 rounded-full bg-gradient-to-tr from-sky-600 via-indigo-700 to-purple-800 border-4 border-cyan-400 flex items-center justify-center text-7xl sm:text-8xl cursor-pointer relative shadow-2xl transition" title="मुझसे लाइव बात करने के लिए क्लिक करें!">
-                        👩‍🏫
-                        <span class="absolute bottom-1 right-2 w-6 h-6 bg-emerald-400 border-3 border-slate-900 rounded-full flex items-center justify-center text-[10px] font-bold text-slate-900 shadow">HD</span>
+                    <div id="aiLiveAvatar" onclick="playMentorWelcome()" class="holo-circle-beam w-36 h-36 sm:w-44 sm:h-44 rounded-full bg-slate-900 border-4 border-cyan-400 overflow-hidden relative cursor-pointer shadow-2xl transition flex items-center justify-center" title="मुझसे लाइव बात करने के लिए क्लिक करें!">
+                        <!-- 3D मॉडल / फोटोरियलिस्टिक टीचर अवतार विजुअल -->
+                        <img id="avatarImage" src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=400&q=80" alt="Miss Emily 3D Teacher" class="w-full h-full object-cover">
+                        <span class="absolute bottom-1 right-3 px-2 py-0.5 bg-emerald-500 border border-slate-900 rounded-full text-[9px] font-extrabold text-slate-950 shadow">LIVE 3D</span>
                     </div>
                 </div>
 
                 <div>
-                    <h2 class="text-lg sm:text-xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 via-sky-200 to-indigo-300">Miss Emily (AI Holographic Mentor)</h2>
-                    <p id="liveMentorState" class="text-xs text-emerald-400 font-semibold mt-1">🟢 लाइव बातचीत व झिझक मिटाने के लिए तैयार</p>
-                    <p class="text-[11px] text-gray-400 mt-0.5">अवतार पर टैप करके लाइव वॉइस सुनें</p>
+                    <h2 class="text-base sm:text-lg font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 via-sky-200 to-indigo-300">Miss Emily (AI Holographic Mentor)</h2>
+                    <p id="liveMentorState" class="text-xs text-emerald-400 font-semibold mt-0.5">🟢 लाइव बातचीत व झिझक मिटाने के लिए तैयार</p>
+                    <p class="text-[10px] text-gray-400 mt-0.5">अवतार पर टैप करके लाइव वॉइस सुनें</p>
                 </div>
 
                 <!-- कॉन्फिडेंस व फ्लुएंसी मीटर -->
-                <div class="flex gap-4 p-2 bg-slate-900/90 border border-slate-800 rounded-2xl text-xs">
+                <div class="flex gap-4 p-2 bg-slate-900/90 border border-slate-800 rounded-2xl text-xs shadow">
                     <div>
                         <span class="text-gray-400 text-[10px] block">Confidence:</span>
-                        <span id="scoreConfidence" class="font-extrabold text-emerald-400">95% (High)</span>
+                        <span id="scoreConfidence" class="font-extrabold text-emerald-400">96% (High)</span>
                     </div>
                     <div class="border-l border-gray-700 pl-4">
                         <span class="text-gray-400 text-[10px] block">Pronunciation:</span>
-                        <span id="scoreAccent" class="font-extrabold text-cyan-400">92% (Clear)</span>
+                        <span id="scoreAccent" class="font-extrabold text-cyan-400">94% (Great)</span>
                     </div>
                 </div>
             </div>
@@ -173,7 +177,7 @@
         </div>
 
         <!-- लाइव नियंत्रण और परिस्थितिजन्य मोड (Scenario Selector) -->
-        <div class="bg-slate-900 p-5 rounded-3xl border border-gray-800 space-y-4 shadow-xl">
+        <div class="bg-slate-900 p-4 sm:p-5 rounded-3xl border border-gray-800 space-y-3 shadow-xl">
             
             <div class="flex flex-wrap gap-2 justify-center pb-1">
                 <button onclick="setScenarioMode('daily')" id="btnDailyMode" class="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-cyan-600 text-white shadow">
@@ -240,7 +244,7 @@
                 hiBtn.className = "lang-pill-btn lang-pill-active";
                 enBtn.className = "lang-pill-btn lang-pill-inactive";
                 document.getElementById('navBackLabel').innerText = "मुख्य पोर्टल";
-                document.getElementById('callStatusBadge').innerText = "3D Hologram Live Mentor Active";
+                document.getElementById('callStatusBadge').innerText = "3D Hologram Mentor Active";
                 document.getElementById('liveMentorState').innerText = "🟢 लाइव बातचीत व झिझक मिटाने के लिए तैयार";
                 document.getElementById('modeDailyText').innerText = "डेली लाइफ बातचीत";
                 document.getElementById('modeInterviewText').innerText = "जॉब इंटरव्यू मॉक";
@@ -251,7 +255,7 @@
                 enBtn.className = "lang-pill-btn lang-pill-active";
                 hiBtn.className = "lang-pill-btn lang-pill-inactive";
                 document.getElementById('navBackLabel').innerText = "Main Portal";
-                document.getElementById('callStatusBadge').innerText = "3D Hologram Live Mentor Active";
+                document.getElementById('callStatusBadge').innerText = "3D Hologram Mentor Active";
                 document.getElementById('liveMentorState').innerText = "🟢 Ready for hesitation-free conversation";
                 document.getElementById('modeDailyText').innerText = "Daily English";
                 document.getElementById('modeInterviewText').innerText = "Job Interview Mock";
@@ -374,7 +378,6 @@
             out.innerHTML += `<div id="${loadingId}" class="text-cyan-400 font-medium animate-pulse">👩‍🏫 Miss Emily सोच रही हैं और उत्तर तैयार कर रही हैं...</div>`;
             out.scrollTop = out.scrollHeight;
 
-            // कॉन्फिडेंस स्कोर रैंडमाइज/कैलकुलेट
             document.getElementById('scoreConfidence').innerText = "96% (High)";
             document.getElementById('scoreAccent').innerText = "94% (Great)";
 
