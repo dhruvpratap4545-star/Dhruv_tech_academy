@@ -30,7 +30,6 @@
             gap: 16px;
         }
 
-        /* 3D होलोग्राफिक स्टेज */
         .hologram-stage {
             background: radial-gradient(circle at center, #0f172a 0%, #030712 100%);
             border: 2px solid rgba(56, 189, 248, 0.45);
@@ -46,7 +45,6 @@
             background-size: 28px 28px;
         }
 
-        /* 3D सजीव टीचर रिंग और फ्लोट एनिमेशन */
         .holo-circle-beam {
             box-shadow: 0 0 30px rgba(56, 189, 248, 0.8), inset 0 0 20px rgba(255, 255, 255, 0.4);
             animation: beamFloat 4s ease-in-out infinite;
@@ -56,7 +54,6 @@
             50% { transform: translateY(-6px) scale(1.02); }
         }
 
-        /* बोलते समय लिप-सिंक व वाइब्रेंट पल्स */
         .talking-pulse {
             animation: talkGlow 0.35s infinite alternate ease-in-out;
             border-color: #facc15 !important;
@@ -102,7 +99,7 @@
 
     <div class="main-wrapper">
         
-        <!-- टॉप बार (मोबाइल रिस्पॉन्सिव) -->
+        <!-- टॉप बार -->
         <div class="flex flex-wrap justify-between items-center pb-2 border-b border-gray-800 w-full gap-2">
             <div class="flex items-center gap-2">
                 <a href="/" class="px-3 py-1.5 bg-red-700 hover:bg-red-600 text-white rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow">
@@ -123,13 +120,12 @@
         <!-- 3D फेस-टू-फेस लाइव होलोग्राफिक क्लासरूम स्टेज -->
         <div class="hologram-stage holo-grid-lines p-4 sm:p-7 flex flex-col lg:flex-row items-center justify-between gap-6">
             
-            <!-- 3D AI लाइव टीचर होलोग्राफिक अवतार (Canvas Real-Time Animated Face) -->
+            <!-- 3D AI लाइव टीचर होलोग्राफिक अवतार -->
             <div class="flex flex-col items-center gap-3 text-center">
                 <div class="relative flex items-center justify-center">
                     <div class="absolute -bottom-3 w-40 h-8 bg-cyan-500/25 rounded-full blur-xl animate-pulse"></div>
                     
                     <div id="aiLiveAvatar" onclick="playMentorWelcome()" class="holo-circle-beam w-36 h-36 sm:w-44 sm:h-44 rounded-full bg-slate-900 border-4 border-cyan-400 overflow-hidden relative cursor-pointer shadow-2xl transition flex items-center justify-center" title="मुझसे लाइव बात करने के लिए क्लिक करें!">
-                        <!-- डायनामिक 3D कैनवास जो पलकें और होंठ लाइव चलाएगा -->
                         <canvas id="avatarCanvas" width="200" height="200" class="w-full h-full object-cover"></canvas>
                         <span class="absolute bottom-1 right-3 px-2 py-0.5 bg-emerald-500 border border-slate-900 rounded-full text-[9px] font-extrabold text-slate-950 shadow">LIVE 3D</span>
                     </div>
@@ -175,18 +171,18 @@
             </div>
         </div>
 
-        <!-- लाइव नियंत्रण और परिस्थितिजन्य मोड (Scenario Selector) -->
+        <!-- लाइव नियंत्रण और परिस्थितिजन्य मोड (3-Tier Mode Selector) -->
         <div class="bg-slate-900 p-4 sm:p-5 rounded-3xl border border-gray-800 space-y-3 shadow-xl">
             
             <div class="flex flex-wrap gap-2 justify-center pb-1">
                 <button onclick="setScenarioMode('daily')" id="btnDailyMode" class="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-cyan-600 text-white shadow">
-                    ☕ <span id="modeDailyText">डेली लाइफ बातचीत</span>
+                    ☕ <span id="modeDailyText">डेली लाइफ बातचीत (देहाती/क्षेत्रीय से सिंपल)</span>
                 </button>
                 <button onclick="setScenarioMode('interview')" id="btnInterviewMode" class="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-slate-800 text-gray-300 hover:text-white">
-                    💼 <span id="modeInterviewText">जॉब इंटरव्यू मॉक</span>
+                    💼 <span id="modeInterviewText">जॉब इंटरव्यू मॉक (फॉर्मल कॉर्पोरेट)</span>
                 </button>
                 <button onclick="setScenarioMode('ielts')" id="btnIeltsMode" class="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-slate-800 text-gray-300 hover:text-white">
-                    🎓 <span id="modeIeltsText">IELTS / TOEFL फ्लुएंसी</span>
+                    🎓 <span id="modeIeltsText">IELTS / TOEFL फ्लुएंसी (ग्लोबल एक्सेंट)</span>
                 </button>
             </div>
 
@@ -300,7 +296,7 @@
                 ctx.fillRect(92, 128, 16, 4);
             }
 
-            // कोट / पोशाक
+            // पोशाक
             ctx.fillStyle = '#4338ca';
             ctx.beginPath();
             ctx.moveTo(50, 195);
@@ -312,13 +308,11 @@
             requestAnimationFrame(renderAvatarFrame);
         }
 
-        // ब्लिंक लूप
         setInterval(() => {
             eyeBlinkState = 1;
             setTimeout(() => { eyeBlinkState = 0; }, 180);
         }, 3200);
 
-        // लिप-सिंक वेव ऑसिलेटर
         setInterval(() => {
             if (isTeacherTalking) {
                 mouthOpenness = Math.random();
@@ -340,9 +334,9 @@
                 document.getElementById('navBackLabel').innerText = "मुख्य पोर्टल";
                 document.getElementById('callStatusBadge').innerText = "3D Hologram Mentor Active";
                 document.getElementById('liveMentorState').innerText = "🟢 लाइव बातचीत व झिझक मिटाने के लिए तैयार";
-                document.getElementById('modeDailyText').innerText = "डेली लाइफ बातचीत";
-                document.getElementById('modeInterviewText').innerText = "जॉब इंटरव्यू मॉक";
-                document.getElementById('modeIeltsText').innerText = "IELTS / TOEFL फ्लुएंसी";
+                document.getElementById('modeDailyText').innerText = "डेली लाइफ बातचीत (देहाती/क्षेत्रीय से सिंपल)";
+                document.getElementById('modeInterviewText').innerText = "जॉब इंटरव्यू मॉक (फॉर्मल कॉर्पोरेट)";
+                document.getElementById('modeIeltsText').innerText = "IELTS / TOEFL फ्लुएंसी (ग्लोबल एक्सेंट)";
                 document.getElementById('speechInstructionLabel').innerText = "माइक चालू करें और खुलकर बोलें (AI स्वतः उच्चारण सुधारेगा)";
                 document.getElementById('recordBtnLabel').innerText = isSpeakingActive ? "सुन रहा हूँ... (बोलना बंद करें)" : "माइक ऑन करें व बोलें";
             } else {
@@ -351,9 +345,9 @@
                 document.getElementById('navBackLabel').innerText = "Main Portal";
                 document.getElementById('callStatusBadge').innerText = "3D Hologram Mentor Active";
                 document.getElementById('liveMentorState').innerText = "🟢 Ready for hesitation-free conversation";
-                document.getElementById('modeDailyText').innerText = "Daily English";
-                document.getElementById('modeInterviewText').innerText = "Job Interview Mock";
-                document.getElementById('modeIeltsText').innerText = "IELTS / TOEFL Fluency";
+                document.getElementById('modeDailyText').innerText = "Daily English (Simple & Conversational)";
+                document.getElementById('modeInterviewText').innerText = "Job Interview Mock (Corporate)";
+                document.getElementById('modeIeltsText').innerText = "IELTS / TOEFL Fluency (Global Accent)";
                 document.getElementById('speechInstructionLabel').innerText = "Start mic and speak freely (AI auto-corrects accent)";
                 document.getElementById('recordBtnLabel').innerText = isSpeakingActive ? "Listening... (Click to stop)" : "Start Mic & Speak";
             }
@@ -397,15 +391,36 @@
             vocalizeMentor(msg);
         }
 
+        function getBestNeuralVoice() {
+            if (!('speechSynthesis' in window)) return null;
+            let voices = window.speechSynthesis.getVoices();
+            // सबसे नेचुरल व स्मूथ आवाज़ प्राथमिकता
+            let best = voices.find(v => v.name.includes("Google US English") || v.name.includes("Natural") || v.name.includes("Samantha") || v.name.includes("Zira"));
+            return best || voices.find(v => v.lang.startsWith("en")) || null;
+        }
+
         function vocalizeMentor(text) {
             try {
                 if ('speechSynthesis' in window) {
                     window.speechSynthesis.cancel();
                     let clean = text.replace(/[*_#~👩‍🏫💡👉•☕💼🎓]/g, '').trim();
                     let utterance = new SpeechSynthesisUtterance(clean);
+                    
+                    let voice = getBestNeuralVoice();
+                    if (voice) utterance.voice = voice;
+                    
                     utterance.lang = 'en-US';
-                    utterance.rate = 0.9;
-                    utterance.pitch = 1.05;
+                    // मोड के आधार पर स्पीड व पिच का सूक्ष्म सामंजस्य
+                    if (currentScenario === 'daily') {
+                        utterance.rate = 0.86; // देहाती/शुरुआती छात्रों के लिए धीमा व स्पष्ट
+                        utterance.pitch = 1.05;
+                    } else if (currentScenario === 'interview') {
+                        utterance.rate = 0.92;
+                        utterance.pitch = 1.0;
+                    } else {
+                        utterance.rate = 0.98;
+                        utterance.pitch = 1.0;
+                    }
 
                     let avatar = document.getElementById('aiLiveAvatar');
                     utterance.onstart = () => {
@@ -503,6 +518,7 @@
                     out.innerHTML += `<div class="p-3 bg-cyan-950/60 rounded-xl border border-cyan-500/40 text-slate-100 space-y-1.5 shadow">
                         <p class="font-bold text-cyan-300">👩‍🏫 Miss Emily:</p>
                         <p class="text-sm font-medium">${data.reply}</p>
+                        ${data.hindi_meaning ? `<p class="text-[11px] text-cyan-200">🇮🇳 सरल हिंदी अर्थ: ${data.hindi_meaning}</p>` : ''}
                         ${data.correction ? `<p class="text-[11px] text-yellow-400 font-semibold mt-1">✨ उच्चारण/सुधार: ${data.correction}</p>` : ''}
                     </div>`;
                     out.scrollTop = out.scrollHeight;
@@ -519,6 +535,10 @@
 
         function clearConversationBoard() {
             document.getElementById('dialogueOutputArea').innerHTML = `<p class="text-gray-400 text-xs">बोर्ड साफ कर दिया गया है। माइक ऑन करके बातचीत शुरू करें!</p>`;
+        }
+
+        if ('speechSynthesis' in window) {
+            window.speechSynthesis.onvoiceschanged = () => { getBestNeuralVoice(); };
         }
     </script>
 </body>
