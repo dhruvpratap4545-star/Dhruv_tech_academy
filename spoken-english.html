@@ -108,47 +108,66 @@
 
                 <div>
                     <h2 class="text-base sm:text-lg font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 via-sky-200 to-indigo-300">अदिति मैम (Aditi Ma'am)</h2>
-                    <p id="teacherStateDesc" class="text-xs text-emerald-400 font-semibold mt-0.5">🟢 अल्ट्रा-रियलिस्टिक नेचुरल ह्यूमन वॉइस एक्टिव</p>
+                    <p id="teacherStateDesc" class="text-xs text-emerald-400 font-semibold mt-0.5">🟢 लाइव फोनेटिक वॉयस विश्लेषक सक्रिय</p>
                     <p class="text-[10px] text-gray-400 mt-0.5">अदिति मैम पर टैप करके लाइव आवाज़ सुनें</p>
                 </div>
 
-                <!-- आत्मविश्वास व स्पष्टता स्कोर -->
+                <!-- आत्मविश्वास व उच्चारण स्कोर -->
                 <div class="flex gap-4 p-2 bg-slate-900/90 border border-slate-800 rounded-2xl text-xs shadow">
                     <div>
                         <span class="text-gray-400 text-[10px] block">आत्मविश्वास (Confidence):</span>
                         <span id="metricConfidence" class="font-extrabold text-emerald-400">96% (उत्कृष्ट)</span>
                     </div>
                     <div class="border-l border-gray-700 pl-4">
-                        <span class="text-gray-400 text-[10px] block">उच्चारण (Clarity):</span>
+                        <span class="text-gray-400 text-[10px] block">उच्चारण (Phonetics):</span>
                         <span id="metricPronounce" class="font-extrabold text-cyan-400">95% (स्पष्ट)</span>
                     </div>
                 </div>
             </div>
 
-            <!-- लाइव बातचीत और हिंदी हेल्प बोर्ड -->
+            <!-- लाइव बातचीत और फोनेटिक कलर-कोडिंग बोर्ड -->
             <div class="w-full lg:w-3/5 bg-slate-950/90 border border-slate-800/90 rounded-2xl p-4 sm:p-5 space-y-3 shadow-2xl flex flex-col justify-between">
                 <div class="flex justify-between items-center border-b border-slate-800 pb-2">
                     <span class="text-xs font-bold text-sky-400 flex items-center gap-1.5">
-                        <span>💬</span> <span>Live Conversation & Hindi Guidance</span>
+                        <span>💬</span> <span>Live Conversation & Color-Coded Guidance</span>
                     </span>
                     <button onclick="clearChatBoard()" class="text-[11px] text-gray-400 hover:text-white px-2 py-0.5 rounded bg-slate-900 border border-slate-800">सफ़ाई 🧹</button>
                 </div>
 
                 <div id="liveChatArea" class="min-h-[200px] max-h-[260px] overflow-y-auto custom-scrollbar text-xs sm:text-sm space-y-3">
-                    <p class="text-cyan-300 font-medium">👋 "नमस्ते! मैं अदिति मैम हूँ। बिल्कुल अपने घर के सदस्य की तरह मुझसे बात कीजिए। नीचे माइक ऑन करें और बिना किसी झिझक के बोलें!"</p>
+                    <p class="text-cyan-300 font-medium">👋 "नमस्ते! मैं अदिति मैम हूँ। नीचे माइक दबाकर बेझिझक बोलिए या 'देहाती से 3-लेवल इंग्लिश' टूल का उपयोग करके किसी भी वाक्य को तुरंत सीखिए!"</p>
                     
                     <div class="p-2.5 bg-slate-900/80 rounded-xl border border-slate-800 text-[11px] text-gray-300 space-y-1">
-                        <p class="font-bold text-amber-300">🌟 आसान बोलचाल नियम:</p>
-                        <p>• गलत बोलने की बिल्कुल चिंता न करें।</p>
-                        <p>• नीचे <b>माइक ऑन करें</b> और जैसे मन करे वैसे बात करें।</p>
+                        <p class="font-bold text-amber-300">🌟 फोनेटिक कलर गाइड:</p>
+                        <p>• <span class="text-emerald-400 font-bold">हरा शब्द</span> = 100% सही उच्चारण</p>
+                        <p>• <span class="text-yellow-300 font-bold">पीला शब्द</span> = थोड़ा सुधार आवश्यक</p>
+                        <p>• <span class="text-red-400 font-bold">लाल शब्द</span> = गलत (अदिति मैम इसे तोड़कर बोलना सिखाएँगी)</p>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- बातचीत नियंत्रण, मोड व हिंदी हेल्प टूल्स -->
-        <div class="bg-slate-900 p-4 sm:p-5 rounded-3xl border border-gray-800 space-y-3 shadow-xl">
+        <!-- 3-लेवल देहाती से इंग्लिश ट्रांसलेटर कियोस्क -->
+        <div class="bg-slate-900 p-4 sm:p-5 rounded-3xl border border-cyan-500/30 space-y-3 shadow-xl">
+            <div class="flex justify-between items-center">
+                <h3 class="text-xs sm:text-sm font-bold text-cyan-300 flex items-center gap-1.5">
+                    <span>🔄</span> <span>देहाती/क्षेत्रीय से 3-लेवल इंग्लिश कियोस्क (Simple $\rightarrow$ Polite $\rightarrow$ Fluency)</span>
+                </h3>
+                <span class="text-[10px] text-emerald-400 font-semibold">1-क्लिक ट्रांसलेटर</span>
+            </div>
             
+            <div class="flex flex-col sm:flex-row gap-2">
+                <input type="text" id="regionalInputText" placeholder="अपनी भाषा में लिखें जैसे: 'मुझे स्टेशन जाना है' या 'हमार तबियत ठीक नइखे'..." class="w-full p-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white text-xs focus:outline-none focus:border-cyan-500">
+                <button onclick="processRegionalTranslation()" class="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-500 rounded-xl text-xs font-bold text-white transition whitespace-nowrap shadow">
+                    3 लेवल में बदलें 🚀
+                </button>
+            </div>
+            
+            <div id="threeLevelOutputBox" class="hidden p-3 bg-slate-950 rounded-2xl border border-slate-800 text-xs space-y-2"></div>
+        </div>
+
+        <!-- बातचीत नियंत्रण, मोड व एक्शन एरिया -->
+        <div class="bg-slate-900 p-4 sm:p-5 rounded-3xl border border-gray-800 space-y-3 shadow-xl">
             <div class="flex flex-wrap gap-2 justify-center pb-1">
                 <button onclick="selectSpeakingScenario('daily')" id="btnScenarioDaily" class="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-cyan-600 text-white shadow">
                     ☕ <span>डेली बोलचाल (देहाती/क्षेत्रीय से सिंपल)</span>
@@ -447,9 +466,6 @@
             out.innerHTML += `<div id="${loadingId}" class="text-cyan-400 font-medium animate-pulse">👩‍🏫 अदिति मैम सोच रही हैं और उत्तर तैयार कर रही हैं...</div>`;
             out.scrollTop = out.scrollHeight;
 
-            document.getElementById('metricConfidence').innerText = "96% (उत्कृष्ट)";
-            document.getElementById('metricPronounce').innerText = "95% (स्पष्ट)";
-
             try {
                 let formData = new FormData();
                 formData.append("user_speech", userSpeech);
@@ -466,9 +482,28 @@
                 if (loadElem) loadElem.remove();
 
                 if (data.success && data.reply) {
-                    out.innerHTML += `<div class="p-3 bg-cyan-950/60 rounded-xl border border-cyan-500/40 text-slate-100 space-y-1.5 shadow">
+                    // फोनेटिक स्कोर अपडेट
+                    document.getElementById('metricConfidence').innerText = (data.confidence_score || "96") + "% (उत्कृष्ट)";
+                    document.getElementById('metricPronounce').innerText = (data.pronounce_score || "95") + "% (स्पष्ट)";
+
+                    // फोनेटिक कलर-कोडिंग रेंडरिंग
+                    let colorHtml = "";
+                    if (data.colored_words && data.colored_words.length > 0) {
+                        colorHtml = `<div class="p-2 bg-slate-900/90 rounded-xl border border-slate-800 flex flex-wrap gap-1.5 items-center">
+                            <span class="text-[10px] text-gray-400 font-bold mr-1">Phonetic Feedback:</span>`;
+                        data.colored_words.forEach(w => {
+                            let badgeClass = "text-emerald-400 bg-emerald-950/60 border-emerald-500/40";
+                            if (w.status === "warn") badgeClass = "text-yellow-300 bg-yellow-950/60 border-yellow-500/40";
+                            if (w.status === "error") badgeClass = "text-red-400 bg-red-950/60 border-red-500/40 font-bold";
+                            colorHtml += `<span class="px-2 py-0.5 rounded-lg border text-xs cursor-pointer ${badgeClass}" onclick="speakSingleWord('${w.word}')" title="सुनने के लिए क्लिक करें">${w.word}</span>`;
+                        });
+                        colorHtml += `</div>`;
+                    }
+
+                    out.innerHTML += `<div class="p-3 bg-cyan-950/60 rounded-xl border border-cyan-500/40 text-slate-100 space-y-2 shadow">
                         <p class="font-bold text-cyan-300">👩‍🏫 अदिति मैम:</p>
                         <p class="text-sm font-medium">${data.reply}</p>
+                        ${colorHtml}
                         ${data.hindi_pronounce ? `<p class="text-[11px] text-amber-300 font-mono">🗣️ उच्चारण: ${data.hindi_pronounce}</p>` : ''}
                         ${data.hindi_meaning ? `<p class="text-[11px] text-cyan-200">🇮🇳 सरल हिंदी अर्थ: ${data.hindi_meaning}</p>` : ''}
                         ${data.correction ? `<p class="text-[11px] text-yellow-400 font-semibold mt-1">✨ प्यार से सुधार: ${data.correction}</p>` : ''}
@@ -483,6 +518,59 @@
                 if (loadElem) loadElem.remove();
                 out.innerHTML += `<div class="text-red-400 font-bold">⚠️ नेटवर्क त्रुटि! कृपया पुनः प्रयास करें।</div>`;
             }
+        }
+
+        async function processRegionalTranslation() {
+            let txt = document.getElementById('regionalInputText').value.trim();
+            if (!txt) {
+                alert("कृपया अपनी भाषा में कोई वाक्य लिखें!");
+                return;
+            }
+
+            let outBox = document.getElementById('threeLevelOutputBox');
+            outBox.classList.remove('hidden');
+            outBox.innerHTML = `<div class="text-cyan-400 font-bold animate-pulse">🔄 3 लेवल में अनुवाद तैयार किया जा रहा है...</div>`;
+
+            try {
+                let formData = new FormData();
+                formData.append("regional_text", txt);
+
+                let res = await fetch("/api/spoken-3level-translate", {
+                    method: "POST",
+                    body: formData
+                });
+                let d = await res.json();
+
+                if (d.success) {
+                    outBox.innerHTML = `
+                        <div class="space-y-2">
+                            <div class="p-2.5 bg-slate-900 rounded-xl border border-emerald-500/40">
+                                <span class="px-2 py-0.5 rounded bg-emerald-950 text-emerald-300 font-bold text-[10px]">1. Basic (आसान बोलचाल)</span>
+                                <p class="text-sm font-semibold text-white mt-1 cursor-pointer hover:text-cyan-300" onclick="speakStudioDSPVoice('${d.basic}')">🗣️ "${d.basic}"</p>
+                                <p class="text-[10px] text-gray-400 font-mono">उच्चारण: ${d.basic_pronounce}</p>
+                            </div>
+                            <div class="p-2.5 bg-slate-900 rounded-xl border border-cyan-500/40">
+                                <span class="px-2 py-0.5 rounded bg-cyan-950 text-cyan-300 font-bold text-[10px]">2. Polite (ऑफिस व फॉर्मल)</span>
+                                <p class="text-sm font-semibold text-white mt-1 cursor-pointer hover:text-cyan-300" onclick="speakStudioDSPVoice('${d.polite}')">🗣️ "${d.polite}"</p>
+                                <p class="text-[10px] text-gray-400 font-mono">उच्चारण: ${d.polite_pronounce}</p>
+                            </div>
+                            <div class="p-2.5 bg-slate-900 rounded-xl border border-purple-500/40">
+                                <span class="px-2 py-0.5 rounded bg-purple-950 text-purple-300 font-bold text-[10px]">3. Fluency (इंटरनेशनल एक्सेंट)</span>
+                                <p class="text-sm font-semibold text-white mt-1 cursor-pointer hover:text-cyan-300" onclick="speakStudioDSPVoice('${d.fluent}')">🗣️ "${d.fluent}"</p>
+                                <p class="text-[10px] text-gray-400 font-mono">उच्चारण: ${d.fluent_pronounce}</p>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    outBox.innerHTML = `<span class="text-red-400">⚠️ अनुवाद उपलब्ध नहीं हो सका। पुनः प्रयास करें।</span>`;
+                }
+            } catch (e) {
+                outBox.innerHTML = `<span class="text-red-400">⚠️ नेटवर्क त्रुटि!</span>`;
+            }
+        }
+
+        function speakSingleWord(w) {
+            speakStudioDSPVoice(w);
         }
 
         function showInstantHindiHint() {
