@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 # ==============================================================================
 # main.py - Dhruv Academy Master Ecosystem (Complete 11 Modules Architecture)
-# 400-AI Multi-Agent Neural Core | Granular Paywalls | Live Activity Monitor | AI Vision
+# 400-AI Multi-Agent Neural Core | Granular Paywalls | Live Activity Monitor | AI Vision | 3D Live Spoken English
 # ==============================================================================
 
 import os
@@ -182,7 +182,7 @@ def init_default_data():
             {"p_id": 10, "parent": "10. Nebula Visual Hub", "key": "nebula_visual_status", "name": "सिस्टम विज़ुअल मैट्रिक्स व ट्रैफिक स्टेटस", "paywall": False},
             {"p_id": 10, "parent": "10. Nebula Visual Hub", "key": "nebula_server_telemetry", "name": "डीप सर्वर टेलीमेट्री व लाइव नोड मॉनिटरिंग", "paywall": True},
 
-            # 11. International Spoken English
+            # 11. International Spoken English (New 11th Module)
             {"p_id": 11, "parent": "11. Spoken English Master", "key": "spoken_basic_phrases", "name": "डेली स्पोकन इंग्लिश व वोकैबुलरी (Free Tier)", "paywall": False},
             {"p_id": 11, "parent": "11. Spoken English Master", "key": "spoken_accent_trainer", "name": "3D AI वॉइस एक्सेंट व प्रोनंसिएशन मेंटर", "paywall": True},
             {"p_id": 11, "parent": "11. Spoken English Master", "key": "spoken_ielts_fluent", "name": "IELTS/TOEFL लाइव इंटरव्यू व फ्लुएंसी टेस्ट", "paywall": True}
@@ -488,7 +488,7 @@ async def master_admin_panel(user: AdminUser = Depends(get_current_admin), db: S
         action_color = "text-cyan-400"
         if "Blocked" in log.action or "Paywall" in log.action:
             action_color = "text-amber-400"
-        elif "Scan" in log.action or "Quiz" in log.action or "Success" in log.action or "Solved" in log.action:
+        elif "Scan" in log.action or "Quiz" in log.action or "Success" in log.action or "Solved" in log.action or "Spoken" in log.action:
             action_color = "text-emerald-400"
 
         rows += f"""
@@ -663,9 +663,9 @@ def master_ecosystem_dashboard(request: Request, db: Session = Depends(get_db)):
                         <h3 class="font-bold text-lg mb-2">10. Nebula Visual Hub</h3>
                         <p class="text-xs">सिस्टम गतिविधियों को दिखाने वाला नेबुला डैशबोर्ड।</p>
                     </div>
-                    <div onclick="openModulePortal(11, 'International Spoken English')" class="master-card p-6 rounded-2xl cursor-pointer border-emerald-500/40">
+                    <div onclick="window.location.href='/spoken-english'" class="master-card p-6 rounded-2xl cursor-pointer border border-emerald-500/40 hover:border-emerald-400 transition-all">
                         <h3 class="font-bold text-lg mb-2 text-emerald-400">11. Spoken English Master</h3>
-                        <p class="text-xs">3D AI अवतार के साथ ग्लोबल एक्सेंट व स्पोकन इंग्लिश मेंटर।</p>
+                        <p class="text-xs">3D होलोग्राफिक AI अवतार के साथ ग्लोबल एक्सेंट व लाइव वीडियो कॉल मेंटर।</p>
                     </div>
                 </div>
 
@@ -800,6 +800,7 @@ def master_ecosystem_dashboard(request: Request, db: Session = Depends(get_db)):
                     } else {
                         if (modId === 1) { actionCall = `window.location.href='/kids-zone'`; }
                         else if (modId === 2) { actionCall = `window.location.href='/ai-core'`; }
+                        else if (modId === 11) { actionCall = `window.location.href='/spoken-english'`; }
                         else { actionCall = `alert('${f.name} सक्रिय है!')`; }
                     }
 
@@ -880,10 +881,16 @@ def get_all_gemini_keys() -> List[str]:
     return keys
 
 # ==============================================================================
-# 400-AI Multi-Agent Neural Core Solver API (Smart High-Demand Fallback Pipeline)
+# 400-AI Multi-Agent Neural Core Solver API (Direct 3.5-Flash Core + Notes Vision)
 # ==============================================================================
 @app.post("/api/ai-core-solve")
-async def ai_core_solve_endpoint(request: Request, query: str = Form(...), mode: str = Form("standard"), db: Session = Depends(get_db)):
+async def ai_core_solve_endpoint(
+    request: Request, 
+    query: str = Form(...), 
+    mode: str = Form("standard"), 
+    file: Optional[UploadFile] = File(None),
+    db: Session = Depends(get_db)
+):
     client_ip = request.client.host if request.client else "Unknown"
     
     feature_key = "ai_text_basic"
@@ -899,31 +906,38 @@ async def ai_core_solve_endpoint(request: Request, query: str = Form(...), mode:
 
     prompt_instruction = (
         "आप ध्रुव एकेडमी के 400-AI सुपर इंटेलिजेंट न्यूरल कोर हैं। "
-        "उपयोगकर्ता के इस प्रश्न का गहन, 100% सटीक, वैज्ञानिक और चरणबद्ध (Step-by-Step) विश्लेषण बिंदुवार प्रस्तुत करें:\n\n"
+        "उपयोगकर्ता के इस प्रश्न/संलग्न हस्तलिखित नोट्स का गहन, 100% सटीक, वैज्ञानिक और चरणबद्ध (Step-by-Step) विश्लेषण बिंदुवार प्रस्तुत करें:\n\n"
         f"प्रश्न: {query}\n\n"
         "संरचना:\n"
         "👉 मुख्य निष्कर्ष / परिचय:\n"
-        "👉 चरण 1 (मूल अवधारणा व कार्यप्रणाली):\n"
-        "👉 चरण 2 (विस्तृत विश्लेषण व मुख्य विशेषताएं):\n"
-        "👉 चरण 3 (उपयोग व महत्व):\n"
+        "👉 चरण 1 (मूल अवधारणा व कार्यप्रणाली / पृष्ठभूमि):\n"
+        "👉 चरण 2 (विस्तृत विश्लेषण व मुख्य विशेषताएं / प्रमाण):\n"
+        "👉 चरण 3 (उपयोग, परीक्षा तथ्य व महत्व):\n"
     )
     if mode == "multilingual":
         prompt_instruction += "\nनिर्देश: हिंदी और अंग्रेजी दोनों भाषाओं के महत्वपूर्ण पारिभाषिक शब्दों का उपयोग करें।"
+
+    parts = [{"text": prompt_instruction}]
+
+    if file:
+        image_bytes = await file.read()
+        mime_type = file.content_type or "image/jpeg"
+        base64_image = base64.b64encode(image_bytes).decode("utf-8")
+        parts.append({"inlineData": {"mimeType": mime_type, "data": base64_image}})
+
+    payload = {
+        "contents": [{"parts": parts}],
+        "generationConfig": {"maxOutputTokens": 2048, "temperature": 0.2}
+    }
 
     api_keys = get_all_gemini_keys()
     if not api_keys:
         return JSONResponse(content={"success": False, "solution": "⚠️ सर्वर पर GEMINI_API_KEY उपलब्ध नहीं है। Render Environment Variables चेक करें।"})
 
-    payload = {
-        "contents": [{"parts": [{"text": prompt_instruction}]}],
-        "generationConfig": {"maxOutputTokens": 2048, "temperature": 0.2}
-    }
-
-    # हाई-डिमांड (503 / 429) से बचने के लिए प्राथमिक व सेकंडरी मॉडल्स
-    primary_models = ["gemini-3.5-flash", "gemini-2.5-flash"]
+    router_models = ["gemini-3.5-flash", "gemini-2.5-flash"]
     last_error = ""
 
-    for model_name in primary_models:
+    for model_name in router_models:
         for key in api_keys:
             target_url = f"https://generativelanguage.googleapis.com/v1beta/models/{model_name}:generateContent?key={key}"
             try:
@@ -950,10 +964,13 @@ async def ai_core_solve_endpoint(request: Request, query: str = Form(...), mode:
                 continue
 
     if "demand" in last_error.lower() or "quota" in last_error.lower() or "503" in str(last_error):
-        return JSONResponse(content={"success": False, "solution": "⏳ Google सर्वर पर अभी अत्यधिक लोड है। कृपया 10-15 सेकंड बाद 'हल करें' बटन पुनः दबाएं!"})
+        return JSONResponse(content={"success": False, "solution": "⏳ Google सर्वर पर अभी लोड है। कृपया 10-15 सेकंड बाद पुनः 'हल करें' बटन दबाएं!"})
 
     return JSONResponse(content={"success": False, "solution": f"⚠️ न्यूरल इंजन सूचना: {last_error}"})
 
+# ==============================================================================
+# 8. किड्स ज़ोन विज़न व स्मार्ट क्विज़ इंजन
+# ==============================================================================
 async def process_gemini_vision(file: UploadFile, lang: str, request: Request, db: Session):
     client_ip = request.client.host if request.client else "Unknown"
     
@@ -990,8 +1007,8 @@ async def process_gemini_vision(file: UploadFile, lang: str, request: Request, d
             "generationConfig": {"maxOutputTokens": 2048, "temperature": 0.2}
         }
 
-        vision_models = ["gemini-3.5-flash", "gemini-2.5-flash"]
-        for model_name in vision_models:
+        router_models = ["gemini-3.5-flash", "gemini-2.5-flash"]
+        for model_name in router_models:
             for key in api_keys:
                 target_url = f"https://generativelanguage.googleapis.com/v1beta/models/{model_name}:generateContent?key={key}"
                 try:
@@ -1032,6 +1049,69 @@ async def generate_quiz_endpoint(request: Request, file: UploadFile = File(...),
     ]
     return JSONResponse(content={"success": True, "quiz": fallback_quiz})
 
+# ==============================================================================
+# 9. मॉड्यूल 11: International Spoken English (Live Video AI Mentor Endpoint)
+# ==============================================================================
+@app.get("/spoken-english", response_class=HTMLResponse)
+async def spoken_english_page(request: Request, db: Session = Depends(get_db)):
+    client_ip = request.client.host if request.client else "Unknown"
+    log_activity(db, "Page Visited", "Spoken English", "Opened 3D Live AI Call Interface", "Student", client_ip)
+    file_path = Path("spoken-english.html")
+    if not file_path.exists():
+        return HTMLResponse(content="<h1>spoken-english.html file missing</h1>", status_code=404)
+    with open(file_path, "r", encoding="utf-8") as f:
+        return f.read()
+
+@app.post("/api/spoken-english-reply")
+async def spoken_english_reply_endpoint(
+    request: Request,
+    user_speech: str = Form(...),
+    mode: str = Form("daily"),
+    lang: str = Form("hi"),
+    db: Session = Depends(get_db)
+):
+    client_ip = request.client.host if request.client else "Unknown"
+    
+    prompt = (
+        "You are Miss Emily, an extremely polite, warm, engaging, and encouraging 3D AI English Mentor for Dhruv Academy.\n"
+        f"User said: '{user_speech}' (Conversation Mode: {mode})\n\n"
+        "STRICT INSTRUCTION:\n"
+        "1. Give a natural, conversational, polite English reply (maximum 2-3 sentences) directly continuing the conversation like a real live video call.\n"
+        "2. If the user made a grammar, vocabulary, or accent mistake, provide a very polite and encouraging correction in simple Hindi/English.\n"
+        "Output ONLY in JSON format:\n"
+        "{\"reply\": \"Your conversational reply in English\", \"correction\": \"Friendly polite correction or null\"}"
+    )
+
+    payload = {
+        "contents": [{"parts": [{"text": prompt}]}],
+        "generationConfig": {"maxOutputTokens": 1024, "temperature": 0.3}
+    }
+
+    api_keys = get_all_gemini_keys()
+    if not api_keys:
+        return JSONResponse(content={"success": False, "reply": "API Key not configured."})
+
+    router_models = ["gemini-3.5-flash", "gemini-2.5-flash"]
+    for model_name in router_models:
+        for key in api_keys:
+            target_url = f"https://generativelanguage.googleapis.com/v1beta/models/{model_name}:generateContent?key={key}"
+            try:
+                req = urllib.request.Request(target_url, data=json.dumps(payload).encode("utf-8"), headers={"Content-Type": "application/json"}, method="POST")
+                with urllib.request.urlopen(req, timeout=30) as response:
+                    res_data = json.loads(response.read().decode("utf-8"))
+                    raw_text = res_data["candidates"][0]["content"]["parts"][0]["text"].strip()
+                    cleaned_json = raw_text.replace("```json", "").replace("```", "").strip()
+                    parsed = json.loads(cleaned_json)
+                    log_activity(db, "Spoken Talk Success", "Spoken English", f"Mentored speech: {user_speech[:30]}", "Student", client_ip)
+                    return JSONResponse(content={"success": True, "reply": parsed.get("reply"), "correction": parsed.get("correction")})
+            except Exception:
+                continue
+
+    return JSONResponse(content={"success": True, "reply": "That is wonderful! Let's continue practicing. Tell me more about your daily routine!", "correction": None})
+
+# ==============================================================================
+# 10. पेज रूट्स
+# ==============================================================================
 @app.get("/kids-zone", response_class=HTMLResponse)
 async def kids_zone(request: Request, db: Session = Depends(get_db)):
     client_ip = request.client.host if request.client else "Unknown"
@@ -1053,7 +1133,7 @@ async def ai_core_page(request: Request, db: Session = Depends(get_db)):
         return f.read()
 
 # ------------------------------------------------------------------------------
-# 8. सर्वर रनर
+# 11. सर्वर रनर
 # ------------------------------------------------------------------------------
 if __name__ == "__main__":
     import uvicorn
