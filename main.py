@@ -13,7 +13,6 @@ import json
 import re
 from pathlib import Path
 from typing import Optional, List
-import itertools
 
 import urllib.request
 import urllib.error
@@ -80,7 +79,6 @@ def get_db():
 def init_default_data():
     db = SessionLocal()
     try:
-        # सुपरएडमिन क्रेडेंशियल्स सुनिश्चित करना
         superadmin = db.query(AdminUser).filter_by(username="dhruv_superadmin").first()
         if not superadmin:
             superadmin = AdminUser(
@@ -91,7 +89,6 @@ def init_default_data():
             )
             db.add(superadmin)
         else:
-            # पासवर्ड सुनिश्चित करना
             superadmin.password = "DhruvSuperSecure2026!"
             superadmin.role = "superadmin"
             superadmin.permissions = ["all"]
@@ -287,7 +284,6 @@ def super_admin_dashboard(user: AdminUser = Depends(get_current_admin), db: Sess
                 </div>
             </div>
 
-            <!-- पेवॉल व मॉड्यूल मैनेजर -->
             <div class="bg-slate-900 p-6 rounded-2xl border border-gray-800 space-y-4 shadow-xl">
                 <div class="flex justify-between items-center">
                     <h2 class="text-lg font-bold text-cyan-300">⚙️ Paywall & Feature Manager</h2>
@@ -311,7 +307,6 @@ def super_admin_dashboard(user: AdminUser = Depends(get_current_admin), db: Sess
                 </form>
             </div>
 
-            <!-- सब-एडमिन मैनेजमेंट व नया सबएडमिन जोड़ना -->
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <div class="lg:col-span-2 bg-slate-900 p-6 rounded-2xl border border-gray-800 space-y-4 shadow-xl">
                     <h2 class="text-lg font-bold text-indigo-400">👥 सक्रिय एडमिन व शिक्षक रोल्स</h2>
@@ -712,7 +707,6 @@ async def process_gemini_vision(file: UploadFile, lang: str):
 
         last_error = ""
 
-        # Pool Rotation
         for key in api_keys:
             target_url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key={key}"
             try:
@@ -736,15 +730,16 @@ async def process_gemini_vision(file: UploadFile, lang: str):
                 except Exception:
                     last_error = f"HTTP Error {he.code}: {he.reason}"
                 continue
+
             except Exception as e:
                 last_error = str(e)
                 continue
 
-        if "quota" in last_error.lower() or "429" in last_error:
+        if any(err_word in last_error.lower() for err_word in ["quota", "429", "high demand", "demand", "503", "unavailable"]):
             rate_limit_msg = (
-                "⏳ नेबुला टीचर थोड़ा विश्राम ले रही हैं (फ़्री कोटा लिमिट)। कृपया 30-40 सेकंड बाद दोबारा 'सॉल्यूशन देखें' दबाएँ! 🌟"
+                "⏳ नेबुला टीचर थोड़ा विश्राम ले रही हैं (हाई सर्वर लोड)। कृपया 20-30 सेकंड बाद दोबारा 'सॉल्यूशन देखें' दबाएँ! 🌟"
                 if lang == "hi"
-                else "⏳ Nebula Teacher is taking a short rest (Free Quota Limit). Please retry in 30-40 seconds! 🌟"
+                else "⏳ Nebula Teacher is taking a short rest (High Server Load). Please retry in 20-30 seconds! 🌟"
             )
             return JSONResponse(content={"success": False, "solution": rate_limit_msg})
 
