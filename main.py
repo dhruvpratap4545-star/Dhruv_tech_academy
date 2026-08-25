@@ -1163,12 +1163,12 @@ async def spoken_3level_translate_endpoint(
     client_ip = request.client.host if request.client else "Unknown"
     
     prompt = (
-        f"Translate the following Indian regional/rural phrase into 3 distinct progressive English levels:\n"
+        f"Translate the following Indian regional/daily phrase into 3 distinct progressive English levels for learners:\n"
         f"Phrase: '{regional_text}'\n\n"
         "Levels required:\n"
-        "1. Basic: Simple daily spoken English\n"
-        "2. Polite: Formal office/corporate English\n"
-        "3. Fluent: Natural international fluency with idioms\n\n"
+        "1. Basic: Simple, daily spoken English\n"
+        "2. Polite: Formal office / polite public English\n"
+        "3. Fluent: Natural fluency with good vocabulary\n\n"
         "Output ONLY valid JSON:\n"
         "{\n"
         "  \"basic\": \"...\",\n"
@@ -1207,12 +1207,12 @@ async def spoken_3level_translate_endpoint(
 
     return JSONResponse(content={
         "success": True,
-        "basic": "I want to go to the station.",
-        "basic_pronounce": "आई वांट टू गो टू द स्टेशन।",
+        "basic": "Please tell me the way to the station.",
+        "basic_pronounce": "प्लीज टेल मी द वे टू द स्टेशन।",
         "polite": "Could you please guide me to the station?",
         "polite_pronounce": "कुड यू प्लीज गाइड मी टू द स्टेशन?",
-        "fluent": "I need to catch a train, could you direct me to the station?",
-        "fluent_pronounce": "आई नीड टू कैच अ ट्रेन, कुड यू डायरेक्ट मी टू द स्टेशन?"
+        "fluent": "Could you direct me to the railway station, please?",
+        "fluent_pronounce": "कुड यू डायरेक्ट मी टू द रेलवे स्टेशन, प्लीज?"
     })
 
 # ==============================================================================
