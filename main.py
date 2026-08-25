@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 # ==============================================================================
-# main.py - Dhruv Academy Master Ecosystem (Universal Multi-Model Support)
-# Complete 11 Modules | Dynamic Key-Pool | Auto-Fallback (2.5 / 2.0 / 1.5)
+# main.py - Dhruv Academy Master Ecosystem (Complete 11 Modules Architecture)
+# 400-AI Multi-Agent Neural Core | Granular Paywalls | Live Activity Monitor | AI Vision
 # ==============================================================================
 
 import os
@@ -827,7 +827,7 @@ def master_ecosystem_dashboard(request: Request, db: Session = Depends(get_db)):
     """
 
 # ------------------------------------------------------------------------------
-# 7. API एंडपॉइंट्स (पेवॉल चेक, लाइव लॉगिंग, AI विजन व 400-AI न्यूरल सॉल्वर)
+# 7. API एंडपॉइंट्स (पेवॉल चेक, लाइव लॉगिंग, AI विजन व 400-AI मल्टी-मॉडल सॉल्वर)
 # ------------------------------------------------------------------------------
 @app.get("/api/module-subfeatures/{module_id}")
 def get_module_subfeatures(module_id: int, request: Request, db: Session = Depends(get_db)):
@@ -880,7 +880,7 @@ def get_all_gemini_keys() -> List[str]:
     return keys
 
 # ==============================================================================
-# 400-AI Multi-Agent Neural Core Solver API (Auto-Model Fallback & Error-Proof)
+# 400-AI Multi-Agent Neural Core Solver API (Universal Google Models Pipeline)
 # ==============================================================================
 @app.post("/api/ai-core-solve")
 async def ai_core_solve_endpoint(request: Request, query: str = Form(...), mode: str = Form("standard"), db: Session = Depends(get_db)):
@@ -919,8 +919,15 @@ async def ai_core_solve_endpoint(request: Request, query: str = Form(...), mode:
         "generationConfig": {"maxOutputTokens": 2048, "temperature": 0.2}
     }
 
-    # मल्टी-मॉडल ऑटो-फ़ॉलबैक (सभी प्रकार की कीज़ का समर्थन)
-    models_to_try = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-1.5-flash"]
+    # यूनिवर्सल एक्टिव मॉडल लिस्ट (v1beta / v1 सपोर्टेड)
+    models_to_try = [
+        "gemini-1.5-flash-latest",
+        "gemini-1.5-flash",
+        "gemini-1.5-pro",
+        "gemini-2.0-flash",
+        "gemini-2.0-flash-exp",
+        "gemini-pro"
+    ]
     last_error = ""
 
     for model_name in models_to_try:
@@ -987,7 +994,13 @@ async def process_gemini_vision(file: UploadFile, lang: str, request: Request, d
             "generationConfig": {"maxOutputTokens": 2048, "temperature": 0.2}
         }
 
-        models_to_try = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-1.5-flash"]
+        models_to_try = [
+            "gemini-1.5-flash-latest",
+            "gemini-1.5-flash",
+            "gemini-2.0-flash",
+            "gemini-1.5-pro",
+            "gemini-pro"
+        ]
         for model_name in models_to_try:
             for key in api_keys:
                 target_url = f"https://generativelanguage.googleapis.com/v1beta/models/{model_name}:generateContent?key={key}"
