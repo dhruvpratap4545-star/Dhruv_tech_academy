@@ -184,7 +184,7 @@ def init_default_data():
             {"p_id": 10, "parent": "10. Nebula Visual Hub", "key": "nebula_visual_status", "name": "सिस्टम विज़ुअल मैट्रिक्स व ट्रैफिक स्टेटस", "paywall": False},
             {"p_id": 10, "parent": "10. Nebula Visual Hub", "key": "nebula_server_telemetry", "name": "डीप सर्वर टेलीमेट्री व लाइव नोड मॉनिटरिंग", "paywall": True},
 
-            # 11. International Spoken English (प्रत्येक की पूरी तरह यूनिक)
+            # 11. International Spoken English
             {"p_id": 11, "parent": "11. Spoken English Master", "key": "spoken_basic_phrases", "name": "डेली स्पोकन इंग्लिश व वोकैबुलरी (Free Tier)", "paywall": False},
             {"p_id": 11, "parent": "11. Spoken English Master", "key": "spoken_accent_trainer", "name": "3D AI वॉइस एक्सेंट व प्रोनंसिएशन मेंटर", "paywall": True},
             {"p_id": 11, "parent": "11. Spoken English Master", "key": "spoken_ielts_fluent", "name": "IELTS/TOEFL लाइव इंटरव्यू व फ्लुएंसी टेस्ट", "paywall": True}
@@ -1346,10 +1346,13 @@ async def legal_generate_draft_endpoint(
                 req = urllib.request.Request(target_url, data=json.dumps(payload).encode("utf-8"), headers={"Content-Type": "application/json"}, method="POST")
                 with urllib.request.urlopen(req, timeout=40) as response:
                     res_data = json.loads(response.read().decode("utf-8"))
-                    draft_text = res_data["candidates"][0]["content"]["parts"][0]["text"].strip()
+                    raw_text = res_data["candidates"][0]["content"]["parts"][0]["text"].strip()
+                    # Clean markdown code blocks if any
+                    draft_text = raw_text.replace("```markdown", "").replace("```", "").strip()
                     log_activity(db, "Legal Draft Generated", "Legal AI Hub", f"Type: {draft_type}", "Student", client_ip)
                     return JSONResponse(content={"success": True, "draft_text": draft_text})
-            except Exception:
+            except Exception as e:
+                print(f"Draft generation error with {model_name}: {e}")
                 continue
 
     return JSONResponse(content={"success": False, "draft_text": "⚠️ सर्वर पर लोड है। कृपया पुनः प्रयास करें।"})
