@@ -107,7 +107,6 @@ def log_activity(db: Session, action: str, module: str, details: str = "", user_
 def init_default_data():
     db = SessionLocal()
     try:
-        # सुपरएडमिन और सब-एडमिन क्रेडेंशियल्स सिंक
         superadmin = db.query(AdminUser).filter_by(username="dhruv_superadmin").first()
         if not superadmin:
             superadmin = AdminUser(
@@ -134,13 +133,13 @@ def init_default_data():
         else:
             sub_admin.password = "LegalPass2026!"
 
-        # सभी 10 मॉड्यूल्स के सूक्ष्म (Granular) सब-फीचर्स का डिफ़ॉल्ट डेटाबेस
         all_master_sub_features = [
             # 1. Kids Zone (NC-5)
             {"p_id": 1, "parent": "1. Foundation: NC-5 Kids Tier", "key": "kids_basic_blackboard", "name": "बेसिक गणित, पहेली व कविता बोर्ड (Free Tier)", "paywall": False},
             {"p_id": 1, "parent": "1. Foundation: NC-5 Kids Tier", "key": "kids_ai_scanner", "name": "एआई बुक व होमवर्क स्कैनर (Vision Solver Engine)", "paywall": True},
             {"p_id": 1, "parent": "1. Foundation: NC-5 Kids Tier", "key": "kids_smart_quiz", "name": "ऑटो 5 MCQs स्मार्ट क्विज़ व एंटी-चीट कियोस्क", "paywall": True},
             {"p_id": 1, "parent": "1. Foundation: NC-5 Kids Tier", "key": "kids_whatsapp_hw", "name": "स्कूल / ट्यूटर डिजिटल व्हाट्सएप होमवर्क पोर्टल", "paywall": False},
+            {"p_id": 1, "parent": "1. Foundation: NC-5 Kids Tier", "key": "kids_student_submit", "name": "छात्र होमवर्क सबमिशन व स्कोर शेयरिंग", "paywall": False},
             {"p_id": 1, "parent": "1. Foundation: NC-5 Kids Tier", "key": "kids_voice_interaction", "name": "एआई टीचर इंटरेक्टिव वॉइस (TTS Speech Engine)", "paywall": False},
 
             # 2. AI Engine Core
@@ -383,7 +382,6 @@ def super_admin_dashboard(user: AdminUser = Depends(get_current_admin), db: Sess
                 </div>
             </div>
 
-            <!-- सब-फीचर पेवॉल मैनेजर -->
             <div class="bg-slate-900 p-6 rounded-2xl border border-gray-800 space-y-4 shadow-xl">
                 <div>
                     <h2 class="text-lg font-bold text-cyan-300">⚙️ Granular Sub-Feature & Paywall Manager (10 मॉड्यूल्स के सभी फीचर्स)</h2>
@@ -408,7 +406,6 @@ def super_admin_dashboard(user: AdminUser = Depends(get_current_admin), db: Sess
                 </form>
             </div>
 
-            <!-- सब-एडमिन मैनेजमेंट -->
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <div class="lg:col-span-2 bg-slate-900 p-6 rounded-2xl border border-gray-800 space-y-4 shadow-xl">
                     <h2 class="text-lg font-bold text-indigo-400">👥 सक्रिय एडमिन व शिक्षक रोल्स</h2>
@@ -855,14 +852,12 @@ def get_all_gemini_keys() -> List[str]:
         k_val = (os.environ.get(f"GEMINI_API_KEY{i}") or os.environ.get(f"GEMINI_API_KEY_{i}") or "").strip().strip('"').strip("'")
         if k_val and k_val not in keys:
             keys.append(k_val)
-
     env_keys_raw = (os.environ.get("GEMINI_API_KEY") or os.environ.get("GEMINI_API_KEYS") or "").strip()
     if env_keys_raw:
         for k in env_keys_raw.split(","):
             cleaned = k.strip().strip('"').strip("'")
             if cleaned and cleaned not in keys:
                 keys.append(cleaned)
-
     return keys
 
 async def process_gemini_vision(file: UploadFile, lang: str, request: Request, db: Session):
@@ -870,12 +865,12 @@ async def process_gemini_vision(file: UploadFile, lang: str, request: Request, d
     
     scanner_feat = db.query(SubFeatureToggle).filter_by(feature_key="kids_ai_scanner").first()
     if scanner_feat and scanner_feat.is_paywalled:
-        log_activity(db, "Paywall Blocked", "Kids Zone", "Book scanner is paywalled", "Student", client_ip)
+        log_activity(db, "Paywall Blocked", "Kids Zone", "Book scanner requested but paywalled", "Student", client_ip)
         return JSONResponse(content={"success": False, "paywalled": True, "solution": "🔒 यह फीचर प्रो प्लान में उपलब्ध है। कृपया अनलॉक करें!"})
 
     api_keys = get_all_gemini_keys()
     if not api_keys:
-        return JSONResponse(content={"success": False, "solution": "⚠️ सर्वर पर GEMINI_API_KEY उपलब्ध नहीं है।"})
+        return JSONResponse(content={"success": False, "solution": "⚠️ GEMINI_API_KEY उपलब्ध नहीं है।"})
 
     try:
         image_bytes = await file.read()
@@ -883,12 +878,11 @@ async def process_gemini_vision(file: UploadFile, lang: str, request: Request, d
         base64_image = base64.b64encode(image_bytes).decode("utf-8")
 
         prompt = (
-            "सख्त निर्देश: सीधे इस किताब के पन्ने/प्रश्न का 100% सही, वैज्ञानिक और संपूर्ण उत्तर बच्चों के समझने लायक सरल भाषा में बिंदुवार लिखें:\n"
+            "सख्त निर्देश: सीधे इस किताब के पन्ने/प्रश्न का 100% सही और संपूर्ण उत्तर बच्चों के समझने लायक सरल भाषा में बिंदुवार लिखें:\n"
             "📖 मुख्य विषय: [पन्ने का शीर्षक/विषय]\n"
             "👉 पॉइंट 1: [पहला मुख्य बिंदु/उत्तर]\n"
             "👉 पॉइंट 2: [दूसरा मुख्य बिंदु/उत्तर]\n"
             "👉 पॉइंट 3: [तीसरा मुख्य बिंदु/निष्कर्ष]\n"
-            "उत्तर अधूरा नहीं होना चाहिए।"
             if lang == "hi" else
             "STRICT INSTRUCTION: Start directly with the complete point-to-point solution in simple English for young kids:\n"
             "📖 Topic: [Page topic]\n"
@@ -910,7 +904,7 @@ async def process_gemini_vision(file: UploadFile, lang: str, request: Request, d
                 with urllib.request.urlopen(req, timeout=45) as response:
                     res_data = json.loads(response.read().decode("utf-8"))
                     solution_text = res_data["candidates"][0]["content"]["parts"][0]["text"]
-                    log_activity(db, "Book Scan Success", "Kids Zone", "Textbook image successfully analyzed", "Student", client_ip)
+                    log_activity(db, "Book Scan Success", "Kids Zone", "Textbook image analyzed with AI", "Student", client_ip)
                     return JSONResponse(content={"success": True, "solution": solution_text.strip()})
             except urllib.error.HTTPError as he:
                 try:
@@ -950,7 +944,10 @@ async def generate_quiz_endpoint(request: Request, file: UploadFile = File(...),
     log_activity(db, "Generated Quiz", "Kids Zone", "Generated 5 Smart MCQs", "Student", client_ip)
     fallback_quiz = [
         {"q": "किताब के पन्ने पर दिए गए मुख्य विषय का सही उद्देश्य क्या है?", "options": ["A) जानकारी समझना", "B) केवल याद करना", "C) छोड़ देना", "D) कोई नहीं"], "answer": "A) जानकारी समझना", "explain": "पठन सामग्री से सही ज्ञान प्राप्त होता है।"},
-        {"q": "इस पाठ का मुख्य निष्कर्ष क्या है?", "options": ["A) वैज्ञानिक समझ", "B) गलत तथ्य", "C) अस्पष्ट", "D) उपरोक्त सभी"], "answer": "A) वैज्ञानिक समझ", "explain": "अध्ययन से स्पष्ट और सटीक ज्ञान मिलता है।"}
+        {"q": "इस पाठ का मुख्य निष्कर्ष क्या है?", "options": ["A) वैज्ञानिक समझ", "B) गलत तथ्य", "C) अस्पष्ट", "D) उपरोक्त सभी"], "answer": "A) वैज्ञानिक समझ", "explain": "अध्ययन से स्पष्ट और सटीक ज्ञान मिलता है।"},
+        {"q": "छात्रों को इस विषय से क्या सीख मिलती है?", "options": ["A) अभ्यास और एकाग्रता", "B) लापरवाही", "C) समय बर्बाद करना", "D) कोई नहीं"], "answer": "A) अभ्यास और एकाग्रता", "explain": "नियमित अभ्यास से विषय स्पष्ट होता है।"},
+        {"q": "इस पन्ने में प्रस्तुत तथ्य किस श्रेणी में आते हैं?", "options": ["A) प्रमाणित ज्ञान", "B) अनुमान", "C) काल्पनिक", "D) असत्य"], "answer": "A) प्रमाणित ज्ञान", "explain": "पाठ्यपुस्तक के तथ्य सत्य और प्रमाणित होते हैं।"},
+        {"q": "पाठ के अनुसार सही उत्तर चुनने का सर्वोत्तम तरीका क्या है?", "options": ["A) ध्यानपूर्वक पढ़ना", "B) बिना पढ़े चुनना", "C) दूसरों से पूछना", "D) छोड़ देना"], "answer": "A) ध्यानपूर्वक पढ़ना", "explain": "ध्यान से पढ़ने पर सटीक उत्तर तुरंत मिल जाता है।"}
     ]
     return JSONResponse(content={"success": True, "quiz": fallback_quiz})
 
