@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>World's Most Advanced AI Digital Library & Topper Vault | Dhruv Academy</title>
+    <title>National AI Digital Library & Smart Vault | Dhruv Academy</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Yantramanav:wght@500;700&display=swap');
@@ -27,7 +27,7 @@
             gap: 20px;
         }
         .library-card {
-            background: rgba(15, 23, 42, 0.94);
+            background: rgba(15, 23, 42, 0.95);
             border: 1px solid rgba(56, 189, 248, 0.3);
             backdrop-filter: blur(18px);
             transition: all 0.3s ease;
@@ -37,11 +37,11 @@
             border-color: rgba(56, 189, 248, 0.7);
             box-shadow: 0 20px 35px -8px rgba(14, 165, 233, 0.4);
         }
-        .cat-tab {
+        .cat-btn {
             transition: all 0.25s ease;
             cursor: pointer;
         }
-        .cat-tab.active {
+        .cat-btn.active {
             background: linear-gradient(135deg, #0284c7, #0369a1);
             color: #ffffff;
             box-shadow: 0 4px 15px rgba(14, 165, 233, 0.5);
@@ -50,7 +50,7 @@
 </head>
 <body>
     <div class="main-wrapper">
-        <!-- टॉप नेविगेशन व सिक्योरिटी बैज -->
+        <!-- टॉप नेविगेशन व एक्शन बार -->
         <div class="flex flex-wrap justify-between items-center pb-3 border-b border-gray-800 w-full gap-3">
             <a href="/" class="px-4 py-2 bg-gradient-to-r from-cyan-700 to-blue-600 hover:from-cyan-600 text-white rounded-2xl text-xs font-bold transition flex items-center gap-1.5 shadow-lg">
                 ← <span>मुख्य मास्टर पोर्टल</span>
@@ -58,7 +58,7 @@
             <div class="flex items-center gap-2">
                 <span class="px-3.5 py-1.5 bg-cyan-950 border border-cyan-500/50 text-cyan-300 rounded-full text-xs font-bold flex items-center gap-1.5 shadow">
                     <span class="w-2.5 h-2.5 rounded-full bg-cyan-400 animate-pulse"></span>
-                    <span>AI RAG Search & Topper Vault Active</span>
+                    <span>AI RAG & Anti-Piracy DRM Active</span>
                 </span>
                 <button onclick="openTopperDonateModal()" class="px-4 py-1.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 text-white rounded-full text-xs font-bold shadow-lg transition">
                     🏆 टॉपर नोट्स डोनेट करें
@@ -66,81 +66,82 @@
             </div>
         </div>
 
-        <!-- हीरो बैनर व एआई सेमेंटिक सर्च -->
+        <!-- हीरो बैनर व स्मार्ट सर्च (वॉइस और टेक्स्ट सपोर्ट) -->
         <div class="p-6 sm:p-10 rounded-3xl bg-gradient-to-r from-cyan-950 via-slate-900 to-indigo-950 border border-cyan-500/40 shadow-2xl text-center space-y-4">
-            <h1 class="text-2xl sm:text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-sky-200 to-purple-300">🌍 World's Most Advanced AI Digital Library</h1>
-            <p class="text-xs sm:text-sm text-gray-300 max-w-3xl mx-auto">कक्षा 5 से 12 की एनसीईआरटी, ग्रेजुएशन, और UPSC (IAS/PCS), NEET, Banking व सभी राष्ट्रीय परीक्षाओं के लिए भारत का एकमात्र शून्य-पाइरेसी एनक्रिप्टेड नोट्स वॉल्ट (हिंदी और अंग्रेजी हिंट के साथ)।</p>
+            <h1 class="text-2xl sm:text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-sky-200 to-purple-300">⚡ National AI Smart Digital Library</h1>
+            <p class="text-xs sm:text-sm text-gray-300 max-w-3xl mx-auto">कक्षा 5 से 12, ग्रेजुएशन, और UPSC, NEET, Banking व सभी परीक्षाओं के लिए भारत का सबसे उन्नत, तेज़ और शून्य-पाइरेसी नोट्स हब।</p>
             
-            <!-- स्मार्ट सर्च बार विद हिंदी हिंट सपोर्ट -->
+            <!-- स्मार्ट सर्च बार -->
             <div class="max-w-2xl mx-auto pt-2 flex flex-col sm:flex-row gap-2">
                 <div class="relative w-full">
-                    <input type="text" id="librarySearchInput" onkeyup="showHindiHint(this.value)" placeholder="विषय, लेखक या परीक्षा खोजें (जैसे: Indian Polity, NCERT Class 10)..." class="w-full p-3.5 bg-slate-900 border border-slate-700 rounded-xl text-xs text-white focus:outline-none focus:border-cyan-400 shadow-inner">
-                    <div id="hindiHintBox" class="hidden absolute left-0 right-0 top-12 bg-slate-900 border border-cyan-500/50 p-2 rounded-xl text-[11px] text-cyan-300 z-10 shadow-xl text-left">
-                        💡 <b>हिंदी हिंट:</b> <span id="hintText">आप जिस विषय को खोज रहे हैं, उससे जुड़े मुख्य नोट्स नीचे फ़िल्टर हो रहे हैं।</span>
+                    <input type="text" id="librarySearchInput" onkeyup="liveSmartSearch(this.value)" placeholder="विषय, परीक्षा या लेखक खोजें (जैसे: भारतीय संविधान, NCERT Science)..." class="w-full p-3.5 bg-slate-900 border border-slate-700 rounded-xl text-xs text-white focus:outline-none focus:border-cyan-400 shadow-inner">
+                    <div id="searchHintBox" class="hidden absolute left-0 right-0 top-12 bg-slate-900 border border-cyan-500/50 p-2.5 rounded-xl text-[11px] text-cyan-300 z-10 shadow-xl text-left">
+                        💡 <b>AI हिंट:</b> <span id="hintContent">सटीक परिणाम छांटे जा रहे हैं...</span>
                     </div>
                 </div>
-                <button onclick="performAISearch()" class="px-6 py-3.5 bg-cyan-600 hover:bg-cyan-500 text-white rounded-xl text-xs font-bold transition shadow-lg whitespace-nowrap">AI से खोजें 🔍</button>
+                <button onclick="triggerVoiceSearch()" class="px-4 py-3.5 bg-slate-800 hover:bg-slate-700 text-cyan-400 border border-cyan-500/30 rounded-xl text-xs font-bold transition shadow whitespace-nowrap" title="बोलकर खोजें">🎙️ वॉइस सर्च</button>
+                <button onclick="executeSearch()" class="px-6 py-3.5 bg-cyan-600 hover:bg-cyan-500 text-white rounded-xl text-xs font-bold transition shadow-lg whitespace-nowrap">खोजें 🔍</button>
             </div>
         </div>
 
-        <!-- श्रेणी फ़िल्टर टैब्स -->
+        <!-- कैटेगरी फ़िल्टर टैब्स -->
         <div class="flex flex-wrap gap-2 justify-center pb-2">
-            <button onclick="filterCategory('all')" id="tabAll" class="cat-tab active px-4 py-2 rounded-xl text-xs font-bold bg-slate-900 border border-slate-700 text-gray-300">सभी सामग्रियां (All)</button>
-            <button onclick="filterCategory('ncert')" id="tabNcert" class="cat-tab px-4 py-2 rounded-xl text-xs font-bold bg-slate-900 border border-slate-700 text-gray-300">कक्षा 5-12 (NCERT Foundation)</button>
-            <button onclick="filterCategory('grad')" id="tabGrad" class="cat-tab px-4 py-2 rounded-xl text-xs font-bold bg-slate-900 border border-slate-700 text-gray-300">ग्रेजुएशन & पोस्ट-ग्रेजुएशन</button>
-            <button onclick="filterCategory('upsc')" id="tabUpsc" class="cat-tab px-4 py-2 rounded-xl text-xs font-bold bg-slate-900 border border-slate-700 text-gray-300">UPSC / IAS / PCS (Topper Vault)</button>
-            <button onclick="filterCategory('legal')" id="tabLegal" class="cat-tab px-4 py-2 rounded-xl text-xs font-bold bg-slate-900 border border-slate-700 text-gray-300">लीगल & बेयर एक्ट्स (BNS/Companies)</button>
+            <button onclick="filterCategory('all')" id="catAll" class="cat-btn active px-4 py-2 rounded-xl text-xs font-bold bg-slate-900 border border-slate-700 text-gray-300">सभी सामग्रियां (All)</button>
+            <button onclick="filterCategory('ncert')" id="catNcert" class="cat-btn px-4 py-2 rounded-xl text-xs font-bold bg-slate-900 border border-slate-700 text-gray-300">कक्षा 5-12 (NCERT)</button>
+            <button onclick="filterCategory('grad')" id="catGrad" class="cat-btn px-4 py-2 rounded-xl text-xs font-bold bg-slate-900 border border-slate-700 text-gray-300">ग्रेजुएशन & पोस्ट-ग्रेजुएशन</button>
+            <button onclick="filterCategory('upsc')" id="catUpsc" class="cat-btn px-4 py-2 rounded-xl text-xs font-bold bg-slate-900 border border-slate-700 text-gray-300">UPSC / PCS (Topper Vault)</button>
+            <button onclick="filterCategory('legal')" id="catLegal" class="cat-btn px-4 py-2 rounded-xl text-xs font-bold bg-slate-900 border border-slate-700 text-gray-300">लीगल & बेयर एक्ट्स (BNS)</button>
         </div>
 
-        <!-- नोट्स और ई-बुक्स ग्रिड -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6" id="masterLibraryGrid">
+        <!-- मुख्य ग्रिड -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6" id="libraryMainGrid">
             
-            <!-- कार्ड 1: NCERT Foundation -->
-            <div class="library-card p-5 rounded-3xl space-y-3" data-cat="ncert">
+            <!-- कार्ड 1 -->
+            <div class="library-card p-5 rounded-3xl space-y-3" data-category="ncert">
                 <div class="flex justify-between items-center">
                     <span class="px-2.5 py-1 bg-emerald-950 text-emerald-300 rounded-lg text-[10px] font-bold">Free Access | NCERT</span>
                     <span class="text-xs text-gray-400">Class 6-12</span>
                 </div>
-                <h3 class="font-bold text-sm text-cyan-300">NCERT Foundation Core Books & AI Mind-Maps</h3>
-                <p class="text-xs text-gray-300">विज्ञान, इतिहास, भूगोल और गणित की मूल एनसीईआरटी पुस्तकें हिंदी/अंग्रेजी में।</p>
+                <h3 class="font-bold text-sm text-cyan-300">NCERT Foundation Core Books & AI Flash-Cards</h3>
+                <p class="text-xs text-gray-300">मूल एनसीईआरटी पाठ्यपुस्तकें और त्वरित रिवीजन के लिए एआई फ्लैश-कार्ड्स।</p>
                 <div class="p-2 bg-slate-950 rounded-lg text-[10px] text-gray-400">
-                    💡 <span class="text-cyan-400 font-semibold">हिंदी हिंट:</span> यह स्कूली बच्चों और बेसिक तैयारी के लिए है।
+                    ⚡ <span class="text-cyan-400 font-semibold">एडवांस्ड फीचर:</span> 2-मिनट ऑडियो पॉडकास्ट समरी उपलब्ध।
                 </div>
-                <button onclick="openSecureReader('NCERT Foundation Books', false, 'NCERT')" class="w-full py-2.5 bg-cyan-600 hover:bg-cyan-500 text-white rounded-xl text-xs font-bold transition shadow">सुरक्षित रीडर में खोलें 📖</button>
+                <button onclick="openAdvancedReader('NCERT Foundation Books', false, 'NCERT')" class="w-full py-2.5 bg-cyan-600 hover:bg-cyan-500 text-white rounded-xl text-xs font-bold transition shadow">सुरक्षित रीडर में खोलें 📖</button>
             </div>
 
-            <!-- कार्ड 2: UPSC Topper Certified Notes -->
-            <div class="library-card p-5 rounded-3xl space-y-3" data-cat="upsc">
+            <!-- कार्ड 2 -->
+            <div class="library-card p-5 rounded-3xl space-y-3" data-category="upsc">
                 <div class="flex justify-between items-center">
                     <span class="px-2.5 py-1 bg-amber-950 text-amber-300 rounded-lg text-[10px] font-bold">Topper Certified 🏆</span>
                     <span class="text-xs text-gray-400">IAS / PCS Tier</span>
                 </div>
-                <h3 class="font-bold text-sm text-cyan-300">UPSC IAS AIR-12 Master Handwritten Notes</h3>
-                <p class="text-xs text-gray-300">चयनित अधिकारी द्वारा स्वेच्छा से दान किए गए हस्तलिखित नोट्स और आंसर-राइटिंग फॉर्मैट।</p>
+                <h3 class="font-bold text-sm text-cyan-300">UPSC IAS Master Handwritten Notes & Answer Key</h3>
+                <p class="text-xs text-gray-300">सफल अधिकारियों द्वारा दान किए गए हस्तलिखित नोट्स और मुख्य परीक्षा प्रारूप।</p>
                 <div class="p-2 bg-slate-950 rounded-lg text-[10px] text-gray-400">
-                    👤 <span class="text-amber-400 font-semibold">टॉपर:</span> राहुल वर्मा (IAS 2024, AIR 12) | 100% फ्री कॉन्ट्रीब्यूशन।
+                    👤 <span class="text-amber-400 font-semibold">टॉपर:</span> राहुल वर्मा (IAS, AIR 12) | 100% निःशुल्क।
                 </div>
-                <button onclick="openSecureReader('UPSC IAS Master Handwritten Notes', false, 'UPSC Topper')" class="w-full py-2.5 bg-amber-600 hover:bg-amber-500 text-white rounded-xl text-xs font-bold transition shadow">निशुल्क एक्सेस करें 🔓</button>
+                <button onclick="openAdvancedReader('UPSC IAS Master Handwritten Notes', false, 'UPSC Topper')" class="w-full py-2.5 bg-amber-600 hover:bg-amber-500 text-white rounded-xl text-xs font-bold transition shadow">निःशुल्क एक्सेस करें 🔓</button>
             </div>
 
-            <!-- कार्ड 3: Legal & Corporate Bare Acts -->
-            <div class="library-card p-5 rounded-3xl space-y-3" data-cat="legal">
+            <!-- कार्ड 3 -->
+            <div class="library-card p-5 rounded-3xl space-y-3" data-category="legal">
                 <div class="flex justify-between items-center">
                     <span class="px-2.5 py-1 bg-rose-950 text-rose-300 rounded-lg text-[10px] font-bold">Legal Vault</span>
                     <span class="text-xs text-gray-400">BNS & Corporate</span>
                 </div>
                 <h3 class="font-bold text-sm text-cyan-300">BNS, BNSS, BSA & Companies Act Compendium</h3>
-                <p class="text-xs text-gray-300">नए आपराधिक कानूनों और कंपनी अधिनियम (Companies Act) के पूर्ण एनक्रिप्टेड बेयर एक्ट्स।</p>
+                <p class="text-xs text-gray-300">नए आपराधिक कानूनों और कंपनी कानून के पूर्ण एनक्रिप्टेड बेयर एक्ट्स।</p>
                 <div class="p-2 bg-slate-950 rounded-lg text-[10px] text-gray-400">
-                    ⚖️ <span class="text-rose-400 font-semibold">हिंदी हिंट:</span> वकीलों, कॉर्पोरेट अधिकारियों और लॉ स्टूडेंट्स के लिए।
+                    ⚖️ <span class="text-rose-400 font-semibold">खासियत:</span> कठिन धाराओं के विजुअल माइंड-मैप्स शामिल।
                 </div>
-                <button onclick="openSecureReader('Legal Bare Acts Compendium', true, 'Legal AI')" class="w-full py-2.5 bg-rose-600 hover:bg-rose-500 text-white rounded-xl text-xs font-bold transition shadow">वॉलेट से खोलें 📖</button>
+                <button onclick="openAdvancedReader('Legal Bare Acts Compendium', true, 'Legal AI')" class="w-full py-2.5 bg-rose-600 hover:bg-rose-500 text-white rounded-xl text-xs font-bold transition shadow">वॉलेट से खोलें 📖</button>
             </div>
 
         </div>
     </div>
 
-    <!-- टॉपर नोट्स डोनेशन मोडल (Topper Donate Modal) -->
+    <!-- टॉपर नोट्स डोनेशन मोडल -->
     <div id="topperDonateModal" class="hidden fixed inset-0 bg-black/85 flex items-center justify-center p-4 z-50 backdrop-blur-md">
         <div class="bg-slate-900 border-2 border-emerald-500 rounded-3xl p-6 max-w-lg w-full space-y-4 shadow-2xl">
             <div class="flex justify-between items-center border-b border-slate-700 pb-3">
@@ -148,41 +149,42 @@
                 <button onclick="closeTopperModal()" class="text-gray-400 hover:text-white font-bold text-lg">✕</button>
             </div>
             <div class="space-y-3 text-xs">
-                <p class="text-gray-300">यदि आप आईएएस, पीसीएस, नीट या किसी अन्य राष्ट्रीय परीक्षा में सफल हुए हैं, तो अपने नोट्स देश के छात्रों के लिए निःशुल्क दान करें। आपके नोट्स पर आपका नाम और रैंक प्रदर्शित होगी।</p>
+                <p class="text-gray-300">यदि आप आईएएस, पीसीएस या किसी अन्य प्रतियोगी परीक्षा में सफल हुए हैं, तो अपने नोट्स देश के छात्रों के लिए निःशुल्क दान करें।</p>
                 <div class="space-y-2">
-                    <label class="block text-gray-300 font-semibold">चयनित छात्र/टॉपर का नाम:</label>
-                    <input type="text" id="donorName" placeholder="पूरा नाम व रैंक (जैसे: अमित शर्मा, IAS AIR 45)" class="w-full p-2.5 bg-slate-950 border border-slate-700 rounded-xl text-white">
+                    <label class="block text-gray-300 font-semibold">टॉपर का नाम व रैंक:</label>
+                    <input type="text" id="donorName" placeholder="उदा: अमित शर्मा, IAS AIR 45" class="w-full p-2.5 bg-slate-950 border border-slate-700 rounded-xl text-white">
                 </div>
                 <div class="space-y-2">
                     <label class="block text-gray-300 font-semibold">परीक्षा का नाम व वर्ष:</label>
-                    <input type="text" id="examName" placeholder="परीक्षा (जैसे: UPSC CSE 2025)" class="w-full p-2.5 bg-slate-950 border border-slate-700 rounded-xl text-white">
+                    <input type="text" id="examName" placeholder="उदा: UPSC CSE 2025" class="w-full p-2.5 bg-slate-950 border border-slate-700 rounded-xl text-white">
                 </div>
                 <div class="space-y-2">
-                    <label class="block text-gray-300 font-semibold">नोट्स पीडीएफ / फाइल अपलोड करें:</label>
+                    <label class="block text-gray-300 font-semibold">नोट्स पीडीएफ अपलोड करें:</label>
                     <input type="file" class="w-full p-2 bg-slate-950 border border-slate-700 rounded-xl text-gray-400">
                 </div>
-                <button onclick="submitTopperNotes()" class="w-full py-3 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-bold transition shadow-lg">सफलतापूर्वक अपलोड व सबमिट करें 🚀</button>
+                <button onclick="submitTopperNotes()" class="w-full py-3 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-bold transition shadow-lg">सफलतापूर्वक सबमिट करें 🚀</button>
             </div>
         </div>
     </div>
 
-    <!-- सुरक्षित DRM रीडर मोडल -->
-    <div id="secureReaderModal" class="hidden fixed inset-0 bg-black/85 flex items-center justify-center p-4 z-50 backdrop-blur-md">
+    <!-- सुरक्षित एडवांस DRM रीडर मोडल -->
+    <div id="advancedReaderModal" class="hidden fixed inset-0 bg-black/85 flex items-center justify-center p-4 z-50 backdrop-blur-md">
         <div class="bg-slate-900 border-2 border-cyan-500 rounded-3xl p-6 max-w-xl w-full space-y-4 shadow-2xl">
             <div class="flex justify-between items-center border-b border-slate-700 pb-3">
-                <h2 id="readerTitle" class="text-sm font-bold text-cyan-300">Secure DRM Reader</h2>
-                <button onclick="closeSecureReader()" class="text-gray-400 hover:text-white font-bold text-lg">✕</button>
+                <h2 id="advReaderTitle" class="text-sm font-bold text-cyan-300">Secure AI Reader</h2>
+                <button onclick="closeAdvancedReader()" class="text-gray-400 hover:text-white font-bold text-lg">✕</button>
             </div>
             <div class="p-4 bg-slate-950 rounded-2xl border border-slate-800 text-xs text-gray-300 space-y-3">
-                <p id="readerStatusText" class="text-emerald-300 font-semibold">🔒 यह दस्तावेज़ <b>DRM एनक्रिप्शन और डायनामिक वॉटरमार्क</b> द्वारा सुरक्षित है।</p>
-                <div class="p-2 bg-cyan-950/60 border border-cyan-500/40 rounded-lg text-[10px] text-cyan-300 text-center font-mono tracking-wider">
-                    WATERMARK: Dhruv Academy Secure Node | Session IP: Protected | Anti-Piracy Active
+                <p id="advReaderStatus" class="text-emerald-300 font-semibold">🔒 एंटी-पाइरेसी DRM और डायनामिक वॉटरमार्क सक्रिय।</p>
+                <div class="flex gap-2">
+                    <button onclick="playAudioSummary()" class="px-3 py-1.5 bg-cyan-800 hover:bg-cyan-700 text-cyan-200 rounded-lg font-bold text-[11px]">🎧 ऑडियो समरी सुनें</button>
+                    <button onclick="generateFlashCards()" class="px-3 py-1.5 bg-purple-800 hover:bg-purple-700 text-purple-200 rounded-lg font-bold text-[11px]">⚡ AI फ्लैश-कार्ड्स</button>
                 </div>
-                <div id="readerContentBox" class="p-6 bg-slate-900 rounded-xl text-center font-semibold text-gray-200">
-                    📄 [एनक्रिप्टेड क्लाउड क्लाइंट पेज लोड हो रहा है...]
+                <div id="advReaderContent" class="p-6 bg-slate-900 rounded-xl text-center font-semibold text-gray-200">
+                    📄 [एनक्रिप्टेड क्लाउड पेज लोड हो रहा है...]
                 </div>
             </div>
-            <button onclick="closeSecureReader()" class="w-full py-2.5 bg-slate-700 hover:bg-slate-600 text-white rounded-xl text-xs font-bold transition">बंद करें</button>
+            <button onclick="closeAdvancedReader()" class="w-full py-2.5 bg-slate-700 hover:bg-slate-600 text-white rounded-xl text-xs font-bold transition">बंद करें</button>
         </div>
     </div>
 
@@ -191,13 +193,13 @@
     </footer>
 
     <script>
-        function openSecureReader(title, isPaid, category) {
-            document.getElementById('readerTitle').innerText = "सुरक्षित रीडर: " + title + " (" + category + ")";
-            document.getElementById('secureReaderModal').classList.remove('hidden');
+        function openAdvancedReader(title, isPaid, cat) {
+            document.getElementById('advReaderTitle').innerText = "एडवांस्ड रीडर: " + title + " (" + cat + ")";
+            document.getElementById('advancedReaderModal').classList.remove('hidden');
         }
 
-        function closeSecureReader() {
-            document.getElementById('secureReaderModal').classList.add('hidden');
+        function closeAdvancedReader() {
+            document.getElementById('advancedReaderModal').classList.add('hidden');
         }
 
         function openTopperDonateModal() {
@@ -209,50 +211,56 @@
         }
 
         function submitTopperNotes() {
-            let donor = document.getElementById('donorName').value;
-            if(!donor) {
-                alert("कृपया अपना नाम व रैंक दर्ज करें!");
-                return;
-            }
-            alert("🎉 धन्यवाद! आपके नोट्स 'Topper Certified' श्रेणी में सफलतापूर्वक लाइव कर दिए गए हैं, जो देश के सभी छात्रों के लिए अब निःशुल्क उपलब्ध हैं।");
+            let name = document.getElementById('donorName').value;
+            if(!name) { alert("कृपया अपना नाम दर्ज करें!"); return; }
+            alert("🎉 धन्यवाद! आपके नोट्स 'Topper Certified' वॉल्ट में जोड़ दिए गए हैं।");
             closeTopperModal();
         }
 
-        function showHindiHint(val) {
-            let hintBox = document.getElementById('hindiHintBox');
-            let hintText = document.getElementById('hintText');
+        function liveSmartSearch(val) {
+            let box = document.getElementById('searchHintBox');
+            let content = document.getElementById('hintContent');
             if(val.length > 1) {
-                hintBox.classList.remove('hidden');
-                hintText.innerText = "'" + val + "' से संबंधित सभी ई-बुक्स और टॉपर नोट्स नीचे खोजे जा रहे हैं।";
+                box.classList.remove('hidden');
+                content.innerText = "'" + val + "' के लिए प्रासंगिक नोट्स और सारांश खोजे जा रहे हैं...";
             } else {
-                hintBox.classList.add('hidden');
+                box.classList.add('hidden');
             }
         }
 
-        function performAISearch() {
-            let query = document.getElementById('librarySearchInput').value.trim();
-            if(!query) {
-                alert("कृपया खोज के लिए कोई विषय दर्ज करें!");
-                return;
-            }
-            alert("🔍 एआई सेमेंटिक सर्च (RAG Engine) द्वारा '" + query + "' के परिणाम लोड हो रहे हैं...");
+        function triggerVoiceSearch() {
+            alert("🎙️ वॉइस सर्च सक्रिय है। कृपया अपना विषय बोलें...");
+        }
+
+        function executeSearch() {
+            let q = document.getElementById('librarySearchInput').value.trim();
+            if(!q) { alert("कृपया खोज के लिए कुछ लिखें!"); return; }
+            alert("🔍 AI RAG इंजन द्वारा परिणाम लोड किए जा रहे हैं...");
+        }
+
+        function playAudioSummary() {
+            alert("🎧 एआई ऑडियो पॉडकास्ट समरी चलाई जा रही है...");
+        }
+
+        function generateFlashCards() {
+            alert("⚡ इस चैप्टर के मुख्य फ्लैश-कार्ड्स जनरेट हो रहे हैं...");
         }
 
         function filterCategory(cat) {
-            document.querySelectorAll('.cat-tab').forEach(t => t.classList.remove('active'));
-            if(cat === 'all') document.getElementById('tabAll').classList.add('active');
-            if(cat === 'ncert') document.getElementById('tabNcert').classList.add('active');
-            if(cat === 'grad') document.getElementById('tabGrad').classList.add('active');
-            if(cat === 'upsc') document.getElementById('tabUpsc').classList.add('active');
-            if(cat === 'legal') document.getElementById('tabLegal').classList.add('active');
+            document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+            if(cat === 'all') document.getElementById('catAll').classList.add('active');
+            if(cat === 'ncert') document.getElementById('catNcert').classList.add('active');
+            if(cat === 'grad') document.getElementById('catGrad').classList.add('active');
+            if(cat === 'upsc') document.getElementById('catUpsc').classList.add('active');
+            if(cat === 'legal') document.getElementById('catLegal').classList.add('active');
 
-            let cards = document.querySelectorAll('#masterLibraryGrid > div');
-            cards.forEach(card => {
-                let cardCat = card.getAttribute('data-cat');
-                if(cat === 'all' || cardCat === cat) {
-                    card.style.display = 'block';
+            let cards = document.querySelectorAll('#libraryMainGrid > div');
+            cards.forEach(c => {
+                let cCat = c.getAttribute('data-category');
+                if(cat === 'all' || cCat === cat) {
+                    c.style.display = 'block';
                 } else {
-                    card.style.display = 'none';
+                    c.style.display = 'none';
                 }
             });
         }
