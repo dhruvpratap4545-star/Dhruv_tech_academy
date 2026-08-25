@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ultimate AI Digital Library, GK & Mains Quiz Hub | Dhruv Academy</title>
+    <title>Ultimate AI Digital Library, GK & Quiz Studio | Dhruv Academy</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Yantramanav:wght@500;700&display=swap');
@@ -50,33 +50,44 @@
 </head>
 <body>
     <div class="main-wrapper">
-        <!-- टॉप नेविगेशन, वॉलेट और एक्शन बटन -->
+        <!-- टॉप नेविगेशन, भाषा चयन, वॉलेट और एक्शन बटन -->
         <div class="flex flex-wrap justify-between items-center pb-3 border-b border-gray-800 w-full gap-3">
-            <a href="/" class="px-4 py-2 bg-gradient-to-r from-cyan-700 to-blue-600 hover:from-cyan-600 text-white rounded-2xl text-xs font-bold transition flex items-center gap-1.5 shadow-lg">
+            <a href="/" class="px-4 py-2 bg-gradient-to-r from-cyan-700 to-blue-600 hover:from-cyan-600 text-white rounded-2xl text-xs font-bold transition flex items-center gap-1.5 shadow-lg" onmouseover="speakText('मुख्य मास्टर पोर्टल पर वापस जाएं')">
                 ← <span>मुख्य मास्टर पोर्टल</span>
             </a>
             <div class="flex flex-wrap items-center gap-2">
+                <!-- भाषा चयन -->
+                <select id="languageSelector" onchange="changeLanguage(this.value)" class="bg-slate-900 border border-slate-700 text-cyan-300 text-xs font-bold rounded-full px-3 py-1.5 focus:outline-none shadow">
+                    <option value="hi">🇮🇳 हिंदी (Hindi)</option>
+                    <option value="en">🇬🇧 English</option>
+                </select>
+
+                <!-- डिजिटल वॉलेट बैलेंस -->
                 <div class="px-3.5 py-1.5 bg-slate-900 border border-slate-700 rounded-full text-xs font-bold flex items-center gap-2 shadow">
                     <span class="text-gray-400">💰 वॉलेट:</span>
                     <span id="walletBalance" class="text-emerald-400 font-extrabold">₹150.00</span>
                     <button onclick="topUpWallet()" class="text-[10px] bg-cyan-600 hover:bg-cyan-500 text-white px-2 py-0.5 rounded-md">+</button>
                 </div>
-                <button onclick="openTopperDonateModal()" class="px-4 py-1.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 text-white rounded-full text-xs font-bold shadow-lg transition">
+
+                <!-- नोट्स डोनेट करें (Free) -->
+                <button onclick="openTopperDonateModal()" class="px-4 py-1.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 text-white rounded-full text-xs font-bold shadow-lg transition" onmouseover="speakText('अपने नोट्स डोनेट करें')">
                     🎁 नोट्स डोनेट करें (Free)
                 </button>
-                <button onclick="openSellNotesModal()" class="px-4 py-1.5 bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 text-white rounded-full text-xs font-bold shadow-lg transition">
+
+                <!-- अपने नोट्स बेचें (Paid) -->
+                <button onclick="openSellNotesModal()" class="px-4 py-1.5 bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 text-white rounded-full text-xs font-bold shadow-lg transition" onmouseover="speakText('अपने नोट्स बेचें')">
                     ✍️ नोट्स बेचें (Paid)
                 </button>
             </div>
         </div>
 
-        <!-- हीरो बैनर -->
+        <!-- हीरो बैनर व एआई हब -->
         <div class="p-6 sm:p-10 rounded-3xl bg-gradient-to-r from-cyan-950 via-slate-900 to-indigo-950 border border-cyan-500/40 shadow-2xl text-center space-y-4">
-            <h1 class="text-2xl sm:text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-sky-200 to-purple-300">📰 AI Current Affairs, GK & Prelims-Mains Quiz Hub</h1>
-            <p class="text-xs sm:text-sm text-gray-300 max-w-3xl mx-auto">दैनिक समाचार पत्रों, मैगजीन और मानक पुस्तकों पर आधारित प्रीलिम्स, मेन्स और इंटरव्यू क्विज़ का सबसे उन्नत डिजिटल मंच।</p>
+            <h1 id="heroTitle" class="text-2xl sm:text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-sky-200 to-purple-300">📚 National AI Smart Digital Library, GK & Quiz Studio</h1>
+            <p id="heroDesc" class="text-xs sm:text-sm text-gray-300 max-w-3xl mx-auto">यूपीएससी, पीसीएस, जूलॉजी फर्टिलाइजेशन, करेंट अफेयर्स और सभी उच्च परीक्षाओं के लिए भारत का सबसे उन्नत, सुरक्षित और बहुभाषी मंच।</p>
             
             <div class="max-w-2xl mx-auto pt-2 flex gap-2">
-                <input type="text" id="librarySearchInput" placeholder="करेंट अफेयर्स, GK क्विज़ या परीक्षा का नाम खोजें..." class="w-full p-3.5 bg-slate-900 border border-slate-700 rounded-xl text-xs text-white focus:outline-none focus:border-cyan-400 shadow-inner">
+                <input type="text" id="librarySearchInput" placeholder="विषय, परीक्षा या करेंट अफेयर्स GK खोजें..." class="w-full p-3.5 bg-slate-900 border border-slate-700 rounded-xl text-xs text-white focus:outline-none focus:border-cyan-400 shadow-inner">
                 <button onclick="executeSearch()" class="px-6 py-3.5 bg-cyan-600 hover:bg-cyan-500 text-white rounded-xl text-xs font-bold transition shadow-lg whitespace-nowrap">खोजें 🔍</button>
             </div>
         </div>
@@ -84,53 +95,67 @@
         <!-- कैटेगरी फ़िल्टर टैब्स -->
         <div class="flex flex-wrap gap-2 justify-center pb-2">
             <button onclick="filterCategory('all')" id="catAll" class="cat-btn active px-4 py-2 rounded-xl text-xs font-bold bg-slate-900 border border-slate-700 text-gray-300">सभी सामग्रियां (All)</button>
-            <button onclick="filterCategory('gk')" id="catGk" class="cat-btn px-4 py-2 rounded-xl text-xs font-bold bg-slate-900 border border-slate-700 text-gray-300">📰 डेली करेंट अफेयर्स & GK क्विज़</button>
-            <button onclick="filterCategory('mains')" id="catMains" class="cat-btn px-4 py-2 rounded-xl text-xs font-bold bg-slate-900 border border-slate-700 text-gray-300">✍️ मेन्स आंसर राइटिंग क्विज़</button>
-            <button onclick="filterCategory('paid')" id="catPaid" class="cat-btn px-4 py-2 rounded-xl text-xs font-bold bg-slate-900 border border-slate-700 text-gray-300">💎 प्रीमियम टेस्ट सीरीज (Paid)</button>
+            <button onclick="filterCategory('donated')" id="catDonated" class="cat-btn px-4 py-2 rounded-xl text-xs font-bold bg-slate-900 border border-slate-700 text-gray-300">🎁 डोनेट किए गए नोट्स (Free)</button>
+            <button onclick="filterCategory('gk')" id="catGk" class="cat-btn px-4 py-2 rounded-xl text-xs font-bold bg-slate-900 border border-slate-700 text-gray-300">📰 करेंट अफेयर्स & GK क्विज़</button>
+            <button onclick="filterCategory('paid')" id="catPaid" class="cat-btn px-4 py-2 rounded-xl text-xs font-bold bg-slate-900 border border-slate-700 text-gray-300">💎 प्रीमियम सिंगल डाउनलोड (Paid)</button>
         </div>
 
         <!-- मुख्य ग्रिड -->
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6" id="libraryMainGrid">
             
-            <!-- कार्ड 1: डेली करेंट अफेयर्स GK क्विज़ -->
+            <!-- कार्ड 1: डोनेटेड नोट्स -->
+            <div class="library-card p-5 rounded-3xl space-y-3" data-category="donated">
+                <div class="flex justify-between items-center">
+                    <span class="px-2.5 py-1 bg-emerald-950 text-emerald-300 rounded-lg text-[10px] font-bold">100% Free (Donated)</span>
+                    <span class="text-xs text-gray-400">UPSC / IAS Tier</span>
+                </div>
+                <h3 class="font-bold text-sm text-cyan-300">UPSC IAS Master Handwritten Notes (Donated)</h3>
+                <p class="text-xs text-gray-300">सफल अधिकारियों द्वारा देश के छात्रों के लिए निःशुल्क दान किए गए हस्तलिखित नोट्स।</p>
+                <div class="flex gap-2 pt-2">
+                    <button onclick="openSecureReader('UPSC IAS Donated Notes', false, 'Free')" class="w-1/2 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold transition shadow">पढ़ें 📖</button>
+                    <button onclick="openAiQuizModal('UPSC IAS Master Notes')" class="w-1/2 py-2 bg-purple-600 hover:bg-purple-500 text-white rounded-xl text-xs font-bold transition shadow">⚡ AI क्विज़ 🎯</button>
+                </div>
+            </div>
+
+            <!-- कार्ड 2: जूलॉजी फर्टिलाइजेशन (डोनेटेड) -->
+            <div class="library-card p-5 rounded-3xl space-y-3" data-category="donated">
+                <div class="flex justify-between items-center">
+                    <span class="px-2.5 py-1 bg-emerald-950 text-emerald-300 rounded-lg text-[10px] font-bold">100% Free (Donated)</span>
+                    <span class="text-xs text-gray-400">Science / Zoology</span>
+                </div>
+                <h3 class="font-bold text-sm text-cyan-300">Zoology Embryology & Fertilization Notes</h3>
+                <p class="text-xs text-gray-300">निषेचन (Fertilization) और भ्रूण विज्ञान पर आधारित विस्तृत और वैज्ञानिक हिंदी नोट्स।</p>
+                <div class="flex gap-2 pt-2">
+                    <button onclick="openSecureReader('Zoology Fertilization Notes', false, 'Free')" class="w-1/2 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold transition shadow">पढ़ें 📖</button>
+                    <button onclick="openAiQuizModal('Zoology Fertilization')" class="w-1/2 py-2 bg-purple-600 hover:bg-purple-500 text-white rounded-xl text-xs font-bold transition shadow">⚡ AI क्विज़ 🎯</button>
+                </div>
+            </div>
+
+            <!-- कार्ड 3: करेंट अफेयर्स GK क्विज़ -->
             <div class="library-card p-5 rounded-3xl space-y-3" data-category="gk">
                 <div class="flex justify-between items-center">
-                    <span class="px-2.5 py-1 bg-emerald-950 text-emerald-300 rounded-lg text-[10px] font-bold">Free Daily Quiz</span>
+                    <span class="px-2.5 py-1 bg-cyan-950 text-cyan-300 rounded-lg text-[10px] font-bold">Daily Quiz</span>
                     <span class="text-xs text-gray-400">Prelims Special</span>
                 </div>
-                <h3 class="font-bold text-sm text-cyan-300">Daily Current Affairs & PIB News Analysis Quiz</h3>
-                <p class="text-xs text-gray-300">दैनिक समाचार पत्रों और सरकारी प्रेस इनपुट पर आधारित 10 बहुविकल्पीय प्रश्न और व्याख्या।</p>
+                <h3 class="font-bold text-sm text-cyan-300">Daily Current Affairs & PIB News Analysis</h3>
+                <p class="text-xs text-gray-300">दैनिक समाचार पत्रों और सरकारी प्रेस इनपुट पर आधारित महत्वपूर्ण क्विज़ और व्याख्या।</p>
                 <div class="flex gap-2 pt-2">
-                    <button onclick="openSecureReader('Daily Current Affairs GK', false, 'Free')" class="w-1/2 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold transition shadow">विवरण पढ़ें 📖</button>
+                    <button onclick="openSecureReader('Daily Current Affairs GK', false, 'Free')" class="w-1/2 py-2 bg-cyan-600 hover:bg-cyan-500 text-white rounded-xl text-xs font-bold transition shadow">विवरण 📖</button>
                     <button onclick="openAiQuizModal('Current Affairs Prelims')" class="w-1/2 py-2 bg-purple-600 hover:bg-purple-500 text-white rounded-xl text-xs font-bold transition shadow">⚡ प्री क्विज़ 🎯</button>
                 </div>
             </div>
 
-            <!-- कार्ड 2: मेन्स आंसर राइटिंग -->
-            <div class="library-card p-5 rounded-3xl space-y-3" data-category="mains">
-                <div class="flex justify-between items-center">
-                    <span class="px-2.5 py-1 bg-blue-950 text-blue-300 rounded-lg text-[10px] font-bold">Mains Evaluation</span>
-                    <span class="text-xs text-gray-400">GS Paper 1-4</span>
-                </div>
-                <h3 class="font-bold text-sm text-cyan-300">UPSC / PCS Mains Answer Writing & Evaluation Studio</h3>
-                <p class="text-xs text-gray-300">मुख्य परीक्षा के विषयों पर उत्तर लिखें और AI द्वारा तुरंत मॉडल आंसर व स्कोर प्राप्त करें।</p>
-                <div class="flex gap-2 pt-2">
-                    <button onclick="openSecureReader('Mains Answer Writing Guide', false, 'Free')" class="w-1/2 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-bold transition shadow">गाइड पढ़ें 📖</button>
-                    <button onclick="openMainsEvalModal()" class="w-1/2 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-bold transition shadow">✍️ मेन्स इवैल्यूएट 🚀</button>
-                </div>
-            </div>
-
-            <!-- कार्ड 3: प्रीमियम टेस्ट सीरीज -->
+            <!-- कार्ड 4: प्रीमियम सिंगल डाउनलोड -->
             <div class="library-card p-5 rounded-3xl space-y-3" data-category="paid">
                 <div class="flex justify-between items-center">
-                    <span class="px-2.5 py-1 bg-amber-950 text-amber-300 rounded-lg text-[10px] font-bold">Pro Vault (₹99)</span>
-                    <span class="text-xs text-gray-400">All India Mock</span>
+                    <span class="px-2.5 py-1 bg-amber-950 text-amber-300 rounded-lg text-[10px] font-bold">Pro Vault (₹49)</span>
+                    <span class="text-xs text-gray-400">Single Download</span>
                 </div>
-                <h3 class="font-bold text-sm text-cyan-300">All India Civil Services Full-Length Mock Test Series</h3>
-                <p class="text-xs text-gray-300">संपूर्ण पाठ्यक्रम पर आधारित 10 कठिन टेस्ट सीरीज और ऑल-इंडिया रैंक का विश्लेषण।</p>
+                <h3 class="font-bold text-sm text-cyan-300">BNS, BNSS & Corporate Law Bare Acts Compendium</h3>
+                <p class="text-xs text-gray-300">नए आपराधिक कानूनों और कंपनी अधिनियम के एनक्रिप्टेड बेयर एक्ट्स व केस लॉ.</p>
                 <div class="flex gap-2 pt-2">
-                    <button onclick="purchaseAndUnlock('Full Mock Test Series', 99)" class="w-1/2 py-2 bg-amber-600 hover:bg-amber-500 text-white rounded-xl text-xs font-bold transition shadow">₹99 में लें 🔓</button>
-                    <button onclick="openAiQuizModal('Full Mock Test')" class="w-1/2 py-2 bg-purple-600 hover:bg-purple-500 text-white rounded-xl text-xs font-bold transition shadow">⚡ डेमो क्विज़ 🎯</button>
+                    <button onclick="purchaseAndUnlock('Legal Bare Acts Compendium', 49)" class="w-1/2 py-2 bg-amber-600 hover:bg-amber-500 text-white rounded-xl text-xs font-bold transition shadow">₹49 में लें 🔓</button>
+                    <button onclick="openAiQuizModal('Legal Bare Acts')" class="w-1/2 py-2 bg-purple-600 hover:bg-purple-500 text-white rounded-xl text-xs font-bold transition shadow">⚡ AI क्विज़ 🎯</button>
                 </div>
             </div>
 
@@ -141,37 +166,78 @@
     <div id="aiQuizModal" class="hidden fixed inset-0 bg-black/85 flex items-center justify-center p-4 z-50 backdrop-blur-md">
         <div class="bg-slate-900 border-2 border-purple-500 rounded-3xl p-6 max-w-lg w-full space-y-4 shadow-2xl text-center">
             <div class="flex justify-between items-center border-b border-slate-700 pb-3">
-                <h2 id="quizModalTitle" class="text-sm font-bold text-purple-400">⚡ AI Prelims GK Quiz</h2>
+                <h2 id="quizModalTitle" class="text-sm font-bold text-purple-400">⚡ AI Instant Quiz & Practice</h2>
                 <button onclick="closeQuizModal()" class="text-gray-400 hover:text-white font-bold text-lg">✕</button>
             </div>
             <div id="quizBodyContent" class="space-y-4 text-xs text-left">
-                <p class="text-gray-300">वर्तमान राष्ट्रीय घटनाओं और करेंट अफेयर्स पर आधारित प्रश्न:</p>
+                <p class="text-gray-300">इस नोट्स/करेंट अफेयर्स के आधार पर एआई द्वारा तैयार किया गया प्रश्न:</p>
                 <div class="p-3 bg-slate-950 rounded-xl border border-slate-800 space-y-2">
-                    <p class="font-bold text-cyan-300">प्र. 1: हाल ही में चर्चा में रहे 'भारतीय न्याय संहिता (BNS)' के प्रावधानों के संबंध में निम्नलिखित कथनों पर विचार करें:</p>
-                    <label class="block text-gray-300"><input type="radio" name="q1" value="wrong"> A) यह केवल सिविल मामलों पर लागू है।</label>
-                    <label class="block text-gray-300"><input type="radio" name="q1" value="correct"> B) यह आपराधिक न्याय प्रणाली से संबंधित नया अधिनियम है।</label>
+                    <p class="font-bold text-cyan-300">प्र. 1: परीक्षा के दृष्टिकोण से मुख्य अवधारणा का सही विकल्प चुनें:</p>
+                    <label class="block text-gray-300"><input type="radio" name="q1" value="wrong"> A) वैकल्पिक दृष्टिकोण</label>
+                    <label class="block text-gray-300"><input type="radio" name="q1" value="correct"> B) मानक वैज्ञानिक/संवैधानिक सत्य</label>
                 </div>
-                <button onclick="submitQuizAnswers()" class="w-full py-3 bg-purple-600 hover:bg-purple-500 text-white rounded-xl font-bold transition shadow-lg">उत्तर सबमिट करें व स्कोर देखें 📊</button>
+                <button onclick="submitQuizAnswers()" class="w-full py-3 bg-purple-600 hover:bg-purple-500 text-white rounded-xl font-bold transition shadow-lg">क्विज सबमिट करें व अंक देखें 📊</button>
             </div>
             <div id="quizScorecard" class="hidden p-4 bg-slate-950 rounded-xl border border-emerald-500 space-y-2 text-center">
                 <h3 class="text-base font-extrabold text-emerald-400">🏆 आपका स्कोरकार्ड (Scorecard)</h3>
-                <p class="text-sm font-bold text-white">परिणाम: <span id="finalScore" class="text-cyan-300">1/1 Correct (100%)</span></p>
+                <p class="text-sm font-bold text-white">प्राप्त अंक: <span id="finalScore" class="text-cyan-300">1/1 Correct (100%)</span></p>
                 <button onclick="closeQuizModal()" class="px-6 py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-xl text-xs font-bold">बंद करें</button>
             </div>
         </div>
     </div>
 
-    <!-- मेन्स आंसर इवैल्यूएशन मोडल -->
-    <div id="mainsEvalModal" class="hidden fixed inset-0 bg-black/85 flex items-center justify-center p-4 z-50 backdrop-blur-md">
-        <div class="bg-slate-900 border-2 border-indigo-500 rounded-3xl p-6 max-w-lg w-full space-y-4 shadow-2xl text-center">
+    <!-- नोट्स डोनेशन मोडल (Free) -->
+    <div id="topperDonateModal" class="hidden fixed inset-0 bg-black/85 flex items-center justify-center p-4 z-50 backdrop-blur-md">
+        <div class="bg-slate-900 border-2 border-emerald-500 rounded-3xl p-6 max-w-lg w-full space-y-4 shadow-2xl">
             <div class="flex justify-between items-center border-b border-slate-700 pb-3">
-                <h2 class="text-sm font-bold text-indigo-400">✍️ AI Mains Answer Evaluator</h2>
-                <button onclick="closeMainsModal()" class="text-gray-400 hover:text-white font-bold text-lg">✕</button>
+                <h2 class="text-sm font-bold text-emerald-400">🎁 नोट्स डोनेट करें (Free Contribution)</h2>
+                <button onclick="closeTopperModal()" class="text-gray-400 hover:text-white font-bold text-lg">✕</button>
             </div>
-            <div class="space-y-3 text-xs text-left">
-                <p class="text-gray-300">मुख्य परीक्षा का प्रश्न: "भारतीय संविधान में न्यायिक समीक्षा (Judicial Review) के महत्व का परीक्षण करें।"</p>
-                <textarea rows="4" placeholder="यहाँ अपना उत्तर टाइप करें..." class="w-full p-3 bg-slate-950 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-indigo-500"></textarea>
-                <button onclick="evaluateMainsAnswer()" class="w-full py-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-bold transition shadow-lg">AI मूल्यांकन प्राप्त करें 🚀</button>
+            <div class="space-y-3 text-xs">
+                <p class="text-gray-300">अपने नोट्स निःशुल्क दान करें ताकि अन्य छात्र पढ़ सकें।</p>
+                <div class="space-y-2">
+                    <label class="block text-gray-300 font-semibold">आपका नाम / रैंक:</label>
+                    <input type="text" id="donorName" placeholder="उदा: अमित शर्मा" class="w-full p-2.5 bg-slate-950 border border-slate-700 rounded-xl text-white">
+                </div>
+                <div class="space-y-2">
+                    <label class="block text-gray-300 font-semibold">विषय या परीक्षा का नाम:</label>
+                    <input type="text" id="examName" placeholder="उदा: Zoology Fertilization Notes" class="w-full p-2.5 bg-slate-950 border border-slate-700 rounded-xl text-white">
+                </div>
+                <div class="space-y-2">
+                    <label class="block text-gray-300 font-semibold">PDF फाइल अपलोड करें:</label>
+                    <input type="file" id="noteFile" class="w-full p-2 bg-slate-950 border border-slate-700 rounded-xl text-gray-400">
+                </div>
+                <button onclick="submitDonatedNotes()" class="w-full py-3 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-bold transition shadow-lg">सफलतापूर्वक डोनेट करें 🚀</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- नोट्स बेचने का पोर्टल (Paid) -->
+    <div id="sellNotesModal" class="hidden fixed inset-0 bg-black/85 flex items-center justify-center p-4 z-50 backdrop-blur-md">
+        <div class="bg-slate-900 border-2 border-amber-500 rounded-3xl p-6 max-w-lg w-full space-y-4 shadow-2xl">
+            <div class="flex justify-between items-center border-b border-slate-700 pb-3">
+                <h2 class="text-sm font-bold text-amber-400">✍️ अपने नोट्स बेचें (Paid Single Download)</h2>
+                <button onclick="closeSellModal()" class="text-gray-400 hover:text-white font-bold text-lg">✕</button>
+            </div>
+            <div class="space-y-3 text-xs">
+                <p class="text-gray-300">अपने नोट्स अपलोड करें और प्रत्येक सिंगल डाउनलोड पर तय कीमत प्राप्त करें।</p>
+                <div class="space-y-2">
+                    <label class="block text-gray-300 font-semibold">लेखक / शिक्षक का नाम:</label>
+                    <input type="text" id="sellerName" placeholder="उदा: राहुल कुमार" class="w-full p-2.5 bg-slate-950 border border-slate-700 rounded-xl text-white">
+                </div>
+                <div class="space-y-2">
+                    <label class="block text-gray-300 font-semibold">नोट्स का शीर्षक:</label>
+                    <input type="text" id="noteTitle" placeholder="उदा: Corporate Law Notes" class="w-full p-2.5 bg-slate-950 border border-slate-700 rounded-xl text-white">
+                </div>
+                <div class="space-y-2">
+                    <label class="block text-gray-300 font-semibold">कीमत (₹):</label>
+                    <input type="number" id="notePrice" placeholder="उदा: 49" class="w-full p-2.5 bg-slate-950 border border-slate-700 rounded-xl text-white">
+                </div>
+                <div class="space-y-2">
+                    <label class="block text-gray-300 font-semibold">PDF फाइल अपलोड करें:</label>
+                    <input type="file" id="paidFile" class="w-full p-2 bg-slate-950 border border-slate-700 rounded-xl text-gray-400">
+                </div>
+                <button onclick="submitPaidNotes()" class="w-full py-3 bg-amber-600 hover:bg-amber-500 text-white rounded-xl font-bold transition shadow-lg">मार्केटप्लेस पर लाइव करें 🚀</button>
             </div>
         </div>
     </div>
@@ -186,7 +252,7 @@
             <div class="p-4 bg-slate-950 rounded-2xl border border-slate-800 text-xs text-gray-300 space-y-3">
                 <p class="text-emerald-300 font-semibold">🔒 DRM एंटी-पाइरेसी और डायनामिक वॉटरमार्क सक्रिय।</p>
                 <div class="p-6 bg-slate-900 rounded-xl text-center font-semibold text-gray-200">
-                    📄 [करेंट अफेयर्स और GK सामग्री सुरक्षित रूप से लोड हो गई है।]
+                    📄 [दस्तावेज़ सुरक्षित रूप से लोड हो गया है।]
                 </div>
             </div>
             <div class="flex gap-2">
@@ -203,6 +269,29 @@
     <script>
         let currentWallet = 150.00;
 
+        function speakText(text) {
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+                let utterance = new SpeechSynthesisUtterance(text);
+                utterance.lang = document.getElementById('languageSelector').value === 'hi' ? 'hi-IN' : 'en-US';
+                window.speechSynthesis.speak(utterance);
+            }
+        }
+
+        function changeLanguage(lang) {
+            let heroTitle = document.getElementById('heroTitle');
+            let heroDesc = document.getElementById('heroDesc');
+            if (lang === 'en') {
+                heroTitle.innerText = "National AI Smart Digital Library, GK & Quiz Studio";
+                heroDesc.innerText = "India's most advanced, secure, and multilingual platform for UPSC, PCS, Zoology Fertilization, Current Affairs, and all higher exams.";
+                speakText("Language changed to English");
+            } else {
+                heroTitle.innerText = "National AI Smart Digital Library, GK & Quiz Studio";
+                heroDesc.innerText = "यूपीएससी, पीसीएस, जूलॉजी फर्टिलाइजेशन, करेंट अफेयर्स और सभी उच्च परीक्षाओं के लिए भारत का सबसे उन्नत, सुरक्षित और बहुभाषी मंच।";
+                speakText("भाषा बदलकर हिंदी कर दी गई है");
+            }
+        }
+
         function topUpWallet() {
             let add = prompt("वॉलेट में जोड़ने के लिए राशि दर्ज करें (₹):", "100");
             if(add && !isNaN(add)) {
@@ -210,6 +299,22 @@
                 document.getElementById('walletBalance').innerText = "₹" + currentWallet.toFixed(2);
                 alert("🎉 वॉलेट सफलतापूर्वक टॉप-अप हो गया!");
             }
+        }
+
+        function openTopperDonateModal() {
+            document.getElementById('topperDonateModal').classList.remove('hidden');
+        }
+
+        function closeTopperModal() {
+            document.getElementById('topperDonateModal').classList.add('hidden');
+        }
+
+        function openSellNotesModal() {
+            document.getElementById('sellNotesModal').classList.remove('hidden');
+        }
+
+        function closeSellModal() {
+            document.getElementById('sellNotesModal').classList.add('hidden');
         }
 
         function openAiQuizModal(topic) {
@@ -226,27 +331,6 @@
         function submitQuizAnswers() {
             document.getElementById('quizBodyContent').classList.add('hidden');
             document.getElementById('quizScorecard').classList.remove('hidden');
-        }
-
-        function openMainsEvalModal() {
-            document.getElementById('mainsEvalModal').classList.remove('hidden');
-        }
-
-        function closeMainsModal() {
-            document.getElementById('mainsEvalModal').classList.add('hidden');
-        }
-
-        function evaluateMainsAnswer() {
-            alert("🌟 AI मूल्यांकन सफल!\nअंक: 7.5 / 10\nसुझाव: प्रस्तावना और न्यायिक सक्रियता (Judicial Activism) के कुछ ऐतिहासिक उदाहरण जोड़ें।");
-            closeMainsModal();
-        }
-
-        function openTopperDonateModal() {
-            alert("🎁 नोट्स डोनेशन पोर्टल खुला है।");
-        }
-
-        function openSellNotesModal() {
-            alert("✍️ नोट्स बेचने का पोर्टल खुला है।");
         }
 
         function openSecureReader(title, isPaid, type) {
@@ -271,15 +355,25 @@
             if(confirm("क्या आप '" + title + "' को ₹" + price + " में खरीदने के लिए तैयार हैं?")) {
                 currentWallet -= price;
                 document.getElementById('walletBalance').innerText = "₹" + currentWallet.toFixed(2);
-                alert("🎉 भुगतान सफल! टेस्ट सीरीज अनलॉक हो गई है।");
+                alert("🎉 भुगतान सफल! फाइल अनलॉक हो गई है।");
             }
+        }
+
+        function submitDonatedNotes() {
+            alert("🎉 आपके नोट्स निःशुल्क 'डोनेटेड नोट्स' श्रेणी में लाइव कर दिए गए हैं।");
+            closeTopperModal();
+        }
+
+        function submitPaidNotes() {
+            alert("🎉 आपके पेड नोट्स मार्केटप्लेस पर लाइव कर दिए गए हैं।");
+            closeSellModal();
         }
 
         function filterCategory(cat) {
             document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
             if(cat === 'all') document.getElementById('catAll').classList.add('active');
+            if(cat === 'donated') document.getElementById('catDonated').classList.add('active');
             if(cat === 'gk') document.getElementById('catGk').classList.add('active');
-            if(cat === 'mains') document.getElementById('catMains').classList.add('active');
             if(cat === 'paid') document.getElementById('catPaid').classList.add('active');
 
             let cards = document.querySelectorAll('#libraryMainGrid > div');
@@ -296,7 +390,7 @@
         function executeSearch() {
             let q = document.getElementById('librarySearchInput').value.trim();
             if(!q) { alert("कृपया खोज के लिए कुछ लिखें!"); return; }
-            alert("🔍 AI RAG इंजन द्वारा करेंट अफेयर्स परिणाम खोजे जा रहे हैं...");
+            alert("🔍 AI RAG इंजन द्वारा परिणाम खोजे जा रहे हैं...");
         }
     </script>
 </body>
