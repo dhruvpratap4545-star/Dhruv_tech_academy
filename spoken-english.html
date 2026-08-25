@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="hi" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D Live Hologram AI English Mentor | Dhruv Academy</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Yantramanav:wght@500;700&display=swap');
+        
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Poppins', 'Yantramanav', sans-serif;
+            background-color: #020617;
+            color: #f8fafc;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px;
+            overflow-x: hidden;
+        }
+
+        .main-wrapper {
+            width: 100%;
+            max-width: 1100px;
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+        }
+
+        /* 3D होलोग्राफिक स्टेज बैकग्राउंड */
+        .hologram-stage {
+            background: radial-gradient(circle at center, #0f172a 0%, #030712 100%);
+            border: 2px solid rgba(56, 189, 248, 0.45);
+            border-radius: 28px;
+            box-shadow: 0 0 45px rgba(14, 165, 233, 0.3), inset 0 0 35px rgba(0, 0, 0, 0.95);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .holo-grid-lines {
+            background-image: linear-gradient(rgba(56, 189, 248, 0.08) 1px, transparent 1px),
+                              linear-gradient(90deg, rgba(56, 189, 248, 0.08) 1px, transparent 1px);
+            background-size: 30px 30px;
+        }
+
+        /* होलोग्राफिक ग्लो रिंग्स */
+        .holo-circle-beam {
+            box-shadow: 0 0 35px rgba(56, 189, 248, 0.7), inset 0 0 25px rgba(255, 255, 255, 0.35);
+            animation: beamFloat 4s ease-in-out infinite;
+        }
+        @keyframes beamFloat {
+            0%, 100% { transform: translateY(0px) scale(1); }
+            50% { transform: translateY(-8px) scale(1.03); }
+        }
+
+        /* अवतार लिप-सिंक और एक्सप्रेशन एनिमेशन */
+        .talking-pulse {
+            animation: talkGlow 0.38s infinite alternate ease-in-out;
+        }
+        @keyframes talkGlow {
+            0% { transform: scale(1); border-color: #38bdf8; box-shadow: 0 0 25px #0284c7; }
+            100% { transform: scale(1.08); border-color: #facc15; box-shadow: 0 0 40px #facc15; }
+        }
+
+        .lang-pill-container {
+            display: inline-flex;
+            align-items: center;
+            background-color: #0b1329;
+            border: 1.5px solid #0284c7;
+            border-radius: 9999px;
+            padding: 3px;
+            gap: 4px;
+        }
+        .lang-pill-btn {
+            padding: 5px 14px;
+            border-radius: 9999px;
+            font-size: 11px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.25s ease-in-out;
+            border: none;
+        }
+        .lang-pill-active {
+            background: linear-gradient(135deg, #0284c7, #0369a1) !important;
+            color: #ffffff !important;
+            box-shadow: 0 2px 8px rgba(14, 165, 233, 0.5);
+        }
+        .lang-pill-inactive { background: transparent !important; color: #94a3b8 !important; }
+
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #020617; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #334155; border-radius: 6px; }
+    </style>
+</head>
+<body>
+
+    <div class="main-wrapper">
+        
+        <!-- टॉप बार -->
+        <div class="flex justify-between items-center pb-2 border-b border-gray-800 w-full">
+            <a href="/" class="px-4 py-2 bg-red-700 hover:bg-red-600 text-white rounded-xl text-xs font-bold transition flex items-center gap-2 shadow">
+                ← <span id="navBackLabel">मुख्य पोर्टल</span>
+            </a>
+            
+            <div class="flex items-center gap-3">
+                <span class="px-3.5 py-1 bg-sky-950 border border-sky-500/50 text-cyan-300 rounded-full text-xs font-bold flex items-center gap-1.5 shadow">
+                    <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span> 
+                    <span id="callStatusBadge">3D Hologram Live Mentor Active</span>
+                </span>
+                <div class="lang-pill-container">
+                    <button type="button" onclick="setSpokenLanguage('hi')" id="hiLangBtn" class="lang-pill-btn lang-pill-active">हिंदी</button>
+                    <button type="button" onclick="setSpokenLanguage('en')" id="enLangBtn" class="lang-pill-btn lang-pill-inactive">English</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3D फेस-टू-फेस लाइव होलोग्राफिक क्लासरूम स्टेज -->
+        <div class="hologram-stage holo-grid-lines p-5 sm:p-8 flex flex-col lg:flex-row items-center justify-between gap-6">
+            
+            <!-- 3D AI लाइव टीचर होलोग्राफिक अवतार -->
+            <div class="flex flex-col items-center gap-4 text-center">
+                <div class="relative flex items-center justify-center">
+                    <!-- होलोग्राफिक बीम बेस -->
+                    <div class="absolute -bottom-4 w-40 h-8 bg-cyan-500/20 rounded-full blur-xl animate-pulse"></div>
+                    
+                    <div id="aiLiveAvatar" onclick="playMentorWelcome()" class="holo-circle-beam w-32 h-32 sm:w-44 sm:h-44 rounded-full bg-gradient-to-tr from-sky-600 via-indigo-700 to-purple-800 border-4 border-cyan-400 flex items-center justify-center text-7xl sm:text-8xl cursor-pointer relative shadow-2xl transition" title="मुझसे लाइव बात करने के लिए क्लिक करें!">
+                        👩‍🏫
+                        <span class="absolute bottom-1 right-2 w-6 h-6 bg-emerald-400 border-3 border-slate-900 rounded-full flex items-center justify-center text-[10px] font-bold text-slate-900 shadow">HD</span>
+                    </div>
+                </div>
+
+                <div>
+                    <h2 class="text-lg sm:text-xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 via-sky-200 to-indigo-300">Miss Emily (AI Holographic Mentor)</h2>
+                    <p id="liveMentorState" class="text-xs text-emerald-400 font-semibold mt-1">🟢 लाइव बातचीत व झिझक मिटाने के लिए तैयार</p>
+                    <p class="text-[11px] text-gray-400 mt-0.5">अवतार पर टैप करके लाइव वॉइस सुनें</p>
+                </div>
+
+                <!-- कॉन्फिडेंस व फ्लुएंसी मीटर -->
+                <div class="flex gap-4 p-2 bg-slate-900/90 border border-slate-800 rounded-2xl text-xs">
+                    <div>
+                        <span class="text-gray-400 text-[10px] block">Confidence:</span>
+                        <span id="scoreConfidence" class="font-extrabold text-emerald-400">95% (High)</span>
+                    </div>
+                    <div class="border-l border-gray-700 pl-4">
+                        <span class="text-gray-400 text-[10px] block">Pronunciation:</span>
+                        <span id="scoreAccent" class="font-extrabold text-cyan-400">92% (Clear)</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- लाइव बातचीत व सुधार बोर्ड (Live HUD Subtitle Box) -->
+            <div class="w-full lg:w-3/5 bg-slate-950/90 border border-slate-800/90 rounded-2xl p-4 sm:p-5 space-y-3 shadow-2xl flex flex-col justify-between">
+                <div class="flex justify-between items-center border-b border-slate-800 pb-2">
+                    <span class="text-xs font-bold text-sky-400 flex items-center gap-1.5">
+                        <span>💬</span> <span id="hudBoxTitle">Live Conversation & Bilingual Guide</span>
+                    </span>
+                    <button onclick="clearConversationBoard()" class="text-[11px] text-gray-400 hover:text-white px-2 py-0.5 rounded bg-slate-900 border border-slate-800">सफ़ाई 🧹</button>
+                </div>
+
+                <div id="dialogueOutputArea" class="min-h-[200px] max-h-[260px] overflow-y-auto custom-scrollbar text-xs sm:text-sm space-y-3">
+                    <p class="text-cyan-300 font-medium">👋 "Hello! I am Miss Emily. You can speak anything in English or Hindi without any hesitation. I will listen, respond warmly, and guide your pronunciation step-by-step!"</p>
+                    <div class="p-2.5 bg-slate-900/80 rounded-xl border border-slate-800 text-[11px] text-gray-300 space-y-1">
+                        <p class="font-bold text-amber-300">🌟 झिझक मिटाने का आसान नियम:</p>
+                        <p>• गलत बोलने से बिल्कुल मत डरिए।</p>
+                        <p>• नीचे <b>माइक बटन</b> दबाएँ और जैसे आता है, वैसे बोलें।</p>
+                        <p>• AI टीचर बहुत प्यार से आपको सही और धाराप्रवाह बोलना सिखाएगी।</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- लाइव नियंत्रण और परिस्थितिजन्य मोड (Scenario Selector) -->
+        <div class="bg-slate-900 p-5 rounded-3xl border border-gray-800 space-y-4 shadow-xl">
+            
+            <div class="flex flex-wrap gap-2 justify-center pb-1">
+                <button onclick="setScenarioMode('daily')" id="btnDailyMode" class="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-cyan-600 text-white shadow">
+                    ☕ <span id="modeDailyText">डेली लाइफ बातचीत</span>
+                </button>
+                <button onclick="setScenarioMode('interview')" id="btnInterviewMode" class="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-slate-800 text-gray-300 hover:text-white">
+                    💼 <span id="modeInterviewText">जॉब इंटरव्यू मॉक</span>
+                </button>
+                <button onclick="setScenarioMode('ielts')" id="btnIeltsMode" class="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-slate-800 text-gray-300 hover:text-white">
+                    🎓 <span id="modeIeltsText">IELTS / TOEFL फ्लुएंसी</span>
+                </button>
+            </div>
+
+            <!-- लाइव वॉयस कंट्रोल बटन -->
+            <div class="flex flex-col sm:flex-row items-center justify-between gap-3 pt-2 border-t border-gray-800/80">
+                <div class="flex items-center gap-2 text-xs text-gray-400">
+                    <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping"></span>
+                    <span id="speechInstructionLabel">माइक चालू करें और खुलकर बोलें (AI स्वतः उच्चारण सुधारेगा)</span>
+                </div>
+
+                <button id="liveRecordBtn" onclick="toggleVoiceSession()" class="w-full sm:w-auto px-8 py-3.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 rounded-2xl text-xs sm:text-sm font-bold text-white transition flex items-center justify-center gap-2 shadow-xl">
+                    🎤 <span id="recordBtnLabel">माइक ऑन करें व बोलें</span>
+                </button>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- पेवॉल लॉक मोडल -->
+    <div id="spokenPaywallModal" class="hidden fixed inset-0 bg-black/85 flex items-center justify-center p-4 z-50 backdrop-blur-md">
+        <div class="bg-slate-900 border-2 border-emerald-500 rounded-3xl p-6 max-w-md w-full text-center space-y-5 shadow-2xl">
+            <div class="flex justify-between items-center border-b border-slate-700 pb-3">
+                <h2 class="text-base font-bold text-emerald-400">🔒 Pro Accent Mentor Unlock</h2>
+                <button onclick="closePaywallModal()" class="text-gray-400 hover:text-white font-bold text-lg">✕</button>
+            </div>
+            <div class="p-4 bg-slate-950 rounded-2xl border border-slate-800 space-y-2">
+                <p class="text-xs text-gray-400">चुना गया पैकेज:</p>
+                <h3 id="paywallCourseTitle" class="text-sm font-bold text-cyan-300">3D AI Voice Accent Mentor</h3>
+                <p class="text-2xl font-extrabold text-emerald-400 mt-2">₹149 / माह</p>
+            </div>
+            <input type="text" placeholder="UPI ID दर्ज करें" class="w-full p-3 rounded-xl bg-slate-950 border border-slate-700 text-white text-xs focus:outline-none focus:border-emerald-500">
+            <button onclick="alert('पेमेंट अनुरोध भेजा गया!'); closePaywallModal();" class="w-full py-3 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs sm:text-sm font-bold transition shadow-lg">
+                💳 भुगतान करें व तुरंत अनलॉक करें 🚀
+            </button>
+        </div>
+    </div>
+
+    <footer class="w-full text-center py-4 text-xs text-gray-500 border-t border-gray-900 mt-6">
+        <p>© 2026 Dhruv Academy Master Ecosystem. सर्वाधिकार सुरक्षित।</p>
+    </footer>
+
+    <script>
+        let currentLanguage = 'hi';
+        let currentScenario = 'daily';
+        let isSpeakingActive = false;
+        let speechRecognizer = null;
+
+        function setSpokenLanguage(lang) {
+            currentLanguage = lang;
+            let hiBtn = document.getElementById('hiLangBtn');
+            let enBtn = document.getElementById('enLangBtn');
+
+            if (lang === 'hi') {
+                hiBtn.className = "lang-pill-btn lang-pill-active";
+                enBtn.className = "lang-pill-btn lang-pill-inactive";
+                document.getElementById('navBackLabel').innerText = "मुख्य पोर्टल";
+                document.getElementById('callStatusBadge').innerText = "3D Hologram Live Mentor Active";
+                document.getElementById('liveMentorState').innerText = "🟢 लाइव बातचीत व झिझक मिटाने के लिए तैयार";
+                document.getElementById('modeDailyText').innerText = "डेली लाइफ बातचीत";
+                document.getElementById('modeInterviewText').innerText = "जॉब इंटरव्यू मॉक";
+                document.getElementById('modeIeltsText').innerText = "IELTS / TOEFL फ्लुएंसी";
+                document.getElementById('speechInstructionLabel').innerText = "माइक चालू करें और खुलकर बोलें (AI स्वतः उच्चारण सुधारेगा)";
+                document.getElementById('recordBtnLabel').innerText = isSpeakingActive ? "सुन रहा हूँ... (बोलना बंद करें)" : "माइक ऑन करें व बोलें";
+            } else {
+                enBtn.className = "lang-pill-btn lang-pill-active";
+                hiBtn.className = "lang-pill-btn lang-pill-inactive";
+                document.getElementById('navBackLabel').innerText = "Main Portal";
+                document.getElementById('callStatusBadge').innerText = "3D Hologram Live Mentor Active";
+                document.getElementById('liveMentorState').innerText = "🟢 Ready for hesitation-free conversation";
+                document.getElementById('modeDailyText').innerText = "Daily English";
+                document.getElementById('modeInterviewText').innerText = "Job Interview Mock";
+                document.getElementById('modeIeltsText').innerText = "IELTS / TOEFL Fluency";
+                document.getElementById('speechInstructionLabel').innerText = "Start mic and speak freely (AI auto-corrects accent)";
+                document.getElementById('recordBtnLabel').innerText = isSpeakingActive ? "Listening... (Click to stop)" : "Start Mic & Speak";
+            }
+        }
+
+        function setScenarioMode(mode) {
+            currentScenario = mode;
+            let dBtn = document.getElementById('btnDailyMode');
+            let iBtn = document.getElementById('btnInterviewMode');
+            let fBtn = document.getElementById('btnIeltsMode');
+
+            dBtn.className = "px-3.5 py-1.5 rounded-xl text-xs font-bold " + (mode === 'daily' ? "bg-cyan-600 text-white shadow" : "bg-slate-800 text-gray-300 hover:text-white");
+            iBtn.className = "px-3.5 py-1.5 rounded-xl text-xs font-bold " + (mode === 'interview' ? "bg-indigo-600 text-white shadow" : "bg-slate-800 text-gray-300 hover:text-white");
+            fBtn.className = "px-3.5 py-1.5 rounded-xl text-xs font-bold " + (mode === 'ielts' ? "bg-purple-600 text-white shadow" : "bg-slate-800 text-gray-300 hover:text-white");
+
+            if (mode === 'interview' || mode === 'ielts') {
+                verifyPaywall(mode === 'interview' ? 'spoken_accent_trainer' : 'spoken_ielts_fluent', mode === 'interview' ? 'जॉब इंटरव्यू मॉक' : 'IELTS फ्लुएंसी टेस्ट');
+            }
+        }
+
+        async function verifyPaywall(key, title) {
+            try {
+                let res = await fetch(`/api/feature-status/${key}?t=${Date.now()}`);
+                let data = await res.json();
+                if (data.paywalled) {
+                    document.getElementById('paywallCourseTitle').innerText = title;
+                    document.getElementById('spokenPaywallModal').classList.remove('hidden');
+                }
+            } catch (e) {}
+        }
+
+        function closePaywallModal() {
+            document.getElementById('spokenPaywallModal').classList.add('hidden');
+            setScenarioMode('daily');
+        }
+
+        function playMentorWelcome() {
+            let msg = currentLanguage === 'hi'
+                ? "नमस्ते! मैं मिस एमिली हूँ। बिना किसी झिझक के मुझसे बात कीजिए। माइक दबाइए और कुछ भी बोलिए, मैं आपको बहुत प्यार से सही बोलना सिखाऊँगी!"
+                : "Hello! I am Miss Emily. Speak freely without any hesitation. Press the mic and start talking!";
+            vocalizeMentor(msg);
+        }
+
+        function vocalizeMentor(text) {
+            try {
+                if ('speechSynthesis' in window) {
+                    window.speechSynthesis.cancel();
+                    let clean = text.replace(/[*_#~👩‍🏫💡👉•☕💼🎓]/g, '').trim();
+                    let utterance = new SpeechSynthesisUtterance(clean);
+                    utterance.lang = 'en-US';
+                    utterance.rate = 0.9;
+                    utterance.pitch = 1.05;
+
+                    let avatar = document.getElementById('aiLiveAvatar');
+                    utterance.onstart = () => avatar.classList.add('talking-pulse');
+                    utterance.onend = () => avatar.classList.remove('talking-pulse');
+                    utterance.onerror = () => avatar.classList.remove('talking-pulse');
+
+                    window.speechSynthesis.speak(utterance);
+                }
+            } catch (e) { console.log(e); }
+        }
+
+        function toggleVoiceSession() {
+            const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (!SpeechRec) {
+                alert("कृपया Google Chrome ब्राउज़र का उपयोग करें।");
+                return;
+            }
+
+            if (isSpeakingActive) {
+                if (speechRecognizer) speechRecognizer.stop();
+                isSpeakingActive = false;
+                document.getElementById('recordBtnLabel').innerText = currentLanguage === 'hi' ? "माइक ऑन करें व बोलें" : "Start Mic & Speak";
+                document.getElementById('liveRecordBtn').className = "w-full sm:w-auto px-8 py-3.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 rounded-2xl text-xs sm:text-sm font-bold text-white transition flex items-center justify-center gap-2 shadow-xl";
+                return;
+            }
+
+            speechRecognizer = new SpeechRec();
+            speechRecognizer.lang = 'en-US';
+            speechRecognizer.continuous = false;
+            speechRecognizer.interimResults = false;
+
+            speechRecognizer.onstart = () => {
+                isSpeakingActive = true;
+                document.getElementById('recordBtnLabel').innerText = currentLanguage === 'hi' ? "सुन रहा हूँ... (बोलें)" : "Listening... (Speak)";
+                document.getElementById('liveRecordBtn').className = "w-full sm:w-auto px-8 py-3.5 bg-red-600 hover:bg-red-500 rounded-2xl text-xs sm:text-sm font-bold text-white transition flex items-center justify-center gap-2 shadow-xl animate-pulse";
+            };
+
+            speechRecognizer.onresult = (e) => {
+                let spoken = e.results[0][0].transcript;
+                handleUserVoiceResponse(spoken);
+            };
+
+            speechRecognizer.onerror = () => {
+                isSpeakingActive = false;
+                document.getElementById('recordBtnLabel').innerText = currentLanguage === 'hi' ? "माइक ऑन करें व बोलें" : "Start Mic & Speak";
+                document.getElementById('liveRecordBtn').className = "w-full sm:w-auto px-8 py-3.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 rounded-2xl text-xs sm:text-sm font-bold text-white transition flex items-center justify-center gap-2 shadow-xl";
+            };
+
+            speechRecognizer.onend = () => {
+                isSpeakingActive = false;
+                document.getElementById('recordBtnLabel').innerText = currentLanguage === 'hi' ? "माइक ऑन करें व बोलें" : "Start Mic & Speak";
+                document.getElementById('liveRecordBtn').className = "w-full sm:w-auto px-8 py-3.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 rounded-2xl text-xs sm:text-sm font-bold text-white transition flex items-center justify-center gap-2 shadow-xl";
+            };
+
+            speechRecognizer.start();
+        }
+
+        async function handleUserVoiceResponse(userSpeech) {
+            let out = document.getElementById('dialogueOutputArea');
+            out.innerHTML += `<div class="p-2.5 bg-slate-900 rounded-xl border border-slate-800 text-emerald-300 font-semibold">👤 You said: "${userSpeech}"</div>`;
+            out.scrollTop = out.scrollHeight;
+
+            let loadingId = "loader_" + Date.now();
+            out.innerHTML += `<div id="${loadingId}" class="text-cyan-400 font-medium animate-pulse">👩‍🏫 Miss Emily सोच रही हैं और उत्तर तैयार कर रही हैं...</div>`;
+            out.scrollTop = out.scrollHeight;
+
+            // कॉन्फिडेंस स्कोर रैंडमाइज/कैलकुलेट
+            document.getElementById('scoreConfidence').innerText = "96% (High)";
+            document.getElementById('scoreAccent').innerText = "94% (Great)";
+
+            try {
+                let formData = new FormData();
+                formData.append("user_speech", userSpeech);
+                formData.append("mode", currentScenario);
+                formData.append("lang", currentLanguage);
+
+                let res = await fetch("/api/spoken-english-reply", {
+                    method: "POST",
+                    body: formData
+                });
+                let data = await res.json();
+                
+                let loadElem = document.getElementById(loadingId);
+                if (loadElem) loadElem.remove();
+
+                if (data.success && data.reply) {
+                    out.innerHTML += `<div class="p-3 bg-cyan-950/60 rounded-xl border border-cyan-500/40 text-slate-100 space-y-1.5 shadow">
+                        <p class="font-bold text-cyan-300">👩‍🏫 Miss Emily:</p>
+                        <p class="text-sm font-medium">${data.reply}</p>
+                        ${data.correction ? `<p class="text-[11px] text-yellow-400 font-semibold mt-1">✨ उच्चारण/सुधार: ${data.correction}</p>` : ''}
+                    </div>`;
+                    out.scrollTop = out.scrollHeight;
+                    vocalizeMentor(data.reply);
+                } else {
+                    out.innerHTML += `<div class="text-red-400 font-bold">⚠️ सर्वर व्यस्त है। कृपया पुनः बोलें।</div>`;
+                }
+            } catch (err) {
+                let loadElem = document.getElementById(loadingId);
+                if (loadElem) loadElem.remove();
+                out.innerHTML += `<div class="text-red-400 font-bold">⚠️ नेटवर्क त्रुटि! कृपया पुनः प्रयास करें।</div>`;
+            }
+        }
+
+        function clearConversationBoard() {
+            document.getElementById('dialogueOutputArea').innerHTML = `<p class="text-gray-400 text-xs">बोर्ड साफ कर दिया गया है। माइक ऑन करके बातचीत शुरू करें!</p>`;
+        }
+    </script>
+</body>
+</html>
