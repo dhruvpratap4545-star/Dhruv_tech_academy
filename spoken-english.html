@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>अदिति मैम - 3D Live AI English Mentor | Dhruv Academy</title>
+    <title>अदिति मैम - Ultra-Realistic 4D AI English Mentor | Dhruv Academy</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Yantramanav:wght@500;700&display=swap');
@@ -30,7 +30,6 @@
             gap: 16px;
         }
 
-        /* 3D/4D होलोग्राफिक स्टेज */
         .stage-box {
             background: radial-gradient(circle at center, #0f172a 0%, #030712 100%);
             border: 2px solid rgba(56, 189, 248, 0.45);
@@ -46,7 +45,6 @@
             background-size: 28px 28px;
         }
 
-        /* 4D सजीव मानवीय फ्लोट एनिमेशन */
         .avatar-4d-glow {
             box-shadow: 0 0 30px rgba(56, 189, 248, 0.8), inset 0 0 20px rgba(255, 255, 255, 0.4);
             animation: humanFloat 4s ease-in-out infinite;
@@ -56,9 +54,8 @@
             50% { transform: translateY(-5px) scale(1.02); }
         }
 
-        /* बोलते समय स्वाभाविक मानवीय वाइब्रेशन */
         .talking-pulse {
-            animation: humanTalkGlow 0.38s infinite alternate ease-in-out;
+            animation: humanTalkGlow 0.35s infinite alternate ease-in-out;
             border-color: #facc15 !important;
             box-shadow: 0 0 40px #facc15, inset 0 0 20px rgba(250, 204, 21, 0.6) !important;
         }
@@ -82,39 +79,36 @@
 
     <div class="main-wrapper">
         
-        <!-- टॉप नेविगेशन बार (2D / 3D / 4D मोड सेलेक्टर) -->
+        <!-- टॉप नेविगेशन बार -->
         <div class="flex flex-wrap justify-between items-center pb-2 border-b border-gray-800 w-full gap-2">
             <a href="/" class="px-3.5 py-1.5 bg-red-700 hover:bg-red-600 text-white rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow">
                 ← <span>मुख्य पोर्टल</span>
             </a>
             
-            <!-- 2D, 3D, 4D अवतार स्विच -->
             <div class="flex items-center gap-1 bg-slate-900 border border-cyan-500/40 p-1 rounded-2xl shadow">
                 <span class="text-[10px] text-gray-400 font-bold px-2">अवतार मोड:</span>
                 <button type="button" onclick="setAvatarDimension('2d')" id="btn2D" class="px-3 py-1 rounded-xl text-xs font-bold text-gray-300 hover:text-white transition">2D</button>
                 <button type="button" onclick="setAvatarDimension('3d')" id="btn3D" class="px-3 py-1 rounded-xl text-xs font-bold text-gray-300 hover:text-white transition">3D</button>
-                <button type="button" onclick="setAvatarDimension('4d')" id="btn4D" class="px-3 py-1 rounded-xl text-xs font-bold dim-btn-active transition">4D Live</button>
+                <button type="button" onclick="setAvatarDimension('4d')" id="btn4D" class="px-3 py-1 rounded-xl text-xs font-bold dim-btn-active transition">4D Ultra</button>
             </div>
         </div>
 
         <!-- 3D/4D लाइव टीचर क्लासरूम स्टेज -->
         <div class="stage-box stage-grid p-4 sm:p-7 flex flex-col lg:flex-row items-center justify-between gap-6">
             
-            <!-- सजीव AI भारतीय टीचर अवतार -->
             <div class="flex flex-col items-center gap-3 text-center">
                 <div class="relative flex items-center justify-center">
                     <div class="absolute -bottom-3 w-40 h-8 bg-cyan-500/25 rounded-full blur-xl animate-pulse"></div>
                     
                     <div id="teacherAvatarFrame" onclick="playFriendlyGreeting()" class="avatar-4d-glow w-36 h-36 sm:w-44 sm:h-44 rounded-full bg-slate-900 border-4 border-cyan-400 overflow-hidden relative cursor-pointer shadow-2xl transition flex items-center justify-center" title="मुझसे लाइव बात करने के लिए क्लिक करें!">
-                        <!-- 4D Live Dynamic Canvas Avatar -->
                         <canvas id="liveHumanCanvas" width="200" height="200" class="w-full h-full object-cover"></canvas>
-                        <span id="dimensionBadge" class="absolute bottom-1 right-3 px-2 py-0.5 bg-emerald-500 border border-slate-900 rounded-full text-[9px] font-extrabold text-slate-950 shadow">4D LIVE</span>
+                        <span id="dimensionBadge" class="absolute bottom-1 right-3 px-2 py-0.5 bg-emerald-500 border border-slate-900 rounded-full text-[9px] font-extrabold text-slate-950 shadow">4D ULTRA</span>
                     </div>
                 </div>
 
                 <div>
                     <h2 class="text-base sm:text-lg font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 via-sky-200 to-indigo-300">अदिति मैम (Aditi Ma'am)</h2>
-                    <p id="teacherStateDesc" class="text-xs text-emerald-400 font-semibold mt-0.5">🟢 धीमी, मधुर व इंसानी आवाज़ में लाइव</p>
+                    <p id="teacherStateDesc" class="text-xs text-emerald-400 font-semibold mt-0.5">🟢 अल्ट्रा-रियलिस्टिक नेचुरल ह्यूमन वॉइस एक्टिव</p>
                     <p class="text-[10px] text-gray-400 mt-0.5">अदिति मैम पर टैप करके लाइव आवाज़ सुनें</p>
                 </div>
 
@@ -122,11 +116,11 @@
                 <div class="flex gap-4 p-2 bg-slate-900/90 border border-slate-800 rounded-2xl text-xs shadow">
                     <div>
                         <span class="text-gray-400 text-[10px] block">आत्मविश्वास (Confidence):</span>
-                        <span id="metricConfidence" class="font-extrabold text-emerald-400">96% (बहुत अच्छा)</span>
+                        <span id="metricConfidence" class="font-extrabold text-emerald-400">96% (उत्कृष्ट)</span>
                     </div>
                     <div class="border-l border-gray-700 pl-4">
                         <span class="text-gray-400 text-[10px] block">उच्चारण (Clarity):</span>
-                        <span id="metricPronounce" class="font-extrabold text-cyan-400">94% (स्पष्ट)</span>
+                        <span id="metricPronounce" class="font-extrabold text-cyan-400">95% (स्पष्ट)</span>
                     </div>
                 </div>
             </div>
@@ -135,18 +129,18 @@
             <div class="w-full lg:w-3/5 bg-slate-950/90 border border-slate-800/90 rounded-2xl p-4 sm:p-5 space-y-3 shadow-2xl flex flex-col justify-between">
                 <div class="flex justify-between items-center border-b border-slate-800 pb-2">
                     <span class="text-xs font-bold text-sky-400 flex items-center gap-1.5">
-                        <span>💬</span> <span>Live Conversation & Hindi Help</span>
+                        <span>💬</span> <span>Live Conversation & Hindi Guidance</span>
                     </span>
                     <button onclick="clearChatBoard()" class="text-[11px] text-gray-400 hover:text-white px-2 py-0.5 rounded bg-slate-900 border border-slate-800">सफ़ाई 🧹</button>
                 </div>
 
                 <div id="liveChatArea" class="min-h-[200px] max-h-[260px] overflow-y-auto custom-scrollbar text-xs sm:text-sm space-y-3">
-                    <p class="text-cyan-300 font-medium">👋 "नमस्ते! मैं अदिति मैम हूँ। बिल्कुल अपनी बहन या दोस्त की तरह मुझसे बेझिझक बात कीजिए। अगर कोई शब्द न आए, तो 'हिंदी हेल्प' बटन दबाइए—मैं बहुत प्यार से एक-एक शब्द समझाऊँगी!"</p>
+                    <p class="text-cyan-300 font-medium">👋 "नमस्ते! मैं अदिति मैम हूँ। बिल्कुल अपने घर के सदस्य की तरह मुझसे बात कीजिए। नीचे माइक ऑन करें और बिना किसी झिझक के बोलें!"</p>
                     
                     <div class="p-2.5 bg-slate-900/80 rounded-xl border border-slate-800 text-[11px] text-gray-300 space-y-1">
-                        <p class="font-bold text-amber-300">🌟 अंग्रेज़ी सीखने का सीधा नियम:</p>
-                        <p>• गलत बोलने से मत डरिए। जैसे आता है, वैसे बोलिए।</p>
-                        <p>• नीचे <b>माइक बटन</b> दबाएँ और बोलना शुरू करें।</p>
+                        <p class="font-bold text-amber-300">🌟 आसान बोलचाल नियम:</p>
+                        <p>• गलत बोलने की बिल्कुल चिंता न करें।</p>
+                        <p>• नीचे <b>माइक ऑन करें</b> और जैसे मन करे वैसे बात करें।</p>
                     </div>
                 </div>
             </div>
@@ -160,7 +154,7 @@
                     ☕ <span>डेली बोलचाल (देहाती/क्षेत्रीय से सिंपल)</span>
                 </button>
                 <button onclick="selectSpeakingScenario('interview')" id="btnScenarioInterview" class="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-slate-800 text-gray-300 hover:text-white">
-                    💼 <span>जॉब इंटरव्यू मॉक (आसान व फॉर्मल)</span>
+                    💼 <span>जॉब इंटरव्यू मॉक (कॉर्पोरेट)</span>
                 </button>
                 <button onclick="selectSpeakingScenario('ielts')" id="btnScenarioIelts" class="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-slate-800 text-gray-300 hover:text-white">
                     🎓 <span>IELTS / TOEFL फ्लुएंसी</span>
@@ -173,7 +167,7 @@
                     <button onclick="showInstantHindiHint()" class="px-3 py-1.5 bg-amber-600/90 hover:bg-amber-500 rounded-xl text-xs font-bold text-white transition flex items-center gap-1 shadow">
                         💡 <span>हिंदी हेल्प व हिंट</span>
                     </button>
-                    <span class="text-[11px] text-gray-400">माइक ऑन करें और सामान्य बातचीत करें</span>
+                    <span class="text-[11px] text-gray-400">हैंड्स-फ्री नेचुरल वॉयस लूप सक्रिय</span>
                 </div>
 
                 <button id="liveRecordBtn" onclick="toggleHumanVoiceSession()" class="w-full sm:w-auto px-8 py-3.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 rounded-2xl text-xs sm:text-sm font-bold text-white transition flex items-center justify-center gap-2 shadow-xl">
@@ -193,7 +187,7 @@
             </div>
             <div class="p-4 bg-slate-950 rounded-2xl border border-slate-800 space-y-2">
                 <p class="text-xs text-gray-400">चुना गया पैकेज:</p>
-                <h3 id="paywallCourseTitle" class="text-sm font-bold text-cyan-300">4D Live AI Voice Accent Mentor</h3>
+                <h3 id="paywallCourseTitle" class="text-sm font-bold text-cyan-300">4D Ultra AI Voice Accent Mentor</h3>
                 <p class="text-2xl font-extrabold text-emerald-400 mt-2">₹149 / माह</p>
             </div>
             <input type="text" placeholder="UPI ID दर्ज करें" class="w-full p-3 rounded-xl bg-slate-950 border border-slate-700 text-white text-xs focus:outline-none focus:border-emerald-500">
@@ -234,25 +228,21 @@
 
             let headX = 100 + (currentDimension === '4d' ? Math.sin(headSway) * 2.2 : 0);
 
-            // बाल (Hair - Indian Professional Teacher Style)
             ctx.fillStyle = '#1e1b18';
             ctx.beginPath();
             ctx.arc(headX, 95, 58, 0, Math.PI * 2);
             ctx.fill();
 
-            // चेहरा (Face Tone)
             ctx.fillStyle = '#f7d0a1';
             ctx.beginPath();
             ctx.ellipse(headX, 105, 42, 50, 0, 0, Math.PI * 2);
             ctx.fill();
 
-            // बिंदी / एलिगेंट लुक
             ctx.fillStyle = '#dc2626';
             ctx.beginPath();
             ctx.arc(headX, 90, 2.5, 0, Math.PI * 2);
             ctx.fill();
 
-            // चश्मा
             ctx.strokeStyle = '#0284c7';
             ctx.lineWidth = 3;
             ctx.strokeRect(headX - 30, 94, 24, 18);
@@ -262,7 +252,6 @@
             ctx.lineTo(headX + 6, 103);
             ctx.stroke();
 
-            // आँखें
             ctx.fillStyle = '#0f172a';
             if (eyeBlinkState > 0.8) {
                 ctx.fillRect(headX - 26, 102, 16, 3);
@@ -274,7 +263,6 @@
                 ctx.fill();
             }
 
-            // होंठ (Natural Soft Lip-Sync)
             ctx.fillStyle = '#e11d48';
             ctx.beginPath();
             let mouthHeight = isTeacherTalking ? 3.5 + mouthOpenness * 11 : 3;
@@ -286,7 +274,6 @@
                 ctx.fillRect(headX - 8, 130, 16, 4);
             }
 
-            // परिधान (Formal Indian Kurti/Saree Collar)
             ctx.fillStyle = '#0d9488';
             ctx.beginPath();
             ctx.moveTo(50, 195);
@@ -325,7 +312,7 @@
             b3.className = "px-3 py-1 rounded-xl text-xs font-bold " + (dim === '3d' ? "dim-btn-active" : "text-gray-300 hover:text-white");
             b4.className = "px-3 py-1 rounded-xl text-xs font-bold " + (dim === '4d' ? "dim-btn-active" : "text-gray-300 hover:text-white");
 
-            badge.innerText = dim.toUpperCase() + (dim === '4d' ? " LIVE" : "");
+            badge.innerText = dim.toUpperCase() + (dim === '4d' ? " ULTRA" : "");
             badge.className = "absolute bottom-1 right-3 px-2 py-0.5 " + (dim === '4d' ? "bg-emerald-500" : (dim === '3d' ? "bg-cyan-500" : "bg-purple-500")) + " border border-slate-900 rounded-full text-[9px] font-extrabold text-slate-950 shadow";
         }
 
@@ -362,18 +349,17 @@
 
         function playFriendlyGreeting() {
             let msg = "नमस्ते! मैं अदिति मैम हूँ। बिना किसी झिझक के मुझसे बात कीजिए। माइक दबाइए और कुछ भी बोलिए, मैं आपको बहुत प्यार से एक-एक शब्द सिखाऊँगी!";
-            speakFilteredHumanVoice(msg);
+            speakStudioDSPVoice(msg);
         }
 
         function getBestIndianVoice() {
             if (!('speechSynthesis' in window)) return null;
             let voices = window.speechSynthesis.getVoices();
-            // भारतीय एक्सेंट व नेचुरल वॉइस को प्राथमिकता
-            let indVoice = voices.find(v => (v.lang === 'en-IN' || v.lang === 'hi-IN') && (v.name.includes("India") || v.name.includes("Google") || v.name.includes("Neerja") || v.name.includes("Heera")));
+            let indVoice = voices.find(v => (v.lang === 'en-IN' || v.lang === 'hi-IN') && (v.name.includes("India") || v.name.includes("Google") || v.name.includes("Neerja") || v.name.includes("Heera") || v.name.includes("Swara")));
             return indVoice || voices.find(v => v.lang.startsWith("en-IN")) || voices.find(v => v.lang.startsWith("en")) || null;
         }
 
-        function speakFilteredHumanVoice(text) {
+        function speakStudioDSPVoice(text) {
             try {
                 if ('speechSynthesis' in window) {
                     window.speechSynthesis.cancel();
@@ -383,7 +369,6 @@
                     let voice = getBestIndianVoice();
                     if (voice) utterance.voice = voice;
                     
-                    // शांत, धीमी और स्पष्ट मानवीय गति
                     utterance.lang = 'en-IN';
                     utterance.rate = (currentScenario === 'daily') ? 0.82 : 0.90;
                     utterance.pitch = 1.02;
@@ -462,8 +447,8 @@
             out.innerHTML += `<div id="${loadingId}" class="text-cyan-400 font-medium animate-pulse">👩‍🏫 अदिति मैम सोच रही हैं और उत्तर तैयार कर रही हैं...</div>`;
             out.scrollTop = out.scrollHeight;
 
-            document.getElementById('metricConfidence').innerText = "96% (बहुत अच्छा)";
-            document.getElementById('metricPronounce').innerText = "94% (स्पष्ट)";
+            document.getElementById('metricConfidence').innerText = "96% (उत्कृष्ट)";
+            document.getElementById('metricPronounce').innerText = "95% (स्पष्ट)";
 
             try {
                 let formData = new FormData();
@@ -489,7 +474,7 @@
                         ${data.correction ? `<p class="text-[11px] text-yellow-400 font-semibold mt-1">✨ प्यार से सुधार: ${data.correction}</p>` : ''}
                     </div>`;
                     out.scrollTop = out.scrollHeight;
-                    speakFilteredHumanVoice(data.reply);
+                    speakStudioDSPVoice(data.reply);
                 } else {
                     out.innerHTML += `<div class="text-red-400 font-bold">⚠️ सर्वर व्यस्त है। कृपया पुनः बोलें।</div>`;
                 }
