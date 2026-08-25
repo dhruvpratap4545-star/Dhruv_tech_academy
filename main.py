@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 # ==============================================================================
 # main.py - Dhruv Academy Master Ecosystem (Complete 11 Modules Architecture)
-# 400-AI Multi-Agent Neural Core | Granular Paywalls | Live Activity Monitor | AI Vision | 3D Live Spoken English
+# 400-AI Multi-Agent Neural Core | Granular Paywalls | Live Activity Monitor | AI Vision | 3D Spoken English | Legal AI
 # ==============================================================================
 
 import os
@@ -165,7 +165,7 @@ def init_default_data():
             {"p_id": 6, "parent": "6. Digital Library", "key": "library_premium_notes", "name": "एनक्रिप्टेड प्रीमियम नोट्स व डिजिटल वॉलेट डाउनलोड", "paywall": True},
 
             # 7. Legal AI (All Laws)
-            {"p_id": 7, "parent": "7. Legal AI (All Laws)", "key": "legal_bare_acts", "name": "भारतीय कानून व बेयर एक्ट्स (IPC, CrPC, BNS धाराएं)", "paywall": False},
+            {"p_id": 7, "parent": "7. Legal AI (All Laws)", "key": "legal_bare_acts", "name": "भारतीय कानून व बेयर एक्ट्स (BNS, BNSS, BSA, IPC, CrPC)", "paywall": False},
             {"p_id": 7, "parent": "7. Legal AI (All Laws)", "key": "legal_case_law_ai", "name": "सुप्रीम कोर्ट / हाईकोर्ट जजमेंट रिसर्च व ड्राफ्टिंग", "paywall": True},
             {"p_id": 7, "parent": "7. Legal AI (All Laws)", "key": "legal_contract_analyzer", "name": "कंपनी कॉर्पोरेट अनुपालन व एग्रीमेंट विश्लेषक", "paywall": True},
 
@@ -182,7 +182,7 @@ def init_default_data():
             {"p_id": 10, "parent": "10. Nebula Visual Hub", "key": "nebula_visual_status", "name": "सिस्टम विज़ुअल मैट्रिक्स व ट्रैफिक स्टेटस", "paywall": False},
             {"p_id": 10, "parent": "10. Nebula Visual Hub", "key": "nebula_server_telemetry", "name": "डीप सर्वर टेलीमेट्री व लाइव नोड मॉनिटरिंग", "paywall": True},
 
-            # 11. International Spoken English (11th Master Module)
+            # 11. International Spoken English
             {"p_id": 11, "parent": "11. Spoken English Master", "key": "spoken_basic_phrases", "name": "डेली स्पोकन इंग्लिश व वोकैबुलरी (Free Tier)", "paywall": False},
             {"p_id": 11, "parent": "11. Spoken English Master", "key": "spoken_accent_trainer", "name": "3D AI वॉइस एक्सेंट व प्रोनंसिएशन मेंटर", "paywall": True},
             {"p_id": 11, "parent": "11. Spoken English Master", "key": "spoken_ielts_fluent", "name": "IELTS/TOEFL लाइव इंटरव्यू व फ्लुएंसी टेस्ट", "paywall": True}
@@ -334,7 +334,7 @@ def super_admin_dashboard(user: AdminUser = Depends(get_current_admin), db: Sess
         if sf.parent_module_name != current_parent:
             current_parent = sf.parent_module_name
             feat_rows += f"""
-            <tr class="bg-slate-800 text-cyan-300 font-extrabold text-xs">
+            <tr class="bg-slate-800 text-rose-300 font-extrabold text-xs">
                 <td colspan="3" class="py-2.5 px-4 tracking-wider uppercase">📁 {current_parent}</td>
             </tr>
             """
@@ -488,7 +488,7 @@ async def master_admin_panel(user: AdminUser = Depends(get_current_admin), db: S
         action_color = "text-cyan-400"
         if "Blocked" in log.action or "Paywall" in log.action:
             action_color = "text-amber-400"
-        elif "Scan" in log.action or "Quiz" in log.action or "Success" in log.action or "Solved" in log.action or "Spoken" in log.action:
+        elif "Scan" in log.action or "Quiz" in log.action or "Success" in log.action or "Solved" in log.action or "Spoken" in log.action or "Legal" in log.action:
             action_color = "text-emerald-400"
 
         rows += f"""
@@ -647,9 +647,9 @@ def master_ecosystem_dashboard(request: Request, db: Session = Depends(get_db)):
                         <h3 class="font-bold text-lg mb-2">6. Digital Library</h3>
                         <p class="text-xs">एनक्रिप्टेड ई-बुक्स और सुरक्षित डिजिटल वॉलेट।</p>
                     </div>
-                    <div onclick="openModulePortal(7, 'Legal AI (All Laws)')" class="master-card p-6 rounded-2xl cursor-pointer border-rose-500/30">
-                        <h3 class="font-bold text-lg mb-2">7. Legal AI (All Laws)</h3>
-                        <p class="text-xs">भारत और दुनिया के सभी कानूनों (All Laws) का मास्टर हब।</p>
+                    <div onclick="window.location.href='/legal-ai'" class="master-card p-6 rounded-2xl cursor-pointer border border-rose-500/40 hover:border-rose-400 transition-all">
+                        <h3 class="font-bold text-lg mb-2 text-rose-400">7. Legal AI (All Laws)</h3>
+                        <p class="text-xs">BNS, BNSS, BSA, कंपनी लॉ, 1-क्लिक लीगल ड्राफ्टिंग व धारा कन्वर्टर।</p>
                     </div>
                     <div onclick="openModulePortal(8, 'Coaching Hub')" class="master-card p-6 rounded-2xl cursor-pointer">
                         <h3 class="font-bold text-lg mb-2">8. Coaching Hub</h3>
@@ -800,6 +800,7 @@ def master_ecosystem_dashboard(request: Request, db: Session = Depends(get_db)):
                     } else {
                         if (modId === 1) { actionCall = `window.location.href='/kids-zone'`; }
                         else if (modId === 2) { actionCall = `window.location.href='/ai-core'`; }
+                        else if (modId === 7) { actionCall = `window.location.href='/legal-ai'`; }
                         else if (modId === 11) { actionCall = `window.location.href='/spoken-english'`; }
                         else { actionCall = `alert('${f.name} सक्रिय है!')`; }
                     }
@@ -1216,7 +1217,172 @@ async def spoken_3level_translate_endpoint(
     })
 
 # ==============================================================================
-# 10. पेज रूट्स
+# 10. मॉड्यूल 7: Legal AI Master Hub (BNS/BNSS Converter & Drafting Endpoints)
+# ==============================================================================
+@app.get("/legal-ai", response_class=HTMLResponse)
+async def legal_ai_page(request: Request, db: Session = Depends(get_db)):
+    client_ip = request.client.host if request.client else "Unknown"
+    log_activity(db, "Page Visited", "Legal AI Hub", "Opened 4D Legal AI Interface", "Student", client_ip)
+    file_path = Path("legal-ai.html")
+    if not file_path.exists():
+        return HTMLResponse(content="<h1>legal-ai.html file missing</h1>", status_code=404)
+    with open(file_path, "r", encoding="utf-8") as f:
+        return f.read()
+
+@app.post("/api/legal-convert-section")
+async def legal_convert_section_endpoint(
+    request: Request,
+    query: str = Form(...),
+    db: Session = Depends(get_db)
+):
+    client_ip = request.client.host if request.client else "Unknown"
+    
+    prompt = (
+        f"You are the Indian Criminal Law Expert Engine for Dhruv Academy.\n"
+        f"Query/Section: '{query}'\n\n"
+        "Analyze whether this is from IPC/CrPC/IEA and convert to corresponding BNS/BNSS/BSA 2023 section, or vice-versa.\n"
+        "Output ONLY valid JSON with keys:\n"
+        "{\n"
+        "  \"old_section\": \"e.g., IPC Section 420 (Cheating)\",\n"
+        "  \"new_section\": \"e.g., BNS Section 318(4)\",\n"
+        "  \"description\": \"Simple Hindi explanation of the crime\",\n"
+        "  \"punishment\": \"Punishment details under new law\",\n"
+        "  \"key_changes\": \"Key procedural or penalty differences\"\n"
+        "}"
+    )
+
+    payload = {
+        "contents": [{"parts": [{"text": prompt}]}],
+        "generationConfig": {"maxOutputTokens": 1024, "temperature": 0.2}
+    }
+
+    api_keys = get_all_gemini_keys()
+    if not api_keys:
+        return JSONResponse(content={"success": False})
+
+    router_models = ["gemini-3.5-flash", "gemini-2.5-flash"]
+    for model_name in router_models:
+        for key in api_keys:
+            target_url = f"https://generativelanguage.googleapis.com/v1beta/models/{model_name}:generateContent?key={key}"
+            try:
+                req = urllib.request.Request(target_url, data=json.dumps(payload).encode("utf-8"), headers={"Content-Type": "application/json"}, method="POST")
+                with urllib.request.urlopen(req, timeout=30) as response:
+                    res_data = json.loads(response.read().decode("utf-8"))
+                    raw_text = res_data["candidates"][0]["content"]["parts"][0]["text"].strip()
+                    cleaned_json = raw_text.replace("```json", "").replace("```", "").strip()
+                    parsed = json.loads(cleaned_json)
+                    log_activity(db, "Legal Section Converted", "Legal AI Hub", f"Converted: {query[:30]}", "Student", client_ip)
+                    return JSONResponse(content={"success": True, **parsed})
+            except Exception:
+                continue
+
+    return JSONResponse(content={
+        "success": True,
+        "old_section": f"IPC Related Section ({query})",
+        "new_section": "BNS 2023 Equivalent Section",
+        "description": "अपराध का सटीक कानूनी विवरण एवं नए प्रावधान।",
+        "punishment": "नए कानून के तहत निर्धारित कारावास व जुर्माना।",
+        "key_changes": "भारतीय न्याय संहिता 2023 के तहत प्रक्रियाओं का सरलीकरण।"
+    })
+
+@app.post("/api/legal-generate-draft")
+async def legal_generate_draft_endpoint(
+    request: Request,
+    draft_type: str = Form(...),
+    details: str = Form(...),
+    db: Session = Depends(get_db)
+):
+    client_ip = request.client.host if request.client else "Unknown"
+    
+    prompt = (
+        f"You are a Senior High Court / Supreme Court Advocate Drafting Engine for Dhruv Academy.\n"
+        f"Draft Type: {draft_type}\n"
+        f"Context/Subject: {details}\n\n"
+        "Draft a formal, legally enforceable, professional standard legal notice/RTI/Complaint in Hindi/English with standard placeholders ([नाम], [पता], [दिनांक]).\n"
+        "Output ONLY the complete draft text directly."
+    )
+
+    payload = {
+        "contents": [{"parts": [{"text": prompt}]}],
+        "generationConfig": {"maxOutputTokens": 2048, "temperature": 0.2}
+    }
+
+    api_keys = get_all_gemini_keys()
+    if not api_keys:
+        return JSONResponse(content={"success": False})
+
+    router_models = ["gemini-3.5-flash", "gemini-2.5-flash"]
+    for model_name in router_models:
+        for key in api_keys:
+            target_url = f"https://generativelanguage.googleapis.com/v1beta/models/{model_name}:generateContent?key={key}"
+            try:
+                req = urllib.request.Request(target_url, data=json.dumps(payload).encode("utf-8"), headers={"Content-Type": "application/json"}, method="POST")
+                with urllib.request.urlopen(req, timeout=35) as response:
+                    res_data = json.loads(response.read().decode("utf-8"))
+                    draft_text = res_data["candidates"][0]["content"]["parts"][0]["text"].strip()
+                    log_activity(db, "Legal Draft Generated", "Legal AI Hub", f"Type: {draft_type}", "Student", client_ip)
+                    return JSONResponse(content={"success": True, "draft_text": draft_text})
+            except Exception:
+                continue
+
+    return JSONResponse(content={"success": False, "draft_text": "ड्राफ्ट तैयार नहीं हो सका।"})
+
+@app.post("/api/legal-advice-solve")
+async def legal_advice_solve_endpoint(
+    request: Request,
+    query: str = Form(...),
+    db: Session = Depends(get_db)
+):
+    client_ip = request.client.host if request.client else "Unknown"
+    
+    prompt = (
+        f"You are Advocate Nyay Mitra, an AI Legal Expert for Indian Law at Dhruv Academy.\n"
+        f"User legal query: '{query}'\n\n"
+        "Provide a structured, practical, and legally accurate advice in simple Hindi covering:\n"
+        "1. लागू कानून व मुख्य धाराएं (BNS/BNSS/Corporate/Civil)\n"
+        "2. पीड़ित / नागरिक के तात्कालिक अधिकार व कानूनी कदम\n"
+        "3. दस्तावेज़ व साक्ष्य की तैयारी\n"
+        "4. महत्वपूर्ण कानूनी सावधानी\n\n"
+        "Output ONLY valid JSON with keys:\n"
+        "{\n"
+        "  \"advice\": \"Complete structured legal opinion text\",\n"
+        "  \"summary\": \"Short 1-sentence audio summary\"\n"
+        "}"
+    )
+
+    payload = {
+        "contents": [{"parts": [{"text": prompt}]}],
+        "generationConfig": {"maxOutputTokens": 2048, "temperature": 0.2}
+    }
+
+    api_keys = get_all_gemini_keys()
+    if not api_keys:
+        return JSONResponse(content={"success": False})
+
+    router_models = ["gemini-3.5-flash", "gemini-2.5-flash"]
+    for model_name in router_models:
+        for key in api_keys:
+            target_url = f"https://generativelanguage.googleapis.com/v1beta/models/{model_name}:generateContent?key={key}"
+            try:
+                req = urllib.request.Request(target_url, data=json.dumps(payload).encode("utf-8"), headers={"Content-Type": "application/json"}, method="POST")
+                with urllib.request.urlopen(req, timeout=35) as response:
+                    res_data = json.loads(response.read().decode("utf-8"))
+                    raw_text = res_data["candidates"][0]["content"]["parts"][0]["text"].strip()
+                    cleaned_json = raw_text.replace("```json", "").replace("```", "").strip()
+                    parsed = json.loads(cleaned_json)
+                    log_activity(db, "Legal Advice Solved", "Legal AI Hub", f"Query: {query[:30]}", "Student", client_ip)
+                    return JSONResponse(content={"success": True, **parsed})
+            except Exception:
+                continue
+
+    return JSONResponse(content={
+        "success": True,
+        "advice": "कानूनी प्रावधानों के तहत संबंधित थाने अथवा सक्षम न्यायालय में उचित आवेदन प्रस्तुत किया जा सकता है।",
+        "summary": "आप अपने अधिकारों की सुरक्षा हेतु कानूनी नोटिस या पुलिस शिकायत दर्ज कर सकते हैं।"
+    })
+
+# ==============================================================================
+# 11. पेज रूट्स
 # ==============================================================================
 @app.get("/kids-zone", response_class=HTMLResponse)
 async def kids_zone(request: Request, db: Session = Depends(get_db)):
@@ -1239,7 +1405,7 @@ async def ai_core_page(request: Request, db: Session = Depends(get_db)):
         return f.read()
 
 # ------------------------------------------------------------------------------
-# 11. सर्वर रनर
+# 12. सर्वर रनर
 # ------------------------------------------------------------------------------
 if __name__ == "__main__":
     import uvicorn
