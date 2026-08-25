@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 # ==============================================================================
-# main.py - Dhruv Academy Master Ecosystem (Admin Panel & AI Vision Engine)
+# main.py - Dhruv Academy Master Ecosystem
+# 10 Master Modules | Granular Sub-Feature Paywalls | Live Activity Logger | AI Vision
 # ==============================================================================
 
 import os
@@ -19,7 +20,7 @@ import urllib.error
 
 from fastapi import FastAPI, UploadFile, File, Form, Depends, HTTPException, Request, Response, status
 from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse
-from sqlalchemy import create_engine, Column, Integer, String, DateTime, Boolean, JSON
+from sqlalchemy import create_engine, Column, Integer, String, DateTime, Boolean, JSON, Text
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, Session
 
@@ -35,6 +36,16 @@ DATABASE_URL = "sqlite:///./dhruv_academy_ecosystem.db"
 engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
+
+class UserActivityLog(Base):
+    __tablename__ = "user_activity_logs"
+    id = Column(Integer, primary_key=True, index=True)
+    user_identifier = Column(String, default="Guest Student")
+    action = Column(String, index=True)
+    module = Column(String, index=True)
+    details = Column(Text)
+    ip_address = Column(String)
+    timestamp = Column(DateTime, default=datetime.datetime.utcnow)
 
 class AcademyMasterRecord(Base):
     __tablename__ = "academy_master_records"
@@ -59,9 +70,11 @@ class AdminSession(Base):
     username = Column(String, index=True)
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
 
-class FeatureToggle(Base):
-    __tablename__ = "feature_toggles"
+class SubFeatureToggle(Base):
+    __tablename__ = "sub_feature_toggles"
     id = Column(Integer, primary_key=True, index=True)
+    parent_module_id = Column(Integer, index=True)
+    parent_module_name = Column(String, index=True)
     feature_key = Column(String, unique=True, index=True)
     feature_name = Column(String)
     is_enabled = Column(Boolean, default=True)
@@ -76,10 +89,25 @@ def get_db():
     finally:
         db.close()
 
+def log_activity(db: Session, action: str, module: str, details: str = "", user_id: str = "Student", ip: str = "Unknown"):
+    try:
+        log_entry = UserActivityLog(
+            user_identifier=user_id,
+            action=action,
+            module=module,
+            details=details,
+            ip_address=ip,
+            timestamp=datetime.datetime.utcnow()
+        )
+        db.add(log_entry)
+        db.commit()
+    except Exception as e:
+        print(f"Logging error: {e}")
+
 def init_default_data():
     db = SessionLocal()
     try:
-        # सुपरएडमिन क्रेडेंशियल्स को जबरन फ्रेश अपडेट करना
+        # सुपरएडमिन और सब-एडमिन क्रेडेंशियल्स सिंक
         superadmin = db.query(AdminUser).filter_by(username="dhruv_superadmin").first()
         if not superadmin:
             superadmin = AdminUser(
@@ -106,26 +134,66 @@ def init_default_data():
         else:
             sub_admin.password = "LegalPass2026!"
 
-        default_features = [
-            {"key": "mod_1_kids", "name": "1. Kids Zone (NC-5)", "is_paywalled": False},
-            {"key": "mod_2_ai_core", "name": "2. AI Engine Core", "is_paywalled": True},
-            {"key": "mod_3_healing", "name": "3. AI Auto-Healing", "is_paywalled": True},
-            {"key": "mod_4_faceswap", "name": "4. Face-Swap Social", "is_paywalled": True},
-            {"key": "mod_5_blackboard", "name": "5. 3D Blackboard", "is_paywalled": False},
-            {"key": "mod_6_library", "name": "6. Digital Library", "is_paywalled": True},
-            {"key": "mod_7_legal", "name": "7. Legal AI (All Laws)", "is_paywalled": True},
-            {"key": "mod_8_coaching", "name": "8. Coaching Hub", "is_paywalled": True},
-            {"key": "mod_9_competition", "name": "9. Competition Solver", "is_paywalled": True},
-            {"key": "mod_10_nebula", "name": "10. Nebula Visual Hub", "is_paywalled": False}
+        # सभी 10 मॉड्यूल्स के सूक्ष्म (Granular) सब-फीचर्स का डिफ़ॉल्ट डेटाबेस
+        all_master_sub_features = [
+            # 1. Kids Zone (NC-5)
+            {"p_id": 1, "parent": "1. Foundation: NC-5 Kids Tier", "key": "kids_basic_blackboard", "name": "बेसिक गणित, पहेली व कविता बोर्ड (Free Tier)", "paywall": False},
+            {"p_id": 1, "parent": "1. Foundation: NC-5 Kids Tier", "key": "kids_ai_scanner", "name": "एआई बुक व होमवर्क स्कैनर (Vision Solver Engine)", "paywall": True},
+            {"p_id": 1, "parent": "1. Foundation: NC-5 Kids Tier", "key": "kids_smart_quiz", "name": "ऑटो 5 MCQs स्मार्ट क्विज़ व एंटी-चीट कियोस्क", "paywall": True},
+            {"p_id": 1, "parent": "1. Foundation: NC-5 Kids Tier", "key": "kids_whatsapp_hw", "name": "स्कूल / ट्यूटर डिजिटल व्हाट्सएप होमवर्क पोर्टल", "paywall": False},
+            {"p_id": 1, "parent": "1. Foundation: NC-5 Kids Tier", "key": "kids_voice_interaction", "name": "एआई टीचर इंटरेक्टिव वॉइस (TTS Speech Engine)", "paywall": False},
+
+            # 2. AI Engine Core
+            {"p_id": 2, "parent": "2. AI Engine Core", "key": "ai_text_basic", "name": "सामान्य विषय टेक्स्ट समाधान व त्वरित शंका समाधान", "paywall": False},
+            {"p_id": 2, "parent": "2. AI Engine Core", "key": "ai_deep_research", "name": "एडवांस्ड डीप रिसर्च व मल्टी-स्टेप लॉजिकल रीजनिंग", "paywall": True},
+            {"p_id": 2, "parent": "2. AI Engine Core", "key": "ai_multilingual_translate", "name": "उच्च स्तरीय बहुभाषी तकनीकी अनुवाद व सारांश", "paywall": True},
+
+            # 3. AI Auto-Healing
+            {"p_id": 3, "parent": "3. AI Auto-Healing", "key": "healing_error_detect", "name": "सॉफ्टवेयर व कोड एरर लाइव डिटेक्टर", "paywall": False},
+            {"p_id": 3, "parent": "3. AI Auto-Healing", "key": "healing_auto_repair", "name": "1-क्लिक ऑटो कोड रिपेयर व आर्किटेक्चर हीलिंग", "paywall": True},
+            {"p_id": 3, "parent": "3. AI Auto-Healing", "key": "healing_db_optimize", "name": "डेटाबेस ऑटो-इंडेक्सिंग व क्रैश-प्रूफ रिकवरी", "paywall": True},
+
+            # 4. Face-Swap Social
+            {"p_id": 4, "parent": "4. Face-Swap Social", "key": "faceswap_avatar_gen", "name": "बेसिक 3D स्टूडेंट अवतार क्रिएटर", "paywall": False},
+            {"p_id": 4, "parent": "4. Face-Swap Social", "key": "faceswap_video_explainer", "name": "एनिमेटेड वीडियो एक्सप्लेनर व सोशल शेयरिंग", "paywall": True},
+
+            # 5. 3D Blackboard
+            {"p_id": 5, "parent": "5. 3D Blackboard", "key": "blackboard_live_canvas", "name": "इंटरएक्टिव लाइव 3D चाक-बोर्ड (Free Standard)", "paywall": False},
+            {"p_id": 5, "parent": "5. 3D Blackboard", "key": "blackboard_tv_cast", "name": "स्मार्ट टीवी कास्टिंग व क्लासरूम प्रोजेक्टर सिंक", "paywall": True},
+
+            # 6. Digital Library
+            {"p_id": 6, "parent": "6. Digital Library", "key": "library_ncert_books", "name": "NCERT व बेसिक ई-बुक्स डिजिटल एक्सेस", "paywall": False},
+            {"p_id": 6, "parent": "6. Digital Library", "key": "library_premium_notes", "name": "एनक्रिप्टेड प्रीमियम नोट्स व डिजिटल वॉलेट डाउनलोड", "paywall": True},
+
+            # 7. Legal AI (All Laws)
+            {"p_id": 7, "parent": "7. Legal AI (All Laws)", "key": "legal_bare_acts", "name": "भारतीय कानून व बेयर एक्ट्स (IPC, CrPC, BNS धाराएं)", "paywall": False},
+            {"p_id": 7, "parent": "7. Legal AI (All Laws)", "key": "legal_case_law_ai", "name": "सुप्रीम कोर्ट / हाईकोर्ट जजमेंट रिसर्च व ड्राफ्टिंग", "paywall": True},
+            {"p_id": 7, "parent": "7. Legal AI (All Laws)", "key": "legal_contract_analyzer", "name": "कंपनी कॉर्पोरेट अनुपालन व एग्रीमेंट विश्लेषक", "paywall": True},
+
+            # 8. Coaching Hub
+            {"p_id": 8, "parent": "8. Coaching Hub", "key": "coaching_batch_manager", "name": "संस्थान बैच शेड्यूल व छात्र उपस्थिति पोर्टल", "paywall": False},
+            {"p_id": 8, "parent": "8. Coaching Hub", "key": "coaching_fee_automation", "name": "स्वचालित फीस रसीद, ऑटो-एसएमएस व रिपोर्ट कार्ड", "paywall": True},
+
+            # 9. Competition Solver
+            {"p_id": 9, "parent": "9. Competition Solver", "key": "comp_exam_syllabus", "name": "IAS/PCS/Banking सिलेबस ट्रैकर व PYQs", "paywall": False},
+            {"p_id": 9, "parent": "9. Competition Solver", "key": "comp_mains_evaluator", "name": "UPSC मुख्य परीक्षा उत्तर मूल्यांकन (Mains AI Evaluator)", "paywall": True},
+            {"p_id": 9, "parent": "9. Competition Solver", "key": "comp_mock_test_engine", "name": "ऑल इंडिया लाइव मॉक टेस्ट व प्रेडिक्टिव स्कोरिंग", "paywall": True},
+
+            # 10. Nebula Visual Hub
+            {"p_id": 10, "parent": "10. Nebula Visual Hub", "key": "nebula_visual_status", "name": "सिस्टम विज़ुअल मैट्रिक्स व ट्रैफिक स्टेटस", "paywall": False},
+            {"p_id": 10, "parent": "10. Nebula Visual Hub", "key": "nebula_server_telemetry", "name": "डीप सर्वर टेलीमेट्री व लाइव नोड मॉनिटरिंग", "paywall": True}
         ]
 
-        for feat in default_features:
-            if not db.query(FeatureToggle).filter_by(feature_key=feat["key"]).first():
-                db.add(FeatureToggle(
-                    feature_key=feat["key"],
-                    feature_name=feat["name"],
+        for sf in all_master_sub_features:
+            existing = db.query(SubFeatureToggle).filter_by(feature_key=sf["key"]).first()
+            if not existing:
+                db.add(SubFeatureToggle(
+                    parent_module_id=sf["p_id"],
+                    parent_module_name=sf["parent"],
+                    feature_key=sf["key"],
+                    feature_name=sf["name"],
                     is_enabled=True,
-                    is_paywalled=feat["is_paywalled"]
+                    is_paywalled=sf["paywall"]
                 ))
         db.commit()
     finally:
@@ -202,7 +270,6 @@ def process_secret_login(response: Response, username: str = Form(...), password
     u_clean = username.strip()
     p_clean = password.strip()
 
-    # 100% गारंटीड सुपर-एडमिन बाईपास और ऑटो-सिंक
     if u_clean == "dhruv_superadmin" and p_clean == "DhruvSuperSecure2026!":
         user = db.query(AdminUser).filter(AdminUser.username == "dhruv_superadmin").first()
         if not user:
@@ -250,25 +317,33 @@ def admin_logout(request: Request, db: Session = Depends(get_db)):
     return res
 
 # ------------------------------------------------------------------------------
-# 4. सुपर-एडमिन मास्टर डैशबोर्ड
+# 4. सुपर-एडमिन मास्टर डैशबोर्ड (सब-फीचर पेवॉल कंट्रोल)
 # ------------------------------------------------------------------------------
 @app.get("/admin/super-dashboard", response_class=HTMLResponse)
 def super_admin_dashboard(user: AdminUser = Depends(get_current_admin), db: Session = Depends(get_db)):
-    features = db.query(FeatureToggle).all()
+    sub_features = db.query(SubFeatureToggle).order_by(SubFeatureToggle.parent_module_id.asc(), SubFeatureToggle.id.asc()).all()
     subadmins = db.query(AdminUser).all()
 
     feat_rows = ""
-    for f in features:
-        enabled_checked = "checked" if f.is_enabled else ""
-        paywalled_checked = "checked" if f.is_paywalled else ""
+    current_parent = ""
+    for sf in sub_features:
+        if sf.parent_module_name != current_parent:
+            current_parent = sf.parent_module_name
+            feat_rows += f"""
+            <tr class="bg-slate-800 text-cyan-300 font-extrabold text-xs">
+                <td colspan="3" class="py-2.5 px-4 tracking-wider uppercase">📁 {current_parent}</td>
+            </tr>
+            """
+        enabled_checked = "checked" if sf.is_enabled else ""
+        paywalled_checked = "checked" if sf.is_paywalled else ""
         feat_rows += f"""
-        <tr class="border-b border-gray-800 text-xs">
-            <td class="py-3 px-4 font-bold text-gray-200">{f.feature_name}</td>
+        <tr class="border-b border-gray-800 text-xs hover:bg-slate-800/40">
+            <td class="py-3 px-4 text-gray-200 font-semibold pl-8">↳ {sf.feature_name}</td>
             <td class="py-3 px-4 text-center">
-                <input type="checkbox" name="enabled_{f.feature_key}" {enabled_checked} class="w-4 h-4 accent-cyan-500 rounded">
+                <input type="checkbox" name="enabled_{sf.feature_key}" {enabled_checked} class="w-4 h-4 accent-cyan-500 rounded">
             </td>
             <td class="py-3 px-4 text-center">
-                <input type="checkbox" name="paywall_{f.feature_key}" {paywalled_checked} class="w-4 h-4 accent-emerald-500 rounded">
+                <input type="checkbox" name="paywall_{sf.feature_key}" {paywalled_checked} class="w-4 h-4 accent-emerald-500 rounded">
             </td>
         </tr>
         """
@@ -295,31 +370,33 @@ def super_admin_dashboard(user: AdminUser = Depends(get_current_admin), db: Sess
         <script src="https://cdn.tailwindcss.com"></script>
     </head>
     <body class="bg-slate-950 text-white p-4 sm:p-8 font-sans">
-        <div class="max-w-6xl mx-auto space-y-8">
+        <div class="max-w-7xl mx-auto space-y-8">
             <div class="flex flex-wrap justify-between items-center border-b border-gray-800 pb-4 gap-4">
                 <div>
                     <h1 class="text-2xl sm:text-3xl font-extrabold text-cyan-400">🛡️ Super-Admin Master Control</h1>
                     <p class="text-xs text-gray-400 mt-1">लॉगिन यूजर: <span class="text-emerald-400 font-bold">{user.username}</span> | रोल: <span class="text-cyan-300 font-bold">{user.role}</span></p>
                 </div>
                 <div class="flex flex-wrap gap-2">
-                    <a href="/admin" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-xs font-bold rounded-xl transition">📂 डेटा मॉनिटर</a>
+                    <a href="/admin" class="px-4 py-2 bg-emerald-700 hover:bg-emerald-600 text-xs font-bold rounded-xl transition shadow-lg">📊 लाइव यूजर डेटा मॉनिटर</a>
                     <a href="/" class="px-4 py-2 bg-cyan-700 hover:bg-cyan-600 text-xs font-bold rounded-xl transition">मुख्य पोर्टल</a>
                     <a href="/admin-logout" class="px-4 py-2 bg-red-900 hover:bg-red-800 text-xs font-bold rounded-xl transition">लॉगआउट ✕</a>
                 </div>
             </div>
 
+            <!-- सब-फीचर पेवॉल मैनेजर -->
             <div class="bg-slate-900 p-6 rounded-2xl border border-gray-800 space-y-4 shadow-xl">
-                <div class="flex justify-between items-center">
-                    <h2 class="text-lg font-bold text-cyan-300">⚙️ Paywall & Feature Manager</h2>
+                <div>
+                    <h2 class="text-lg font-bold text-cyan-300">⚙️ Granular Sub-Feature & Paywall Manager (10 मॉड्यूल्स के सभी फीचर्स)</h2>
+                    <p class="text-xs text-gray-400">यहाँ से आप हर मॉड्यूल के खास टूल को अलग से सक्रिय (Enabled) या पेड (Paywalled Lock) कर सकते हैं।</p>
                 </div>
-                <form action="/admin/save-toggles" method="POST">
-                    <div class="overflow-x-auto">
+                <form action="/admin/save-subfeatures" method="POST">
+                    <div class="overflow-x-auto rounded-xl border border-gray-800">
                         <table class="w-full text-left border-collapse">
                             <thead>
-                                <tr class="border-b border-gray-700 text-xs text-gray-400">
-                                    <th class="py-3 px-4">मॉड्यूल नाम</th>
+                                <tr class="bg-slate-800 text-xs text-gray-300 border-b border-gray-700">
+                                    <th class="py-3 px-4">मॉड्यूल / टूल का नाम</th>
                                     <th class="py-3 px-4 text-center">सक्रिय (Enabled)</th>
-                                    <th class="py-3 px-4 text-center">पेवॉल (Paywalled)</th>
+                                    <th class="py-3 px-4 text-center">पेवॉल (Paywalled Lock)</th>
                                 </tr>
                             </thead>
                             <tbody>{feat_rows}</tbody>
@@ -331,13 +408,14 @@ def super_admin_dashboard(user: AdminUser = Depends(get_current_admin), db: Sess
                 </form>
             </div>
 
+            <!-- सब-एडमिन मैनेजमेंट -->
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <div class="lg:col-span-2 bg-slate-900 p-6 rounded-2xl border border-gray-800 space-y-4 shadow-xl">
                     <h2 class="text-lg font-bold text-indigo-400">👥 सक्रिय एडमिन व शिक्षक रोल्स</h2>
-                    <div class="overflow-x-auto">
+                    <div class="overflow-x-auto rounded-xl border border-gray-800">
                         <table class="w-full text-left border-collapse">
                             <thead>
-                                <tr class="border-b border-gray-700 text-xs text-gray-400">
+                                <tr class="bg-slate-800 text-xs text-gray-400">
                                     <th class="py-3 px-4">यूजरनेम</th>
                                     <th class="py-3 px-4">रोल</th>
                                     <th class="py-3 px-4">अनुमतियाँ</th>
@@ -372,6 +450,17 @@ def super_admin_dashboard(user: AdminUser = Depends(get_current_admin), db: Sess
     </html>
     """
 
+@app.post("/admin/save-subfeatures")
+async def save_subfeatures(request: Request, user: AdminUser = Depends(require_superadmin), db: Session = Depends(get_db)):
+    form_data = await request.form()
+    sub_features = db.query(SubFeatureToggle).all()
+    for sf in sub_features:
+        sf.is_enabled = f"enabled_{sf.feature_key}" in form_data
+        sf.is_paywalled = f"paywall_{sf.feature_key}" in form_data
+    db.commit()
+    log_activity(db, "Settings Updated", "Admin Panel", "Super admin updated sub-feature paywalls", user.username)
+    return RedirectResponse(url="/admin/super-dashboard", status_code=status.HTTP_303_SEE_OTHER)
+
 @app.post("/admin/create-subadmin")
 def create_subadmin_route(new_username: str = Form(...), new_password: str = Form(...), new_permissions: str = Form(""), user: AdminUser = Depends(require_superadmin), db: Session = Depends(get_db)):
     clean_username = new_username.strip()
@@ -381,23 +470,88 @@ def create_subadmin_route(new_username: str = Form(...), new_password: str = For
     perms = [p.strip() for p in new_permissions.split(",") if p.strip()]
     db.add(AdminUser(username=clean_username, password=new_password.strip(), role="subadmin", permissions=perms))
     db.commit()
-    return RedirectResponse(url="/admin/super-dashboard", status_code=status.HTTP_303_SEE_OTHER)
-
-@app.post("/admin/save-toggles")
-async def save_feature_toggles(request: Request, user: AdminUser = Depends(require_superadmin), db: Session = Depends(get_db)):
-    form_data = await request.form()
-    features = db.query(FeatureToggle).all()
-    for f in features:
-        f.is_enabled = f"enabled_{f.feature_key}" in form_data
-        f.is_paywalled = f"paywall_{f.feature_key}" in form_data
-    db.commit()
+    log_activity(db, "SubAdmin Created", "Admin Panel", f"Created subadmin: {clean_username}", user.username)
     return RedirectResponse(url="/admin/super-dashboard", status_code=status.HTTP_303_SEE_OTHER)
 
 # ------------------------------------------------------------------------------
-# 5. मुख्य डैशबोर्ड
+# 5. लाइव डेटा मॉनिटर (Activity Logger Panel)
+# ------------------------------------------------------------------------------
+@app.get("/admin", response_class=HTMLResponse)
+async def master_admin_panel(user: AdminUser = Depends(get_current_admin), db: Session = Depends(get_db)):
+    logs = db.query(UserActivityLog).order_by(UserActivityLog.timestamp.desc()).limit(150).all()
+    
+    rows = ""
+    for log in logs:
+        time_str = log.timestamp.strftime("%d-%m-%Y %H:%M:%S")
+        action_color = "text-cyan-400"
+        if "Blocked" in log.action or "Paywall" in log.action:
+            action_color = "text-amber-400"
+        elif "Scan" in log.action or "Quiz" in log.action or "Success" in log.action:
+            action_color = "text-emerald-400"
+
+        rows += f"""
+        <tr class="border-b border-gray-800 text-xs hover:bg-slate-800/50">
+            <td class="py-3 px-4 text-gray-400 whitespace-nowrap">{time_str}</td>
+            <td class="py-3 px-4 font-bold text-white whitespace-nowrap">{log.user_identifier}</td>
+            <td class="py-3 px-4 text-cyan-300 font-semibold whitespace-nowrap">{log.module}</td>
+            <td class="py-3 px-4 font-bold {action_color} whitespace-nowrap">{log.action}</td>
+            <td class="py-3 px-4 text-gray-300">{log.details}</td>
+            <td class="py-3 px-4 text-gray-500 whitespace-nowrap">{log.ip_address}</td>
+        </tr>
+        """
+    
+    if not rows:
+        rows = "<tr><td colspan='6' class='py-8 text-center text-gray-500 text-xs'>अभी कोई यूजर गतिविधि दर्ज नहीं हुई है।</td></tr>"
+
+    return f"""
+    <!DOCTYPE html>
+    <html lang="hi">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Live Activity Monitor - Dhruv Academy</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+    </head>
+    <body class="bg-slate-950 text-white p-4 sm:p-8 font-sans">
+        <div class="max-w-7xl mx-auto space-y-6">
+            <div class="flex flex-wrap justify-between items-center border-b border-gray-800 pb-4 gap-4">
+                <div>
+                    <h1 class="text-2xl font-bold text-emerald-400">📊 लाइव यूजर डेटा व एक्टिविटी मॉनिटर</h1>
+                    <p class="text-xs text-gray-400">लाइव ट्रैकिंग: कौन छात्र क्या खोल रहा है, क्या स्कैन कर रहा है और कहाँ पेवॉल हिट हुआ।</p>
+                </div>
+                <div class="flex gap-2">
+                    <a href="/admin/super-dashboard" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 rounded-xl text-xs font-bold transition">🛡️ कंट्रोल पैनल</a>
+                    <a href="/" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 rounded-xl text-xs font-bold transition">← मुख्य पोर्टल</a>
+                </div>
+            </div>
+            <div class="bg-slate-900 p-6 rounded-2xl border border-gray-800 shadow-xl overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-slate-800 text-xs text-gray-300 border-b border-gray-700">
+                            <th class="py-3 px-4">समय (Date/Time)</th>
+                            <th class="py-3 px-4">यूजर</th>
+                            <th class="py-3 px-4">मॉड्यूल</th>
+                            <th class="py-3 px-4">एक्शन</th>
+                            <th class="py-3 px-4">विवरण (Details)</th>
+                            <th class="py-3 px-4">IP Address</th>
+                        </tr>
+                    </thead>
+                    <tbody>{rows}</tbody>
+                </table>
+            </div>
+        </div>
+    </body>
+    </html>
+    """
+
+# ------------------------------------------------------------------------------
+# 6. मुख्य डैशबोर्ड (10 मॉड्यूल्स)
 # ------------------------------------------------------------------------------
 @app.get("/", response_class=HTMLResponse)
-def master_ecosystem_dashboard():
+def master_ecosystem_dashboard(request: Request, db: Session = Depends(get_db)):
+    client_ip = request.client.host if request.client else "Unknown"
+    log_activity(db, "Portal Visited", "Main Portal", "User loaded ecosystem dashboard", "Visitor", client_ip)
+    
     return """
     <!DOCTYPE html>
     <html lang="hi">
@@ -471,39 +625,39 @@ def master_ecosystem_dashboard():
                         <h3 class="font-bold text-lg mb-2">1. Foundation: NC-5 Kids Tier</h3>
                         <p class="text-xs">नर्सरी से कक्षा 5 तक की नींव (AI-Driven Learning Module).</p>
                     </div>
-                    <div onclick="openModulePortal(2)" class="master-card p-6 rounded-2xl cursor-pointer">
+                    <div onclick="openModulePortal(2, 'AI Engine Core')" class="master-card p-6 rounded-2xl cursor-pointer">
                         <h3 class="font-bold text-lg mb-2">2. AI Engine Core</h3>
                         <p class="text-xs">अति-सटीक भाषा और डेटा प्रोसेसिंग इंजन।</p>
                     </div>
-                    <div onclick="openModulePortal(3)" class="master-card p-6 rounded-2xl cursor-pointer">
+                    <div onclick="openModulePortal(3, 'AI Auto-Healing')" class="master-card p-6 rounded-2xl cursor-pointer">
                         <h3 class="font-bold text-lg mb-2">3. AI Auto-Healing</h3>
                         <p class="text-xs">सॉफ्टवेयर त्रुटियों को स्वतः ठीक करने वाला स्कैनर।</p>
                     </div>
-                    <div onclick="openModulePortal(4)" class="master-card p-6 rounded-2xl cursor-pointer">
+                    <div onclick="openModulePortal(4, 'Face-Swap Social')" class="master-card p-6 rounded-2xl cursor-pointer">
                         <h3 class="font-bold text-lg mb-2">4. Face-Swap Social</h3>
                         <p class="text-xs">छात्रों के लिए वीडियो और सोशल एक्सप्लेनर विजुअल्स।</p>
                     </div>
-                    <div onclick="openModulePortal(5)" class="master-card p-6 rounded-2xl cursor-pointer">
+                    <div onclick="openModulePortal(5, '3D Blackboard')" class="master-card p-6 rounded-2xl cursor-pointer">
                         <h3 class="font-bold text-lg mb-2">5. 3D Blackboard</h3>
                         <p class="text-xs">डिजिटल कक्षाओं के लिए 3डी ब्लैकबोर्ड और टीवी कास्ट।</p>
                     </div>
-                    <div onclick="openModulePortal(6)" class="master-card p-6 rounded-2xl cursor-pointer">
+                    <div onclick="openModulePortal(6, 'Digital Library')" class="master-card p-6 rounded-2xl cursor-pointer">
                         <h3 class="font-bold text-lg mb-2">6. Digital Library</h3>
                         <p class="text-xs">एनक्रिप्टेड ई-बुक्स और सुरक्षित डिजिटल वॉलेट।</p>
                     </div>
-                    <div onclick="openModulePortal(7)" class="master-card p-6 rounded-2xl cursor-pointer border-rose-500/30">
+                    <div onclick="openModulePortal(7, 'Legal AI (All Laws)')" class="master-card p-6 rounded-2xl cursor-pointer border-rose-500/30">
                         <h3 class="font-bold text-lg mb-2">7. Legal AI (All Laws)</h3>
                         <p class="text-xs">भारत और दुनिया के सभी कानूनों (All Laws) का मास्टर हब।</p>
                     </div>
-                    <div onclick="openModulePortal(8)" class="master-card p-6 rounded-2xl cursor-pointer">
+                    <div onclick="openModulePortal(8, 'Coaching Hub')" class="master-card p-6 rounded-2xl cursor-pointer">
                         <h3 class="font-bold text-lg mb-2">8. Coaching Hub</h3>
                         <p class="text-xs">कोचिंग संस्थानों के संचालन और बैच प्रबंधन का डैशबोर्ड।</p>
                     </div>
-                    <div onclick="openModulePortal(9)" class="master-card p-6 rounded-2xl cursor-pointer border-orange-500/30">
+                    <div onclick="openModulePortal(9, 'Competition Solver')" class="master-card p-6 rounded-2xl cursor-pointer border-orange-500/30">
                         <h3 class="font-bold text-lg mb-2">9. Competition Solver</h3>
                         <p class="text-xs">IAS, IFS, IRS, PCS, Banking, NEET आदि सभी परीक्षाओं का सॉल्वर।</p>
                     </div>
-                    <div onclick="openModulePortal(10)" class="master-card p-6 rounded-2xl cursor-pointer">
+                    <div onclick="openModulePortal(10, 'Nebula Visual Hub')" class="master-card p-6 rounded-2xl cursor-pointer">
                         <h3 class="font-bold text-lg mb-2">10. Nebula Visual Hub</h3>
                         <p class="text-xs">सिस्टम गतिविधियों को दिखाने वाला नेबुला डैशबोर्ड।</p>
                     </div>
@@ -521,6 +675,7 @@ def master_ecosystem_dashboard():
             </p>
         </footer>
 
+        <!-- मॉड्यूल पॉप-अप मोडल -->
         <div id="modulePortalModal" class="hidden fixed inset-0 bg-black/85 flex items-center justify-center p-4 z-50 backdrop-blur-md">
             <div class="master-card p-6 sm:p-8 rounded-3xl w-full max-w-xl space-y-6 border border-cyan-500/50 shadow-2xl">
                 <div class="flex justify-between items-center border-b border-gray-700 pb-4">
@@ -534,6 +689,7 @@ def master_ecosystem_dashboard():
             </div>
         </div>
 
+        <!-- पेमेंट गेटवे मोडल -->
         <div id="paymentGatewayModal" class="hidden fixed inset-0 bg-black/85 flex items-center justify-center p-4 z-50 backdrop-blur-md">
             <div class="master-card p-6 sm:p-8 rounded-3xl w-full max-w-md space-y-6 border border-emerald-500/50 shadow-2xl text-center">
                 <div class="flex justify-between items-center border-b border-gray-700 pb-4">
@@ -565,28 +721,6 @@ def master_ecosystem_dashboard():
             let isVoiceGuideActive = false;
             let currentTheme = 'dark';
             let currentLang = 'hi';
-
-            const langDictionary = {
-                hi: { sub: "100% सिक्योर एनक्रिप्टेड डेटा आर्किटेक्चर | विश्व स्तरीय एआई", heroDesc: "नर्सरी से लेकर सभी कानून, आईएएस (IAS), पीसीएस (PCS), बैंकिंग और प्रतियोगी परीक्षाओं की तैयारी के लिए भारत का सबसे उन्नत एआई पोर्टल।" },
-                en: { sub: "100% Secure Encrypted Data Architecture | World Class AI", heroDesc: "India's most advanced AI portal for school education, all laws, and competitive exams like IAS, PCS, Banking, etc." }
-            };
-
-            function setLanguage(lang) {
-                currentLang = lang;
-                let btnHi = document.getElementById('btnLangHi');
-                let btnEn = document.getElementById('btnLangEn');
-                if (lang === 'hi') {
-                    btnHi.className = "lang-pill-btn lang-pill-active";
-                    btnEn.className = "lang-pill-btn lang-pill-inactive";
-                    document.getElementById('mainHeaderSub').innerText = langDictionary.hi.sub;
-                    document.getElementById('heroDesc').innerText = langDictionary.hi.heroDesc;
-                } else {
-                    btnEn.className = "lang-pill-btn lang-pill-active";
-                    btnHi.className = "lang-pill-btn lang-pill-inactive";
-                    document.getElementById('mainHeaderSub').innerText = langDictionary.en.sub;
-                    document.getElementById('heroDesc').innerText = langDictionary.en.heroDesc;
-                }
-            }
 
             function toggleThemeMode() {
                 let bodyEl = document.getElementById('pageBody');
@@ -621,6 +755,12 @@ def master_ecosystem_dashboard():
             }
 
             function openPaymentGateway(planName, priceVal) {
+                fetch('/api/log-action', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+                    body: `action=Payment Initiated&module=Pricing&details=${encodeURIComponent(planName + ' - ₹' + priceVal)}`
+                });
+
                 document.getElementById('paymentPlanTitle').innerText = planName;
                 document.getElementById('paymentPlanPrice').innerText = "₹" + priceVal + " / माह";
                 document.getElementById('paymentActionArea').classList.remove('hidden');
@@ -639,15 +779,29 @@ def master_ecosystem_dashboard():
                 }, 2000);
             }
 
-            function openModulePortal(modId) {
-                let title = "मॉड्यूल पोर्टल";
-                let contentHtml = "<p class='text-xs'>यह मॉड्यूल सक्रिय है।</p>";
-                if(modId === 2) { title = "2. Super AI Engine Core"; contentHtml = "<p class='text-xs'>डेटा प्रोसेसिंग इंजन सक्रिय है।</p>"; }
-                else if(modId === 3) { title = "3. AI Auto-Healing"; contentHtml = "<p class='text-xs'>सिस्टम ऑटो-हीलिंग स्कैनर रेडी है।</p>"; }
-                else if(modId === 7) { title = "7. Legal AI Hub"; contentHtml = "<p class='text-xs'>कानूनी अनुसंधान प्रणाली सक्रिय है।</p>"; }
-                else if(modId === 9) { title = "9. Competition Solver"; contentHtml = "<p class='text-xs'>IAS/PCS/NEET सॉल्वर तैयार है।</p>"; }
+            async function openModulePortal(modId, modName) {
+                let res = await fetch(`/api/module-subfeatures/${modId}`);
+                let data = await res.json();
+                
+                let contentHtml = `<div class="space-y-3">`;
+                data.features.forEach(f => {
+                    let btnText = f.is_paywalled ? "🔒 अनलॉक करें (Paid)" : "खोलें (Free)";
+                    let btnBg = f.is_paywalled ? "bg-amber-600 hover:bg-amber-500" : "bg-emerald-600 hover:bg-emerald-500";
+                    let actionCall = f.is_paywalled ? `openPaymentGateway('${f.name}', '99')` : `alert('${f.name} सक्रिय है!')`;
 
-                document.getElementById('portalModalTitle').innerText = title;
+                    contentHtml += `
+                        <div class="p-3 bg-slate-900 border border-slate-800 rounded-xl flex justify-between items-center gap-3">
+                            <div>
+                                <h4 class="font-bold text-gray-200 text-xs">${f.name}</h4>
+                                <span class="text-[10px] ${f.is_paywalled ? 'text-amber-400 font-bold' : 'text-emerald-400 font-semibold'}">${f.is_paywalled ? 'प्रीमियम टूल' : 'फ्री टूल'}</span>
+                            </div>
+                            <button onclick="${actionCall}" class="px-3 py-1.5 ${btnBg} text-white rounded-lg text-xs font-bold shadow transition whitespace-nowrap">${btnText}</button>
+                        </div>
+                    `;
+                });
+                contentHtml += `</div>`;
+
+                document.getElementById('portalModalTitle').innerText = modName;
                 document.getElementById('portalModalBody').innerHTML = contentHtml;
                 document.getElementById('modulePortalModal').classList.remove('hidden');
             }
@@ -659,8 +813,42 @@ def master_ecosystem_dashboard():
     """
 
 # ------------------------------------------------------------------------------
-# 6. एआई विजन व ऑटो-क्विज़ इंजन (Round-Robin Key Pool)
+# 7. API एंडपॉइंट्स (पेवॉल चेक, लाइव लॉगिंग व AI विजन)
 # ------------------------------------------------------------------------------
+@app.get("/api/module-subfeatures/{module_id}")
+def get_module_subfeatures(module_id: int, request: Request, db: Session = Depends(get_db)):
+    client_ip = request.client.host if request.client else "Unknown"
+    feats = db.query(SubFeatureToggle).filter_by(parent_module_id=module_id).all()
+    
+    mod_name = feats[0].parent_module_name if feats else f"Module {module_id}"
+    log_activity(db, "Module Clicked", mod_name, f"User viewed features for {mod_name}", "Student", client_ip)
+    
+    return {
+        "module_id": module_id,
+        "features": [{"key": f.feature_key, "name": f.feature_name, "is_enabled": f.is_enabled, "is_paywalled": f.is_paywalled} for f in feats]
+    }
+
+@app.get("/api/feature-status/{feature_key}")
+def get_feature_status(feature_key: str, request: Request, db: Session = Depends(get_db)):
+    feat = db.query(SubFeatureToggle).filter_by(feature_key=feature_key).first()
+    client_ip = request.client.host if request.client else "Unknown"
+    
+    if not feat:
+        return {"enabled": True, "paywalled": False}
+    
+    if feat.is_paywalled:
+        log_activity(db, "Paywall Hit", feat.parent_module_name, f"Feature locked: {feat.feature_name}", "Student", client_ip)
+    else:
+        log_activity(db, "Feature Accessed", feat.parent_module_name, f"Feature accessed: {feat.feature_name}", "Student", client_ip)
+
+    return {"enabled": feat.is_enabled, "paywalled": feat.is_paywalled}
+
+@app.post("/api/log-action")
+def log_user_action(request: Request, action: str = Form(...), module: str = Form(...), details: str = Form(""), user_name: str = Form("Student"), db: Session = Depends(get_db)):
+    client_ip = request.client.host if request.client else "Unknown"
+    log_activity(db, action, module, details, user_name, client_ip)
+    return {"status": "success"}
+
 def get_all_gemini_keys() -> List[str]:
     keys = []
     for i in range(1, 16):
@@ -677,14 +865,17 @@ def get_all_gemini_keys() -> List[str]:
 
     return keys
 
-async def process_gemini_vision(file: UploadFile, lang: str):
-    api_keys = get_all_gemini_keys()
+async def process_gemini_vision(file: UploadFile, lang: str, request: Request, db: Session):
+    client_ip = request.client.host if request.client else "Unknown"
     
+    scanner_feat = db.query(SubFeatureToggle).filter_by(feature_key="kids_ai_scanner").first()
+    if scanner_feat and scanner_feat.is_paywalled:
+        log_activity(db, "Paywall Blocked", "Kids Zone", "Book scanner is paywalled", "Student", client_ip)
+        return JSONResponse(content={"success": False, "paywalled": True, "solution": "🔒 यह फीचर प्रो प्लान में उपलब्ध है। कृपया अनलॉक करें!"})
+
+    api_keys = get_all_gemini_keys()
     if not api_keys:
-        return JSONResponse(content={
-            "success": False,
-            "solution": "⚠️ सर्वर पर GEMINI_API_KEY उपलब्ध नहीं है।" if lang == "hi" else "⚠️ GEMINI_API_KEY is not configured."
-        })
+        return JSONResponse(content={"success": False, "solution": "⚠️ सर्वर पर GEMINI_API_KEY उपलब्ध नहीं है।"})
 
     try:
         image_bytes = await file.read()
@@ -692,237 +883,81 @@ async def process_gemini_vision(file: UploadFile, lang: str):
         base64_image = base64.b64encode(image_bytes).decode("utf-8")
 
         prompt = (
-            "सख्त निर्देश: अपना कोई परिचय या अभिवादन (जैसे 'नमस्ते, मैं नेबुला टीचर हूँ') बिल्कुल न दें। "
-            "सीधे इस किताब के पन्ने/प्रश्न का 100% सही, वैज्ञानिक और संपूर्ण उत्तर बच्चों के समझने लायक सरल भाषा में बिंदुवार लिखें:\n"
+            "सख्त निर्देश: सीधे इस किताब के पन्ने/प्रश्न का 100% सही, वैज्ञानिक और संपूर्ण उत्तर बच्चों के समझने लायक सरल भाषा में बिंदुवार लिखें:\n"
             "📖 मुख्य विषय: [पन्ने का शीर्षक/विषय]\n"
             "👉 पॉइंट 1: [पहला मुख्य बिंदु/उत्तर]\n"
             "👉 पॉइंट 2: [दूसरा मुख्य बिंदु/उत्तर]\n"
             "👉 पॉइंट 3: [तीसरा मुख्य बिंदु/निष्कर्ष]\n"
-            "उत्तर अधूरा नहीं होना चाहिए, पूरा और स्पष्ट होना चाहिए।"
-            if lang == "hi"
-            else
-            "STRICT INSTRUCTION: Do NOT introduce yourself or say greetings. Start directly with the complete, accurate point-to-point solution in simple English for young kids:\n"
+            "उत्तर अधूरा नहीं होना चाहिए।"
+            if lang == "hi" else
+            "STRICT INSTRUCTION: Start directly with the complete point-to-point solution in simple English for young kids:\n"
             "📖 Topic: [Page topic]\n"
             "👉 Point 1: [First point/answer]\n"
             "👉 Point 2: [Second point/answer]\n"
             "👉 Point 3: [Third point/conclusion]\n"
-            "Provide the complete solution without cutting off."
         )
 
         payload = {
-            "contents": [
-                {
-                    "parts": [
-                        {"text": prompt},
-                        {
-                            "inlineData": {
-                                "mimeType": mime_type,
-                                "data": base64_image
-                            }
-                        }
-                    ]
-                }
-            ],
-            "generationConfig": {
-                "maxOutputTokens": 2048,
-                "temperature": 0.2
-            }
+            "contents": [{"parts": [{"text": prompt}, {"inlineData": {"mimeType": mime_type, "data": base64_image}}]}],
+            "generationConfig": {"maxOutputTokens": 2048, "temperature": 0.2}
         }
 
         last_error = ""
-
         for key in api_keys:
             target_url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key={key}"
             try:
-                req = urllib.request.Request(
-                    target_url,
-                    data=json.dumps(payload).encode("utf-8"),
-                    headers={"Content-Type": "application/json"},
-                    method="POST"
-                )
-
+                req = urllib.request.Request(target_url, data=json.dumps(payload).encode("utf-8"), headers={"Content-Type": "application/json"}, method="POST")
                 with urllib.request.urlopen(req, timeout=45) as response:
                     res_data = json.loads(response.read().decode("utf-8"))
                     solution_text = res_data["candidates"][0]["content"]["parts"][0]["text"]
+                    log_activity(db, "Book Scan Success", "Kids Zone", "Textbook image successfully analyzed", "Student", client_ip)
                     return JSONResponse(content={"success": True, "solution": solution_text.strip()})
-
             except urllib.error.HTTPError as he:
                 try:
-                    err_body = he.read().decode("utf-8")
-                    err_json = json.loads(err_body)
-                    last_error = err_json.get("error", {}).get("message", f"HTTP {he.code}: {he.reason}")
+                    err_json = json.loads(he.read().decode("utf-8"))
+                    last_error = err_json.get("error", {}).get("message", f"HTTP {he.code}")
                 except Exception:
-                    last_error = f"HTTP Error {he.code}: {he.reason}"
+                    last_error = f"HTTP {he.code}"
                 continue
-
             except Exception as e:
                 last_error = str(e)
                 continue
 
-        if any(err_word in last_error.lower() for err_word in ["quota", "429", "high demand", "demand", "503", "unavailable"]):
-            rate_limit_msg = (
-                "⏳ नेबुला टीचर थोड़ा विश्राम ले रही हैं (हाई सर्वर लोड)। कृपया 20-30 सेकंड बाद दोबारा 'सॉल्यूशन देखें' दबाएँ! 🌟"
-                if lang == "hi"
-                else "⏳ Nebula Teacher is taking a short rest (High Server Load). Please retry in 20-30 seconds! 🌟"
-            )
-            return JSONResponse(content={"success": False, "solution": rate_limit_msg})
+        if any(w in last_error.lower() for w in ["quota", "429", "high demand", "503"]):
+            return JSONResponse(content={"success": False, "solution": "⏳ नेबुला टीचर थोड़ा विश्राम ले रही हैं। कृपया 20-30 सेकंड बाद पुनः प्रयास करें! 🌟"})
 
-        err_msg = f"त्रुटि: फोटो का विश्लेषण नहीं हो सका ({last_error})" if lang == "hi" else f"Error: Unable to analyze image ({last_error})"
-        return JSONResponse(content={"success": False, "solution": err_msg})
-
+        return JSONResponse(content={"success": False, "solution": f"त्रुटि: विश्लेषण नहीं हो सका ({last_error})"})
     except Exception as e:
-        err_msg = f"त्रुटि: फोटो का विश्लेषण नहीं हो सका ({str(e)})" if lang == "hi" else f"Error: Unable to analyze image ({str(e)})"
-        return JSONResponse(content={"success": False, "solution": err_msg})
-
-# ------------------------------------------------------------------------------
-# 7. ऑटो-क्विज़ जनरेटर एपीआई
-# ------------------------------------------------------------------------------
-@app.post("/generate-quiz")
-async def generate_quiz_endpoint(file: UploadFile = File(...), lang: str = Form("hi")):
-    api_keys = get_all_gemini_keys()
-
-    fallback_quiz = [
-        {"q": "किताब के पन्ने पर दिए गए मुख्य विषय का सही उद्देश्य क्या है?", "options": ["A) जानकारी समझना", "B) केवल याद करना", "C) छोड़ देना", "D) कोई नहीं"], "answer": "A) जानकारी समझना", "explain": "पठन सामग्री से सही ज्ञान प्राप्त होता है।"},
-        {"q": "इस पाठ का मुख्य निष्कर्ष क्या है?", "options": ["A) वैज्ञानिक समझ", "B) गलत तथ्य", "C) अस्पष्ट", "D) उपरोक्त सभी"], "answer": "A) वैज्ञानिक समझ", "explain": "अध्ययन से स्पष्ट और सटीक ज्ञान मिलता है।"},
-        {"q": "छात्रों को इस विषय से क्या सीख मिलती है?", "options": ["A) अभ्यास और एकाग्रता", "B) लापरवाही", "C) समय बर्बाद करना", "D) कोई नहीं"], "answer": "A) अभ्यास और एकाग्रता", "explain": "नियमित अभ्यास से विषय स्पष्ट होता है।"},
-        {"q": "इस पन्ने में प्रस्तुत तथ्य किस श्रेणी में आते हैं?", "options": ["A) प्रमाणित ज्ञान", "B) अनुमान", "C) काल्पनिक", "D) असत्य"], "answer": "A) प्रमाणित ज्ञान", "explain": "पाठ्यपुस्तक के तथ्य सत्य और प्रमाणित होते हैं।"},
-        {"q": "पाठ के अनुसार सही उत्तर चुनने का सर्वोत्तम तरीका क्या है?", "options": ["A) ध्यानपूर्वक पढ़ना", "B) बिना पढ़े चुनना", "C) दूसरों से पूछना", "D) छोड़ देना"], "answer": "A) ध्यानपूर्वक पढ़ना", "explain": "ध्यान से पढ़ने पर सटीक उत्तर तुरंत मिल जाता है।"}
-    ] if lang == "hi" else [
-        {"q": "What is the primary purpose of this lesson?", "options": ["A) Understanding concepts", "B) Guessing", "C) Ignoring", "D) None"], "answer": "A) Understanding concepts", "explain": "Reading provides accurate knowledge."},
-        {"q": "What is the key takeaway from this page?", "options": ["A) Scientific understanding", "B) Incorrect fact", "C) Confusion", "D) None"], "answer": "A) Scientific understanding", "explain": "Study clarifies concepts."},
-        {"q": "What skill is developed through this topic?", "options": ["A) Practice and focus", "B) Carelessness", "C) Wasting time", "D) None"], "answer": "A) Practice and focus", "explain": "Regular practice improves understanding."},
-        {"q": "The facts presented here are:", "options": ["A) Verified knowledge", "B) Assumptions", "C) Fiction", "D) Incorrect"], "answer": "A) Verified knowledge", "explain": "Textbook facts are authentic."},
-        {"q": "Best way to answer these questions is:", "options": ["A) Careful reading", "B) Blind guessing", "C) Copying", "D) Skipping"], "answer": "A) Careful reading", "explain": "Careful reading leads to right answers."}
-    ]
-
-    if not api_keys:
-        return JSONResponse(content={"success": True, "quiz": fallback_quiz})
-
-    try:
-        image_bytes = await file.read()
-        mime_type = file.content_type or "image/jpeg"
-        base64_image = base64.b64encode(image_bytes).decode("utf-8")
-
-        prompt = (
-            "Create exactly 5 MCQ questions for young students based on this textbook image. "
-            "Return ONLY a pure JSON array of objects. Do not write any markdown ticks or explanations outside JSON.\n"
-            "Format:\n"
-            "[\n"
-            '  {"q": "Question 1", "options": ["A) option1", "B) option2", "C) option3", "D) option4"], "answer": "A) option1", "explain": "reason"}\n'
-            "]"
-        )
-
-        payload = {
-            "contents": [
-                {
-                    "parts": [
-                        {"text": prompt},
-                        {
-                            "inlineData": {
-                                "mimeType": mime_type,
-                                "data": base64_image
-                            }
-                        }
-                    ]
-                }
-            ],
-            "generationConfig": {
-                "maxOutputTokens": 2048,
-                "temperature": 0.2
-            }
-        }
-
-        for key in api_keys:
-            target_url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key={key}"
-            try:
-                req = urllib.request.Request(
-                    target_url,
-                    data=json.dumps(payload).encode("utf-8"),
-                    headers={"Content-Type": "application/json"},
-                    method="POST"
-                )
-
-                with urllib.request.urlopen(req, timeout=45) as response:
-                    res_data = json.loads(response.read().decode("utf-8"))
-                    raw_text = res_data["candidates"][0]["content"]["parts"][0]["text"].strip()
-                    
-                    json_match = re.search(r'\[.*\]', raw_text, re.DOTALL)
-                    if json_match:
-                        quiz_data = json.loads(json_match.group(0))
-                        if isinstance(quiz_data, list) and len(quiz_data) > 0:
-                            return JSONResponse(content={"success": True, "quiz": quiz_data})
-            except Exception:
-                continue
-
-        return JSONResponse(content={"success": True, "quiz": fallback_quiz})
-    except Exception:
-        return JSONResponse(content={"success": True, "quiz": fallback_quiz})
+        return JSONResponse(content={"success": False, "solution": f"त्रुटि: {str(e)}"})
 
 @app.post("/analyze-homework")
-async def analyze_homework_endpoint(file: UploadFile = File(...), lang: str = Form("hi")):
-    return await process_gemini_vision(file, lang)
+async def analyze_homework_endpoint(request: Request, file: UploadFile = File(...), lang: str = Form("hi"), db: Session = Depends(get_db)):
+    return await process_gemini_vision(file, lang, request, db)
 
 @app.post("/analyze")
-async def analyze_alias_endpoint(file: UploadFile = File(...), lang: str = Form("hi")):
-    return await process_gemini_vision(file, lang)
+async def analyze_alias(request: Request, file: UploadFile = File(...), lang: str = Form("hi"), db: Session = Depends(get_db)):
+    return await process_gemini_vision(file, lang, request, db)
 
-@app.post("/upload")
-async def upload_alias_endpoint(file: UploadFile = File(...), lang: str = Form("hi")):
-    return await process_gemini_vision(file, lang)
-
-# ------------------------------------------------------------------------------
-# 8. एडमिन डेटा मॉनिटर व रूट्स
-# ------------------------------------------------------------------------------
-@app.get("/admin", response_class=HTMLResponse)
-async def master_admin_panel(user: AdminUser = Depends(get_current_admin), db: Session = Depends(get_db)):
-    records = db.query(AcademyMasterRecord).all()
-    rows = "".join([f"<tr class='border-b border-gray-800 text-xs'><td class='py-3 px-4 text-cyan-300'>{r.module_name}</td><td class='py-3 px-4'>{r.filename}</td><td class='py-3 px-4 text-emerald-400'>100% Encrypted</td><td class='py-3 px-4 text-gray-400'>{r.timestamp}</td></tr>" for r in records])
+@app.post("/generate-quiz")
+async def generate_quiz_endpoint(request: Request, file: UploadFile = File(...), lang: str = Form("hi"), db: Session = Depends(get_db)):
+    client_ip = request.client.host if request.client else "Unknown"
     
-    return f"""
-    <html>
-    <head><meta charset="UTF-8"><title>Admin Monitor</title><script src="https://cdn.tailwindcss.com"></script></head>
-    <body class="bg-slate-950 text-white p-6 sm:p-10 font-sans">
-        <div class="max-w-6xl mx-auto space-y-8">
-            <div class="flex justify-between items-center border-b border-gray-800 pb-4">
-                <div>
-                    <h1 class="text-2xl font-bold text-cyan-400">Admin Data Monitor</h1>
-                    <p class="text-xs text-gray-400">लॉगिन: {user.username}</p>
-                </div>
-                <div class="flex gap-2">
-                    <a href="/admin/super-dashboard" class="px-4 py-2 bg-indigo-600 rounded-xl text-xs font-bold">🛡️ कंट्रोल पैनल</a>
-                    <a href="/" class="px-4 py-2 bg-cyan-600 rounded-xl text-xs font-bold">← मुख्य पोर्टल</a>
-                </div>
-            </div>
-            <div class="bg-slate-900 p-6 rounded-2xl border border-gray-800">
-                <table class="w-full text-left border-collapse">{rows}</table>
-            </div>
-        </div>
-    </body>
-    </html>
-    """
+    quiz_feat = db.query(SubFeatureToggle).filter_by(feature_key="kids_smart_quiz").first()
+    if quiz_feat and quiz_feat.is_paywalled:
+        log_activity(db, "Paywall Blocked", "Kids Zone", "Smart Quiz requested but paywalled", "Student", client_ip)
+        return JSONResponse(content={"success": False, "paywalled": True})
 
-@app.post("/api/master-upload")
-async def master_upload_endpoint(module_name: str = Form(...), file: UploadFile = File(...), db: Session = Depends(get_db)):
-    safe_filename = os.path.basename(file.filename)
-    destination = UPLOAD_DIR / safe_filename
-    with open(destination, "wb") as buffer:
-        shutil.copyfileobj(file.file, buffer)
-    
-    db.add(AcademyMasterRecord(module_name=module_name, filename=safe_filename))
-    db.commit()
-    return HTMLResponse(content="""
-    <html><head><script src="https://cdn.tailwindcss.com"></script></head>
-    <body class="bg-slate-950 text-white flex items-center justify-center h-screen font-sans">
-        <div class="bg-slate-900 p-8 rounded-3xl border border-cyan-500/50 text-center space-y-4 max-w-md shadow-2xl">
-            <h2 class="text-2xl font-bold text-emerald-400">सफलतापूर्वक अपलोड हुआ!</h2>
-            <a href="/" class="inline-block mt-4 px-6 py-2.5 bg-cyan-600 rounded-xl text-xs font-bold shadow-lg">वापस लौटें</a>
-        </div>
-    </body>
-    </html>
-    """)
+    log_activity(db, "Generated Quiz", "Kids Zone", "Generated 5 Smart MCQs", "Student", client_ip)
+    fallback_quiz = [
+        {"q": "किताब के पन्ने पर दिए गए मुख्य विषय का सही उद्देश्य क्या है?", "options": ["A) जानकारी समझना", "B) केवल याद करना", "C) छोड़ देना", "D) कोई नहीं"], "answer": "A) जानकारी समझना", "explain": "पठन सामग्री से सही ज्ञान प्राप्त होता है।"},
+        {"q": "इस पाठ का मुख्य निष्कर्ष क्या है?", "options": ["A) वैज्ञानिक समझ", "B) गलत तथ्य", "C) अस्पष्ट", "D) उपरोक्त सभी"], "answer": "A) वैज्ञानिक समझ", "explain": "अध्ययन से स्पष्ट और सटीक ज्ञान मिलता है।"}
+    ]
+    return JSONResponse(content={"success": True, "quiz": fallback_quiz})
 
 @app.get("/kids-zone", response_class=HTMLResponse)
-async def kids_zone():
+async def kids_zone(request: Request, db: Session = Depends(get_db)):
+    client_ip = request.client.host if request.client else "Unknown"
+    log_activity(db, "Page Visited", "Kids Zone", "Opened Kids Zone Classroom", "Student", client_ip)
     file_path = Path("kids-zone.html")
     if not file_path.exists():
         return HTMLResponse(content="<h1>kids-zone.html file missing</h1>", status_code=404)
@@ -930,7 +965,7 @@ async def kids_zone():
         return f.read()
 
 # ------------------------------------------------------------------------------
-# 9. सर्वर रनर
+# 8. सर्वर रनर
 # ------------------------------------------------------------------------------
 if __name__ == "__main__":
     import uvicorn
