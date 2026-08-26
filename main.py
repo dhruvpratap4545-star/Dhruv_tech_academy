@@ -80,13 +80,13 @@ class SubFeatureToggle(Base):
     is_enabled = Column(Boolean, default=True)
     is_paywalled = Column(Boolean, default=False)
 
-# नया मॉडल: छात्र व प्रोमो टोकन / क्रेडिट सिस्टम हेतु
 class RegisteredStudent(Base):
     __tablename__ = "registered_students"
     id = Column(Integer, primary_key=True, index=True)
-    name = Column(String)
+    name = Column(String, default="Student")
     email = Column(String, unique=True, index=True)
-    promo_token_used = Column(String, nullable=True)
+    mobile = Column(String, nullable=True)
+    dhruv_mitra_code_used = Column(String, nullable=True)
     token_balance = Column(Integer, default=10) # मुफ्त शुरुआती टोकन
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
 
@@ -146,7 +146,6 @@ def init_default_data():
         db.commit()
 
         all_master_sub_features = [
-            # 1. Kids Zone (NC-5)
             {"p_id": 1, "parent": "1. Foundation: NC-5 Kids Tier", "key": "kids_basic_blackboard", "name": "बेसिक गणित, पहेली व कविता बोर्ड (Free Tier)", "paywall": False},
             {"p_id": 1, "parent": "1. Foundation: NC-5 Kids Tier", "key": "kids_ai_scanner", "name": "एआई बुक व होमवर्क स्कैनर (Vision Solver Engine)", "paywall": True},
             {"p_id": 1, "parent": "1. Foundation: NC-5 Kids Tier", "key": "kids_smart_quiz", "name": "ऑटो 5 MCQs स्मार्ट क्विज़ व एंटी-चीट कियोस्क", "paywall": True},
@@ -154,47 +153,37 @@ def init_default_data():
             {"p_id": 1, "parent": "1. Foundation: NC-5 Kids Tier", "key": "kids_student_submit", "name": "छात्र होमवर्क सबमिशन व स्कोर शेयरिंग", "paywall": False},
             {"p_id": 1, "parent": "1. Foundation: NC-5 Kids Tier", "key": "kids_voice_interaction", "name": "एआई टीचर इंटरेक्टिव वॉइस (TTS Speech Engine)", "paywall": False},
 
-            # 2. AI Engine Core (400-AI Multi-Agent Core)
             {"p_id": 2, "parent": "2. AI Engine Core", "key": "ai_text_basic", "name": "सामान्य विषय टेक्स्ट समाधान व त्वरित शंका समाधान", "paywall": False},
             {"p_id": 2, "parent": "2. AI Engine Core", "key": "ai_deep_research", "name": "एडवांस्ड डीप रिसर्च व मल्टी-स्टेप लॉजिकल रीजनिंग", "paywall": False},
             {"p_id": 2, "parent": "2. AI Engine Core", "key": "ai_multilingual_translate", "name": "उच्च स्तरीय बहुभाषी तकनीकी अनुवाद व सारांश", "paywall": False},
 
-            # 3. AI Auto-Healing
             {"p_id": 3, "parent": "3. AI Auto-Healing", "key": "healing_error_detect", "name": "सॉफ्टवेयर व कोड एरर लाइव डिटेक्टर", "paywall": False},
             {"p_id": 3, "parent": "3. AI Auto-Healing", "key": "healing_auto_repair", "name": "1-क्लिक ऑटो कोड रिपेयर व आर्किटेक्चर हीलिंग", "paywall": True},
             {"p_id": 3, "parent": "3. AI Auto-Healing", "key": "healing_db_optimize", "name": "डेटाबेस ऑटो-इंडेक्सिंग व क्रैश-प्रूफ रिकवरी", "paywall": True},
 
-            # 4. Face-Swap Social
             {"p_id": 4, "parent": "4. Face-Swap Social", "key": "faceswap_avatar_gen", "name": "बेसिक 3D स्टूडेंट अवतार क्रिएटर", "paywall": False},
             {"p_id": 4, "parent": "4. Face-Swap Social", "key": "faceswap_video_explainer", "name": "एनिमेटेड वीडियो एक्सप्लेनर व सोशल शेयरिंग", "paywall": True},
 
-            # 5. 3D Blackboard
             {"p_id": 5, "parent": "5. 3D Blackboard", "key": "blackboard_live_canvas", "name": "इंटरएक्टिव लाइव 3D चाक-बोर्ड (Free Standard)", "paywall": False},
             {"p_id": 5, "parent": "5. 3D Blackboard", "key": "blackboard_tv_cast", "name": "स्मार्ट टीवी कास्टिंग व क्लासरूम प्रोजेक्टर सिंक", "paywall": True},
 
-            # 6. Digital Library
             {"p_id": 6, "parent": "6. Digital Library", "key": "library_ncert_books", "name": "NCERT व बेसिक ई-बुक्स डिजिटल एक्सेस", "paywall": False},
             {"p_id": 6, "parent": "6. Digital Library", "key": "library_premium_notes", "name": "एनक्रिप्टेड प्रीमियम नोट्स व डिजिटल वॉलेट डाउनलोड", "paywall": True},
 
-            # 7. Legal AI (All Laws)
             {"p_id": 7, "parent": "7. Legal AI (All Laws)", "key": "legal_bare_acts", "name": "भारतीय कानून व बेयर एक्ट्स (BNS, BNSS, BSA, Companies Act)", "paywall": False},
             {"p_id": 7, "parent": "7. Legal AI (All Laws)", "key": "legal_case_law_ai", "name": "सुप्रीम कोर्ट / हाईकोर्ट जजमेंट रिसर्च व ड्राफ्टिंग", "paywall": True},
             {"p_id": 7, "parent": "7. Legal AI (All Laws)", "key": "legal_contract_analyzer", "name": "कंपनी कॉर्पोरेट अनुपालन व एग्रीमेंट विश्लेषक", "paywall": True},
 
-            # 8. Coaching Hub
             {"p_id": 8, "parent": "8. Coaching Hub", "key": "coaching_batch_manager", "name": "संस्थान बैच शेड्यूल व छात्र उपस्थिति पोर्टल", "paywall": False},
             {"p_id": 8, "parent": "8. Coaching Hub", "key": "coaching_fee_automation", "name": "स्वचालित फीस रसीद, ऑटो-एसएमएस व रिपोर्ट कार्ड", "paywall": True},
 
-            # 9. Competition Solver
             {"p_id": 9, "parent": "9. Competition Solver", "key": "comp_exam_syllabus", "name": "IAS/PCS/Banking सिलेबस ट्रैकर व PYQs", "paywall": False},
             {"p_id": 9, "parent": "9. Competition Solver", "key": "comp_mains_evaluator", "name": "UPSC मुख्य परीक्षा उत्तर मूल्यांकन (Mains AI Evaluator)", "paywall": True},
             {"p_id": 9, "parent": "9. Competition Solver", "key": "comp_mock_test_engine", "name": "ऑल इंडिया लाइव मॉक टेस्ट व प्रेडिक्टिव स्कोरिंग", "paywall": True},
 
-            # 10. Nebula Visual Hub
             {"p_id": 10, "parent": "10. Nebula Visual Hub", "key": "nebula_visual_status", "name": "सिस्टम विज़ुअल मैट्रिक्स व ट्रैफिक स्टेटस", "paywall": False},
             {"p_id": 10, "parent": "10. Nebula Visual Hub", "key": "nebula_server_telemetry", "name": "डीप सर्वर टेलीमेट्री व लाइव नोड मॉनिटरिंग", "paywall": True},
 
-            # 11. International Spoken English
             {"p_id": 11, "parent": "11. Spoken English Master", "key": "spoken_basic_phrases", "name": "डेली स्पोकन इंग्लिश व वोकैबुलरी (Free Tier)", "paywall": False},
             {"p_id": 11, "parent": "11. Spoken English Master", "key": "spoken_accent_trainer", "name": "3D AI वॉइस एक्सेंट व प्रोनंसिएशन मेंटर", "paywall": True},
             {"p_id": 11, "parent": "11. Spoken English Master", "key": "spoken_ielts_fluent", "name": "IELTS/TOEFL लाइव इंटरव्यू व फ्लुएंसी टेस्ट", "paywall": True}
@@ -344,30 +333,43 @@ def admin_logout(request: Request, db: Session = Depends(get_db)):
 # ------------------------------------------------------------------------------
 @app.post("/api/register-student")
 def register_student_endpoint(
-    name: str = Form(...),
-    email: str = Form(...),
-    promo_token: Optional[str] = Form(None),
+    mobile: str = Form(...),
+    dhruv_mitra_code: Optional[str] = Form(None),
     db: Session = Depends(get_db)
 ):
-    existing_user = db.query(RegisteredStudent).filter_by(email=email.strip()).first()
+    clean_mobile = mobile.strip()
+    existing_user = db.query(RegisteredStudent).filter_by(mobile=clean_mobile).first()
     if existing_user:
-        return JSONResponse(content={"success": False, "message": "यह ईमेल आईडी पहले से पंजीकृत है!"})
+        return JSONResponse(content={"success": True, "already_registered": True, "message": "आप पहले से पंजीकृत हैं!", "token_balance": existing_user.token_balance})
     
     initial_tokens = 10
-    clean_token = promo_token.strip() if promo_token else None
-    if clean_token:
-        # यदि वैध प्रोमो टोकन दिया गया है तो नए छात्र को बोनस टोकन दें
+    clean_code = dhruv_mitra_code.strip() if dhruv_mitra_code else None
+    if clean_code:
         initial_tokens += 5
 
     new_student = RegisteredStudent(
-        name=name.strip(),
-        email=email.strip(),
-        promo_token_used=clean_token,
+        name="Student",
+        email=f"{clean_mobile}@dhruvacademy.com",
+        mobile=clean_mobile,
+        dhruv_mitra_code_used=clean_code,
         token_balance=initial_tokens
     )
     db.add(new_student)
     db.commit()
-    return JSONResponse(content={"success": True, "message": f"सफलतापूर्वक पंजीकरण हो गया! आपके खाते में {initial_tokens} Promo Token क्रेडिट कर दिए गए हैं।"})
+    return JSONResponse(content={"success": True, "already_registered": False, "message": f"सफलतापूर्वक पंजीकरण! {initial_tokens} टोकन क्रेडिट कर दिए गए हैं।", "token_balance": initial_tokens})
+
+@app.get("/api/student-profile")
+def get_student_profile(mobile: str, db: Session = Depends(get_db)):
+    student = db.query(RegisteredStudent).filter_by(mobile=mobile.strip()).first()
+    if not student:
+        return JSONResponse(content={"success": False, "message": "छात्र नहीं मिला!"})
+    
+    return JSONResponse(content={
+        "success": True,
+        "mobile": student.mobile,
+        "token_balance": student.token_balance,
+        "dhruv_mitra_code_used": student.dhruv_mitra_code_used or "लागू नहीं"
+    })
 
 # ------------------------------------------------------------------------------
 # 4. सुपर-एडमिन मास्टर डैशबोर्ड
@@ -603,323 +605,11 @@ def master_ecosystem_dashboard(request: Request, db: Session = Depends(get_db)):
     client_ip = request.client.host if request.client else "Unknown"
     log_activity(db, "Portal Visited", "Main Portal", "User loaded ecosystem dashboard", "Visitor", client_ip)
     
-    return """
-    <!DOCTYPE html>
-    <html lang="hi">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Dhruv Academy Master Ecosystem</title>
-        <script src="https://cdn.tailwindcss.com"></script>
-        <style>
-            @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap');
-            body { font-family: 'Poppins', sans-serif; transition: background-color 0.3s, color 0.3s; }
-            body.dark-mode { background-color: #020617; color: #f8fafc; }
-            body.dark-mode .master-card { background: rgba(15, 23, 42, 0.92); border: 1px solid rgba(255, 255, 255, 0.12); color: #f8fafc; }
-            body.dark-mode .master-card h3 { color: #38bdf8; }
-            body.dark-mode .master-card p { color: #cbd5e1; }
-            body.dark-mode .top-bar { background-color: rgba(2, 6, 23, 0.98); border-color: rgba(255, 255, 255, 0.1); }
-            body.light-mode { background-color: #f8fafc; color: #0f172a; }
-            body.light-mode .master-card { background: #ffffff; border: 2px solid #cbd5e1; box-shadow: 0 10px 25px rgba(0,0,0,0.06); color: #0f172a; }
-            body.light-mode .master-card h3 { color: #0284c7; font-weight: 800; }
-            body.light-mode .master-card p { color: #334155; font-weight: 600; }
-            body.light-mode .top-bar { background-color: #e2e8f0; border-color: #cbd5e1; color: #0f172a; }
-            .nebula-master-glow { background: radial-gradient(circle at center, rgba(14, 165, 233, 0.35) 0%, rgba(147, 51, 234, 0.25) 45%, transparent 85%); }
-            .master-card { backdrop-filter: blur(20px); transition: all 0.3s ease; }
-            .master-card:hover { transform: translateY(-4px); box-shadow: 0 15px 30px -10px rgba(56, 189, 248, 0.4); }
-            .lang-pill-container { display: inline-flex; align-items: center; background-color: #0b1329; border: 1.5px solid #0284c7; border-radius: 9999px; padding: 3px; gap: 4px; box-shadow: inset 0 2px 4px rgba(0,0,0,0.5); }
-            .lang-pill-btn { padding: 6px 18px; border-radius: 9999px; font-size: 12px; font-weight: 700; line-height: 1; border: none; outline: none; transition: all 0.25s ease-in-out; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; white-space: nowrap; }
-            .lang-pill-active { background: linear-gradient(135deg, #0284c7, #0369a1) !important; color: #ffffff !important; box-shadow: 0 2px 8px rgba(14, 165, 233, 0.5); }
-            .lang-pill-inactive { background: transparent !important; color: #94a3b8 !important; }
-            .lang-pill-inactive:hover { color: #f8fafc !important; }
-        </style>
-    </head>
-    <body class="min-h-screen dark-mode flex flex-col justify-between" id="pageBody">
-        <div>
-            <div id="topControlBar" class="top-bar w-full border-b px-4 py-2 flex justify-end items-center text-xs sticky top-0 z-50 backdrop-blur-md gap-3">
-                <button onclick="toggleThemeMode()" id="themeToggleBtn" class="px-3 py-1 bg-slate-800 text-amber-300 hover:bg-slate-700 rounded-lg font-bold shadow transition text-[11px]">Light Mode</button>
-                <button onclick="toggleMasterVoiceGuide()" id="voiceToggleBtn" class="px-3 py-1 bg-red-950 border border-red-500/50 hover:border-red-400 rounded-lg font-bold text-red-400 shadow transition flex items-center gap-1 text-[11px]">
-                    <span>AI Voice:</span>
-                    <span id="voiceStatusText">MUTE (OFF)</span>
-                </button>
-            </div>
-
-            <div id="mainContainer" class="max-w-7xl mx-auto px-4 sm:px-6 py-8 space-y-10">
-                <header class="flex flex-col md:flex-row justify-between items-center pb-6 border-b border-gray-800 gap-4">
-                    <div>
-                        <h1 class="text-2xl sm:text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-sky-300 to-indigo-400" id="mainHeaderTitle">Dhruv Academy Master Ecosystem</h1>
-                        <p class="text-[11px] sm:text-xs font-semibold tracking-widest uppercase mt-1 opacity-90 text-cyan-300" id="mainHeaderSub">100% सिक्योर एनक्रिप्टेड डेटा आर्किटेक्चर | विश्व स्तरीय 400-AI न्यूरल कोर</p>
-                    </div>
-                    <div class="flex items-center gap-2">
-                        <span class="text-xs font-bold text-slate-400">Lang:</span>
-                        <div class="lang-pill-container">
-                            <button type="button" onclick="setLanguage('hi')" id="btnLangHi" class="lang-pill-btn lang-pill-active">हिंदी</button>
-                            <button type="button" onclick="setLanguage('en')" id="btnLangEn" class="lang-pill-btn lang-pill-inactive">English</button>
-                        </div>
-                    </div>
-                </header>
-
-                <!-- फ्री रजिस्ट्रेशन व Promo Token इनपुट सेक्शन -->
-                <div class="bg-slate-900/90 p-6 rounded-2xl border border-cyan-500/30 shadow-xl max-w-xl mx-auto space-y-4">
-                    <h3 class="text-base font-bold text-cyan-300 text-center">🎯 छात्र नि:शुल्क पंजीकरण व Promo Token</h3>
-                    <form onsubmit="handleRegistration(event)" class="space-y-3 text-xs">
-                        <div>
-                            <label class="block mb-1 text-gray-300 font-semibold">पूरा नाम (Full Name)</label>
-                            <input type="text" id="regName" required placeholder="अपना नाम दर्ज करें" class="w-full p-2.5 rounded-xl bg-slate-800 border border-slate-700 text-white focus:border-cyan-500 focus:outline-none">
-                        </div>
-                        <div>
-                            <label class="block mb-1 text-gray-300 font-semibold">ईमेल आईडी (Email)</label>
-                            <input type="email" id="regEmail" required placeholder="student@example.com" class="w-full p-2.5 rounded-xl bg-slate-800 border border-slate-700 text-white focus:border-cyan-500 focus:outline-none">
-                        </div>
-                        <div>
-                            <label class="block mb-1 text-gray-300 font-semibold">Promo Token (वैकल्पिक / Optional)</label>
-                            <input type="text" id="regPromo" placeholder="यदि किसी ने बताया हो तो यहाँ कोड दर्ज करें" class="w-full p-2.5 rounded-xl bg-slate-800 border border-slate-700 text-white focus:border-cyan-500 focus:outline-none">
-                        </div>
-                        <button type="submit" class="w-full py-3 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 rounded-xl font-bold text-white shadow-lg transition">निःशुल्क रजिस्टर करें व टोकन पाएं 🚀</button>
-                    </form>
-                    <div id="regResponseMsg" class="text-center font-bold text-xs"></div>
-                </div>
-
-                <div class="nebula-master-glow p-6 sm:p-12 rounded-3xl border border-cyan-500/40 text-center space-y-6 shadow-2xl relative overflow-hidden">
-                    <h1 class="text-2xl sm:text-4xl lg:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-sky-200 to-purple-400" id="heroTitle">Dhruv Academy Master Ecosystem</h1>
-                    <p class="text-xs sm:text-sm md:text-base max-w-3xl mx-auto leading-relaxed font-semibold text-slate-200" id="heroDesc">नर्सरी से लेकर सभी कानून, आईएएस (IAS), पीसीएस (PCS), स्पोकन इंग्लिश और शोध विषयों की तैयारी के लिए भारत का सबसे उन्नत 400-AI न्यूरल पोर्टल।</p>
-                    <div class="flex flex-wrap justify-center gap-2 sm:gap-3 pt-2">
-                        <button onclick="openPaymentGateway('NC से कक्षा 5 (Kids Tier)', '29')" class="px-3 sm:px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold shadow-lg transition">NC-5 (₹29)</button>
-                        <button onclick="openPaymentGateway('कक्षा 6 से 8 (Standard)', '49')" class="px-3 sm:px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-bold shadow-lg transition">Class 6-8 (₹49)</button>
-                        <button onclick="openPaymentGateway('कक्षा 8 से 12 (Advanced)', '99')" class="px-3 sm:px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white rounded-xl text-xs font-bold shadow-lg transition">Class 8-12 (₹99)</button>
-                        <button onclick="openPaymentGateway('Graduate (Pro)', '149')" class="px-3 sm:px-4 py-2 bg-amber-600 hover:bg-amber-500 text-white rounded-xl text-xs font-bold shadow-lg transition">Graduate (₹149)</button>
-                        <button onclick="openPaymentGateway('Post Graduate & IAS/PCS', '299')" class="px-3 sm:px-4 py-2 bg-red-600 hover:bg-red-500 text-white rounded-xl text-xs font-bold shadow-lg transition">PG & IAS/PCS (₹299)</button>
-                    </div>
-                </div>
-                
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                    <div onclick="window.location.href='/kids-zone'" class="master-card p-6 rounded-2xl cursor-pointer hover:border-emerald-500 border border-transparent transition-all">
-                        <h3 class="font-bold text-lg mb-2">1. Foundation: NC-5 Kids Tier</h3>
-                        <p class="text-xs">नर्सरी से कक्षा 5 तक की नींव (AI-Driven Learning Module).</p>
-                    </div>
-                    <div onclick="window.location.href='/ai-core'" class="master-card p-6 rounded-2xl cursor-pointer hover:border-cyan-400 border border-transparent transition-all">
-                        <h3 class="font-bold text-lg mb-2">2. AI Engine Core</h3>
-                        <p class="text-xs">400-AI मल्टी-एजेंट न्यूरल कोर, डीप रिसर्च व लॉजिक सॉल्वर।</p>
-                    </div>
-                    <div onclick="openModulePortal(3, 'AI Auto-Healing')" class="master-card p-6 rounded-2xl cursor-pointer">
-                        <h3 class="font-bold text-lg mb-2">3. AI Auto-Healing</h3>
-                        <p class="text-xs">सॉफ्टवेयर त्रुटियों को स्वतः ठीक करने वाला स्कैनर।</p>
-                    </div>
-                    <div onclick="openModulePortal(4, 'Face-Swap Social')" class="master-card p-6 rounded-2xl cursor-pointer">
-                        <h3 class="font-bold text-lg mb-2">4. Face-Swap Social</h3>
-                        <p class="text-xs">छात्रों के लिए वीडियो और सोशल एक्सप्लेनर विजुअल्स।</p>
-                    </div>
-                    <div onclick="openModulePortal(5, '3D Blackboard')" class="master-card p-6 rounded-2xl cursor-pointer">
-                        <h3 class="font-bold text-lg mb-2">5. 3D Blackboard</h3>
-                        <p class="text-xs">डिजिटल कक्षाओं के लिए 3डी ब्लैकबोर्ड और टीवी कास्ट।</p>
-                    </div>
-                    <div onclick="window.location.href='/digital-library'" class="master-card p-6 rounded-2xl cursor-pointer border border-cyan-500/40 hover:border-cyan-400 transition-all">
-                        <h3 class="font-bold text-lg mb-2 text-cyan-300">6. Digital Library</h3>
-                        <p class="text-xs">एनक्रिप्टेड ई-बुक्स, नोट्स और डिजिटल वॉलेट वॉल्ट।</p>
-                    </div>
-                    <div onclick="window.location.href='/legal-ai'" class="master-card p-6 rounded-2xl cursor-pointer border border-rose-500/40 hover:border-rose-400 transition-all">
-                        <h3 class="font-bold text-lg mb-2 text-rose-400">7. Legal AI (All Laws)</h3>
-                        <p class="text-xs">BNS, BNSS, BSA, कंपनी लॉ, 1-क्लिक लीगल ड्राफ्टिंग व धारा कन्वर्टर।</p>
-                    </div>
-                    <div onclick="openModulePortal(8, 'Coaching Hub')" class="master-card p-6 rounded-2xl cursor-pointer">
-                        <h3 class="font-bold text-lg mb-2">8. Coaching Hub</h3>
-                        <p class="text-xs">कोचिंग संस्थानों के संचालन और बैच प्रबंधन का डैशबोर्ड।</p>
-                    </div>
-                    <div onclick="openModulePortal(9, 'Competition Solver')" class="master-card p-6 rounded-2xl cursor-pointer border-orange-500/30">
-                        <h3 class="font-bold text-lg mb-2">9. Competition Solver</h3>
-                        <p class="text-xs">IAS, IFS, IRS, PCS, Banking, NEET आदि सभी परीक्षाओं का सॉल्वर।</p>
-                    </div>
-                    <div onclick="openModulePortal(10, 'Nebula Visual Hub')" class="master-card p-6 rounded-2xl cursor-pointer">
-                        <h3 class="font-bold text-lg mb-2">10. Nebula Visual Hub</h3>
-                        <p class="text-xs">सिस्टम गतिविधियों को दिखाने वाला नेबुला डैशबोर्ड।</p>
-                    </div>
-                    <div onclick="window.location.href='/spoken-english'" class="master-card p-6 rounded-2xl cursor-pointer border border-emerald-500/40 hover:border-emerald-400 transition-all">
-                        <h3 class="font-bold text-lg mb-2 text-emerald-400">11. Spoken English Master</h3>
-                        <p class="text-xs">अदिति मैम के साथ 4D Live AI वॉइस एक्सेंट व आसान बोलचाल मेंटर।</p>
-                    </div>
-                </div>
-
-                <div class="text-center pt-4 pb-4">
-                    <a href="/secret-admin-login-dhruv" class="inline-block px-8 py-3.5 bg-gradient-to-r from-cyan-600 to-blue-600 rounded-xl text-sm font-bold text-white shadow-xl transition">एडमिन कंट्रोल गेटवे खोलें 🔐</a>
-                </div>
-            </div>
-        </div>
-
-        <footer class="w-full border-t border-gray-800/80 py-4 px-6 text-center text-xs text-gray-500 bg-slate-950/80">
-            <p>© 2026 Dhruv Academy Master Ecosystem. सर्वाधिकार सुरक्षित। 
-                <a href="/secret-admin-login-dhruv" class="opacity-30 hover:opacity-100 hover:text-cyan-400 transition ml-2 text-[10px]" title="एडमिन पोर्टल">System Gateway</a>
-            </p>
-        </footer>
-
-        <!-- मॉड्यूल पॉप-अप मोडल -->
-        <div id="modulePortalModal" class="hidden fixed inset-0 bg-black/85 flex items-center justify-center p-4 z-50 backdrop-blur-md">
-            <div class="master-card p-6 sm:p-8 rounded-3xl w-full max-w-xl space-y-6 border border-cyan-500/50 shadow-2xl">
-                <div class="flex justify-between items-center border-b border-gray-700 pb-4">
-                    <h2 id="portalModalTitle" class="text-lg sm:text-xl font-bold">मॉड्यूल पोर्टल</h2>
-                    <button onclick="closeModulePortal()" class="font-bold text-lg">✕</button>
-                </div>
-                <div id="portalModalBody" class="space-y-4 text-xs sm:text-sm"></div>
-                <div class="pt-4 border-t border-gray-700 text-right">
-                    <button onclick="closeModulePortal()" class="px-6 py-2.5 bg-cyan-600 hover:bg-cyan-500 rounded-xl font-bold text-xs text-white shadow-lg transition">बंद करें / Close</button>
-                </div>
-            </div>
-        </div>
-
-        <!-- पेमेंट गेटवे मोडल -->
-        <div id="paymentGatewayModal" class="hidden fixed inset-0 bg-black/85 flex items-center justify-center p-4 z-50 backdrop-blur-md">
-            <div class="master-card p-6 sm:p-8 rounded-3xl w-full max-w-md space-y-6 border border-emerald-500/50 shadow-2xl text-center">
-                <div class="flex justify-between items-center border-b border-gray-700 pb-4">
-                    <h2 class="text-lg sm:text-xl font-bold text-emerald-400">Secure Payment Gateway</h2>
-                    <button onclick="closePaymentGateway()" class="font-bold text-lg">✕</button>
-                </div>
-                <div class="space-y-3">
-                    <div class="p-4 rounded-2xl border border-slate-700 bg-slate-900/50">
-                        <p class="text-xs text-gray-400">चुना गया प्लान:</p>
-                        <h3 id="paymentPlanTitle" class="text-base sm:text-lg font-bold mt-1">Plan</h3>
-                        <p id="paymentPlanPrice" class="text-xl sm:text-2xl font-extrabold text-emerald-400 mt-2">₹0</p>
-                    </div>
-                    <div class="space-y-2 text-left pt-2">
-                        <label class="block text-xs font-semibold text-gray-300">UPI ID / कार्ड नंबर दर्ज करें:</label>
-                        <input type="text" placeholder="name@upi या कार्ड नंबर" class="w-full p-3 border border-slate-700 rounded-xl text-xs bg-slate-900 text-white focus:outline-none focus:border-cyan-500">
-                    </div>
-                </div>
-                <div id="paymentActionArea" class="space-y-3 pt-2">
-                    <button onclick="processPayment()" class="w-full py-3 bg-emerald-600 hover:bg-emerald-500 rounded-xl font-bold text-xs sm:text-sm text-white shadow-lg transition">भुगतान करें (Pay Now)</button>
-                </div>
-                <div id="paymentStatusBox" class="hidden py-4 space-y-2">
-                    <div class="inline-block animate-spin rounded-full h-8 w-8 border-4 border-cyan-500 border-t-transparent"></div>
-                    <p class="text-xs font-bold tracking-wider text-cyan-300">ट्रांसजैक्शन अंडर प्रोसेस... कृपया प्रतीक्षा करें!</p>
-                </div>
-            </div>
-        </div>
-
-        <script>
-            let isVoiceGuideActive = false;
-            let currentTheme = 'dark';
-            let currentLang = 'hi';
-
-            async function handleRegistration(event) {
-                event.preventDefault();
-                let name = document.getElementById('regName').value;
-                let email = document.getElementById('regEmail').value;
-                let promo = document.getElementById('regPromo').value;
-
-                let formData = new URLSearchParams();
-                formData.append('name', name);
-                formData.append('email', email);
-                formData.append('promo_token', promo);
-
-                let res = await fetch('/api/register-student', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-                    body: formData
-                });
-                let data = await res.json();
-                let msgBox = document.getElementById('regResponseMsg');
-                msgBox.innerText = data.message;
-                msgBox.className = data.success ? "text-center font-bold text-xs text-emerald-400" : "text-center font-bold text-xs text-rose-400";
-            }
-
-            function toggleThemeMode() {
-                let bodyEl = document.getElementById('pageBody');
-                let themeBtn = document.getElementById('themeToggleBtn');
-                if (currentTheme === 'dark') {
-                    currentTheme = 'light';
-                    bodyEl.classList.remove('dark-mode');
-                    bodyEl.classList.add('light-mode');
-                    themeBtn.innerText = "Dark Mode";
-                    themeBtn.className = "px-3 py-1 bg-slate-200 text-slate-900 hover:bg-slate-300 rounded-lg font-bold shadow transition text-[11px]";
-                } else {
-                    currentTheme = 'dark';
-                    bodyEl.classList.remove('light-mode');
-                    bodyEl.classList.add('dark-mode');
-                    themeBtn.innerText = "Light Mode";
-                    themeBtn.className = "px-3 py-1 bg-slate-800 text-amber-300 hover:bg-slate-700 rounded-lg font-bold shadow transition text-[11px]";
-                }
-            }
-
-            function toggleMasterVoiceGuide() {
-                isVoiceGuideActive = !isVoiceGuideActive;
-                let btn = document.getElementById('voiceToggleBtn');
-                let statusText = document.getElementById('voiceStatusText');
-                if (isVoiceGuideActive) {
-                    btn.className = "px-3 py-1 bg-emerald-950 border border-emerald-500/50 text-emerald-400 rounded-lg font-bold shadow transition flex items-center gap-1 text-[11px]";
-                    statusText.innerText = "ACTIVE (ON)";
-                } else {
-                    btn.className = "px-3 py-1 bg-red-950 border border-red-500/50 text-red-400 rounded-lg font-bold shadow transition flex items-center gap-1 text-[11px]";
-                    statusText.innerText = "MUTE (OFF)";
-                    if ('speechSynthesis' in window) { window.speechSynthesis.cancel(); }
-                }
-            }
-
-            function openPaymentGateway(planName, priceVal) {
-                fetch('/api/log-action', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-                    body: `action=Payment Initiated&module=Pricing&details=${encodeURIComponent(planName + ' - ₹' + priceVal)}`
-                });
-
-                document.getElementById('paymentPlanTitle').innerText = planName;
-                document.getElementById('paymentPlanPrice').innerText = "₹" + priceVal + " / माह";
-                document.getElementById('paymentActionArea').classList.remove('hidden');
-                document.getElementById('paymentStatusBox').classList.add('hidden');
-                document.getElementById('paymentGatewayModal').classList.remove('hidden');
-            }
-
-            function closePaymentGateway() { document.getElementById('paymentGatewayModal').classList.add('hidden'); }
-
-            function processPayment() {
-                document.getElementById('paymentActionArea').classList.add('hidden');
-                document.getElementById('paymentStatusBox').classList.remove('hidden');
-                setTimeout(() => {
-                    alert("पेमेंट अनुरोध सफलतापूर्वक भेजा गया!");
-                    closePaymentGateway();
-                }, 2000);
-            }
-
-            async function openModulePortal(modId, modName) {
-                let res = await fetch(`/api/module-subfeatures/${modId}`);
-                let data = await res.json();
-                
-                let contentHtml = `<div class="space-y-3">`;
-                data.features.forEach(f => {
-                    let btnText = f.is_paywalled ? "🔒 अनलॉक करें (Paid)" : "खोलें (Free)";
-                    let btnBg = f.is_paywalled ? "bg-amber-600 hover:bg-amber-500" : "bg-emerald-600 hover:bg-emerald-500";
-                    
-                    let actionCall = "";
-                    if (f.is_paywalled) {
-                        actionCall = `openPaymentGateway('${f.name}', '99')`;
-                    } else {
-                        if (modId === 1) { actionCall = `window.location.href='/kids-zone'`; }
-                        else if (modId === 2) { actionCall = `window.location.href='/ai-core'`; }
-                        else if (modId === 6) { actionCall = `window.location.href='/digital-library'`; }
-                        else if (modId === 7) { actionCall = `window.location.href='/legal-ai'`; }
-                        else if (modId === 11) { actionCall = `window.location.href='/spoken-english'`; }
-                        else { actionCall = `alert('${f.name} सक्रिय है!')`; }
-                    }
-
-                    contentHtml += `
-                        <div class="p-3 bg-slate-900 border border-slate-800 rounded-xl flex justify-between items-center gap-3">
-                            <div>
-                                <h4 class="font-bold text-gray-200 text-xs">${f.name}</h4>
-                                <span class="text-[10px] ${f.is_paywalled ? 'text-amber-400 font-bold' : 'text-emerald-400 font-semibold'}">${f.is_paywalled ? 'प्रीमियम टूल' : 'फ्री टूल'}</span>
-                            </div>
-                            <button onclick="${actionCall}" class="px-3 py-1.5 ${btnBg} text-white rounded-lg text-xs font-bold shadow transition whitespace-nowrap">${btnText}</button>
-                        </div>
-                    `;
-                });
-                contentHtml += `</div>`;
-
-                document.getElementById('portalModalTitle').innerText = modName;
-                document.getElementById('portalModalBody').innerHTML = contentHtml;
-                document.getElementById('modulePortalModal').classList.remove('hidden');
-            }
-
-            function closeModulePortal() { document.getElementById('modulePortalModal').classList.add('hidden'); }
-        </script>
-    </body>
-    </html>
-    """
+    index_path = Path("index.html")
+    if index_path.exists():
+        with open(index_path, "r", encoding="utf-8") as f:
+            return f.read()
+    return HTMLResponse("<h1>index.html missing</h1>", status_code=404)
 
 # ------------------------------------------------------------------------------
 # 7. API एंडपॉइंट्स (पेवॉल चेक, लाइव लॉगिंग, AI विजन व 400-AI न्यूरल सॉल्वर)
@@ -1143,9 +833,9 @@ async def generate_quiz_endpoint(request: Request, file: UploadFile = File(...),
     ]
     return JSONResponse(content={"success": True, "quiz": fallback_quiz})
 
-# ==============================================================================
+# ------------------------------------------------------------------------------
 # 9. मॉड्यूल 11: International Spoken English (Phonetic Feedback & 3-Level Translator)
-# ==============================================================================
+# ------------------------------------------------------------------------------
 @app.get("/spoken-english", response_class=HTMLResponse)
 async def spoken_english_page(request: Request, db: Session = Depends(get_db)):
     client_ip = request.client.host if request.client else "Unknown"
@@ -1309,9 +999,9 @@ async def spoken_3level_translate_endpoint(
         "fluent_pronounce": "कुड यू डायरेक्ट मी टू द रेलवे स्टेशन, प्लीज?"
     })
 
-# ==============================================================================
+# ------------------------------------------------------------------------------
 # 10. मॉड्यूल 7: Legal AI Master Hub (BNS/BNSS Converter & Drafting Endpoints)
-# ==============================================================================
+# ------------------------------------------------------------------------------
 @app.get("/legal-ai", response_class=HTMLResponse)
 async def legal_ai_page(request: Request, db: Session = Depends(get_db)):
     client_ip = request.client.host if request.client else "Unknown"
@@ -1387,7 +1077,6 @@ async def legal_generate_draft_endpoint(
 ):
     client_ip = request.client.host if request.client else "Unknown"
     
-    # विधिक अनुपालन फ़िल्टर (Strict RTI 2(f) and Malicious Prosecution Guardrails)
     if draft_type == "rti":
         legal_instruction = (
             "STRICT RTI ACT 2005 SECTION 2(f) & SUPREME COURT COMPLIANCE:\n"
@@ -1420,7 +1109,6 @@ async def legal_generate_draft_endpoint(
 
     api_keys = get_all_gemini_keys()
     
-    # फॉल्ट-टॉलरेंट मॉडल राउटर्स
     router_models = ["gemini-1.5-flash", "gemini-pro"]
     
     for model_name in router_models:
@@ -1435,10 +1123,8 @@ async def legal_generate_draft_endpoint(
                     log_activity(db, "Legal Draft Generated", "Legal AI Hub", f"Type: {draft_type} via {model_name}", "Student", client_ip)
                     return JSONResponse(content={"success": True, "draft_text": draft_text})
             except Exception as e:
-                print(f"Draft generation error with {model_name}: {e}")
                 continue
 
-    # सुरक्षित फॉलबैक ड्राफ्ट
     if draft_type == "rti":
         fallback_draft = (
             "सेवा में,\n"
@@ -1540,9 +1226,9 @@ async def legal_advice_solve_endpoint(
         "summary": "विवादों में दुर्भावनापूर्ण अभियोजन से बचने हेतु पहले विधिक प्रक्रिया और रजिस्टर्ड दस्तावेजों का परीक्षण करें।"
     })
 
-# ==============================================================================
+# ------------------------------------------------------------------------------
 # 11. पेज रूट्स
-# ==============================================================================
+# ------------------------------------------------------------------------------
 @app.get("/kids-zone", response_class=HTMLResponse)
 async def kids_zone(request: Request, db: Session = Depends(get_db)):
     client_ip = request.client.host if request.client else "Unknown"
@@ -1572,83 +1258,11 @@ async def digital_library_page(request: Request, db: Session = Depends(get_db)):
         return HTMLResponse(content="<h1>digital-library.html file missing</h1>", status_code=404)
     with open(file_path, "r", encoding="utf-8") as f:
         return f.read()
-# ==============================================================================
-# ध्रुव मित्रा परफॉर्मेंस-बेस्ड रिवॉर्ड और 70% मार्जिन प्रोटेक्टेड टोकन सिस्टम
-# ==============================================================================
-@app.post("/api/register-student")
-def register_student_endpoint(
-    name: str = Form(...),
-    email: str = Form(...),
-    dhruv_mitra_code: Optional[str] = Form(None),
-    db: Session = Depends(get_db)
-):
-    existing_user = db.query(RegisteredStudent).filter_by(email=email.strip()).first()
-    if existing_user:
-        return JSONResponse(content={"success": False, "message": "यह ईमेल आईडी पहले से पंजीकृत है!"})
-    
-    initial_tokens = 10  # शुरुआती फ्री टोकन
-    clean_code = dhruv_mitra_code.strip() if dhruv_mitra_code else None
-    if clean_code:
-        initial_tokens += 5  # ध्रुव मित्रा परफॉर्मेंस-बेस्ड रिवॉर्ड बोनस
-
-    new_student = RegisteredStudent(
-        name=name.strip(),
-        email=email.strip(),
-        dhruv_mitra_code_used=clean_code,
-        token_balance=initial_tokens
-    )
-    db.add(new_student)
-    db.commit()
-    return JSONResponse(content={"success": True, "message": f"सफलतापूर्वक पंजीकरण! {initial_tokens} टोकन क्रेडिट कर दिए गए हैं।"})
-
-# 70% मार्जिन सुरक्षित पैकेज योजना (₹29, ₹49, ₹99, ₹149, ₹299)
-PACKAGE_TOKEN_PLANS = {
-    29: {"tokens": 25, "tier": "Trial Pack"},
-    49: {"tokens": 50, "tier": "Starter Pack"},
-    99: {"tokens": 120, "tier": "Standard Pack"},
-    149: {"tokens": 200, "tier": "Advanced Pack"},
-    299: {"tokens": 450, "tier": "Master Ecosystem Pack"}
-}
-
-@app.post("/api/recharge-wallet")
-def recharge_wallet_endpoint(
-    user_email: str = Form(...),
-    amount_paid: int = Form(...),
-    db: Session = Depends(get_db)
-):
-    if amount_paid not in PACKAGE_TOKEN_PLANS:
-        return JSONResponse(content={"success": False, "message": "अमान्य पैकेज मूल्य!"})
-    
-    plan_info = PACKAGE_TOKEN_PLANS[amount_paid]
-    student = db.query(RegisteredStudent).filter_by(email=user_email.strip()).first()
-    if not student:
-        return JSONResponse(content={"success": False, "message": "पंजीकृत छात्र नहीं मिला!"})
-
-    student.token_balance += plan_info["tokens"]
-    db.commit()
-    return JSONResponse(content={"success": True, "message": f"सफलतापूर्वक रिचार्ज! {plan_info['tokens']} टोकन जोड़े गए।"})
-
-
-@app.get("/api/student-profile")
-def get_student_profile(email: str, db: Session = Depends(get_db)):
-    student = db.query(RegisteredStudent).filter_by(email=email.strip()).first()
-    if not student:
-        return JSONResponse(content={"success": False, "message": "छात्र नहीं मिला!"})
-    
-    return JSONResponse(content={
-        "success": True,
-        "name": student.name,
-        "email": student.email,
-        "token_balance": student.token_balance,
-        "dhruv_mitra_code_used": student.dhruv_mitra_code_used or "लागू नहीं"
-    })
 
 # ------------------------------------------------------------------------------
 # 12. सर्वर रनर (Render Port Binding Fix)
 # ------------------------------------------------------------------------------
-
 if __name__ == "__main__":
     import uvicorn
     port = int(os.environ.get("PORT", 10000))
     uvicorn.run("main:app", host="0.0.0.0", port=port, reload=False)
-    
