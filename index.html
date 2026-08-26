@@ -311,21 +311,30 @@
             }
         }
 
-        function changeLanguage(lang) {
-            const btnHi = document.getElementById('langHi');
-            const btnEn = document.getElementById('langEn');
-            if(lang === 'hi') {
-                btnHi.className = "px-4 py-1.5 rounded-xl font-bold bg-cyan-600 text-white transition shadow";
-                btnEn.className = "px-4 py-1.5 rounded-xl font-bold text-gray-400 transition";
-                document.getElementById('lblUserMobile').innerText = "मोबाइल नंबर (Mobile Number)";
-                document.getElementById('sendOtpBtn').innerText = "ओटीपी भेजें और 10 फ्री टोकन पाएं 🎁";
-            } else {
-                btnEn.className = "px-4 py-1.5 rounded-xl font-bold bg-cyan-600 text-white transition shadow";
-                btnHi.className = "px-4 py-1.5 rounded-xl font-bold text-gray-400 transition";
-                document.getElementById('lblUserMobile').innerText = "Mobile Number";
-                document.getElementById('sendOtpBtn').innerText = "Send OTP & Get 10 Free Tokens 🎁";
-            }
-        }
+       function changeLanguage(lang) {
+    const btnHi = document.getElementById('langHi');
+    const btnEn = document.getElementById('langEn');
+    
+    if(lang === 'hi') {
+        if(btnHi) btnHi.className = "px-4 py-1.5 rounded-xl font-bold bg-cyan-600 text-white transition shadow";
+        if(btnEn) btnEn.className = "px-4 py-1.5 rounded-xl font-bold text-gray-400 transition";
+        
+        let lblMobile = document.getElementById('lblUserMobile');
+        if(lblMobile) lblMobile.innerText = "मोबाइल नंबर (Mobile Number):";
+        
+        let sendOtpBtn = document.getElementById('sendOtpBtn');
+        if(sendOtpBtn) sendOtpBtn.innerText = "ओटीपी भेजें और 10 फ्री टोकन प्राप्त करें";
+    } else {
+        if(btnEn) btnEn.className = "px-4 py-1.5 rounded-xl font-bold bg-cyan-600 text-white transition shadow";
+        if(btnHi) btnHi.className = "px-4 py-1.5 rounded-xl font-bold text-gray-400 transition";
+        
+        let lblMobile = document.getElementById('lblUserMobile');
+        if(lblMobile) lblMobile.innerText = "Mobile Number:";
+        
+        let sendOtpBtn = document.getElementById('sendOtpBtn');
+        if(sendOtpBtn) sendOtpBtn.innerText = "Send OTP & Get 10 Free Tokens 🚀";
+    }
+}
 
         function sendOTP() {
             const mobile = document.getElementById('userMobile').value.trim();
