@@ -1572,6 +1572,62 @@ async def digital_library_page(request: Request, db: Session = Depends(get_db)):
         return HTMLResponse(content="<h1>digital-library.html file missing</h1>", status_code=404)
     with open(file_path, "r", encoding="utf-8") as f:
         return f.read()
+  ==============================================================================
+# ध्रुव मित्रा परफॉर्मेंस-बेस्ड रिवॉर्ड और 70% मार्जिन प्रोटेक्टेड टोकन सिस्टम
+# ==============================================================================
+
+@app.post("/api/register-student")
+def register_student_endpoint(
+    name: str = Form(...),
+    email: str = Form(...),
+    dhruv_mitra_code: Optional[str] = Form(None),
+    db: Session = Depends(get_db)
+):
+    existing_user = db.query(RegisteredStudent).filter_by(email=email.strip()).first()
+    if existing_user:
+        return JSONResponse(content={"success": False, "message": "यह ईमेल आईडी पहले से पंजीकृत है!"})
+    
+    initial_tokens = 10  # शुरुआती फ्री टोकन
+    clean_code = dhruv_mitra_code.strip() if dhruv_mitra_code else None
+    if clean_code:
+        initial_tokens += 5  # ध्रुव मित्रा परफॉर्मेंस-बेस्ड रिवॉर्ड बोनस
+
+    new_student = RegisteredStudent(
+        name=name.strip(),
+        email=email.strip(),
+        dhruv_mitra_code_used=clean_code,
+        token_balance=initial_tokens
+    )
+    db.add(new_student)
+    db.commit()
+    return JSONResponse(content={"success": True, "message": f"सफलतापूर्वक पंजीकरण! {initial_tokens} टोकन क्रेडिट कर दिए गए हैं।"})
+
+# 70% मार्जिन सुरक्षित पैकेज योजना (₹29, ₹49, ₹99, ₹149, ₹299)
+PACKAGE_TOKEN_PLANS = {
+    29: {"tokens": 25, "tier": "Trial Pack"},
+    49: {"tokens": 50, "tier": "Starter Pack"},
+    99: {"tokens": 120, "tier": "Standard Pack"},
+    149: {"tokens": 200, "tier": "Advanced Pack"},
+    299: {"tokens": 450, "tier": "Master Ecosystem Pack"}
+}
+
+@app.post("/api/recharge-wallet")
+def recharge_wallet_endpoint(
+    user_email: str = Form(...),
+    amount_paid: int = Form(...),
+    db: Session = Depends(get_db)
+):
+    if amount_paid not in PACKAGE_TOKEN_PLANS:
+        return JSONResponse(content={"success": False, "message": "अमान्य पैकेज मूल्य!"})
+    
+    plan_info = PACKAGE_TOKEN_PLANS[amount_paid]
+    student = db.query(RegisteredStudent).filter_by(email=user_email.strip()).first()
+    if not student:
+        return JSONResponse(content={"success": False, "message": "पंजीकृत छात्र नहीं मिला!"})
+
+    student.token_balance += plan_info["tokens"]
+    db.commit()
+    return JSONResponse(content={"success": True, "message": f"सफलतापूर्वक रिचार्ज! {plan_info['tokens']} टोकन जोड़े गए।"})      
 
 # ------------------------------------------------------------------------------
 # 12. सर्वर रनर (Render Port Binding Fix)
@@ -1580,3 +1636,4 @@ if __name__ == "__main__":
     import uvicorn
     port = int(os.environ.get("PORT", 10000))
     uvicorn.run("main:app", host="0.0.0.0", port=port, reload=False)
+    
