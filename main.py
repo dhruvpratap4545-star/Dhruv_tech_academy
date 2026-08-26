@@ -1572,10 +1572,9 @@ async def digital_library_page(request: Request, db: Session = Depends(get_db)):
         return HTMLResponse(content="<h1>digital-library.html file missing</h1>", status_code=404)
     with open(file_path, "r", encoding="utf-8") as f:
         return f.read()
-  ==============================================================================
+# ==============================================================================
 # ध्रुव मित्रा परफॉर्मेंस-बेस्ड रिवॉर्ड और 70% मार्जिन प्रोटेक्टेड टोकन सिस्टम
 # ==============================================================================
-
 @app.post("/api/register-student")
 def register_student_endpoint(
     name: str = Form(...),
