@@ -1627,6 +1627,7 @@ def recharge_wallet_endpoint(
     student.token_balance += plan_info["tokens"]
     db.commit()
     return JSONResponse(content={"success": True, "message": f"सफलतापूर्वक रिचार्ज! {plan_info['tokens']} टोकन जोड़े गए।"})
+    
     @app.get("/api/student-profile")
 def get_student_profile(email: str, db: Session = Depends(get_db)):
     student = db.query(RegisteredStudent).filter_by(email=email.strip()).first()
