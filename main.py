@@ -1626,8 +1626,20 @@ def recharge_wallet_endpoint(
 
     student.token_balance += plan_info["tokens"]
     db.commit()
-    return JSONResponse(content={"success": True, "message": f"सफलतापूर्वक रिचार्ज! {plan_info['tokens']} टोकन जोड़े गए।"})      
-
+    return JSONResponse(content={"success": True, "message": f"सफलतापूर्वक रिचार्ज! {plan_info['tokens']} टोकन जोड़े गए।"})
+    @app.get("/api/student-profile")
+def get_student_profile(email: str, db: Session = Depends(get_db)):
+    student = db.query(RegisteredStudent).filter_by(email=email.strip()).first()
+    if not student:
+        return JSONResponse(content={"success": False, "message": "छात्र नहीं मिला!"})
+    
+    return JSONResponse(content={
+        "success": True,
+        "name": student.name,
+        "email": student.email,
+        "token_balance": student.token_balance,
+        "dhruv_mitra_code_used": student.dhruv_mitra_code_used or "लागू नहीं"
+    })
 # ------------------------------------------------------------------------------
 # 12. सर्वर रनर (Render Port Binding Fix)
 # ------------------------------------------------------------------------------
