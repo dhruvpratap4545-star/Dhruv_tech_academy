@@ -246,6 +246,39 @@
 
     </div>
 
+    <!-- 📊 छात्र एनालिसिस और ट्रांसपेरेंसी रिपोर्ट का सुंदर टास्क कार्ड (Modal) -->
+    <div id="profileModal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 z-50">
+        <div class="bg-slate-900 border border-cyan-500 rounded-3xl p-6 max-w-md w-full shadow-2xl animate-float">
+            <div class="flex justify-between items-center mb-4 border-b border-slate-800 pb-3">
+                <h3 class="text-lg font-black text-cyan-400">📊 छात्र एनालिसिस और ट्रांसपेरेंसी रिपोर्ट</h3>
+                <button onclick="closeStudentProfile()" class="text-slate-400 hover:text-white font-bold text-lg px-2">✕</button>
+            </div>
+            
+            <div class="space-y-4 text-xs md:text-sm text-slate-300 mb-6">
+                <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 flex justify-between items-center">
+                    <span class="text-slate-400">📱 रजिस्टर्ड मोबाइल:</span>
+                    <span id="modalUserMobile" class="font-bold text-cyan-300">--</span>
+                </div>
+                <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 flex justify-between items-center">
+                    <span class="text-slate-400">⚡ शेष टोकन बैलेंस:</span>
+                    <span id="modalUserTokens" class="font-bold text-yellow-400">10</span>
+                </div>
+                
+                <!-- टास्क के रूप में हालिया गतिविधियाँ (Activity Log) -->
+                <div class="bg-slate-950 p-3 rounded-xl border border-slate-800">
+                    <div class="font-bold text-purple-400 mb-2">🔍 हालिया उपयोग गतिविधियाँ (Activity Ledger):</div>
+                    <div id="modalActivityList" class="space-y-1.5 max-h-36 overflow-y-auto text-[11px] text-slate-400">
+                        <!-- यहाँ डाइनैमिक टास्क आएंगे -->
+                    </div>
+                </div>
+            </div>
+
+            <button onclick="closeStudentProfile()" class="w-full bg-cyan-700 hover:bg-cyan-600 text-white py-2.5 rounded-xl text-xs font-bold transition shadow">
+                रिपोर्ट बंद करें
+            </button>
+        </div>
+    </div>
+
     <!-- वॉलेट स्टोर पॉपअप मॉडल -->
     <div id="walletModal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 z-50">
         <div class="bg-slate-900 border border-purple-600 rounded-3xl p-6 max-w-sm w-full shadow-2xl animate-float">
@@ -462,12 +495,31 @@
             }
         }
 
+        // 📊 छात्र एनालिसिस रिपोर्ट का टास्क कार्ड (Modal) ओपन करना
         function openStudentProfile() {
             const mobile = localStorage.getItem("user_mobile") || "अज्ञात / Guest";
+            document.getElementById('modalUserMobile').innerText = mobile;
+            document.getElementById('modalUserTokens').innerText = userTokens;
+
             let activityLog = JSON.parse(localStorage.getItem("user_activity_log")) || [];
-            let logText = activityLog.length > 0 ? activityLog.map(item => `• ${item.module} (${item.time})`).join('\n') : "कोई हालिया गतिविधि नहीं।";
+            let activityContainer = document.getElementById('modalActivityList');
             
-            alert(`📊 छात्र एनालिसिस और ट्रांसपेरेंसी रिपोर्ट:\n\n📱 मोबाइल नंबर: ${mobile}\n⚡ शेष टोकन बैलेंस: ${userTokens}\n\n🔍 हालिया उपयोग गतिविधियाँ:\n${logText}\n\n🛡️ डेटा स्टेटस: सुरक्षित`);
+            if(activityLog.length > 0) {
+                activityContainer.innerHTML = activityLog.map((item, index) => `
+                    <div class="flex justify-between items-center bg-slate-900 p-2 rounded-lg border border-slate-800">
+                        <span>${index + 1}. <b>${item.module}</b></span>
+                        <span class="text-slate-500">${item.time}</span>
+                    </div>
+                `).join('');
+            } else {
+                activityContainer.innerHTML = `<div class="text-slate-500 italic p-1">अभी तक कोई हालिया गतिविधि दर्ज नहीं है। किसी मॉड्यूल पर क्लिक करें।</div>`;
+            }
+
+            document.getElementById('profileModal').classList.remove('hidden');
+        }
+
+        function closeStudentProfile() {
+            document.getElementById('profileModal').classList.add('hidden');
         }
 
         function changeThemeAccent(colorHex) {
