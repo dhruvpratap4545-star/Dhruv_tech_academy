@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ध्रुव एकेडमी - विश्व का सबसे आधुनिक एआई मास्टर इकोसिस्टम</title>
+    <title>ध्रुव एकेडमी - प्रतियोगी परीक्षाओं एवं स्मार्ट लर्निंग का सर्वोच्च केंद्र</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -21,38 +21,37 @@
     <style>
         @keyframes float {
             0%, 100% { transform: translateY(0px); }
-            50% { transform: translateY(-5px); }
+            50% { transform: translateY(-4px); }
         }
         .animate-float { animation: float 4s ease-in-out infinite; }
-        /* कस्टम स्क्रॉलार */
-        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar { width: 5px; }
         ::-webkit-scrollbar-track { background: #0f172a; }
         ::-webkit-scrollbar-thumb { background: #7c3aed; border-radius: 10px; }
     </style>
 </head>
 <body id="pageBody" class="bg-slate-950 text-slate-100 min-h-screen flex flex-col items-center justify-between p-2 md:p-6 transition-colors duration-500">
 
-    <!-- मास्टर कंटेनर (ऑटो-रेस्पॉन्सिव: मोबाइल पर मोबाइल व्यू, बड़ी स्क्रीन पर अल्ट्रा-वाइड प्रीमियम व्यू) -->
-    <div class="w-full max-w-4xl bg-slate-900/90 border border-purple-800/50 rounded-3xl p-4 md:p-8 shadow-2xl backdrop-blur-xl animate-float">
+    <!-- मास्टर कंटेनर -->
+    <div class="w-full max-w-4xl bg-slate-900/95 border border-purple-800/60 rounded-3xl p-4 md:p-8 shadow-2xl backdrop-blur-xl animate-float">
         
         <!-- टॉप नेविगेशन और यूनिफॉर्म बटन्स बार -->
-        <div class="w-full flex flex-wrap items-center justify-between gap-2 p-3 bg-slate-950/80 border border-purple-700/60 rounded-2xl shadow-xl mb-6">
+        <div class="w-full flex flex-wrap items-center justify-between gap-2 p-3 bg-slate-950/90 border border-purple-700/60 rounded-2xl shadow-xl mb-4">
             
             <!-- टोकन काउंटर -->
             <div class="flex items-center gap-1.5 bg-purple-950/90 border border-purple-500 px-3 py-2 rounded-xl text-yellow-400 font-extrabold text-xs md:text-sm shadow">
-                <span>⚡ टोकन्स:</span>
+                <span>⚡ <span data-key="tokensText">टोकन्स</span>:</span>
                 <span id="topTokenCount">10</span>
             </div>
 
-            <!-- भाषा टॉगल बटन (हिंदी / English) -->
+            <!-- भाषा टॉगल बटन -->
             <div class="flex items-center bg-slate-900 p-1 rounded-xl border border-slate-700">
-                <button id="langHi" onclick="changeLanguage('hi')" class="px-3 py-1.5 rounded-lg font-bold text-xs transition bg-cyan-600 text-white shadow">हिंदी</button>
-                <button id="langEn" onclick="changeLanguage('en')" class="px-3 py-1.5 rounded-lg font-bold text-xs transition text-gray-400 hover:text-white">English</button>
+                <button id="langHi" onclick="switchLanguage('hi')" class="px-3 py-1.5 rounded-lg font-bold text-xs transition bg-cyan-600 text-white shadow">हिंदी</button>
+                <button id="langEn" onclick="switchLanguage('en')" class="px-3 py-1.5 rounded-lg font-bold text-xs transition text-gray-400 hover:text-white">English</button>
             </div>
 
             <!-- वॉयस गाइड बटन -->
-            <button onclick="playVoiceIntroduction()" class="flex items-center gap-1.5 bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-500 hover:to-purple-500 text-white px-3 py-2 rounded-xl font-bold text-xs shadow-lg transition animate-pulse" title="सुने और समझें">
-                🔊 <span id="lblVoiceBtn">वॉयस गाइड</span>
+            <button onclick="playVoiceIntroduction()" class="flex items-center gap-1.5 bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-500 hover:to-purple-500 text-white px-3 py-2 rounded-xl font-bold text-xs shadow-lg transition animate-pulse">
+                🔊 <span data-key="voiceGuide">वॉयस गाइड</span>
             </button>
 
             <!-- लाइट/डार्क मोड -->
@@ -62,144 +61,152 @@
 
             <!-- वॉलेट बटन -->
             <button onclick="openWalletStore()" class="flex items-center gap-1 bg-purple-600 hover:bg-purple-500 text-white px-3 py-2 rounded-xl font-bold text-xs shadow transition">
-                🪙 वॉलेट
+                🪙 <span data-key="walletBtn">वॉलेट</span>
             </button>
 
             <!-- प्रोफाइल बटन -->
             <button onclick="openStudentProfile()" class="flex items-center gap-1 bg-cyan-700 hover:bg-cyan-600 text-white px-3 py-2 rounded-xl font-bold text-xs shadow transition">
-                👤 प्रोफाइल
+                👤 <span data-key="profileBtn">प्रोफाइल</span>
             </button>
+        </div>
+
+        <!-- रनिंग मारकी टिकर (Dynamic Moving Text) -->
+        <div class="w-full bg-purple-950/80 border border-purple-700/50 rounded-xl overflow-hidden py-1.5 mb-4 shadow-inner">
+            <marquee behavior="scroll" direction="left" scrollamount="5" class="text-xs font-bold text-cyan-300 tracking-wide">
+                🌟 <span data-key="marquee1">ध्रुव एकेडमी मास्टर इकोसिस्टम में आपका स्वागत है</span> | 🚀 <span data-key="marquee2">प्रतियोगी परीक्षाओं एवं स्मार्ट लर्निंग के लिए सर्वोच्च AI प्लेटफ़ॉर्म</span> | 🔥 <span data-key="marquee3">Dhruv Academy - Ultimate Smart Learning & AI Ecosystem</span>
+            </marquee>
         </div>
 
         <!-- हेडर बैनर -->
         <div class="text-center mb-6">
-            <span class="inline-block bg-purple-950/90 border border-purple-600 text-purple-300 text-xs px-4 py-1.5 rounded-full font-bold mb-2 shadow-md">
-                ✨ विश्व का सबसे उन्नत AI पावर्ड 11-मॉड्यूल मास्टर इकोसिस्टम
+            <span class="inline-block bg-purple-950/90 border border-purple-600 text-purple-300 text-xs px-4 py-1.5 rounded-full font-bold mb-2 shadow-md" data-key="bannerTag">
+                🎁 प्रतियोगी परीक्षाओं और स्मार्ट छात्रों के लिए विशेष मंच - 10 टोकन मुफ्त!
             </span>
             <h1 class="text-3xl md:text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-pink-400 to-cyan-400 tracking-wide">
-                ध्रुव एकेडमी
+                ध्रुव एकेडमी (Dhruv Academy)
             </h1>
-            <p id="subTitleText" class="text-xs md:text-sm text-slate-400 mt-1">स्मार्ट लर्निंग, लीगल AI, और डिजिटल ऑटोमेशन का सर्वोच्च केंद्र</p>
+            <p class="text-xs md:text-sm text-slate-400 mt-1" data-key="subTitle">प्रतियोगी परीक्षाएं, स्मार्ट लर्निंग और एआई ऑटोमेशन का सर्वोच्च केंद्र</p>
         </div>
 
         <!-- लॉगिन / मोबाइल वेरिफिकेशन सेक्शन -->
         <div id="authSection" class="bg-slate-950/90 border border-slate-800 rounded-2xl p-5 shadow-inner mb-6 max-w-lg mx-auto">
-            <label id="lblUserMobile" class="block text-xs font-bold text-slate-300 mb-2">मोबाइल नंबर दर्ज करें (Enter Mobile Number):</label>
+            <label class="block text-xs font-bold text-slate-300 mb-2" data-key="mobileLabel">मोबाइल नंबर दर्ज करें (Enter Mobile Number):</label>
             <div class="flex flex-col md:flex-row gap-2">
                 <input type="tel" id="userMobileInput" placeholder="10 अंकों का मोबाइल नंबर" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-slate-100 focus:outline-none focus:border-purple-500 shadow-inner">
-                <button id="sendOtpBtn" onclick="verifyStudentLogin()" class="bg-gradient-to-r from-purple-600 to-cyan-600 hover:from-purple-500 hover:to-cyan-500 text-white font-bold text-xs px-5 py-2.5 rounded-xl shadow-lg transition whitespace-nowrap">
+                <button id="sendOtpBtn" onclick="verifyStudentLogin()" class="bg-gradient-to-r from-purple-600 to-cyan-600 hover:from-purple-500 hover:to-cyan-500 text-white font-bold text-xs px-5 py-2.5 rounded-xl shadow-lg transition whitespace-nowrap" data-key="loginBtn">
                     लॉगिन करें और 10 टोकन पाएं 🚀
                 </button>
             </div>
         </div>
 
-        <!-- डैशबोर्ड / सभी 11 मॉड्यूल्स का आधुनिक ग्रिड (लॉगिन के बाद दिखने वाला हिस्सा) -->
+        <!-- डैशबोर्ड / सभी मॉड्यूल्स का आधुनिक ग्रिड -->
         <div id="dashboardSection" class="hidden space-y-6">
             
-            <!-- वेलकम बैनर -->
+            <!-- वेलकम बैनर (बिना नाम के, सीधे मास्टर वॉलेट सक्रिय) -->
             <div class="bg-gradient-to-r from-purple-900/50 via-slate-900 to-cyan-900/50 border border-purple-600/50 rounded-2xl p-4 md:p-5 text-center shadow-lg">
-                <h3 class="text-sm md:text-base font-extrabold text-cyan-300 mb-1">🎉 स्वागत है ध्रुव जी! आपका मास्टर वॉलेट सक्रिय है।</h3>
-                <p class="text-xs md:text-sm text-slate-300">आपके वॉलेट में <span id="dashboardTokenCount" class="font-black text-yellow-400 text-base">10</span> फ्री टोकन सुरक्षित हैं। नीचे हमारे सभी **11 अत्याधुनिक मॉड्यूल्स** में से किसी का भी चयन करें:</p>
+                <h3 class="text-sm md:text-base font-extrabold text-cyan-300 mb-1" data-key="welcomeMsg">✨ स्वागत है! आपका मास्टर वॉलेट सक्रिय है।</h3>
+                <p class="text-xs md:text-sm text-slate-300"><span data-key="walletActiveText">आपके वॉलेट में</span> <span id="dashboardTokenCount" class="font-black text-yellow-400 text-base">10</span> <span data-key="tokensAvailableText">फ्री टोकन सुरक्षित हैं। नीचे दिए गए मॉड्यूल्स का आनंद लें:</span></p>
             </div>
 
-            <!-- सभी 11 मॉड्यूल्स की सूची (सुंदर रेस्पॉन्सिव ग्रिड: मोबाइल पर 2 कॉलम, बड़ी स्क्रीन पर 3 या 4 कॉलम) -->
+            <!-- मॉड्यूल्स ग्रिड (Legal AI सबसे नीचे रखा गया है) -->
             <div>
-                <h4 class="text-xs font-bold text-purple-400 uppercase tracking-wider mb-3 px-1">🚀 सभी 11 मास्टर मॉड्यूल्स (Active Modules):</h4>
+                <h4 class="text-xs font-bold text-purple-400 uppercase tracking-wider mb-3 px-1" data-key="modulesHeading">🚀 सभी सक्रिय मास्टर मॉड्यूल्स (Active Modules):</h4>
                 <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
                     
-                    <!-- मॉड्यूल 1 -->
+                    <!-- 1. AI Core Solver -->
                     <a href="/ai-core" class="group bg-slate-950/80 hover:bg-purple-950/40 border border-slate-800 hover:border-purple-500 p-3.5 rounded-2xl text-center transition-all duration-300 shadow hover:scale-[1.02] block">
                         <div class="text-2xl mb-1 group-hover:scale-110 transition-transform">🤖</div>
-                        <div class="text-xs font-bold text-purple-300">AI Core Solver</div>
-                        <div class="text-[10px] text-slate-500 mt-0.5">स्मार्ट प्रश्न समाधान</div>
+                        <div class="text-xs font-bold text-purple-300" data-key="mod1Title">AI Core Solver</div>
+                        <div class="text-[10px] text-slate-500 mt-0.5" data-key="mod1Desc">स्मार्ट प्रश्न समाधान</div>
                     </a>
 
-                    <!-- मॉड्यूल 2 -->
+                    <!-- 2. Kids Zone -->
                     <a href="/kids-zone" class="group bg-slate-950/80 hover:bg-pink-950/40 border border-slate-800 hover:border-pink-500 p-3.5 rounded-2xl text-center transition-all duration-300 shadow hover:scale-[1.02] block">
                         <div class="text-2xl mb-1 group-hover:scale-110 transition-transform">🎨</div>
-                        <div class="text-xs font-bold text-pink-300">Kids Zone</div>
-                        <div class="text-[10px] text-slate-500 mt-0.5">रचनात्मक शिक्षा</div>
+                        <div class="text-xs font-bold text-pink-300" data-key="mod2Title">Kids Zone</div>
+                        <div class="text-[10px] text-slate-500 mt-0.5" data-key="mod2Desc">रचनात्मक शिक्षा</div>
                     </a>
 
-                    <!-- मॉड्यूल 3 -->
+                    <!-- 3. Digital Library -->
                     <a href="/digital-library" class="group bg-slate-950/80 hover:bg-cyan-950/40 border border-slate-800 hover:border-cyan-500 p-3.5 rounded-2xl text-center transition-all duration-300 shadow hover:scale-[1.02] block">
                         <div class="text-2xl mb-1 group-hover:scale-110 transition-transform">📚</div>
-                        <div class="text-xs font-bold text-cyan-300">Digital Library</div>
-                        <div class="text-[10px] text-slate-500 mt-0.5">ई-बुक्स और नोट्स</div>
+                        <div class="text-xs font-bold text-cyan-300" data-key="mod3Title">Digital Library</div>
+                        <div class="text-[10px] text-slate-500 mt-0.5" data-key="mod3Desc">ई-बुक्स और नोट्स</div>
                     </a>
 
-                    <!-- मॉड्यूल 4 -->
-                    <a href="/legal-ai" class="group bg-slate-950/80 hover:bg-yellow-950/40 border border-slate-800 hover:border-yellow-500 p-3.5 rounded-2xl text-center transition-all duration-300 shadow hover:scale-[1.02] block">
-                        <div class="text-2xl mb-1 group-hover:scale-110 transition-transform">⚖️</div>
-                        <div class="text-xs font-bold text-yellow-300">Legal AI & BNS</div>
-                        <div class="text-[10px] text-slate-500 mt-0.5">भारतीय न्याय संहिता</div>
-                    </a>
-
-                    <!-- मॉड्यूल 5 -->
+                    <!-- 4. Spoken English -->
                     <a href="/spoken-english" class="group bg-slate-950/80 hover:bg-green-950/40 border border-slate-800 hover:border-green-500 p-3.5 rounded-2xl text-center transition-all duration-300 shadow hover:scale-[1.02] block">
                         <div class="text-2xl mb-1 group-hover:scale-110 transition-transform">🗣️</div>
-                        <div class="text-xs font-bold text-green-300">Spoken English</div>
-                        <div class="text-[10px] text-slate-500 mt-0.5">वॉयस लैब और अभ्यास</div>
+                        <div class="text-xs font-bold text-green-300" data-key="mod4Title">Spoken English</div>
+                        <div class="text-[10px] text-slate-500 mt-0.5" data-key="mod4Desc">वॉयस लैब और अभ्यास</div>
                     </a>
 
-                    <!-- मॉड्यूल 6 -->
+                    <!-- 5. Analytics Hub -->
                     <a href="/ai-core" class="group bg-slate-950/80 hover:bg-indigo-950/40 border border-slate-800 hover:border-indigo-500 p-3.5 rounded-2xl text-center transition-all duration-300 shadow hover:scale-[1.02] block">
                         <div class="text-2xl mb-1 group-hover:scale-110 transition-transform">📊</div>
-                        <div class="text-xs font-bold text-indigo-300">Analytics Hub</div>
-                        <div class="text-[10px] text-slate-500 mt-0.5">क्रेडिट और रिपोर्ट</div>
+                        <div class="text-xs font-bold text-indigo-300" data-key="mod5Title">Analytics Hub</div>
+                        <div class="text-[10px] text-slate-500 mt-0.5" data-key="mod5Desc">क्रेडिट और रिपोर्ट</div>
                     </a>
 
-                    <!-- मॉड्यूल 7 -->
+                    <!-- 6. Auto Publicity -->
                     <a href="/ai-core" class="group bg-slate-950/80 hover:bg-blue-950/40 border border-slate-800 hover:border-blue-500 p-3.5 rounded-2xl text-center transition-all duration-300 shadow hover:scale-[1.02] block">
                         <div class="text-2xl mb-1 group-hover:scale-110 transition-transform">🌐</div>
-                        <div class="text-xs font-bold text-blue-300">Auto Publicity</div>
-                        <div class="text-[10px] text-slate-500 mt-0.5">सोशल मीडिया सिंक</div>
+                        <div class="text-xs font-bold text-blue-300" data-key="mod6Title">Auto Publicity</div>
+                        <div class="text-[10px] text-slate-500 mt-0.5" data-key="mod6Desc">सोशल मीडिया सिंक</div>
                     </a>
 
-                    <!-- मॉड्यूल 8 -->
+                    <!-- 7. Audit & Monogram -->
                     <a href="/ai-core" class="group bg-slate-950/80 hover:bg-orange-950/40 border border-slate-800 hover:border-orange-500 p-3.5 rounded-2xl text-center transition-all duration-300 shadow hover:scale-[1.02] block">
                         <div class="text-2xl mb-1 group-hover:scale-110 transition-transform">🛡️</div>
-                        <div class="text-xs font-bold text-orange-300">Audit & Monogram</div>
-                        <div class="text-[10px] text-slate-500 mt-0.5">डिजिटल प्रूफ ट्रेल</div>
+                        <div class="text-xs font-bold text-orange-300" data-key="mod7Title">Audit & Monogram</div>
+                        <div class="text-[10px] text-slate-500 mt-0.5" data-key="mod7Desc">डिजिटल प्रूफ ट्रेल</div>
                     </a>
 
-                    <!-- मॉड्यूल 9 -->
+                    <!-- 8. Paywall & Wallet -->
                     <a href="/ai-core" class="group bg-slate-950/80 hover:bg-teal-950/40 border border-slate-800 hover:border-teal-500 p-3.5 rounded-2xl text-center transition-all duration-300 shadow hover:scale-[1.02] block">
                         <div class="text-2xl mb-1 group-hover:scale-110 transition-transform">💳</div>
-                        <div class="text-xs font-bold text-teal-300">Paywall & Wallet</div>
-                        <div class="text-[10px] text-slate-500 mt-0.5">सुरक्षित भुगतान गेटवे</div>
+                        <div class="text-xs font-bold text-teal-300" data-key="mod8Title">Paywall & Wallet</div>
+                        <div class="text-[10px] text-slate-500 mt-0.5" data-key="mod8Desc">सुरक्षित भुगतान गेटवे</div>
                     </a>
 
-                    <!-- मॉड्यूल 10 -->
+                    <!-- 9. Super Admin Panel -->
                     <a href="/ai-core" class="group bg-slate-950/80 hover:bg-rose-950/40 border border-slate-800 hover:border-rose-500 p-3.5 rounded-2xl text-center transition-all duration-300 shadow hover:scale-[1.02] block">
                         <div class="text-2xl mb-1 group-hover:scale-110 transition-transform">⚙️</div>
-                        <div class="text-xs font-bold text-rose-300">Super Admin Panel</div>
-                        <div class="text-[10px] text-slate-500 mt-0.5">नियंत्रण और मॉनिटर</div>
+                        <div class="text-xs font-bold text-rose-300" data-key="mod9Title">Super Admin Panel</div>
+                        <div class="text-[10px] text-slate-500 mt-0.5" data-key="mod9Desc">नियंत्रण और मॉनिटर</div>
                     </a>
 
-                    <!-- मॉड्यूल 11 -->
-                    <a href="/ai-core" class="group bg-slate-950/80 hover:bg-violet-950/40 border border-slate-800 hover:border-violet-500 p-3.5 rounded-2xl text-center transition-all duration-300 shadow hover:scale-[1.02] block col-span-2 md:col-span-1">
+                    <!-- 10. Neural Core AI -->
+                    <a href="/ai-core" class="group bg-slate-950/80 hover:bg-violet-950/40 border border-slate-800 hover:border-violet-500 p-3.5 rounded-2xl text-center transition-all duration-300 shadow hover:scale-[1.02] block">
                         <div class="text-2xl mb-1 group-hover:scale-110 transition-transform">⚡</div>
-                        <div class="text-xs font-bold text-violet-300">Neural Core AI</div>
-                        <div class="text-[10px] text-slate-500 mt-0.5">जेमिनी इंजन सपोर्ट</div>
+                        <div class="text-xs font-bold text-violet-300" data-key="mod10Title">Neural Core AI</div>
+                        <div class="text-[10px] text-slate-500 mt-0.5" data-key="mod10Desc">जेमिनी इंजन सपोर्ट</div>
+                    </a>
+
+                    <!-- 11. Legal AI & BNS (सबसे नीचे रखा गया है) -->
+                    <a href="/legal-ai" class="group bg-slate-950/80 hover:bg-yellow-950/40 border border-slate-800 hover:border-yellow-500 p-3.5 rounded-2xl text-center transition-all duration-300 shadow hover:scale-[1.02] block col-span-2 md:col-span-2">
+                        <div class="text-2xl mb-1 group-hover:scale-110 transition-transform">⚖️</div>
+                        <div class="text-xs font-bold text-yellow-300" data-key="mod11Title">Legal AI & BNS (Restricted)</div>
+                        <div class="text-[10px] text-slate-500 mt-0.5" data-key="mod11Desc">भारतीय न्याय संहिता एवं विधिक एआई</div>
                     </a>
 
                 </div>
             </div>
 
-            <!-- त्वरित एक्शन बटन्स -->
+            <!-- सुव्यवस्थित एक्शन बटन्स -->
             <div class="flex flex-col md:flex-row gap-3 pt-2">
-                <button onclick="openWalletStore()" class="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold py-3 rounded-xl text-xs md:text-sm transition shadow-lg">
+                <button onclick="openWalletStore()" class="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold py-3 rounded-xl text-xs md:text-sm transition shadow-lg" data-key="rechargeStoreBtn">
                     🪙 टोकन रीचार्ज स्टोर खोलें
                 </button>
-                <button onclick="openStudentProfile()" class="w-full bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold py-3 rounded-xl text-xs md:text-sm transition border border-slate-700 shadow">
+                <button onclick="openStudentProfile()" class="w-full bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold py-3 rounded-xl text-xs md:text-sm transition border border-slate-700 shadow" data-key="profileAnalysisBtn">
                     👤 छात्र प्रोफाइल और क्रेडिट एनालिसिस
                 </button>
             </div>
 
-            <div class="text-center pt-2">
-                <button onclick="userLogout()" class="text-xs text-red-400 hover:text-red-300 underline font-semibold">
-                    लॉग आउट करें (Logout)
+            <!-- छोटा और सुंदर लॉगआउट बटन -->
+            <div class="text-center pt-3">
+                <button onclick="userLogout()" class="bg-red-950/40 border border-red-800/60 hover:bg-red-900/60 text-red-300 px-4 py-1.5 rounded-xl text-xs font-bold transition shadow" data-key="logoutBtn">
+                    🚪 लॉग आउट (Logout)
                 </button>
             </div>
         </div>
@@ -209,43 +216,120 @@
     <!-- वॉलेट स्टोर पॉपअप मॉडल -->
     <div id="walletModal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 z-50">
         <div class="bg-slate-900 border border-purple-600 rounded-3xl p-6 max-w-sm w-full shadow-2xl animate-float">
-            <h3 class="text-lg font-black text-purple-400 mb-2">🪙 कमर्शियल वॉलेट स्टोर</h3>
-            <p class="text-xs text-slate-300 mb-4">अपने अध्ययन को निरंतर रखने के लिए टोकन पैक चुनें:</p>
+            <h3 class="text-lg font-black text-purple-400 mb-2" data-key="walletModalTitle">🪙 कमर्शियल वॉलेट स्टोर</h3>
+            <p class="text-xs text-slate-300 mb-4" data-key="walletModalSub">अपने अध्ययन को निरंतर रखने के लिए टोकन पैक चुनें:</p>
             
             <div class="space-y-3 mb-4">
                 <div onclick="buyTokens(50, 99)" class="bg-slate-800 border border-purple-500/50 hover:border-purple-400 p-3.5 rounded-xl cursor-pointer flex justify-between items-center transition shadow">
                     <div>
                         <div class="font-bold text-sm text-yellow-300">⚡ 50 टोकन पैक</div>
-                        <div class="text-xs text-slate-400">बुनियादी उपयोग के लिए</div>
+                        <div class="text-xs text-slate-400" data-key="pack1Desc">बुनियादी उपयोग के लिए</div>
                     </div>
                     <div class="bg-purple-600 text-white px-3.5 py-1.5 rounded-lg text-xs font-bold shadow">₹99</div>
                 </div>
                 <div onclick="buyTokens(200, 249)" class="bg-slate-800 border border-purple-500/50 hover:border-purple-400 p-3.5 rounded-xl cursor-pointer flex justify-between items-center transition shadow">
                     <div>
                         <div class="font-bold text-sm text-yellow-300">🚀 200 टोकन पैक (Best Value)</div>
-                        <div class="text-xs text-slate-400">प्रीमियम AI और लीगल मॉड्यूल्स</div>
+                        <div class="text-xs text-slate-400" data-key="pack2Desc">प्रीमियम AI और प्रतियोगी परीक्षा टूल्स</div>
                     </div>
                     <div class="bg-purple-600 text-white px-3.5 py-1.5 rounded-lg text-xs font-bold shadow">₹249</div>
                 </div>
             </div>
 
-            <button onclick="closeWalletStore()" class="w-full bg-slate-800 hover:bg-slate-700 text-slate-300 py-2.5 rounded-xl text-xs font-bold transition">
+            <button onclick="closeWalletStore()" class="w-full bg-slate-800 hover:bg-slate-700 text-slate-300 py-2.5 rounded-xl text-xs font-bold transition" data-key="closeBtn">
                 बंद करें
             </button>
         </div>
     </div>
 
-    <!-- फुटर -->
+    <!-- फुटर (गुप्त एडमिन डॉट के साथ पूरी तरह सुरक्षित) -->
     <footer class="w-full text-center text-xs text-slate-500 mt-6">
-        <p>© 2026 Dhruv Academy Master Ecosystem. सर्वाधिकार सुरक्षित।</p>
-        <a href="/secret-admin-login-dhruv" class="opacity-30 hover:opacity-100 text-cyan-400 transition text-[11px]" title="एडमिन गेटवे">🔐 System Gateway & Audit Log</a>
+        <p>© 2026 Dhruv Academy Master Ecosystem. सर्वाधिकार सुरक्षित। आधार कार्ड एवं डेटा सुरक्षित।</p>
+        <div class="mt-1">
+            <a href="/secret-admin-login-dhruv" class="text-slate-700 hover:text-slate-400 transition text-xs select-none" title="System Gateway">•</a>
+        </div>
     </footer>
 
-    <!-- जावास्क्रिप्ट लॉजिक -->
+    <!-- पूर्ण बाइलिंगुअल और ओपन टेक्नोलॉजी जावास्क्रिप्ट लॉजिक -->
     <script>
         let currentLang = 'hi';
         let userTokens = parseInt(localStorage.getItem("user_tokens")) || 10;
         let currentTheme = 'dark';
+
+        const translations = {
+            hi: {
+                tokensText: "टोकन्स",
+                voiceGuide: "वॉयस गाइड",
+                walletBtn: "वॉलेट",
+                profileBtn: "प्रोफाइल",
+                marquee1: "ध्रुव एकेडमी मास्टर इकोसिस्टम में आपका स्वागत है",
+                marquee2: "प्रतियोगी परीक्षाओं एवं स्मार्ट लर्निंग के लिए सर्वोच्च AI प्लेटफ़ॉर्म",
+                marquee3: "Dhruv Academy - Ultimate Smart Learning & AI Ecosystem",
+                bannerTag: "🎁 प्रतियोगी परीक्षाओं और स्मार्ट छात्रों के लिए विशेष मंच - 10 टोकन मुफ्त!",
+                subTitle: "प्रतियोगी परीक्षाएं, स्मार्ट लर्निंग और एआई ऑटोमेशन का सर्वोच्च केंद्र",
+                mobileLabel: "मोबाइल नंबर दर्ज करें (Enter Mobile Number):",
+                loginBtn: "लॉगिन करें और 10 टोकन पाएं 🚀",
+                welcomeMsg: "✨ स्वागत है! आपका मास्टर वॉलेट सक्रिय है।",
+                walletActiveText: "आपके वॉलेट में",
+                tokensAvailableText: "फ्री टोकन सुरक्षित हैं। नीचे दिए गए मॉड्यूल्स का आनंद लें:",
+                modulesHeading: "🚀 सभी सक्रिय मास्टर मॉड्यूल्स (Active Modules):",
+                mod1Title: "AI Core Solver", mod1Desc: "स्मार्ट प्रश्न समाधान",
+                mod2Title: "Kids Zone", mod2Desc: "रचनात्मक शिक्षा",
+                mod3Title: "Digital Library", mod3Desc: "ई-बुक्स और नोट्स",
+                mod4Title: "Spoken English", mod4Desc: "वॉयस लैब और अभ्यास",
+                mod5Title: "Analytics Hub", mod5Desc: "क्रेडिट और रिपोर्ट",
+                mod6Title: "Auto Publicity", mod6Desc: "सोशल मीडिया सिंक",
+                mod7Title: "Audit & Monogram", mod7Desc: "डिजिटल प्रूफ ट्रेल",
+                mod8Title: "Paywall & Wallet", mod8Desc: "सुरक्षित भुगतान गेटवे",
+                mod9Title: "Super Admin Panel", mod9Desc: "नियंत्रण और मॉनिटर",
+                mod10Title: "Neural Core AI", mod10Desc: "जेमिनी इंजन सपोर्ट",
+                mod11Title: "Legal AI & BNS (Restricted)", mod11Desc: "भारतीय न्याय संहिता एवं विधिक एआई",
+                rechargeStoreBtn: "🪙 टोकन रीचार्ज स्टोर खोलें",
+                profileAnalysisBtn: "👤 छात्र प्रोफाइल और क्रेडिट एनालिसिस",
+                logoutBtn: "🚪 लॉग आउट (Logout)",
+                walletModalTitle: "🪙 कमर्शियल वॉलेट स्टोर",
+                walletModalSub: "अपने अध्ययन को निरंतर रखने के लिए टोकन पैक चुनें:",
+                pack1Desc: "बुनियादी उपयोग के लिए",
+                pack2Desc: "प्रीमियम AI और प्रतियोगी परीक्षा टूल्स",
+                closeBtn: "बंद करें"
+            },
+            en: {
+                tokensText: "Tokens",
+                voiceGuide: "Voice Guide",
+                walletBtn: "Wallet",
+                profileBtn: "Profile",
+                marquee1: "Welcome to Dhruv Academy Master Ecosystem",
+                marquee2: "The Ultimate AI Platform for Competitive Exams & Smart Learning",
+                marquee3: "Dhruv Academy - Ultimate Smart Learning & AI Ecosystem",
+                bannerTag: "🎁 Special Platform for Competitive Exams & Smart Students - 10 Free Tokens!",
+                subTitle: "The Ultimate Hub for Competitive Exams, Smart Learning & AI Automation",
+                mobileLabel: "Enter Mobile Number:",
+                loginBtn: "Login & Get 10 Tokens 🚀",
+                welcomeMsg: "✨ Welcome! Your Master Wallet is Active.",
+                walletActiveText: "You have",
+                tokensAvailableText: "free tokens safe in your wallet. Explore modules below:",
+                modulesHeading: "🚀 All Active Master Modules:",
+                mod1Title: "AI Core Solver", mod1Desc: "Smart Question Solver",
+                mod2Title: "Kids Zone", mod2Desc: "Creative Education",
+                mod3Title: "Digital Library", mod3Desc: "E-Books & Notes",
+                mod4Title: "Spoken English", mod4Desc: "Voice Lab & Practice",
+                mod5Title: "Analytics Hub", mod5Desc: "Credit & Reports",
+                mod6Title: "Auto Publicity", mod6Desc: "Social Media Sync",
+                mod7Title: "Audit & Monogram", mod7Desc: "Digital Proof Trail",
+                mod8Title: "Paywall & Wallet", mod8Desc: "Secure Payment Gateway",
+                mod9Title: "Super Admin Panel", mod9Desc: "Control & Monitor",
+                mod10Title: "Neural Core AI", mod10Desc: "Gemini Engine Support",
+                mod11Title: "Legal AI & BNS (Restricted)", mod11Desc: "Indian Justice Code & Legal AI",
+                rechargeStoreBtn: "🪙 Open Token Recharge Store",
+                profileAnalysisBtn: "👤 Student Profile & Credit Analytics",
+                logoutBtn: "🚪 Logout",
+                walletModalTitle: "🪙 Commercial Wallet Store",
+                walletModalSub: "Choose a token pack to keep your learning uninterrupted:",
+                pack1Desc: "For basic usage",
+                pack2Desc: "Premium AI & Competitive Exam Tools",
+                closeBtn: "Close"
+            }
+        };
 
         window.addEventListener('DOMContentLoaded', () => {
             const savedMobile = localStorage.getItem("user_mobile");
@@ -261,45 +345,31 @@
             document.getElementById('dashboardTokenCount').innerText = userTokens;
         }
 
-        function changeLanguage(lang) {
+        function switchLanguage(lang) {
             currentLang = lang;
             const btnHi = document.getElementById('langHi');
             const btnEn = document.getElementById('langEn');
-            const voiceBtnText = document.getElementById('lblVoiceBtn');
             
             if(lang === 'hi') {
-                if(btnHi) btnHi.className = "px-3 py-1.5 rounded-lg font-bold text-xs transition bg-cyan-600 text-white shadow";
-                if(btnEn) btnEn.className = "px-3 py-1.5 rounded-lg font-bold text-xs transition text-gray-400 hover:text-white";
-                if(voiceBtnText) voiceBtnText.innerText = "वॉयस गाइड";
-                
-                let lblMobile = document.getElementById('lblUserMobile');
-                if(lblMobile) lblMobile.innerText = "मोबाइल नंबर दर्ज करें (Enter Mobile Number):";
-                
-                let sendOtpBtn = document.getElementById('sendOtpBtn');
-                if(sendOtpBtn) sendOtpBtn.innerText = "लॉगिन करें और 10 टोकन पाएं 🚀";
-                
-                let subTitle = document.getElementById('subTitleText');
-                if(subTitle) subTitle.innerText = "स्मार्ट लर्निंग, लीगल AI, और डिजिटल ऑटोमेशन का सर्वोच्च केंद्र";
+                btnHi.className = "px-3 py-1.5 rounded-lg font-bold text-xs transition bg-cyan-600 text-white shadow";
+                btnEn.className = "px-3 py-1.5 rounded-lg font-bold text-xs transition text-gray-400 hover:text-white";
             } else {
-                if(btnEn) btnEn.className = "px-3 py-1.5 rounded-lg font-bold text-xs transition bg-cyan-600 text-white shadow";
-                if(btnHi) btnHi.className = "px-3 py-1.5 rounded-lg font-bold text-xs transition text-gray-400 hover:text-white";
-                if(voiceBtnText) voiceBtnText.innerText = "Voice Guide";
-                
-                let lblMobile = document.getElementById('lblUserMobile');
-                if(lblMobile) lblMobile.innerText = "Enter Mobile Number:";
-                
-                let sendOtpBtn = document.getElementById('sendOtpBtn');
-                if(sendOtpBtn) sendOtpBtn.innerText = "Login & Get 10 Tokens 🚀";
-                
-                let subTitle = document.getElementById('subTitleText');
-                if(subTitle) subTitle.innerText = "The Ultimate Hub for Smart Learning, Legal AI & Automation";
+                btnEn.className = "px-3 py-1.5 rounded-lg font-bold text-xs transition bg-cyan-600 text-white shadow";
+                btnHi.className = "px-3 py-1.5 rounded-lg font-bold text-xs transition text-gray-400 hover:text-white";
             }
+
+            document.querySelectorAll('[data-key]').forEach(el => {
+                const key = el.getAttribute('data-key');
+                if(translations[lang][key]) {
+                    el.innerText = translations[lang][key];
+                }
+            });
         }
 
         function playVoiceIntroduction() {
             let msg = currentLang === 'hi' 
-                ? "नमस्ते! ध्रुव एकेडमी मास्टर इकोसिस्टम में आपका स्वागत है। यहाँ सभी 11 अत्याधुनिक मॉड्यूल्स, लीगल एआई और स्पोकन इंग्लिश सक्रिय हैं। आपके पास 10 फ्री टोकन उपलब्ध हैं।"
-                : "Hello! Welcome to Dhruv Academy Master Ecosystem. All 11 advanced modules, Legal AI, and Spoken English are active. You have 10 free tokens available.";
+                ? "नमस्ते! ध्रुव एकेडमी मास्टर इकोसिस्टम में आपका स्वागत है। यह प्रतियोगी परीक्षाओं और स्मार्ट लर्निंग का सर्वोच्च केंद्र है। आपके पास 10 फ्री टोकन उपलब्ध हैं।"
+                : "Hello! Welcome to Dhruv Academy Master Ecosystem. This is the ultimate hub for competitive exams and smart learning. You have 10 free tokens available.";
             
             if(window.speechSynthesis) {
                 let speech = new SpeechSynthesisUtterance(msg);
