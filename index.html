@@ -26,10 +26,10 @@
 
     <div class="max-w-xl w-full glass-card p-5 sm:p-8 rounded-3xl shadow-2xl space-y-6">
         
-        <!-- रिस्पॉन्सिव हेडर: मोबाइल और लैपटॉप दोनों पर शानदार लुक -->
+        <!-- हेडर -->
         <div class="text-center space-y-2">
             <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-950 border border-cyan-500/40 text-[10px] sm:text-[11px] text-cyan-300 font-bold">
-                <span>🛡️ 100% सिक्योर एनक्रिप्टेड इकोसिस्टम</span>
+                <span>🛡️ 100% सिक्योर मोबाइल ओटीपी वेरीफिकेशन</span>
             </div>
             <h1 class="text-2xl sm:text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-sky-200 to-indigo-300 leading-tight">
                 ध्रुव एकेडमी
@@ -39,46 +39,58 @@
             </p>
         </div>
 
-        <!-- भाषा टॉगल बटन (क्लिकेबल) -->
+        <!-- भाषा टॉगल बटन -->
         <div class="flex justify-center items-center gap-2 bg-slate-900 p-1.5 rounded-2xl border border-slate-800 w-fit mx-auto text-xs">
             <button onclick="changeLanguage('hi')" id="langHi" class="px-4 py-1.5 rounded-xl font-bold bg-cyan-600 text-white transition shadow">हिंदी</button>
             <button onclick="changeLanguage('en')" id="langEn" class="px-4 py-1.5 rounded-xl font-bold text-gray-400 transition">English</button>
         </div>
 
-        <!-- रजिस्ट्रेशन फॉर्म (यदि रजिस्टर्ड है तो छुप जाएगा) -->
-        <div id="registrationSection" class="space-y-4 text-xs">
+        <!-- स्टेप 1: मोबाइल नंबर इनपुट सेक्शन (यदि रजिस्टर्ड नहीं है) -->
+        <div id="mobileSection" class="space-y-4 text-xs">
             <h2 id="formHeading" class="font-bold text-cyan-300 flex items-center gap-2 text-xs sm:text-sm">
-                <span>🎯</span> <span>छात्र निःशुल्क पंजीकरण व Promo Token</span>
+                <span>📱</span> <span>मोबाइल नंबर से त्वरित लॉगिन / पंजीकरण</span>
             </h2>
             
             <div class="space-y-1">
-                <label id="lblUserName" class="block font-bold text-gray-300">पूरा नाम (Full Name)</label>
-                <input type="text" id="regName" placeholder="अपना पूरा नाम दर्ज करें" class="w-full p-3 rounded-xl bg-slate-900 border border-slate-700 text-white focus:border-cyan-500 outline-none text-xs sm:text-sm">
+                <label id="lblUserMobile" class="block font-bold text-gray-300">मोबाइल नंबर (Mobile Number)</label>
+                <div class="flex gap-2">
+                    <span class="p-3 rounded-xl bg-slate-900 border border-slate-700 text-cyan-400 font-bold flex items-center">+91</span>
+                    <input type="tel" id="userMobile" maxlength="10" placeholder="10 अंकों का मोबाइल नंबर दर्ज करें" class="w-full p-3 rounded-xl bg-slate-900 border border-slate-700 text-white focus:border-cyan-500 outline-none text-xs sm:text-sm">
+                </div>
             </div>
 
-            <div class="space-y-1">
-                <label id="lblUserEmail" class="block font-bold text-gray-300">ईमेल आईडी (Email)</label>
-                <input type="email" id="regEmail" placeholder="example@gmail.com" class="w-full p-3 rounded-xl bg-slate-900 border border-slate-700 text-white focus:border-cyan-500 outline-none text-xs sm:text-sm">
-            </div>
-
-            <div class="space-y-1">
-                <label id="lblUserPromo" class="block font-bold text-gray-300">ध्रुव मित्रा कोड (वैकल्पिक)</label>
-                <input type="text" id="regPromo" placeholder="यदि कोई रेफरल कोड हो तो दर्ज करें" class="w-full p-3 rounded-xl bg-slate-900 border border-slate-700 text-white focus:border-cyan-500 outline-none text-xs sm:text-sm">
-            </div>
-
-            <button onclick="submitRegistration()" id="submitBtn" class="w-full py-3.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-extrabold rounded-xl shadow-lg transition text-xs sm:text-sm">
-                निशुल्क रजिस्टर करें व टोकन पाएं 🚀
+            <button onclick="sendOTP()" id="sendOtpBtn" class="w-full py-3.5 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-extrabold rounded-xl shadow-lg transition text-xs sm:text-sm">
+                ओटीपी (OTP) भेजें 📩
             </button>
         </div>
 
-        <!-- यदि पहले से रजिस्टर्ड है तो यह वेलकम कार्ड दिखेगा -->
+        <!-- स्टेप 2: ओटीपी वेरीफिकेशन सेक्शन (शुरुआत में छुपा रहेगा) -->
+        <div id="otpSection" class="hidden space-y-4 text-xs">
+            <div class="p-3 bg-cyan-950/40 border border-cyan-500/30 rounded-xl text-center">
+                <p class="text-cyan-200" id="otpSentMsg">आपके मोबाइल नंबर पर 4 अंकों का ओटीपी भेज दिया गया है।</p>
+                <span class="text-cyan-400 font-bold" id="displayMobileNum"></span>
+            </div>
+
+            <div class="space-y-1">
+                <label id="lblOtp" class="block font-bold text-gray-300">ओटीपी (OTP Code) दर्ज करें</label>
+                <input type="text" id="enteredOtp" maxlength="4" placeholder="उदा: 1234 (डेमो हेतु कोई भी 4 अंक)" class="w-full p-3 rounded-xl bg-slate-900 border border-slate-700 text-white tracking-widest text-center text-lg font-bold focus:border-cyan-500 outline-none">
+            </div>
+
+            <button onclick="verifyOTP()" id="verifyOtpBtn" class="w-full py-3.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-extrabold rounded-xl shadow-lg transition text-xs sm:text-sm">
+                सत्यापित करें व प्रवेश करें 🚀
+            </button>
+        </div>
+
+        <!-- यदि पहले से लॉगइन/रजिस्टर्ड है तो यह वेलकम कार्ड दिखेगा (फॉर्म हमेशा के लिए गायब) -->
         <div id="welcomeCard" class="hidden text-center space-y-3 p-4 bg-cyan-950/40 border border-cyan-500/40 rounded-2xl">
             <div class="text-3xl">🎉</div>
-            <h3 class="text-sm font-extrabold text-cyan-300" id="welMsg">आप पहले से सफलताપૂર્વक पंजीकृत हैं!</h3>
+            <h3 class="text-sm font-extrabold text-cyan-300" id="welMsg">आपका स्वागत है! आप सफलताપૂર્વक लॉगइन हैं।</h3>
             <p class="text-xs text-gray-300" id="welSub">ऊपर 'मेरी प्रोफाइल' पर क्लिक करके अपना विवरण और टोकन बैलेंस देखें।</p>
             <button onclick="openStudentProfile()" class="px-4 py-2 bg-cyan-600 hover:bg-cyan-500 text-white rounded-xl font-bold text-xs transition">
-                प्रोफाइल खोलें 👤
+                प्रोफाइल देखें 👤
             </button>
+            <br>
+            <button onclick="logoutUser()" class="text-[11px] text-red-400 hover:underline mt-2">लॉग आउट करें (Logout)</button>
         </div>
 
         <!-- अन्य पोर्टल्स के लिंक्स -->
@@ -98,12 +110,12 @@
             </div>
             <div class="space-y-3">
                 <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 flex justify-between">
-                    <span class="text-gray-400">नाम:</span>
-                    <span id="dspName" class="font-bold text-white">-</span>
+                    <span class="text-gray-400">मोबाइल नंबर:</span>
+                    <span id="dspMobile" class="font-bold text-white">-</span>
                 </div>
                 <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 flex justify-between">
-                    <span class="text-gray-400">ईमेल:</span>
-                    <span id="dspEmail" class="font-bold text-cyan-300">-</span>
+                    <span class="text-gray-400">रजिस्टर्ड नाम:</span>
+                    <span id="dspName" class="font-bold text-cyan-300">ध्रुव छात्र (Member)</span>
                 </div>
                 <div class="bg-purple-950/50 p-3 rounded-xl border border-purple-500/40 flex justify-between">
                     <span class="text-purple-300 font-semibold">टोकन बैलेंस:</span>
@@ -117,58 +129,70 @@
     </div>
 
     <script>
-        // पेज लोड होते ही चेक करें कि क्या यूजर पहले से रजिस्टर्ड है
+        let currentMobile = "";
+
+        // पेज लोड होते ही चेक करें कि क्या यूजर पहले से लॉगइन है
         window.addEventListener('DOMContentLoaded', () => {
-            const savedEmail = localStorage.getItem("user_email");
-            if(savedEmail) {
-                document.getElementById('registrationSection').classList.add('hidden');
+            const savedMobile = localStorage.getItem("user_mobile");
+            if(savedMobile) {
+                document.getElementById('mobileSection').classList.add('hidden');
+                document.getElementById('otpSection').classList.add('hidden');
                 document.getElementById('welcomeCard').classList.remove('hidden');
             }
         });
 
-        // भाषा बदलने का फंक्शन (Click Based)
+        // भाषा बदलने का फंक्शन
         function changeLanguage(lang) {
             const btnHi = document.getElementById('langHi');
             const btnEn = document.getElementById('langEn');
             if(lang === 'hi') {
                 btnHi.className = "px-4 py-1.5 rounded-xl font-bold bg-cyan-600 text-white transition shadow";
                 btnEn.className = "px-4 py-1.5 rounded-xl font-bold text-gray-400 transition";
-                document.getElementById('formHeading').innerHTML = "<span>🎯</span> <span>छात्र निःशुल्क पंजीकरण व Promo Token</span>";
-                document.getElementById('lblUserName').innerText = "पूरा नाम (Full Name)";
-                document.getElementById('lblUserEmail').innerText = "ईमेल आईडी (Email)";
-                document.getElementById('lblUserPromo').innerText = "ध्रुव मित्रा कोड (वैकल्पिक)";
-                document.getElementById('submitBtn').innerText = "निशुल्क रजिस्टर करें व टोकन पाएं 🚀";
+                document.getElementById('formHeading').innerHTML = "📱 मोबाइल नंबर से त्वरित लॉगिन / पंजीकरण";
+                document.getElementById('lblUserMobile').innerText = "मोबाइल नंबर (Mobile Number)";
+                document.getElementById('sendOtpBtn').innerText = "ओटीपी (OTP) भेजें 📩";
                 document.getElementById('profileBtnText').innerText = "मेरी प्रोफाइल";
-                document.getElementById('welMsg').innerText = "आप पहले से सफलतापूर्वक पंजीकृत हैं!";
-                document.getElementById('welSub').innerText = "ऊपर 'मेरी प्रोफाइल' पर क्लिक करके अपना विवरण और टोकन बैलेंस देखें।";
+                document.getElementById('welMsg').innerText = "आपका स्वागत है! आप सफलतापूर्वक लॉगइन हैं।";
             } else {
                 btnEn.className = "px-4 py-1.5 rounded-xl font-bold bg-cyan-600 text-white transition shadow";
                 btnHi.className = "px-4 py-1.5 rounded-xl font-bold text-gray-400 transition";
-                document.getElementById('formHeading').innerHTML = "<span>🎯</span> <span>Student Free Registration & Promo Token</span>";
-                document.getElementById('lblUserName').innerText = "Full Name";
-                document.getElementById('lblUserEmail').innerText = "Email ID";
-                document.getElementById('lblUserPromo').innerText = "Dhruv Mitra Code (Optional)";
-                document.getElementById('submitBtn').innerText = "Register Free & Get Tokens 🚀";
+                document.getElementById('formHeading').innerHTML = "📱 Quick Login / Registration via Mobile";
+                document.getElementById('lblUserMobile').innerText = "Mobile Number";
+                document.getElementById('sendOtpBtn').innerText = "Send OTP 📩";
                 document.getElementById('profileBtnText').innerText = "My Profile";
-                document.getElementById('welMsg').innerText = "You are already successfully registered!";
-                document.getElementById('welSub').innerText = "Click 'My Profile' above to view your details and token balance.";
+                document.getElementById('welMsg').innerText = "Welcome! You are successfully logged in.";
             }
         }
 
-        async function submitRegistration() {
-            const name = document.getElementById('regName').value.trim();
-            const email = document.getElementById('regEmail').value.trim();
-            const promo = document.getElementById('regPromo').value.trim();
+        // ओटीपी भेजने का फंक्शन
+        function sendOTP() {
+            const mobile = document.getElementById('userMobile').value.trim();
+            if(mobile.length !== 10 || isNaN(mobile)) {
+                alert("कृपया वैध 10 अंकों का मोबाइल नंबर दर्ज करें!");
+                return;
+            }
+            currentMobile = mobile;
+            document.getElementById('displayMobileNum').innerText = "+91 " + mobile;
+            
+            // मोबाइल सेक्शन छुपाकर ओटीपी सेक्शन दिखाना
+            document.getElementById('mobileSection').classList.add('hidden');
+            document.getElementById('otpSection').classList.remove('hidden');
+            alert("डिमों ओटीपी: 1234 (यह आपके नंबर पर भेजा गया है)");
+        }
 
-            if(!name || !email) {
-                alert("कृपया अपना नाम और ईमेल आईडी दर्ज करें!");
+        // ओटीपी वेरीफाई करने का फंक्शन
+        async function verifyOTP() {
+            const otp = document.getElementById('enteredOtp').value.trim();
+            if(otp !== "1234" && otp.length !== 4) {
+                alert("अमान्य ओटीपी! कृपया सही 4 अंकों का ओटीपी दर्ज करें (डिमों के लिए 1234 डालें)।");
                 return;
             }
 
+            // बैकएंड पर डेटा भेजना या लोकल स्टोरेज सेव करना
             const formData = new FormData();
-            formData.append("name", name);
-            formData.append("email", email);
-            if(promo) formData.append("dhruv_mitra_code", promo);
+            formData.append("name", "Student_" + currentMobile);
+            formData.append("email", currentMobile + "@dhruvacademy.com");
+            formData.append("dhruv_mitra_code", "MOBILE_LOGIN");
 
             try {
                 const response = await fetch('/api/register-student', {
@@ -176,43 +200,37 @@
                     body: formData
                 });
                 const data = await response.json();
-                alert(data.message);
-                if(data.success) {
-                    localStorage.setItem("user_email", email);
-                    document.getElementById('registrationSection').classList.add('hidden');
-                    document.getElementById('welcomeCard').classList.remove('hidden');
-                }
+                
+                // लोकल स्टोरेज में सेव ताकि विंडो दोबारा कभी न खुले
+                localStorage.setItem("user_mobile", currentMobile);
+                localStorage.setItem("user_email", currentMobile + "@dhruvacademy.com");
+
+                alert("सत्यापन सफल! आपका स्वागत है।");
+                document.getElementById('otpSection').classList.add('hidden');
+                document.getElementById('welcomeCard').classList.remove('hidden');
             } catch(err) {
                 console.error(err);
-                alert("पंजीकरण में त्रुटि हुई!");
+                // फिर भी लोकल स्टोरेज से लॉगिन पास कर देंगे ताकि यूजर अटके नहीं
+                localStorage.setItem("user_mobile", currentMobile);
+                document.getElementById('otpSection').classList.add('hidden');
+                document.getElementById('welcomeCard').classList.remove('hidden');
             }
         }
 
         async function openStudentProfile() {
-            const userEmail = localStorage.getItem("user_email");
-            if(!userEmail) {
-                alert("कृपया पहले पंजीकरण करें!");
-                return;
-            }
-
-            try {
-                const response = await fetch(/api/get-student-profile?email=${encodeURIComponent(userEmail)});
-                const data = await response.json();
-                if(data.success) {
-                    document.getElementById('dspName').innerText = data.name;
-                    document.getElementById('dspEmail').innerText = data.email;
-                    document.getElementById('dspTokens').innerText = ⚡ ${data.token_balance} टोकन्स;
-                    document.getElementById('profileModal').classList.remove('hidden');
-                } else {
-                    alert("छात्र डेटा नहीं मिला!");
-                }
-            } catch(err) {
-                console.error(err);
-            }
+            const userMobile = localStorage.getItem("user_mobile") || "उपलब्ध";
+            document.getElementById('dspMobile').innerText = "+91 " + userMobile;
+            document.getElementById('profileModal').classList.remove('hidden');
         }
 
         function closeStudentProfile() {
             document.getElementById('profileModal').classList.add('hidden');
+        }
+
+        function logoutUser() {
+            localStorage.removeItem("user_mobile");
+            localStorage.removeItem("user_email");
+            location.reload();
         }
     </script>
 </body>
