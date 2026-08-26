@@ -32,7 +32,7 @@
 <body id="pageBody" class="bg-slate-950 text-slate-100 min-h-screen flex flex-col items-center justify-between p-2 md:p-6 transition-colors duration-500">
 
     <!-- मास्टर कंटेनर -->
-    <div class="w-full max-w-4xl bg-slate-900/95 border border-purple-800/60 rounded-3xl p-4 md:p-8 shadow-2xl backdrop-blur-xl animate-float">
+    <div class="w-full max-w-5xl bg-slate-900/95 border border-purple-800/60 rounded-3xl p-4 md:p-8 shadow-2xl backdrop-blur-xl animate-float">
         
         <!-- टॉप नेविगेशन और यूनिफॉर्म बटन्स बार -->
         <div class="w-full flex flex-wrap items-center justify-between gap-2 p-3 bg-slate-950/90 border border-purple-700/60 rounded-2xl shadow-xl mb-4">
@@ -99,95 +99,84 @@
             </div>
         </div>
 
-        <!-- डैशबोर्ड / सभी मॉड्यूल्स का आधुनिक ग्रिड -->
+        <!-- डैशबोर्ड / 11 सटीक मॉड्यूल्स का आधुनिक ग्रिड -->
         <div id="dashboardSection" class="hidden space-y-6">
             
-            <!-- वेलकम बैनर (बिना नाम के, सीधे मास्टर वॉलेट सक्रिय) -->
+            <!-- वेलकम बैनर -->
             <div class="bg-gradient-to-r from-purple-900/50 via-slate-900 to-cyan-900/50 border border-purple-600/50 rounded-2xl p-4 md:p-5 text-center shadow-lg">
                 <h3 class="text-sm md:text-base font-extrabold text-cyan-300 mb-1" data-key="welcomeMsg">✨ स्वागत है! आपका मास्टर वॉलेट सक्रिय है।</h3>
                 <p class="text-xs md:text-sm text-slate-300"><span data-key="walletActiveText">आपके वॉलेट में</span> <span id="dashboardTokenCount" class="font-black text-yellow-400 text-base">10</span> <span data-key="tokensAvailableText">फ्री टोकन सुरक्षित हैं। नीचे दिए गए मॉड्यूल्स का आनंद लें:</span></p>
             </div>
 
-            <!-- मॉड्यूल्स ग्रिड (Legal AI सबसे नीचे रखा गया है) -->
+            <!-- 11 ओरिजिनल मॉड्यूल्स ग्रिड -->
             <div>
-                <h4 class="text-xs font-bold text-purple-400 uppercase tracking-wider mb-3 px-1" data-key="modulesHeading">🚀 सभी सक्रिय मास्टर मॉड्यूल्स (Active Modules):</h4>
-                <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                <h4 class="text-xs font-bold text-purple-400 uppercase tracking-wider mb-3 px-1" data-key="modulesHeading">🚀 सभी 11 मास्टर मॉड्यूल्स (Active Modules):</h4>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                     
-                    <!-- 1. AI Core Solver -->
-                    <a href="/ai-core" class="group bg-slate-950/80 hover:bg-purple-950/40 border border-slate-800 hover:border-purple-500 p-3.5 rounded-2xl text-center transition-all duration-300 shadow hover:scale-[1.02] block">
-                        <div class="text-2xl mb-1 group-hover:scale-110 transition-transform">🤖</div>
-                        <div class="text-xs font-bold text-purple-300" data-key="mod1Title">AI Core Solver</div>
-                        <div class="text-[10px] text-slate-500 mt-0.5" data-key="mod1Desc">स्मार्ट प्रश्न समाधान</div>
+                    <!-- 1. Foundation: NC-5 Kids Tier -->
+                    <a href="/kids-zone" class="group bg-slate-950/80 hover:bg-pink-950/40 border border-slate-800 hover:border-pink-500 p-4 rounded-2xl transition-all duration-300 shadow hover:scale-[1.02] block">
+                        <div class="text-xl font-extrabold text-pink-400 mb-1">1. Foundation: NC-5 Kids Tier</div>
+                        <div class="text-xs text-slate-300" data-key="mod1Desc">नर्सरी से कक्षा 5 तक की नींव (AI-Driven Learning Module).</div>
                     </a>
 
-                    <!-- 2. Kids Zone -->
-                    <a href="/kids-zone" class="group bg-slate-950/80 hover:bg-pink-950/40 border border-slate-800 hover:border-pink-500 p-3.5 rounded-2xl text-center transition-all duration-300 shadow hover:scale-[1.02] block">
-                        <div class="text-2xl mb-1 group-hover:scale-110 transition-transform">🎨</div>
-                        <div class="text-xs font-bold text-pink-300" data-key="mod2Title">Kids Zone</div>
-                        <div class="text-[10px] text-slate-500 mt-0.5" data-key="mod2Desc">रचनात्मक शिक्षा</div>
+                    <!-- 2. AI Engine Core -->
+                    <a href="/ai-core" class="group bg-slate-950/80 hover:bg-purple-950/40 border border-slate-800 hover:border-purple-500 p-4 rounded-2xl transition-all duration-300 shadow hover:scale-[1.02] block">
+                        <div class="text-xl font-extrabold text-purple-400 mb-1">2. AI Engine Core</div>
+                        <div class="text-xs text-slate-300" data-key="mod2Desc">400-AI मल्टी-एजेंट न्यूट्रल कोर, डीप रिसर्च व लॉजिक टूल्स.</div>
                     </a>
 
-                    <!-- 3. Digital Library -->
-                    <a href="/digital-library" class="group bg-slate-950/80 hover:bg-cyan-950/40 border border-slate-800 hover:border-cyan-500 p-3.5 rounded-2xl text-center transition-all duration-300 shadow hover:scale-[1.02] block">
-                        <div class="text-2xl mb-1 group-hover:scale-110 transition-transform">📚</div>
-                        <div class="text-xs font-bold text-cyan-300" data-key="mod3Title">Digital Library</div>
-                        <div class="text-[10px] text-slate-500 mt-0.5" data-key="mod3Desc">ई-बुक्स और नोट्स</div>
+                    <!-- 3. AI Auto-Healing -->
+                    <a href="/ai-core" class="group bg-slate-950/80 hover:bg-indigo-950/40 border border-slate-800 hover:border-indigo-500 p-4 rounded-2xl transition-all duration-300 shadow hover:scale-[1.02] block">
+                        <div class="text-xl font-extrabold text-indigo-400 mb-1">3. AI Auto-Healing</div>
+                        <div class="text-xs text-slate-300" data-key="mod3Desc">सॉफ्टवेयर त्रुटियों को स्वतः ठीक करने वाला स्कैनर.</div>
                     </a>
 
-                    <!-- 4. Spoken English -->
-                    <a href="/spoken-english" class="group bg-slate-950/80 hover:bg-green-950/40 border border-slate-800 hover:border-green-500 p-3.5 rounded-2xl text-center transition-all duration-300 shadow hover:scale-[1.02] block">
-                        <div class="text-2xl mb-1 group-hover:scale-110 transition-transform">🗣️</div>
-                        <div class="text-xs font-bold text-green-300" data-key="mod4Title">Spoken English</div>
-                        <div class="text-[10px] text-slate-500 mt-0.5" data-key="mod4Desc">वॉयस लैब और अभ्यास</div>
+                    <!-- 4. Face-Swap Social -->
+                    <a href="/ai-core" class="group bg-slate-950/80 hover:bg-blue-950/40 border border-slate-800 hover:border-blue-500 p-4 rounded-2xl transition-all duration-300 shadow hover:scale-[1.02] block">
+                        <div class="text-xl font-extrabold text-blue-400 mb-1">4. Face-Swap Social</div>
+                        <div class="text-xs text-slate-300" data-key="mod4Desc">छात्रों के लिए वीडियो और सोशल एक्सप्लेनर विजुअल्स.</div>
                     </a>
 
-                    <!-- 5. Analytics Hub -->
-                    <a href="/ai-core" class="group bg-slate-950/80 hover:bg-indigo-950/40 border border-slate-800 hover:border-indigo-500 p-3.5 rounded-2xl text-center transition-all duration-300 shadow hover:scale-[1.02] block">
-                        <div class="text-2xl mb-1 group-hover:scale-110 transition-transform">📊</div>
-                        <div class="text-xs font-bold text-indigo-300" data-key="mod5Title">Analytics Hub</div>
-                        <div class="text-[10px] text-slate-500 mt-0.5" data-key="mod5Desc">क्रेडिट और रिपोर्ट</div>
+                    <!-- 5. 3D Blackboard -->
+                    <a href="/ai-core" class="group bg-slate-950/80 hover:bg-teal-950/40 border border-slate-800 hover:border-teal-500 p-4 rounded-2xl transition-all duration-300 shadow hover:scale-[1.02] block">
+                        <div class="text-xl font-extrabold text-teal-400 mb-1">5. 3D Blackboard</div>
+                        <div class="text-xs text-slate-300" data-key="mod5Desc">डिजिटल कक्षाओं के लिए 3D ब्लैकबोर्ड और टीवी कास्ट.</div>
                     </a>
 
-                    <!-- 6. Auto Publicity -->
-                    <a href="/ai-core" class="group bg-slate-950/80 hover:bg-blue-950/40 border border-slate-800 hover:border-blue-500 p-3.5 rounded-2xl text-center transition-all duration-300 shadow hover:scale-[1.02] block">
-                        <div class="text-2xl mb-1 group-hover:scale-110 transition-transform">🌐</div>
-                        <div class="text-xs font-bold text-blue-300" data-key="mod6Title">Auto Publicity</div>
-                        <div class="text-[10px] text-slate-500 mt-0.5" data-key="mod6Desc">सोशल मीडिया सिंक</div>
+                    <!-- 6. Digital Library -->
+                    <a href="/digital-library" class="group bg-slate-950/80 hover:bg-cyan-950/40 border border-slate-800 hover:border-cyan-500 p-4 rounded-2xl transition-all duration-300 shadow hover:scale-[1.02] block">
+                        <div class="text-xl font-extrabold text-cyan-400 mb-1">6. Digital Library</div>
+                        <div class="text-xs text-slate-300" data-key="mod6Desc">एन्क्रिप्टेड ई-बुक्स, नोट्स और डिजिटल वॉलेट वॉलेट.</div>
                     </a>
 
-                    <!-- 7. Audit & Monogram -->
-                    <a href="/ai-core" class="group bg-slate-950/80 hover:bg-orange-950/40 border border-slate-800 hover:border-orange-500 p-3.5 rounded-2xl text-center transition-all duration-300 shadow hover:scale-[1.02] block">
-                        <div class="text-2xl mb-1 group-hover:scale-110 transition-transform">🛡️</div>
-                        <div class="text-xs font-bold text-orange-300" data-key="mod7Title">Audit & Monogram</div>
-                        <div class="text-[10px] text-slate-500 mt-0.5" data-key="mod7Desc">डिजिटल प्रूफ ट्रेल</div>
+                    <!-- 7. Coaching Hub -->
+                    <a href="/ai-core" class="group bg-slate-950/80 hover:bg-orange-950/40 border border-slate-800 hover:border-orange-500 p-4 rounded-2xl transition-all duration-300 shadow hover:scale-[1.02] block">
+                        <div class="text-xl font-extrabold text-orange-400 mb-1">8. Coaching Hub</div>
+                        <div class="text-xs text-slate-300" data-key="mod8Desc">कोचिंग संस्थानों के संचालन और बैच प्रबंधन का डैशबोर्ड.</div>
                     </a>
 
-                    <!-- 8. Paywall & Wallet -->
-                    <a href="/ai-core" class="group bg-slate-950/80 hover:bg-teal-950/40 border border-slate-800 hover:border-teal-500 p-3.5 rounded-2xl text-center transition-all duration-300 shadow hover:scale-[1.02] block">
-                        <div class="text-2xl mb-1 group-hover:scale-110 transition-transform">💳</div>
-                        <div class="text-xs font-bold text-teal-300" data-key="mod8Title">Paywall & Wallet</div>
-                        <div class="text-[10px] text-slate-500 mt-0.5" data-key="mod8Desc">सुरक्षित भुगतान गेटवे</div>
+                    <!-- 8. Competition Solver -->
+                    <a href="/ai-core" class="group bg-slate-950/80 hover:bg-violet-950/40 border border-slate-800 hover:border-violet-500 p-4 rounded-2xl transition-all duration-300 shadow hover:scale-[1.02] block">
+                        <div class="text-xl font-extrabold text-violet-400 mb-1">9. Competition Solver</div>
+                        <div class="text-xs text-slate-300" data-key="mod9Desc">IAS, IFS, IRS, PCS, Banking, NEET आदि सभी परीक्षाओं का सॉल्व्टर.</div>
                     </a>
 
-                    <!-- 9. Super Admin Panel -->
-                    <a href="/ai-core" class="group bg-slate-950/80 hover:bg-rose-950/40 border border-slate-800 hover:border-rose-500 p-3.5 rounded-2xl text-center transition-all duration-300 shadow hover:scale-[1.02] block">
-                        <div class="text-2xl mb-1 group-hover:scale-110 transition-transform">⚙️</div>
-                        <div class="text-xs font-bold text-rose-300" data-key="mod9Title">Super Admin Panel</div>
-                        <div class="text-[10px] text-slate-500 mt-0.5" data-key="mod9Desc">नियंत्रण और मॉनिटर</div>
+                    <!-- 9. Nebula Visual Hub -->
+                    <a href="/ai-core" class="group bg-slate-950/80 hover:bg-rose-950/40 border border-slate-800 hover:border-rose-500 p-4 rounded-2xl transition-all duration-300 shadow hover:scale-[1.02] block">
+                        <div class="text-xl font-extrabold text-rose-400 mb-1">10. Nebula Visual Hub</div>
+                        <div class="text-xs text-slate-300" data-key="mod10Desc">सिस्टम गतिविधियों को दिखाने वाला नेबुला डैशबोर्ड.</div>
                     </a>
 
-                    <!-- 10. Neural Core AI -->
-                    <a href="/ai-core" class="group bg-slate-950/80 hover:bg-violet-950/40 border border-slate-800 hover:border-violet-500 p-3.5 rounded-2xl text-center transition-all duration-300 shadow hover:scale-[1.02] block">
-                        <div class="text-2xl mb-1 group-hover:scale-110 transition-transform">⚡</div>
-                        <div class="text-xs font-bold text-violet-300" data-key="mod10Title">Neural Core AI</div>
-                        <div class="text-[10px] text-slate-500 mt-0.5" data-key="mod10Desc">जेमिनी इंजन सपोर्ट</div>
+                    <!-- 10. Spoken English Master -->
+                    <a href="/spoken-english" class="group bg-slate-950/80 hover:bg-green-950/40 border border-slate-800 hover:border-green-500 p-4 rounded-2xl transition-all duration-300 shadow hover:scale-[1.02] block">
+                        <div class="text-xl font-extrabold text-green-400 mb-1">11. Spoken English Master</div>
+                        <div class="text-xs text-slate-300" data-key="mod11Desc">अदिति मैम के साथ 4D Live AI वॉयस एक्सेंट व आसान बोलचाल मैंटल.</div>
                     </a>
 
-                    <!-- 11. Legal AI & BNS (सबसे नीचे रखा गया है) -->
-                    <a href="/legal-ai" class="group bg-slate-950/80 hover:bg-yellow-950/40 border border-slate-800 hover:border-yellow-500 p-3.5 rounded-2xl text-center transition-all duration-300 shadow hover:scale-[1.02] block col-span-2 md:col-span-2">
-                        <div class="text-2xl mb-1 group-hover:scale-110 transition-transform">⚖️</div>
-                        <div class="text-xs font-bold text-yellow-300" data-key="mod11Title">Legal AI & BNS (Restricted)</div>
-                        <div class="text-[10px] text-slate-500 mt-0.5" data-key="mod11Desc">भारतीय न्याय संहिता एवं विधिक एआई</div>
+                    <!-- 11. Legal AI (All Laws) - सबसे नीचे सुरक्षित -->
+                    <a href="/legal-ai" class="group bg-slate-950/80 hover:bg-yellow-950/40 border border-slate-800 hover:border-yellow-500 p-4 rounded-2xl transition-all duration-300 shadow hover:scale-[1.02] block md:col-span-2 lg:col-span-3">
+                        <div class="text-xl font-extrabold text-yellow-400 mb-1">7. Legal AI (All Laws)</div>
+                        <div class="text-xs text-slate-300" data-key="mod7Desc">BNS, BNSS, BSA, कंपनी लॉ, 1-क्लिक लीगल ड्राफ्टिंग व धारा कन्वर्टर.</div>
                     </a>
 
                 </div>
@@ -272,18 +261,18 @@
                 welcomeMsg: "✨ स्वागत है! आपका मास्टर वॉलेट सक्रिय है।",
                 walletActiveText: "आपके वॉलेट में",
                 tokensAvailableText: "फ्री टोकन सुरक्षित हैं। नीचे दिए गए मॉड्यूल्स का आनंद लें:",
-                modulesHeading: "🚀 सभी सक्रिय मास्टर मॉड्यूल्स (Active Modules):",
-                mod1Title: "AI Core Solver", mod1Desc: "स्मार्ट प्रश्न समाधान",
-                mod2Title: "Kids Zone", mod2Desc: "रचनात्मक शिक्षा",
-                mod3Title: "Digital Library", mod3Desc: "ई-बुक्स और नोट्स",
-                mod4Title: "Spoken English", mod4Desc: "वॉयस लैब और अभ्यास",
-                mod5Title: "Analytics Hub", mod5Desc: "क्रेडिट और रिपोर्ट",
-                mod6Title: "Auto Publicity", mod6Desc: "सोशल मीडिया सिंक",
-                mod7Title: "Audit & Monogram", mod7Desc: "डिजिटल प्रूफ ट्रेल",
-                mod8Title: "Paywall & Wallet", mod8Desc: "सुरक्षित भुगतान गेटवे",
-                mod9Title: "Super Admin Panel", mod9Desc: "नियंत्रण और मॉनिटर",
-                mod10Title: "Neural Core AI", mod10Desc: "जेमिनी इंजन सपोर्ट",
-                mod11Title: "Legal AI & BNS (Restricted)", mod11Desc: "भारतीय न्याय संहिता एवं विधिक एआई",
+                modulesHeading: "🚀 सभी 11 मास्टर मॉड्यूल्स (Active Modules):",
+                mod1Desc: "नर्सरी से कक्षा 5 तक की नींव (AI-Driven Learning Module).",
+                mod2Desc: "400-AI मल्टी-एजेंट न्यूट्रल कोर, डीप रिसर्च व लॉजिक टूल्स.",
+                mod3Desc: "सॉफ्टवेयर त्रुटियों को स्वतः ठीक करने वाला स्कैनर.",
+                mod4Desc: "छात्रों के लिए वीडियो और सोशल एक्सप्लेनर विजुअल्स.",
+                mod5Desc: "डिजिटल कक्षाओं के लिए 3D ब्लैकबोर्ड और टीवी कास्ट.",
+                mod6Desc: "एन्क्रिप्टेड ई-बुक्स, नोट्स और डिजिटल वॉलेट वॉलेट.",
+                mod7Desc: "BNS, BNSS, BSA, कंपनी लॉ, 1-क्लिक लीगल ड्राफ्टिंग व धारा कन्वर्टर.",
+                mod8Desc: "कोचिंग संस्थानों के संचालन और बैच प्रबंधन का डैशबोर्ड.",
+                mod9Desc: "IAS, IFS, IRS, PCS, Banking, NEET आदि सभी परीक्षाओं का सॉल्व्टर.",
+                mod10Desc: "सिस्टम गतिविधियों को दिखाने वाला नेबुला डैशबोर्ड.",
+                mod11Desc: "अदिति मैम के साथ 4D Live AI वॉयस एक्सेंट व आसान बोलचाल मैंटल.",
                 rechargeStoreBtn: "🪙 टोकन रीचार्ज स्टोर खोलें",
                 profileAnalysisBtn: "👤 छात्र प्रोफाइल और क्रेडिट एनालिसिस",
                 logoutBtn: "🚪 लॉग आउट (Logout)",
@@ -308,18 +297,18 @@
                 welcomeMsg: "✨ Welcome! Your Master Wallet is Active.",
                 walletActiveText: "You have",
                 tokensAvailableText: "free tokens safe in your wallet. Explore modules below:",
-                modulesHeading: "🚀 All Active Master Modules:",
-                mod1Title: "AI Core Solver", mod1Desc: "Smart Question Solver",
-                mod2Title: "Kids Zone", mod2Desc: "Creative Education",
-                mod3Title: "Digital Library", mod3Desc: "E-Books & Notes",
-                mod4Title: "Spoken English", mod4Desc: "Voice Lab & Practice",
-                mod5Title: "Analytics Hub", mod5Desc: "Credit & Reports",
-                mod6Title: "Auto Publicity", mod6Desc: "Social Media Sync",
-                mod7Title: "Audit & Monogram", mod7Desc: "Digital Proof Trail",
-                mod8Title: "Paywall & Wallet", mod8Desc: "Secure Payment Gateway",
-                mod9Title: "Super Admin Panel", mod9Desc: "Control & Monitor",
-                mod10Title: "Neural Core AI", mod10Desc: "Gemini Engine Support",
-                mod11Title: "Legal AI & BNS (Restricted)", mod11Desc: "Indian Justice Code & Legal AI",
+                modulesHeading: "🚀 All 11 Master Modules:",
+                mod1Desc: "Nursery to Class 5 Foundation (AI-Driven Learning Module).",
+                mod2Desc: "400-AI Multi-Agent Neural Core, Deep Research & Logic Tools.",
+                mod3Desc: "Auto-healing scanner for software bugs and errors.",
+                mod4Desc: "Video and social explainer visuals for students.",
+                mod5Desc: "3D Blackboard and TV cast for digital classrooms.",
+                mod6Desc: "Encrypted e-books, notes and digital wallet.",
+                mod7Desc: "BNS, BNSS, BSA, Company Law, 1-Click Legal Drafting & Section Converter.",
+                mod8Desc: "Dashboard for coaching operations and batch management.",
+                mod9Desc: "Solver for IAS, IFS, IRS, PCS, Banking, NEET and all competitive exams.",
+                mod10Desc: "Nebula dashboard showing real-time system activities.",
+                mod11Desc: "4D Live AI Voice Accent & Spoken English mentor with Aditi Mam.",
                 rechargeStoreBtn: "🪙 Open Token Recharge Store",
                 profileAnalysisBtn: "👤 Student Profile & Credit Analytics",
                 logoutBtn: "🚪 Logout",
