@@ -437,6 +437,89 @@ async def spoken_english_page(request: Request, db: Session = Depends(get_db)):
         with open(file_path, "r", encoding="utf-8") as f: return f.read()
     return HTMLResponse("<h1>spoken-english.html missing</h1>", status_code=404)
 
+# ------------------------------------------------------------------------------
+# कमर्शियल पेमेंट गेटवे, ऑटो-डिटेक्शन और क्रेडिट एनालिसिस मॉड्यूल
+# ------------------------------------------------------------------------------
+
+class CreditTransactionHistory(Base):
+    __tablename__ = "credit_transaction_history"
+    id = Column(Integer, primary_key=True, index=True)
+    mobile = Column(String, index=True)
+    transaction_type = Column(String) # "Recharge", "Monthly_Deduction", "Usage"
+    tokens_changed = Column(Integer)
+    description = Column(String)
+    monogram_code = Column(String)
+    timestamp = Column(DateTime, default=datetime.datetime.utcnow)
+
+Base.metadata.create_all(bind=engine)
+
+@app.post("/api/verify-payment-and-add-tokens")
+def verify_payment_and_add_tokens(
+    mobile: str = Form(...),
+    tokens_to_add: int = Form(...),
+    amount_paid: int = Form(...),
+    payment_id: str = Form(...),
+    db: Session = Depends(get_db)
+):
+    clean_mobile = mobile.strip()
+    student = db.query(RegisteredStudent).filter_by(mobile=clean_mobile).first()
+    
+    if not student:
+        return JSONResponse(content={"success": False, "message": "छात्र पंजीकृत नहीं है! पहले लॉगिन करें।"})
+    
+    # टोकन वॉलेट में जोड़ना
+    student.token_balance += tokens_to_add
+    
+    # ऑडिट ट्रेल और मोनोग्राम रिकॉर्ड सुरक्षित करना
+    audit_msg = f"Wallet Recharge: Mobile {clean_mobile}, Added {tokens_to_add} Tokens, Paid ₹{amount_paid}, PaymentID: {payment_id}"
+    monogram_id = record_publicity_audit(db, "Commercial_Wallet_Recharge", audit_msg)
+    
+    # ट्रांजैक्शन हिस्ट्री में रिकॉर्ड सेव करना
+    tx_record = CreditTransactionHistory(
+        mobile=clean_mobile,
+        transaction_type="Recharge",
+        tokens_changed=tokens_to_add,
+        description=f"Recharge ₹{amount_paid} (Payment ID: {payment_id})",
+        monogram_code=monogram_id
+    )
+    db.add(tx_record)
+    db.commit()
+    
+    return JSONResponse(content={
+        "success": True, 
+        "new_balance": student.token_balance, 
+        "monogram_code": monogram_id,
+        "message": f"सफलतापूर्वक भुगतान सत्यापित! {tokens_to_add} टोकन आपके वॉलेट में जोड़ दिए गए हैं।"
+    })
+
+@app.get("/api/user-credit-analysis/{mobile}")
+def get_user_credit_analysis(mobile: str, db: Session = Depends(get_db)):
+    """यूजर का पूरा क्रेडिट एनालिसिस और ट्रांसपेरेंसी रिपोर्ट देता है"""
+    clean_mobile = mobile.strip()
+    student = db.query(RegisteredStudent).filter_by(mobile=clean_mobile).first()
+    
+    if not student:
+        return JSONResponse(content={"success": False, "message": "छात्र नहीं मिला"})
+        
+    history = db.query(CreditTransactionHistory).filter_by(mobile=clean_mobile).order_by(CreditTransactionHistory.timestamp.desc()).all()
+    
+    history_list = []
+    for h in history:
+        history_list.append({
+            "type": h.transaction_type,
+            "tokens": h.tokens_changed,
+            "description": h.description,
+            "monogram": h.monogram_code,
+            "time": h.timestamp.strftime('%d-%m-%Y %H:%M')
+        })
+        
+    return JSONResponse(content={
+        "success": True,
+        "current_balance": student.token_balance,
+        "registered_date": student.created_at.strftime('%d-%m-%Y'),
+        "transactions": history_list
+    })
+
 if __name__ == "__main__":
     import uvicorn
     port = int(os.environ.get("PORT", 10000))
