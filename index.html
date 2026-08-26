@@ -11,57 +11,73 @@
         .glass-card { background: rgba(15, 23, 42, 0.95); border: 1px solid rgba(56, 189, 248, 0.3); backdrop-filter: blur(16px); }
     </style>
 </head>
-<body class="min-h-screen flex flex-col items-center justify-center p-4">
+<body class="min-h-screen flex flex-col items-center justify-center p-3 sm:p-4">
 
-    <!-- टॉप नेविगेशन बार: प्रोफाइल और टोकन बैलेंस -->
+    <!-- टॉप बार: टोकन और प्रोफाइल बटन -->
     <div class="max-w-xl w-full flex justify-between items-center mb-4 px-2">
-        <div class="flex items-center gap-2 bg-slate-900 border border-slate-800 px-3 py-1.5 rounded-xl text-xs font-bold">
+        <div class="flex items-center gap-2 bg-slate-900 border border-slate-800 px-3 py-1.5 rounded-xl text-xs font-bold shadow">
             <span class="text-purple-300">⚡ टोकन्स:</span>
             <span id="topTokenCount" class="text-purple-200">10</span>
         </div>
         <button onclick="openStudentProfile()" class="px-3 py-1.5 bg-cyan-950 border border-cyan-500/50 rounded-xl text-xs font-bold text-cyan-300 hover:bg-cyan-900 transition flex items-center gap-1.5 shadow">
-            <span>👤</span> मेरी प्रोफाइल
+            <span>👤</span> <span id="profileBtnText">मेरी प्रोफाइल</span>
         </button>
     </div>
 
-    <div class="max-w-xl w-full glass-card p-6 sm:p-8 rounded-3xl shadow-2xl space-y-6">
+    <div class="max-w-xl w-full glass-card p-5 sm:p-8 rounded-3xl shadow-2xl space-y-6">
         
-        <!-- हेडर: ऊपर ध्रुव एकेडमी, नीचे मास्टर इकोसिस्टम -->
+        <!-- रिस्पॉन्सिव हेडर: मोबाइल और लैपटॉप दोनों पर शानदार लुक -->
         <div class="text-center space-y-2">
-            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-950 border border-cyan-500/40 text-[11px] text-cyan-300 font-bold">
+            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-950 border border-cyan-500/40 text-[10px] sm:text-[11px] text-cyan-300 font-bold">
                 <span>🛡️ 100% सिक्योर एनक्रिप्टेड इकोसिस्टम</span>
             </div>
-            <h1 class="text-3xl sm:text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-sky-200 to-indigo-300">
+            <h1 class="text-2xl sm:text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-sky-200 to-indigo-300 leading-tight">
                 ध्रुव एकेडमी
             </h1>
-            <p class="text-xs sm:text-sm font-semibold tracking-wider text-purple-300 uppercase">
+            <p class="text-[11px] sm:text-sm font-semibold tracking-wider text-purple-300 uppercase">
                 मास्टर इकोसिस्टम
             </p>
         </div>
 
-        <!-- रजिस्ट्रेशन फॉर्म -->
-        <div class="space-y-4 text-xs">
-            <h2 class="font-bold text-cyan-300 flex items-center gap-2 text-sm">
+        <!-- भाषा टॉगल बटन (क्लिकेबल) -->
+        <div class="flex justify-center items-center gap-2 bg-slate-900 p-1.5 rounded-2xl border border-slate-800 w-fit mx-auto text-xs">
+            <button onclick="changeLanguage('hi')" id="langHi" class="px-4 py-1.5 rounded-xl font-bold bg-cyan-600 text-white transition shadow">हिंदी</button>
+            <button onclick="changeLanguage('en')" id="langEn" class="px-4 py-1.5 rounded-xl font-bold text-gray-400 transition">English</button>
+        </div>
+
+        <!-- रजिस्ट्रेशन फॉर्म (यदि रजिस्टर्ड है तो छुप जाएगा) -->
+        <div id="registrationSection" class="space-y-4 text-xs">
+            <h2 id="formHeading" class="font-bold text-cyan-300 flex items-center gap-2 text-xs sm:text-sm">
                 <span>🎯</span> <span>छात्र निःशुल्क पंजीकरण व Promo Token</span>
             </h2>
             
             <div class="space-y-1">
-                <label class="block font-bold text-gray-300">पूरा नाम (Full Name)</label>
-                <input type="text" id="regName" placeholder="अपना पूरा नाम दर्ज करें" class="w-full p-3 rounded-xl bg-slate-900 border border-slate-700 text-white focus:border-cyan-500 outline-none">
+                <label id="lblUserName" class="block font-bold text-gray-300">पूरा नाम (Full Name)</label>
+                <input type="text" id="regName" placeholder="अपना पूरा नाम दर्ज करें" class="w-full p-3 rounded-xl bg-slate-900 border border-slate-700 text-white focus:border-cyan-500 outline-none text-xs sm:text-sm">
             </div>
 
             <div class="space-y-1">
-                <label class="block font-bold text-gray-300">ईमेल आईडी (Email)</label>
-                <input type="email" id="regEmail" placeholder="example@gmail.com" class="w-full p-3 rounded-xl bg-slate-900 border border-slate-700 text-white focus:border-cyan-500 outline-none">
+                <label id="lblUserEmail" class="block font-bold text-gray-300">ईमेल आईडी (Email)</label>
+                <input type="email" id="regEmail" placeholder="example@gmail.com" class="w-full p-3 rounded-xl bg-slate-900 border border-slate-700 text-white focus:border-cyan-500 outline-none text-xs sm:text-sm">
             </div>
 
             <div class="space-y-1">
-                <label class="block font-bold text-gray-300">ध्रुव मित्रा कोड (वैकल्पिक)</label>
-                <input type="text" id="regPromo" placeholder="यदि कोई रेफरल कोड हो तो दर्ज करें" class="w-full p-3 rounded-xl bg-slate-900 border border-slate-700 text-white focus:border-cyan-500 outline-none">
+                <label id="lblUserPromo" class="block font-bold text-gray-300">ध्रुव मित्रा कोड (वैकल्पिक)</label>
+                <input type="text" id="regPromo" placeholder="यदि कोई रेफरल कोड हो तो दर्ज करें" class="w-full p-3 rounded-xl bg-slate-900 border border-slate-700 text-white focus:border-cyan-500 outline-none text-xs sm:text-sm">
             </div>
 
-            <button onclick="submitRegistration()" class="w-full py-3.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-extrabold rounded-xl shadow-lg transition">
+            <button onclick="submitRegistration()" id="submitBtn" class="w-full py-3.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-extrabold rounded-xl shadow-lg transition text-xs sm:text-sm">
                 निशुल्क रजिस्टर करें व टोकन पाएं 🚀
+            </button>
+        </div>
+
+        <!-- यदि पहले से रजिस्टर्ड है तो यह वेलकम कार्ड दिखेगा -->
+        <div id="welcomeCard" class="hidden text-center space-y-3 p-4 bg-cyan-950/40 border border-cyan-500/40 rounded-2xl">
+            <div class="text-3xl">🎉</div>
+            <h3 class="text-sm font-extrabold text-cyan-300" id="welMsg">आप पहले से सफलताપૂર્વक पंजीकृत हैं!</h3>
+            <p class="text-xs text-gray-300" id="welSub">ऊपर 'मेरी प्रोफाइल' पर क्लिक करके अपना विवरण और टोकन बैलेंस देखें।</p>
+            <button onclick="openStudentProfile()" class="px-4 py-2 bg-cyan-600 hover:bg-cyan-500 text-white rounded-xl font-bold text-xs transition">
+                प्रोफाइल खोलें 👤
             </button>
         </div>
 
@@ -101,6 +117,44 @@
     </div>
 
     <script>
+        // पेज लोड होते ही चेक करें कि क्या यूजर पहले से रजिस्टर्ड है
+        window.addEventListener('DOMContentLoaded', () => {
+            const savedEmail = localStorage.getItem("user_email");
+            if(savedEmail) {
+                document.getElementById('registrationSection').classList.add('hidden');
+                document.getElementById('welcomeCard').classList.remove('hidden');
+            }
+        });
+
+        // भाषा बदलने का फंक्शन (Click Based)
+        function changeLanguage(lang) {
+            const btnHi = document.getElementById('langHi');
+            const btnEn = document.getElementById('langEn');
+            if(lang === 'hi') {
+                btnHi.className = "px-4 py-1.5 rounded-xl font-bold bg-cyan-600 text-white transition shadow";
+                btnEn.className = "px-4 py-1.5 rounded-xl font-bold text-gray-400 transition";
+                document.getElementById('formHeading').innerHTML = "<span>🎯</span> <span>छात्र निःशुल्क पंजीकरण व Promo Token</span>";
+                document.getElementById('lblUserName').innerText = "पूरा नाम (Full Name)";
+                document.getElementById('lblUserEmail').innerText = "ईमेल आईडी (Email)";
+                document.getElementById('lblUserPromo').innerText = "ध्रुव मित्रा कोड (वैकल्पिक)";
+                document.getElementById('submitBtn').innerText = "निशुल्क रजिस्टर करें व टोकन पाएं 🚀";
+                document.getElementById('profileBtnText').innerText = "मेरी प्रोफाइल";
+                document.getElementById('welMsg').innerText = "आप पहले से सफलतापूर्वक पंजीकृत हैं!";
+                document.getElementById('welSub').innerText = "ऊपर 'मेरी प्रोफाइल' पर क्लिक करके अपना विवरण और टोकन बैलेंस देखें।";
+            } else {
+                btnEn.className = "px-4 py-1.5 rounded-xl font-bold bg-cyan-600 text-white transition shadow";
+                btnHi.className = "px-4 py-1.5 rounded-xl font-bold text-gray-400 transition";
+                document.getElementById('formHeading').innerHTML = "<span>🎯</span> <span>Student Free Registration & Promo Token</span>";
+                document.getElementById('lblUserName').innerText = "Full Name";
+                document.getElementById('lblUserEmail').innerText = "Email ID";
+                document.getElementById('lblUserPromo').innerText = "Dhruv Mitra Code (Optional)";
+                document.getElementById('submitBtn').innerText = "Register Free & Get Tokens 🚀";
+                document.getElementById('profileBtnText').innerText = "My Profile";
+                document.getElementById('welMsg').innerText = "You are already successfully registered!";
+                document.getElementById('welSub').innerText = "Click 'My Profile' above to view your details and token balance.";
+            }
+        }
+
         async function submitRegistration() {
             const name = document.getElementById('regName').value.trim();
             const email = document.getElementById('regEmail').value.trim();
@@ -125,6 +179,8 @@
                 alert(data.message);
                 if(data.success) {
                     localStorage.setItem("user_email", email);
+                    document.getElementById('registrationSection').classList.add('hidden');
+                    document.getElementById('welcomeCard').classList.remove('hidden');
                 }
             } catch(err) {
                 console.error(err);
@@ -135,7 +191,7 @@
         async function openStudentProfile() {
             const userEmail = localStorage.getItem("user_email");
             if(!userEmail) {
-                alert("कृपया पहले ऊपर दिए गए फॉर्म से पंजीकरण (Register) करें!");
+                alert("कृपया पहले पंजीकरण करें!");
                 return;
             }
 
