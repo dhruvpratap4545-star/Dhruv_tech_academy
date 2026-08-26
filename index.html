@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="hi" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ध्रुव एकेडमी - मास्टर इकोसिस्टम</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap');
+        body { font-family: 'Poppins', sans-serif; background-color: #020617; color: #f8fafc; }
+        .glass-card { background: rgba(15, 23, 42, 0.95); border: 1px solid rgba(56, 189, 248, 0.3); backdrop-filter: blur(16px); }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col items-center justify-center p-4">
+
+    <!-- टॉप नेविगेशन बार: प्रोफाइल और टोकन बैलेंस -->
+    <div class="max-w-xl w-full flex justify-between items-center mb-4 px-2">
+        <div class="flex items-center gap-2 bg-slate-900 border border-slate-800 px-3 py-1.5 rounded-xl text-xs font-bold">
+            <span class="text-purple-300">⚡ टोकन्स:</span>
+            <span id="topTokenCount" class="text-purple-200">10</span>
+        </div>
+        <button onclick="openStudentProfile()" class="px-3 py-1.5 bg-cyan-950 border border-cyan-500/50 rounded-xl text-xs font-bold text-cyan-300 hover:bg-cyan-900 transition flex items-center gap-1.5 shadow">
+            <span>👤</span> मेरी प्रोफाइल
+        </button>
+    </div>
+
+    <div class="max-w-xl w-full glass-card p-6 sm:p-8 rounded-3xl shadow-2xl space-y-6">
+        
+        <!-- हेडर: ऊपर ध्रुव एकेडमी, नीचे मास्टर इकोसिस्टम -->
+        <div class="text-center space-y-2">
+            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-950 border border-cyan-500/40 text-[11px] text-cyan-300 font-bold">
+                <span>🛡️ 100% सिक्योर एनक्रिप्टेड इकोसिस्टम</span>
+            </div>
+            <h1 class="text-3xl sm:text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-sky-200 to-indigo-300">
+                ध्रुव एकेडमी
+            </h1>
+            <p class="text-xs sm:text-sm font-semibold tracking-wider text-purple-300 uppercase">
+                मास्टर इकोसिस्टम
+            </p>
+        </div>
+
+        <!-- रजिस्ट्रेशन फॉर्म -->
+        <div class="space-y-4 text-xs">
+            <h2 class="font-bold text-cyan-300 flex items-center gap-2 text-sm">
+                <span>🎯</span> <span>छात्र निःशुल्क पंजीकरण व Promo Token</span>
+            </h2>
+            
+            <div class="space-y-1">
+                <label class="block font-bold text-gray-300">पूरा नाम (Full Name)</label>
+                <input type="text" id="regName" placeholder="अपना पूरा नाम दर्ज करें" class="w-full p-3 rounded-xl bg-slate-900 border border-slate-700 text-white focus:border-cyan-500 outline-none">
+            </div>
+
+            <div class="space-y-1">
+                <label class="block font-bold text-gray-300">ईमेल आईडी (Email)</label>
+                <input type="email" id="regEmail" placeholder="example@gmail.com" class="w-full p-3 rounded-xl bg-slate-900 border border-slate-700 text-white focus:border-cyan-500 outline-none">
+            </div>
+
+            <div class="space-y-1">
+                <label class="block font-bold text-gray-300">ध्रुव मित्रा कोड (वैकल्पिक)</label>
+                <input type="text" id="regPromo" placeholder="यदि कोई रेफरल कोड हो तो दर्ज करें" class="w-full p-3 rounded-xl bg-slate-900 border border-slate-700 text-white focus:border-cyan-500 outline-none">
+            </div>
+
+            <button onclick="submitRegistration()" class="w-full py-3.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-extrabold rounded-xl shadow-lg transition">
+                निशुल्क रजिस्टर करें व टोकन पाएं 🚀
+            </button>
+        </div>
+
+        <!-- अन्य पोर्टल्स के लिंक्स -->
+        <div class="border-t border-slate-800 pt-4 flex flex-wrap gap-2 justify-center text-xs">
+            <a href="/kids-zone" class="px-3 py-1.5 bg-slate-900 border border-slate-700 rounded-xl hover:border-cyan-500 transition text-gray-300">Kids Zone</a>
+            <a href="/digital-library" class="px-3 py-1.5 bg-slate-900 border border-slate-700 rounded-xl hover:border-cyan-500 transition text-gray-300">Digital Library</a>
+            <a href="/ai-core" class="px-3 py-1.5 bg-slate-900 border border-slate-700 rounded-xl hover:border-cyan-500 transition text-gray-300">AI Core</a>
+        </div>
+    </div>
+
+    <!-- प्रोफाइल पॉप-अप मॉडल -->
+    <div id="profileModal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+        <div class="bg-slate-900 border border-cyan-500/50 p-6 sm:p-8 rounded-3xl max-w-sm w-full space-y-4 shadow-2xl text-xs">
+            <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+                <h3 class="font-extrabold text-cyan-400 text-sm">छात्र प्रोफाइल (Student Profile)</h3>
+                <button onclick="closeStudentProfile()" class="text-gray-400 hover:text-white text-base font-bold">✕</button>
+            </div>
+            <div class="space-y-3">
+                <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 flex justify-between">
+                    <span class="text-gray-400">नाम:</span>
+                    <span id="dspName" class="font-bold text-white">-</span>
+                </div>
+                <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 flex justify-between">
+                    <span class="text-gray-400">ईमेल:</span>
+                    <span id="dspEmail" class="font-bold text-cyan-300">-</span>
+                </div>
+                <div class="bg-purple-950/50 p-3 rounded-xl border border-purple-500/40 flex justify-between">
+                    <span class="text-purple-300 font-semibold">टोकन बैलेंस:</span>
+                    <span id="dspTokens" class="font-extrabold text-purple-200">⚡ 10 टोकन्स</span>
+                </div>
+            </div>
+            <button onclick="closeStudentProfile()" class="w-full py-2.5 bg-cyan-600 hover:bg-cyan-500 text-white rounded-xl font-bold transition">
+                बंद करें
+            </button>
+        </div>
+    </div>
+
+    <script>
+        async function submitRegistration() {
+            const name = document.getElementById('regName').value.trim();
+            const email = document.getElementById('regEmail').value.trim();
+            const promo = document.getElementById('regPromo').value.trim();
+
+            if(!name || !email) {
+                alert("कृपया अपना नाम और ईमेल आईडी दर्ज करें!");
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append("name", name);
+            formData.append("email", email);
+            if(promo) formData.append("dhruv_mitra_code", promo);
+
+            try {
+                const response = await fetch('/api/register-student', {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await response.json();
+                alert(data.message);
+                if(data.success) {
+                    localStorage.setItem("user_email", email);
+                }
+            } catch(err) {
+                console.error(err);
+                alert("पंजीकरण में त्रुटि हुई!");
+            }
+        }
+
+        async function openStudentProfile() {
+            const userEmail = localStorage.getItem("user_email");
+            if(!userEmail) {
+                alert("कृपया पहले ऊपर दिए गए फॉर्म से पंजीकरण (Register) करें!");
+                return;
+            }
+
+            try {
+                const response = await fetch(/api/get-student-profile?email=${encodeURIComponent(userEmail)});
+                const data = await response.json();
+                if(data.success) {
+                    document.getElementById('dspName').innerText = data.name;
+                    document.getElementById('dspEmail').innerText = data.email;
+                    document.getElementById('dspTokens').innerText = ⚡ ${data.token_balance} टोकन्स;
+                    document.getElementById('profileModal').classList.remove('hidden');
+                } else {
+                    alert("छात्र डेटा नहीं मिला!");
+                }
+            } catch(err) {
+                console.error(err);
+            }
+        }
+
+        function closeStudentProfile() {
+            document.getElementById('profileModal').classList.add('hidden');
+        }
+    </script>
+</body>
+</html>
