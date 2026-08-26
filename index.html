@@ -16,12 +16,17 @@
     <!-- टॉप बार: टोकन और प्रोफाइल बटन -->
     <div class="max-w-xl w-full flex justify-between items-center mb-4 px-2">
         <div class="flex items-center gap-2 bg-slate-900 border border-slate-800 px-3 py-1.5 rounded-xl text-xs font-bold shadow">
-            <span class="text-purple-300">⚡ टोकन्स:</span>
-            <span id="topTokenCount" class="text-purple-200">10</span>
+            <span class="text-purple-300">⚡ मेरे टोकन्स:</span>
+            <span id="topTokenCount" class="text-purple-200 font-extrabold">10</span>
         </div>
-        <button onclick="openStudentProfile()" class="px-3 py-1.5 bg-cyan-950 border border-cyan-500/50 rounded-xl text-xs font-bold text-cyan-300 hover:bg-cyan-900 transition flex items-center gap-1.5 shadow">
-            <span>👤</span> <span id="profileBtnText">मेरी प्रोफाइल</span>
-        </button>
+        <div class="flex gap-2">
+            <button onclick="openWalletStore()" class="px-3 py-1.5 bg-purple-950 border border-purple-500/50 rounded-xl text-xs font-bold text-purple-300 hover:bg-purple-900 transition flex items-center gap-1 shadow">
+                <span>🪙</span> <span>वॉलेट / खरीदें</span>
+            </button>
+            <button onclick="openStudentProfile()" class="px-3 py-1.5 bg-cyan-950 border border-cyan-500/50 rounded-xl text-xs font-bold text-cyan-300 hover:bg-cyan-900 transition flex items-center gap-1 shadow">
+                <span>👤</span> <span id="profileBtnText">प्रोफाइल</span>
+            </button>
+        </div>
     </div>
 
     <div class="max-w-xl w-full glass-card p-5 sm:p-8 rounded-3xl shadow-2xl space-y-6">
@@ -29,13 +34,13 @@
         <!-- हेडर -->
         <div class="text-center space-y-2">
             <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-950 border border-cyan-500/40 text-[10px] sm:text-[11px] text-cyan-300 font-bold">
-                <span>🛡️ 100% सिक्योर मोबाइल ओटीपी वेरीफिकेशन</span>
+                <span>🎁 पहली बार पंजीकरण पर 10 टोकन बिल्कुल मुफ्त!</span>
             </div>
             <h1 class="text-2xl sm:text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-sky-200 to-indigo-300 leading-tight">
                 ध्रुव एकेडमी
             </h1>
             <p class="text-[11px] sm:text-sm font-semibold tracking-wider text-purple-300 uppercase">
-                मास्टर इकोसिस्टम
+                मास्टर इकोसिस्टम & वॉलेट स्टोर
             </p>
         </div>
 
@@ -45,12 +50,15 @@
             <button onclick="changeLanguage('en')" id="langEn" class="px-4 py-1.5 rounded-xl font-bold text-gray-400 transition">English</button>
         </div>
 
-        <!-- स्टेप 1: मोबाइल नंबर इनपुट सेक्शन (यदि रजिस्टर्ड नहीं है) -->
+        <!-- मोबाइल नंबर लॉगिन सेक्शन (यदि रजिस्टर्ड नहीं है) -->
         <div id="mobileSection" class="space-y-4 text-xs">
-            <h2 id="formHeading" class="font-bold text-cyan-300 flex items-center gap-2 text-xs sm:text-sm">
-                <span>📱</span> <span>मोबाइल नंबर से त्वरित लॉगिन / पंजीकरण</span>
-            </h2>
-            
+            <div class="p-4 bg-gradient-to-r from-cyan-950/60 to-purple-950/60 border border-cyan-500/40 rounded-2xl space-y-2">
+                <h3 class="font-extrabold text-cyan-300 text-sm">✨ मुफ्त टोकन कैसे प्राप्त करें?</h3>
+                <p class="text-gray-300 leading-relaxed">
+                    सिर्फ अपना मोबाइल नंबर दर्ज करके लॉगिन करें। सिस्टम आपको तुरंत **10 फ्री प्रोमो टोकन** आपके वॉलेट में उपहार स्वरूप दे देगा!
+                </p>
+            </div>
+
             <div class="space-y-1">
                 <label id="lblUserMobile" class="block font-bold text-gray-300">मोबाइल नंबर (Mobile Number)</label>
                 <div class="flex gap-2">
@@ -60,35 +68,40 @@
             </div>
 
             <button onclick="sendOTP()" id="sendOtpBtn" class="w-full py-3.5 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-extrabold rounded-xl shadow-lg transition text-xs sm:text-sm">
-                ओटीपी (OTP) भेजें 📩
+                ओटीपी भेजें और 10 फ्री टोकन पाएं 🎁
             </button>
         </div>
 
-        <!-- स्टेप 2: ओटीपी वेरीफिकेशन सेक्शन (शुरुआत में छुपा रहेगा) -->
+        <!-- ओटीपी वेरीफिकेशन सेक्शन -->
         <div id="otpSection" class="hidden space-y-4 text-xs">
             <div class="p-3 bg-cyan-950/40 border border-cyan-500/30 rounded-xl text-center">
-                <p class="text-cyan-200" id="otpSentMsg">आपके मोबाइल नंबर पर 4 अंकों का ओटीपी भेज दिया गया है।</p>
+                <p class="text-cyan-200">आपके नंबर पर 4 अंकों का ओटीपी भेजा गया है।</p>
                 <span class="text-cyan-400 font-bold" id="displayMobileNum"></span>
             </div>
 
             <div class="space-y-1">
-                <label id="lblOtp" class="block font-bold text-gray-300">ओटीपी (OTP Code) दर्ज करें</label>
-                <input type="text" id="enteredOtp" maxlength="4" placeholder="उदा: 1234 (डेमो हेतु कोई भी 4 अंक)" class="w-full p-3 rounded-xl bg-slate-900 border border-slate-700 text-white tracking-widest text-center text-lg font-bold focus:border-cyan-500 outline-none">
+                <label class="block font-bold text-gray-300">ओटीपी (OTP Code) दर्ज करें</label>
+                <input type="text" id="enteredOtp" maxlength="4" placeholder="उदा: 1234 (डेमो हेतु 1234 डालें)" class="w-full p-3 rounded-xl bg-slate-900 border border-slate-700 text-white tracking-widest text-center text-lg font-bold focus:border-cyan-500 outline-none">
             </div>
 
-            <button onclick="verifyOTP()" id="verifyOtpBtn" class="w-full py-3.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-extrabold rounded-xl shadow-lg transition text-xs sm:text-sm">
-                सत्यापित करें व प्रवेश करें 🚀
+            <button onclick="verifyOTP()" class="w-full py-3.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-extrabold rounded-xl shadow-lg transition text-xs sm:text-sm">
+                सत्यापित करें व डैशबोर्ड में प्रवेश करें 🚀
             </button>
         </div>
 
-        <!-- यदि पहले से लॉगइन/रजिस्टर्ड है तो यह वेलकम कार्ड दिखेगा (फॉर्म हमेशा के लिए गायब) -->
+        <!-- यदि पहले से लॉगइन है तो यह वेलकम कार्ड दिखेगा (फॉर्म हमेशा गायब) -->
         <div id="welcomeCard" class="hidden text-center space-y-3 p-4 bg-cyan-950/40 border border-cyan-500/40 rounded-2xl">
             <div class="text-3xl">🎉</div>
-            <h3 class="text-sm font-extrabold text-cyan-300" id="welMsg">आपका स्वागत है! आप सफलताપૂર્વक लॉगइन हैं।</h3>
-            <p class="text-xs text-gray-300" id="welSub">ऊपर 'मेरी प्रोफाइल' पर क्लिक करके अपना विवरण और टोकन बैलेंस देखें।</p>
-            <button onclick="openStudentProfile()" class="px-4 py-2 bg-cyan-600 hover:bg-cyan-500 text-white rounded-xl font-bold text-xs transition">
-                प्रोफाइल देखें 👤
-            </button>
+            <h3 class="text-sm font-extrabold text-cyan-300">आपका स्वागत है! वॉलेट सक्रिय है।</h3>
+            <p class="text-xs text-gray-300">आपके पास वर्तमान में 10 फ्री टोकन उपलब्ध हैं। और टोकन खरीदने के लिए नीचे दिए गए बटन पर क्लिक करें।</p>
+            <div class="flex gap-2 justify-center pt-2">
+                <button onclick="openWalletStore()" class="px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white rounded-xl font-bold text-xs transition">
+                    🪙 टोकन खरीदें (Buy Tokens)
+                </button>
+                <button onclick="openStudentProfile()" class="px-4 py-2 bg-cyan-600 hover:bg-cyan-500 text-white rounded-xl font-bold text-xs transition">
+                    👤 प्रोफाइल देखें
+                </button>
+            </div>
             <br>
             <button onclick="logoutUser()" class="text-[11px] text-red-400 hover:underline mt-2">लॉग आउट करें (Logout)</button>
         </div>
@@ -98,6 +111,48 @@
             <a href="/kids-zone" class="px-3 py-1.5 bg-slate-900 border border-slate-700 rounded-xl hover:border-cyan-500 transition text-gray-300">Kids Zone</a>
             <a href="/digital-library" class="px-3 py-1.5 bg-slate-900 border border-slate-700 rounded-xl hover:border-cyan-500 transition text-gray-300">Digital Library</a>
             <a href="/ai-core" class="px-3 py-1.5 bg-slate-900 border border-slate-700 rounded-xl hover:border-cyan-500 transition text-gray-300">AI Core</a>
+        </div>
+    </div>
+
+    <!-- वॉलेट स्टोर / टोकन परचेज पॉप-अप मॉडल -->
+    <div id="walletModal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+        <div class="bg-slate-900 border border-purple-500/50 p-6 sm:p-8 rounded-3xl max-w-md w-full space-y-4 shadow-2xl text-xs">
+            <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+                <h3 class="font-extrabold text-purple-400 text-sm">🪙 ध्रुव एकेडमी वॉलेट & टोकन स्टोर</h3>
+                <button onclick="closeWalletStore()" class="text-gray-400 hover:text-white text-base font-bold">✕</button>
+            </div>
+            <p class="text-gray-300 text-[11px]">अपनी जरूरत के अनुसार टोकन पैक चुनें और अपने वॉलेट को तुरंत रिचार्ज करें:</p>
+            
+            <div class="space-y-3">
+                <!-- पैक 1 -->
+                <div class="bg-slate-950 p-3.5 rounded-2xl border border-slate-800 flex justify-between items-center hover:border-purple-500 transition">
+                    <div>
+                        <div class="font-extrabold text-white">स्टार्टर पैक (Starter Pack)</div>
+                        <div class="text-purple-300 text-[10px]">⚡ 50 टोकन्स</div>
+                    </div>
+                    <button onclick="buyTokens(50, 99)" class="px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white font-bold rounded-xl transition">₹99 में खरीदें</button>
+                </div>
+                <!-- पैक 2 -->
+                <div class="bg-slate-950 p-3.5 rounded-2xl border border-cyan-500/50 flex justify-between items-center shadow-lg">
+                    <div>
+                        <div class="font-extrabold text-cyan-300">मास्टर पैक (Popular Pack) 🔥</div>
+                        <div class="text-purple-300 text-[10px]">⚡ 150 टोकन्स + 20 बोनस</div>
+                    </div>
+                    <button onclick="buyTokens(170, 249)" class="px-4 py-2 bg-cyan-600 hover:bg-cyan-500 text-white font-bold rounded-xl transition">₹249 में खरीदें</button>
+                </div>
+                <!-- पैक 3 -->
+                <div class="bg-slate-950 p-3.5 rounded-2xl border border-slate-800 flex justify-between items-center hover:border-purple-500 transition">
+                    <div>
+                        <div class="font-extrabold text-white">अल्टीमेट इकोसिस्टम पैक</div>
+                        <div class="text-purple-300 text-[10px]">⚡ 500 टोकन्स (VIP Access)</div>
+                    </div>
+                    <button onclick="buyTokens(500, 699)" class="px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white font-bold rounded-xl transition">₹699 में खरीदें</button>
+                </div>
+            </div>
+
+            <button onclick="closeWalletStore()" class="w-full py-2.5 bg-slate-800 hover:bg-slate-700 text-gray-300 rounded-xl font-bold transition">
+                बंद करें
+            </button>
         </div>
     </div>
 
@@ -113,16 +168,15 @@
                     <span class="text-gray-400">मोबाइल नंबर:</span>
                     <span id="dspMobile" class="font-bold text-white">-</span>
                 </div>
-                <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 flex justify-between">
-                    <span class="text-gray-400">रजिस्टर्ड नाम:</span>
-                    <span id="dspName" class="font-bold text-cyan-300">ध्रुव छात्र (Member)</span>
-                </div>
                 <div class="bg-purple-950/50 p-3 rounded-xl border border-purple-500/40 flex justify-between">
-                    <span class="text-purple-300 font-semibold">टोकन बैलेंस:</span>
+                    <span class="text-purple-300 font-semibold">उपलब्ध टोकन बैलेंस:</span>
                     <span id="dspTokens" class="font-extrabold text-purple-200">⚡ 10 टोकन्स</span>
                 </div>
             </div>
-            <button onclick="closeStudentProfile()" class="w-full py-2.5 bg-cyan-600 hover:bg-cyan-500 text-white rounded-xl font-bold transition">
+            <button onclick="openWalletStore()" class="w-full py-2 bg-purple-600 hover:bg-purple-500 text-white rounded-xl font-bold transition">
+                🪙 और टोकन खरीदें
+            </button>
+            <button onclick="closeStudentProfile()" class="w-full py-2 bg-slate-800 hover:bg-slate-700 text-gray-300 rounded-xl font-bold transition">
                 बंद करें
             </button>
         </div>
@@ -130,8 +184,8 @@
 
     <script>
         let currentMobile = "";
+        let userTokens = parseInt(localStorage.getItem("user_tokens")) || 10;
 
-        // पेज लोड होते ही चेक करें कि क्या यूजर पहले से लॉगइन है
         window.addEventListener('DOMContentLoaded', () => {
             const savedMobile = localStorage.getItem("user_mobile");
             if(savedMobile) {
@@ -139,32 +193,30 @@
                 document.getElementById('otpSection').classList.add('hidden');
                 document.getElementById('welcomeCard').classList.remove('hidden');
             }
+            updateTokenDisplay();
         });
 
-        // भाषा बदलने का फंक्शन
+        function updateTokenDisplay() {
+            document.getElementById('topTokenCount').innerText = userTokens;
+            document.getElementById('dspTokens').innerText = `⚡ ${userTokens} टोकन्स`;
+        }
+
         function changeLanguage(lang) {
             const btnHi = document.getElementById('langHi');
             const btnEn = document.getElementById('langEn');
             if(lang === 'hi') {
                 btnHi.className = "px-4 py-1.5 rounded-xl font-bold bg-cyan-600 text-white transition shadow";
                 btnEn.className = "px-4 py-1.5 rounded-xl font-bold text-gray-400 transition";
-                document.getElementById('formHeading').innerHTML = "📱 मोबाइल नंबर से त्वरित लॉगिन / पंजीकरण";
                 document.getElementById('lblUserMobile').innerText = "मोबाइल नंबर (Mobile Number)";
-                document.getElementById('sendOtpBtn').innerText = "ओटीपी (OTP) भेजें 📩";
-                document.getElementById('profileBtnText').innerText = "मेरी प्रोफाइल";
-                document.getElementById('welMsg').innerText = "आपका स्वागत है! आप सफलतापूर्वक लॉगइन हैं।";
+                document.getElementById('sendOtpBtn').innerText = "ओटीपी भेजें और 10 फ्री टोकन पाएं 🎁";
             } else {
                 btnEn.className = "px-4 py-1.5 rounded-xl font-bold bg-cyan-600 text-white transition shadow";
                 btnHi.className = "px-4 py-1.5 rounded-xl font-bold text-gray-400 transition";
-                document.getElementById('formHeading').innerHTML = "📱 Quick Login / Registration via Mobile";
                 document.getElementById('lblUserMobile').innerText = "Mobile Number";
-                document.getElementById('sendOtpBtn').innerText = "Send OTP 📩";
-                document.getElementById('profileBtnText').innerText = "My Profile";
-                document.getElementById('welMsg').innerText = "Welcome! You are successfully logged in.";
+                document.getElementById('sendOtpBtn').innerText = "Send OTP & Get 10 Free Tokens 🎁";
             }
         }
 
-        // ओटीपी भेजने का फंक्शन
         function sendOTP() {
             const mobile = document.getElementById('userMobile').value.trim();
             if(mobile.length !== 10 || isNaN(mobile)) {
@@ -173,53 +225,47 @@
             }
             currentMobile = mobile;
             document.getElementById('displayMobileNum').innerText = "+91 " + mobile;
-            
-            // मोबाइल सेक्शन छुपाकर ओटीपी सेक्शन दिखाना
             document.getElementById('mobileSection').classList.add('hidden');
             document.getElementById('otpSection').classList.remove('hidden');
-            alert("डिमों ओटीपी: 1234 (यह आपके नंबर पर भेजा गया है)");
+            alert("डिमों ओटीपी: 1234");
         }
 
-        // ओटीपी वेरीफाई करने का फंक्शन
-        async function verifyOTP() {
+        function verifyOTP() {
             const otp = document.getElementById('enteredOtp').value.trim();
-            if(otp !== "1234" && otp.length !== 4) {
-                alert("अमान्य ओटीपी! कृपया सही 4 अंकों का ओटीपी दर्ज करें (डिमों के लिए 1234 डालें)।");
+            if(otp !== "1234") {
+                alert("अमान्य ओटीपी! (डिमों के लिए 1234 दर्ज करें)");
                 return;
             }
 
-            // बैकएंड पर डेटा भेजना या लोकल स्टोरेज सेव करना
-            const formData = new FormData();
-            formData.append("name", "Student_" + currentMobile);
-            formData.append("email", currentMobile + "@dhruvacademy.com");
-            formData.append("dhruv_mitra_code", "MOBILE_LOGIN");
-
-            try {
-                const response = await fetch('/api/register-student', {
-                    method: 'POST',
-                    body: formData
-                });
-                const data = await response.json();
-                
-                // लोकल स्टोरेज में सेव ताकि विंडो दोबारा कभी न खुले
-                localStorage.setItem("user_mobile", currentMobile);
-                localStorage.setItem("user_email", currentMobile + "@dhruvacademy.com");
-
-                alert("सत्यापन सफल! आपका स्वागत है।");
-                document.getElementById('otpSection').classList.add('hidden');
-                document.getElementById('welcomeCard').classList.remove('hidden');
-            } catch(err) {
-                console.error(err);
-                // फिर भी लोकल स्टोरेज से लॉगिन पास कर देंगे ताकि यूजर अटके नहीं
-                localStorage.setItem("user_mobile", currentMobile);
-                document.getElementById('otpSection').classList.add('hidden');
-                document.getElementById('welcomeCard').classList.remove('hidden');
-            }
+            localStorage.setItem("user_mobile", currentMobile);
+            localStorage.setItem("user_tokens", userTokens);
+            alert("सत्यापन सफल! आपके वॉलेट में 10 फ्री टोकन जोड़ दिए गए हैं। 🎉");
+            
+            document.getElementById('otpSection').classList.add('hidden');
+            document.getElementById('welcomeCard').classList.remove('hidden');
+            updateTokenDisplay();
         }
 
-        async function openStudentProfile() {
-            const userMobile = localStorage.getItem("user_mobile") || "उपलब्ध";
+        function openWalletStore() {
+            document.getElementById('walletModal').classList.remove('hidden');
+        }
+
+        function closeWalletStore() {
+            document.getElementById('walletModal').classList.add('hidden');
+        }
+
+        function buyTokens(tokensToAdd, price) {
+            userTokens += tokensToAdd;
+            localStorage.setItem("user_tokens", userTokens);
+            updateTokenDisplay();
+            alert(`बधाई हो! ₹${price} का भुगतान सफल रहा और आपके वॉलेट में ${tokensToAdd} टोकन जोड़ दिए गए हैं। अब कुल टोकन: ${userTokens}`);
+            closeWalletStore();
+        }
+
+        function openStudentProfile() {
+            const userMobile = localStorage.getItem("user_mobile") || "डेमो यूजर";
             document.getElementById('dspMobile').innerText = "+91 " + userMobile;
+            updateTokenDisplay();
             document.getElementById('profileModal').classList.remove('hidden');
         }
 
@@ -229,7 +275,7 @@
 
         function logoutUser() {
             localStorage.removeItem("user_mobile");
-            localStorage.removeItem("user_email");
+            localStorage.removeItem("user_tokens");
             location.reload();
         }
     </script>
