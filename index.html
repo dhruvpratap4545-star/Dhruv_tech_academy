@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ध्रुव एकेडमी - प्रतियोगी परीक्षाओं एवं स्मार्ट लर्निंग का सर्वोच्च केंद्र</title>
+    <title>ध्रुव एकेडमी - एआई पावर्ड मास्टर इकोसिस्टम</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -41,7 +41,7 @@
     <!-- मास्टर कंटेनर -->
     <div class="w-full max-w-5xl bg-slate-900/95 border border-purple-800/60 rounded-3xl p-4 md:p-8 shadow-2xl backdrop-blur-xl animate-float">
         
-        <!-- टॉप नेविगेशन और यूनिफॉर्म बटन्स बार (मोबाइल फ्रेंडली कॉम्पैक्ट व्यू) -->
+        <!-- टॉप नेविगेशन बार -->
         <div class="w-full flex flex-wrap items-center justify-between gap-2 p-3 bg-slate-950/90 border border-purple-700/60 rounded-2xl shadow-xl mb-4">
             
             <!-- टोकन काउंटर -->
@@ -61,6 +61,12 @@
                 🔊 <span data-key="voiceGuide">वॉयस गाइड</span>
             </button>
 
+            <!-- डायनेमिक थीम कलर पिकर (यूज़र कस्टमाइजेशन) -->
+            <div class="flex items-center gap-1 bg-slate-800 px-2 py-1.5 rounded-xl border border-slate-700">
+                <span class="text-[10px] text-slate-300">Theme:</span>
+                <input type="color" id="themeColorPicker" value="#7c3aed" onchange="changeThemeAccent(this.value)" class="w-5 h-5 rounded cursor-pointer bg-transparent border-0" title="कलर थीम बदलें">
+            </div>
+
             <!-- लाइट/डार्क मोड -->
             <button id="themeToggleBtn" onclick="toggleThemeMode()" class="px-3 py-2 rounded-xl font-bold text-xs bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition">
                 Light Mode
@@ -71,9 +77,9 @@
                 🪙 <span data-key="walletBtn">वॉलेट</span>
             </button>
 
-            <!-- प्रोफाइल और ट्रांसपेरेंसी रिपोर्ट बटन -->
+            <!-- एनालिसिस रिपोर्ट बटन -->
             <button onclick="openStudentProfile()" class="flex items-center gap-1 bg-cyan-700 hover:bg-cyan-600 text-white px-3 py-2 rounded-xl font-bold text-xs shadow transition">
-                👤 <span data-key="profileBtn">एनालिसिस रिपोर्ट</span>
+                👤 <span data-key="profileBtn">रिपोर्ट</span>
             </button>
         </div>
 
@@ -106,15 +112,14 @@
             </div>
         </div>
 
-        <!-- डैशबोर्ड / 11 सटीक मॉड्यूल्स और यूज़र ट्रांसपेरेंसी सेक्शन -->
+        <!-- डैशबोर्ड / 11 मॉड्यूल्स और ट्रांसपेरेंसी लेजर सेक्शन -->
         <div id="dashboardSection" class="hidden space-y-6">
             
-            <!-- वेलकम बैनर और यूज़र ट्रांसपेरेंसी स्टेटस -->
+            <!-- वेलकम बैनर और ट्रांसपेरेंसी शॉर्टकट -->
             <div class="bg-gradient-to-r from-purple-900/50 via-slate-900 to-cyan-900/50 border border-purple-600/50 rounded-2xl p-4 md:p-5 text-center shadow-lg">
                 <h3 class="text-sm md:text-base font-extrabold text-cyan-300 mb-1" data-key="welcomeMsg">✨ स्वागत है! आपका मास्टर वॉलेट सक्रिय है।</h3>
-                <p class="text-xs md:text-sm text-slate-300"><span data-key="walletActiveText">आपके वॉलेट में</span> <span id="dashboardTokenCount" class="font-black text-yellow-400 text-base">10</span> <span data-key="tokensAvailableText">फ्री टोकन सुरक्षित हैं। आपकी दैनिक गतिविधि और ट्रांसपेरेंसी रिपोर्ट नीचे सिंक है:</span></p>
+                <p class="text-xs md:text-sm text-slate-300"><span data-key="walletActiveText">आपके वॉलेट में</span> <span id="dashboardTokenCount" class="font-black text-yellow-400 text-base">10</span> <span data-key="tokensAvailableText">फ्री टोकन सुरक्षित हैं। आपकी गतिविधि और ट्रांसपेरेंसी रिपोर्ट नीचे सिंक है:</span></p>
                 
-                <!-- यूज़र ट्रांसपेरेंसी शॉर्टकट बार -->
                 <div class="flex flex-wrap justify-center gap-2 mt-3">
                     <button onclick="openStudentProfile()" class="bg-slate-800/90 hover:bg-slate-700 border border-purple-500/50 text-purple-300 px-3 py-1.5 rounded-xl text-xs font-bold transition shadow">
                         📊 मेरी गतिविधि व खर्च रिपोर्ट (Activity Ledger)
@@ -125,13 +130,13 @@
                 </div>
             </div>
 
-            <!-- 11 ओरिजिनल मॉड्यूल्स ग्रिड (मोबाइल पर कॉम्पैक्ट बटन, डेस्कटॉप पर उन्नत कार्ड) -->
+            <!-- 11 ओरिजिनल मॉड्यूल्स ग्रिड (स्मार्ट मोबाइल और डेस्कटॉप व्यू) -->
             <div>
                 <h4 class="text-xs font-bold text-purple-400 uppercase tracking-wider mb-3 px-1" data-key="modulesHeading">🚀 सभी 11 मास्टर मॉड्यूल्स (Active Modules):</h4>
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                     
-                    <!-- 1. Foundation: NC-5 Kids Tier -->
-                    <a href="/kids-zone" onclick="showModuleInfo('Foundation: NC-5 Kids Tier')" class="module-card group bg-slate-950/80 hover:bg-pink-950/40 border border-slate-800 hover:border-pink-500 p-4 rounded-2xl block shadow">
+                    <!-- 1. Foundation -->
+                    <a href="/kids-zone" onclick="logUserActivity('Foundation Module')" class="module-card group bg-slate-950/80 hover:bg-pink-950/40 border border-slate-800 hover:border-pink-500 p-4 rounded-2xl block shadow">
                         <div class="text-lg md:text-xl font-extrabold text-pink-400 mb-1 flex items-center justify-between">
                             <span>1. Foundation: NC-5 Kids Tier</span>
                             <span class="text-xs bg-pink-950 text-pink-300 px-2 py-0.5 rounded-full">Active</span>
@@ -140,7 +145,7 @@
                     </a>
 
                     <!-- 2. AI Engine Core -->
-                    <a href="/ai-core" onclick="showModuleInfo('AI Engine Core')" class="module-card group bg-slate-950/80 hover:bg-purple-950/40 border border-slate-800 hover:border-purple-500 p-4 rounded-2xl block shadow">
+                    <a href="/ai-core" onclick="logUserActivity('AI Engine Core')" class="module-card group bg-slate-950/80 hover:bg-purple-950/40 border border-slate-800 hover:border-purple-500 p-4 rounded-2xl block shadow">
                         <div class="text-lg md:text-xl font-extrabold text-purple-400 mb-1 flex items-center justify-between">
                             <span>2. AI Engine Core</span>
                             <span class="text-xs bg-purple-950 text-purple-300 px-2 py-0.5 rounded-full">Active</span>
@@ -149,7 +154,7 @@
                     </a>
 
                     <!-- 3. AI Auto-Healing -->
-                    <a href="/ai-core" onclick="showModuleInfo('AI Auto-Healing')" class="module-card group bg-slate-950/80 hover:bg-indigo-950/40 border border-slate-800 hover:border-indigo-500 p-4 rounded-2xl block shadow">
+                    <a href="/ai-core" onclick="logUserActivity('AI Auto-Healing')" class="module-card group bg-slate-950/80 hover:bg-indigo-950/40 border border-slate-800 hover:border-indigo-500 p-4 rounded-2xl block shadow">
                         <div class="text-lg md:text-xl font-extrabold text-indigo-400 mb-1 flex items-center justify-between">
                             <span>3. AI Auto-Healing</span>
                             <span class="text-xs bg-indigo-950 text-indigo-300 px-2 py-0.5 rounded-full">Active</span>
@@ -158,7 +163,7 @@
                     </a>
 
                     <!-- 4. Face-Swap Social -->
-                    <a href="/ai-core" onclick="showModuleInfo('Face-Swap Social')" class="module-card group bg-slate-950/80 hover:bg-blue-950/40 border border-slate-800 hover:border-blue-500 p-4 rounded-2xl block shadow">
+                    <a href="/ai-core" onclick="logUserActivity('Face-Swap Social')" class="module-card group bg-slate-950/80 hover:bg-blue-950/40 border border-slate-800 hover:border-blue-500 p-4 rounded-2xl block shadow">
                         <div class="text-lg md:text-xl font-extrabold text-blue-400 mb-1 flex items-center justify-between">
                             <span>4. Face-Swap Social</span>
                             <span class="text-xs bg-blue-950 text-blue-300 px-2 py-0.5 rounded-full">Active</span>
@@ -167,7 +172,7 @@
                     </a>
 
                     <!-- 5. 3D Blackboard -->
-                    <a href="/ai-core" onclick="showModuleInfo('3D Blackboard')" class="module-card group bg-slate-950/80 hover:bg-teal-950/40 border border-slate-800 hover:border-teal-500 p-4 rounded-2xl block shadow">
+                    <a href="/ai-core" onclick="logUserActivity('3D Blackboard')" class="module-card group bg-slate-950/80 hover:bg-teal-950/40 border border-slate-800 hover:border-teal-500 p-4 rounded-2xl block shadow">
                         <div class="text-lg md:text-xl font-extrabold text-teal-400 mb-1 flex items-center justify-between">
                             <span>5. 3D Blackboard</span>
                             <span class="text-xs bg-teal-950 text-teal-300 px-2 py-0.5 rounded-full">Active</span>
@@ -176,7 +181,7 @@
                     </a>
 
                     <!-- 6. Digital Library -->
-                    <a href="/digital-library" onclick="showModuleInfo('Digital Library')" class="module-card group bg-slate-950/80 hover:bg-cyan-950/40 border border-slate-800 hover:border-cyan-500 p-4 rounded-2xl block shadow">
+                    <a href="/digital-library" onclick="logUserActivity('Digital Library')" class="module-card group bg-slate-950/80 hover:bg-cyan-950/40 border border-slate-800 hover:border-cyan-500 p-4 rounded-2xl block shadow">
                         <div class="text-lg md:text-xl font-extrabold text-cyan-400 mb-1 flex items-center justify-between">
                             <span>6. Digital Library</span>
                             <span class="text-xs bg-cyan-950 text-cyan-300 px-2 py-0.5 rounded-full">Active</span>
@@ -185,7 +190,7 @@
                     </a>
 
                     <!-- 7. Coaching Hub -->
-                    <a href="/ai-core" onclick="showModuleInfo('Coaching Hub')" class="module-card group bg-slate-950/80 hover:bg-orange-950/40 border border-slate-800 hover:border-orange-500 p-4 rounded-2xl block shadow">
+                    <a href="/ai-core" onclick="logUserActivity('Coaching Hub')" class="module-card group bg-slate-950/80 hover:bg-orange-950/40 border border-slate-800 hover:border-orange-500 p-4 rounded-2xl block shadow">
                         <div class="text-lg md:text-xl font-extrabold text-orange-400 mb-1 flex items-center justify-between">
                             <span>8. Coaching Hub</span>
                             <span class="text-xs bg-orange-950 text-orange-300 px-2 py-0.5 rounded-full">Active</span>
@@ -194,7 +199,7 @@
                     </a>
 
                     <!-- 8. Competition Solver -->
-                    <a href="/ai-core" onclick="showModuleInfo('Competition Solver')" class="module-card group bg-slate-950/80 hover:bg-violet-950/40 border border-slate-800 hover:border-violet-500 p-4 rounded-2xl block shadow">
+                    <a href="/ai-core" onclick="logUserActivity('Competition Solver')" class="module-card group bg-slate-950/80 hover:bg-violet-950/40 border border-slate-800 hover:border-violet-500 p-4 rounded-2xl block shadow">
                         <div class="text-lg md:text-xl font-extrabold text-violet-400 mb-1 flex items-center justify-between">
                             <span>9. Competition Solver</span>
                             <span class="text-xs bg-violet-950 text-violet-300 px-2 py-0.5 rounded-full">Active</span>
@@ -203,7 +208,7 @@
                     </a>
 
                     <!-- 9. Nebula Visual Hub -->
-                    <a href="/ai-core" onclick="showModuleInfo('Nebula Visual Hub')" class="module-card group bg-slate-950/80 hover:bg-rose-950/40 border border-slate-800 hover:border-rose-500 p-4 rounded-2xl block shadow">
+                    <a href="/ai-core" onclick="logUserActivity('Nebula Visual Hub')" class="module-card group bg-slate-950/80 hover:bg-rose-950/40 border border-slate-800 hover:border-rose-500 p-4 rounded-2xl block shadow">
                         <div class="text-lg md:text-xl font-extrabold text-rose-400 mb-1 flex items-center justify-between">
                             <span>10. Nebula Visual Hub</span>
                             <span class="text-xs bg-rose-950 text-rose-300 px-2 py-0.5 rounded-full">Active</span>
@@ -212,7 +217,7 @@
                     </a>
 
                     <!-- 10. Spoken English Master -->
-                    <a href="/spoken-english" onclick="showModuleInfo('Spoken English Master')" class="module-card group bg-slate-950/80 hover:bg-green-950/40 border border-slate-800 hover:border-green-500 p-4 rounded-2xl block shadow">
+                    <a href="/spoken-english" onclick="logUserActivity('Spoken English')" class="module-card group bg-slate-950/80 hover:bg-green-950/40 border border-slate-800 hover:border-green-500 p-4 rounded-2xl block shadow">
                         <div class="text-lg md:text-xl font-extrabold text-green-400 mb-1 flex items-center justify-between">
                             <span>11. Spoken English Master</span>
                             <span class="text-xs bg-green-950 text-green-300 px-2 py-0.5 rounded-full">Active</span>
@@ -220,8 +225,8 @@
                         <div class="text-xs text-slate-300" data-key="mod11Desc">अदिति मैम के साथ 4D Live AI वॉयस एक्सेंट व आसान बोलचाल मैंटल.</div>
                     </a>
 
-                    <!-- 11. Legal AI (All Laws) - सबसे नीचे सुरक्षित -->
-                    <a href="/legal-ai" onclick="showModuleInfo('Legal AI')" class="module-card group bg-slate-950/80 hover:bg-yellow-950/40 border border-slate-800 hover:border-yellow-500 p-4 rounded-2xl block shadow md:col-span-2 lg:col-span-3">
+                    <!-- 11. Legal AI (सबसे नीचे सुरक्षित) -->
+                    <a href="/legal-ai" onclick="logUserActivity('Legal AI')" class="module-card group bg-slate-950/80 hover:bg-yellow-950/40 border border-slate-800 hover:border-yellow-500 p-4 rounded-2xl block shadow md:col-span-2 lg:col-span-3">
                         <div class="text-lg md:text-xl font-extrabold text-yellow-400 mb-1 flex items-center justify-between">
                             <span>7. Legal AI (All Laws)</span>
                             <span class="text-xs bg-yellow-950 text-yellow-300 px-2 py-0.5 rounded-full">Restricted</span>
@@ -289,7 +294,7 @@
         </div>
     </footer>
 
-    <!-- पूर्ण बाइलिंगुअल और ट्रांसपेरेंसी आधारित जावास्क्रिप्ट लॉजिक -->
+    <!-- उन्नत जावास्क्रिप्ट लॉजिक (Activity Ledger & Theme Sync) -->
     <script>
         let currentLang = 'hi';
         let userTokens = parseInt(localStorage.getItem("user_tokens")) || 10;
@@ -300,7 +305,7 @@
                 tokensText: "टोकन्स",
                 voiceGuide: "वॉयस गाइड",
                 walletBtn: "वॉलेट",
-                profileBtn: "एनालिसिस रिपोर्ट",
+                profileBtn: "रिपोर्ट",
                 marquee1: "ध्रुव एकेडमी मास्टर इकोसिस्टम में आपका स्वागत है",
                 marquee2: "प्रतियोगी परीक्षाओं एवं स्मार्ट लर्निंग के लिए सर्वोच्च AI प्लेटफ़ॉर्म",
                 marquee3: "Dhruv Academy - Ultimate Smart Learning & AI Ecosystem",
@@ -310,7 +315,7 @@
                 loginBtn: "लॉगिन करें और 10 टोकन पाएं 🚀",
                 welcomeMsg: "✨ स्वागत है! आपका मास्टर वॉलेट सक्रिय है।",
                 walletActiveText: "आपके वॉलेट में",
-                tokensAvailableText: "फ्री टोकन सुरक्षित हैं। आपकी दैनिक गतिविधि और ट्रांसपेरेंसी रिपोर्ट नीचे सिंक है:",
+                tokensAvailableText: "फ्री टोकन सुरक्षित हैं। आपकी गतिविधि और ट्रांसपेरेंसी रिपोर्ट नीचे सिंक है:",
                 modulesHeading: "🚀 सभी 11 मास्टर मॉड्यूल्स (Active Modules):",
                 mod1Desc: "नर्सरी से कक्षा 5 तक की नींव (AI-Driven Learning Module).",
                 mod2Desc: "400-AI मल्टी-एजेंट न्यूट्रल कोर, डीप रिसर्च व लॉजिक टूल्स.",
@@ -336,7 +341,7 @@
                 tokensText: "Tokens",
                 voiceGuide: "Voice Guide",
                 walletBtn: "Wallet",
-                profileBtn: "Analytics Report",
+                profileBtn: "Report",
                 marquee1: "Welcome to Dhruv Academy Master Ecosystem",
                 marquee2: "The Ultimate AI Platform for Competitive Exams & Smart Learning",
                 marquee3: "Dhruv Academy - Ultimate Smart Learning & AI Ecosystem",
@@ -346,7 +351,7 @@
                 loginBtn: "Login & Get 10 Tokens 🚀",
                 welcomeMsg: "✨ Welcome! Your Master Wallet is Active.",
                 walletActiveText: "You have",
-                tokensAvailableText: "free tokens safe in your wallet. Your daily activity and transparency report is synced below:",
+                tokensAvailableText: "free tokens safe in your wallet. Your activity and transparency report is synced below:",
                 modulesHeading: "🚀 All 11 Master Modules:",
                 mod1Desc: "Nursery to Class 5 Foundation (AI-Driven Learning Module).",
                 mod2Desc: "400-AI Multi-Agent Neural Core, Deep Research & Logic Tools.",
@@ -446,6 +451,15 @@
             document.getElementById('walletModal').classList.add('hidden');
         }
 
+        // यूज़र गतिविधि लॉगिंग (Activity Ledger)
+        function logUserActivity(moduleName) {
+            let history = JSON.parse(localStorage.getItem("user_activity_log")) || [];
+            let timestamp = new Date().toLocaleString();
+            history.unshift({ module: moduleName, time: timestamp });
+            if(history.length > 10) history.pop(); // केवल अंतिम 10 गतिविधियां रखें
+            localStorage.setItem("user_activity_log", JSON.stringify(history));
+        }
+
         async function buyTokens(tokensToAdd, price) {
             const savedMobile = localStorage.getItem("user_mobile");
             if(!savedMobile) {
@@ -488,12 +502,15 @@
 
         function openStudentProfile() {
             const mobile = localStorage.getItem("user_mobile") || "अज्ञात / Guest";
-            alert(`📊 छात्र एनालिसिस और ट्रांसपेरेंसी रिपोर्ट:\n\n📱 मोबाइल नंबर: ${mobile}\n⚡ शेष टोकन बैलेंस: ${userTokens}\n🔍 आज की सर्च और गतिविधियाँ: सक्रिय (Active)\n💡 पर-डे क्रेडिट एनालिसिस: 10 टोकन मुफ्त अलॉटेड\n🛡️ डेटा स्टेटस: सुरक्षित (Encrypted & Synced)`);
+            let activityLog = JSON.parse(localStorage.getItem("user_activity_log")) || [];
+            let logText = activityLog.length > 0 ? activityLog.map(item => `• ${item.module} (${item.time})`).join('\n') : "कोई हालिया गतिविधि नहीं।";
+            
+            alert(`📊 छात्र एनालिसिस और ट्रांसपेरेंसी रिपोर्ट:\n\n📱 मोबाइल नंबर: ${mobile}\n⚡ शेष टोकन बैलेंस: ${userTokens}\n\n🔍 हालिया उपयोग गतिविधियाँ:\n${logText}\n\n🛡️ डेटा स्टेटस: सुरक्षित (Encrypted & Synced)`);
         }
 
-        function showModuleInfo(moduleName) {
-            // क्लिक करते समय मॉड्यूल का विवरण दिखाना
-            console.log("Navigating to module: " + moduleName);
+        function changeThemeAccent(colorHex) {
+            document.documentElement.style.setProperty('--brand-color', colorHex);
+            alert("थीम कलर सफलतापूर्वक सिंक हो गया है!");
         }
 
         function toggleThemeMode() {
