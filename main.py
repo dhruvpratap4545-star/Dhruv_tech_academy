@@ -27,7 +27,7 @@ from sqlalchemy.orm import sessionmaker, Session
 app = FastAPI(title="Dhruv Academy Master Ecosystem")
 
 # ------------------------------------------------------------------------------
-# 1. डेटाबेस, स्टोरेज और मॉडल सेटअप
+# 1. डेटाबेस, स्टोरेज और मॉडल सेटअप (Promo Token & Credits Integrated)
 # ------------------------------------------------------------------------------
 UPLOAD_DIR = Path("dhruv_academy_master_storage")
 UPLOAD_DIR.mkdir(exist_ok=True)
@@ -79,6 +79,16 @@ class SubFeatureToggle(Base):
     feature_name = Column(String)
     is_enabled = Column(Boolean, default=True)
     is_paywalled = Column(Boolean, default=False)
+
+# नया मॉडल: छात्र व प्रोमो टोकन / क्रेडिट सिस्टम हेतु
+class RegisteredStudent(Base):
+    __tablename__ = "registered_students"
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String)
+    email = Column(String, unique=True, index=True)
+    promo_token_used = Column(String, nullable=True)
+    token_balance = Column(Integer, default=10) # मुफ्त शुरुआती टोकन
+    created_at = Column(DateTime, default=datetime.datetime.utcnow)
 
 Base.metadata.create_all(bind=engine)
 
@@ -328,6 +338,36 @@ def admin_logout(request: Request, db: Session = Depends(get_db)):
     res = RedirectResponse(url="/secret-admin-login-dhruv", status_code=status.HTTP_303_SEE_OTHER)
     res.delete_cookie("dhruv_auth_token")
     return res
+
+# ------------------------------------------------------------------------------
+# 3.1. नया एपीआई एंडपॉइंट: छात्र रजिस्ट्रेशन व Promo Token सत्यापन
+# ------------------------------------------------------------------------------
+@app.post("/api/register-student")
+def register_student_endpoint(
+    name: str = Form(...),
+    email: str = Form(...),
+    promo_token: Optional[str] = Form(None),
+    db: Session = Depends(get_db)
+):
+    existing_user = db.query(RegisteredStudent).filter_by(email=email.strip()).first()
+    if existing_user:
+        return JSONResponse(content={"success": False, "message": "यह ईमेल आईडी पहले से पंजीकृत है!"})
+    
+    initial_tokens = 10
+    clean_token = promo_token.strip() if promo_token else None
+    if clean_token:
+        # यदि वैध प्रोमो टोकन दिया गया है तो नए छात्र को बोनस टोकन दें
+        initial_tokens += 5
+
+    new_student = RegisteredStudent(
+        name=name.strip(),
+        email=email.strip(),
+        promo_token_used=clean_token,
+        token_balance=initial_tokens
+    )
+    db.add(new_student)
+    db.commit()
+    return JSONResponse(content={"success": True, "message": f"सफलतापूर्वक पंजीकरण हो गया! आपके खाते में {initial_tokens} Promo Token क्रेडिट कर दिए गए हैं।"})
 
 # ------------------------------------------------------------------------------
 # 4. सुपर-एडमिन मास्टर डैशबोर्ड
@@ -619,6 +659,27 @@ def master_ecosystem_dashboard(request: Request, db: Session = Depends(get_db)):
                     </div>
                 </header>
 
+                <!-- फ्री रजिस्ट्रेशन व Promo Token इनपुट सेक्शन -->
+                <div class="bg-slate-900/90 p-6 rounded-2xl border border-cyan-500/30 shadow-xl max-w-xl mx-auto space-y-4">
+                    <h3 class="text-base font-bold text-cyan-300 text-center">🎯 छात्र नि:शुल्क पंजीकरण व Promo Token</h3>
+                    <form onsubmit="handleRegistration(event)" class="space-y-3 text-xs">
+                        <div>
+                            <label class="block mb-1 text-gray-300 font-semibold">पूरा नाम (Full Name)</label>
+                            <input type="text" id="regName" required placeholder="अपना नाम दर्ज करें" class="w-full p-2.5 rounded-xl bg-slate-800 border border-slate-700 text-white focus:border-cyan-500 focus:outline-none">
+                        </div>
+                        <div>
+                            <label class="block mb-1 text-gray-300 font-semibold">ईमेल आईडी (Email)</label>
+                            <input type="email" id="regEmail" required placeholder="student@example.com" class="w-full p-2.5 rounded-xl bg-slate-800 border border-slate-700 text-white focus:border-cyan-500 focus:outline-none">
+                        </div>
+                        <div>
+                            <label class="block mb-1 text-gray-300 font-semibold">Promo Token (वैकल्पिक / Optional)</label>
+                            <input type="text" id="regPromo" placeholder="यदि किसी ने बताया हो तो यहाँ कोड दर्ज करें" class="w-full p-2.5 rounded-xl bg-slate-800 border border-slate-700 text-white focus:border-cyan-500 focus:outline-none">
+                        </div>
+                        <button type="submit" class="w-full py-3 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 rounded-xl font-bold text-white shadow-lg transition">निःशुल्क रजिस्टर करें व टोकन पाएं 🚀</button>
+                    </form>
+                    <div id="regResponseMsg" class="text-center font-bold text-xs"></div>
+                </div>
+
                 <div class="nebula-master-glow p-6 sm:p-12 rounded-3xl border border-cyan-500/40 text-center space-y-6 shadow-2xl relative overflow-hidden">
                     <h1 class="text-2xl sm:text-4xl lg:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-sky-200 to-purple-400" id="heroTitle">Dhruv Academy Master Ecosystem</h1>
                     <p class="text-xs sm:text-sm md:text-base max-w-3xl mx-auto leading-relaxed font-semibold text-slate-200" id="heroDesc">नर्सरी से लेकर सभी कानून, आईएएस (IAS), पीसीएस (PCS), स्पोकन इंग्लिश और शोध विषयों की तैयारी के लिए भारत का सबसे उन्नत 400-AI न्यूरल पोर्टल।</p>
@@ -736,6 +797,28 @@ def master_ecosystem_dashboard(request: Request, db: Session = Depends(get_db)):
             let isVoiceGuideActive = false;
             let currentTheme = 'dark';
             let currentLang = 'hi';
+
+            async function handleRegistration(event) {
+                event.preventDefault();
+                let name = document.getElementById('regName').value;
+                let email = document.getElementById('regEmail').value;
+                let promo = document.getElementById('regPromo').value;
+
+                let formData = new URLSearchParams();
+                formData.append('name', name);
+                formData.append('email', email);
+                formData.append('promo_token', promo);
+
+                let res = await fetch('/api/register-student', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+                    body: formData
+                });
+                let data = await res.json();
+                let msgBox = document.getElementById('regResponseMsg');
+                msgBox.innerText = data.message;
+                msgBox.className = data.success ? "text-center font-bold text-xs text-emerald-400" : "text-center font-bold text-xs text-rose-400";
+            }
 
             function toggleThemeMode() {
                 let bodyEl = document.getElementById('pageBody');
@@ -1482,8 +1565,8 @@ async def ai_core_page(request: Request, db: Session = Depends(get_db)):
 
 @app.get("/digital-library", response_class=HTMLResponse)
 async def digital_library_page(request: Request, db: Session = Depends(get_db)):
-    client_ip = request.client.host if request.client else "Unknown"
-    log_activity(db, "Page Visited", "Digital Library", "Opened Encrypted Notes Vault", "Student", client_ip)
+    client_op = request.client.host if request.client else "Unknown"
+    log_activity(db, "Page Visited", "Digital Library", "Opened Encrypted Notes Vault", "Student", client_op)
     file_path = Path("digital-library.html")
     if not file_path.exists():
         return HTMLResponse(content="<h1>digital-library.html file missing</h1>", status_code=404)
