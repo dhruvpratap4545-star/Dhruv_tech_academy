@@ -56,10 +56,10 @@
                 ← <span>मुख्य मास्टर पोर्टल</span>
             </a>
             <div class="flex flex-wrap items-center gap-2">
-                <!-- AI Token Balance (खर्च मैनेज करने के लिए) -->
+                <!-- AI Token Balance -->
                 <div class="px-3.5 py-1.5 bg-purple-950 border border-purple-500/50 rounded-full text-xs font-bold flex items-center gap-2 shadow">
                     <span class="text-purple-300">⚡ AI टोकन्स:</span>
-                    <span id="aiTokenCount" class="text-purple-200 font-extrabold">45 / 50</span>
+                    <span id="aiTokenCount" class="text-purple-200 font-extrabold">45</span>
                     <button onclick="openTokenRefillModal()" class="text-[10px] bg-purple-600 hover:bg-purple-500 text-white px-2 py-0.5 rounded-md">रिचार्ज+</button>
                 </div>
 
@@ -112,7 +112,7 @@
                 </div>
             </div>
 
-            <!-- कार्ड 2: AI Socratic Tutor (विदेशों जैसा आधुनिक फीचर) -->
+            <!-- कार्ड 2: AI Socratic Tutor -->
             <div class="library-card p-5 rounded-3xl space-y-3" data-category="ai_tools">
                 <div class="flex justify-between items-center">
                     <span class="px-2.5 py-1 bg-purple-950 text-purple-300 rounded-lg text-[10px] font-bold">Global AI Feature</span>
@@ -123,7 +123,7 @@
                 <button onclick="openSocraticTutorModal()" class="w-full py-2.5 bg-purple-600 hover:bg-purple-500 text-white rounded-xl text-xs font-bold transition shadow">एआई ट्यूटर से पूछें 🤖 (1 टोकन)</button>
             </div>
 
-            <!-- कार्ड 3: प्रीमियम पास (कॉस्ट मैनेजमेंट और कमाई) -->
+            <!-- कार्ड 3: प्रीमियम पास -->
             <div class="library-card p-5 rounded-3xl space-y-3" data-category="paid">
                 <div class="flex justify-between items-center">
                     <span class="px-2.5 py-1 bg-amber-950 text-amber-300 rounded-lg text-[10px] font-bold">Pro Elite Pass (₹199)</span>
@@ -148,7 +148,7 @@
                 <p class="text-gray-300">अपना कठिन सवाल या टॉपिक दर्ज करें (जैसे: जूलॉजी फर्टिलाइजेशन या अनुच्छेद 21):</p>
                 <input type="text" id="socraticQuery" placeholder="यहाँ अपना प्रश्न लिखें..." class="w-full p-3 bg-slate-950 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-purple-500">
                 <div id="socraticResponse" class="hidden p-3 bg-slate-950 rounded-xl border border-purple-500/50 text-cyan-300">
-                    💡 <b>AI ट्यूटर:</b> "अच्छा, आपने फर्टिलाइजेशन के बारे में पूछा। क्या आप बता सकते हैं कि शुक्राणु (Sperm) अंडे की झिल्ली को तोड़ने के लिए किस एंजाइम का उपयोग करता है?"
+                    💡 <b>AI ट्यूटर:</b> "अच्छा, आपने फर्टिलाइजेशन के बारे में पूछा। क्या आप बता सकते हैं कि शुक्राणु (Sperm) अंडे की झिल्ली को तोड़ने के लिए किस एंजाइम का उपयोग करता है?"
                 </div>
                 <button onclick="askSocraticAI()" class="w-full py-3 bg-purple-600 hover:bg-purple-500 text-white rounded-xl font-bold transition shadow-lg">ट्यूटर से चर्चा करें (कटेगा 1 टोकन) 🚀</button>
             </div>
@@ -211,15 +211,57 @@
         <p>© 2026 Dhruv Academy Master Ecosystem. सर्वाधिकार सुरक्षित।</p>
     </footer>
 
+    <!-- मास्टर जावास्क्रिप्ट और सेंट्रल वॉलेट सिंक लॉजिक -->
     <script>
         let currentWallet = 150.00;
         let aiTokens = 45;
 
+        // 🔄 पेज लोड होते ही सेंट्रल वॉलेट और टोकन को ऑटो-सिंक करने का मास्टर कोड
+        window.addEventListener('DOMContentLoaded', () => {
+            let savedWallet = localStorage.getItem('dhruv_wallet_balance');
+            if (savedWallet !== null) {
+                currentWallet = parseFloat(savedWallet);
+            } else {
+                localStorage.setItem('dhruv_wallet_balance', currentWallet);
+            }
+
+            let savedTokens = localStorage.getItem('dhruv_wallet_tokens');
+            if (savedTokens !== null) {
+                aiTokens = parseInt(savedTokens);
+            } else {
+                localStorage.setItem('dhruv_wallet_tokens', aiTokens);
+            }
+
+            updateAllDisplays();
+        });
+
+        // डिस्प्ले को लाइव अपडेट और लोकल स्टोरेज सिंक करने का फंक्शन
+        function updateAllDisplays() {
+            const walletEl = document.getElementById('walletBalance');
+            if (walletEl) walletEl.innerText = "₹" + currentWallet.toFixed(2);
+
+            const tokenEl = document.getElementById('aiTokenCount');
+            if (tokenEl) tokenEl.innerText = aiTokens;
+
+            localStorage.setItem('dhruv_wallet_balance', currentWallet);
+            localStorage.setItem('dhruv_wallet_tokens', aiTokens);
+        }
+
+        // एक्टिविटी लेजर (Activity Ledger) में हर गतिविधि दर्ज करने का फंक्शन
+        function logUserActivity(moduleName) {
+            let history = JSON.parse(localStorage.getItem("user_activity_log")) || [];
+            let timestamp = new Date().toLocaleString();
+            history.unshift({ module: moduleName, time: timestamp });
+            if(history.length > 15) history.pop();
+            localStorage.setItem("user_activity_log", JSON.stringify(history));
+        }
+
         function topUpWallet() {
-            let add = prompt("वॉलेट में जोड़ने के लिए राशि दर्ज करें (₹):", "100");
+            let add = prompt("वॉलेट में जोड़ने के लिए राशि दर्ज करें (₹):", "100");
             if(add && !isNaN(add)) {
                 currentWallet += parseFloat(add);
-                document.getElementById('walletBalance').innerText = "₹" + currentWallet.toFixed(2);
+                updateAllDisplays();
+                logUserActivity('Digital Library - Wallet Topup (₹' + add + ')');
                 alert("🎉 वॉलेट सफलतापूर्वक टॉप-अप हो गया!");
             }
         }
@@ -238,9 +280,9 @@
             }
             currentWallet -= price;
             aiTokens += tokens;
-            document.getElementById('walletBalance').innerText = "₹" + currentWallet.toFixed(2);
-            document.getElementById('aiTokenCount').innerText = aiTokens;
-            alert("🎉 बधाई हो! " + tokens + " AI टोकन्स आपके खाते में जोड़ दिए गए हैं।");
+            updateAllDisplays();
+            logUserActivity('Digital Library - Bought ' + tokens + ' AI Tokens');
+            alert("🎉 बधाई हो! " + tokens + " AI टोकन्स आपके खाते में जोड़ दिए गए हैं।");
             closeTokenModal();
         }
 
@@ -251,7 +293,8 @@
                 return;
             }
             aiTokens -= cost;
-            document.getElementById('aiTokenCount').innerText = aiTokens;
+            updateAllDisplays();
+            logUserActivity('Digital Library - Used ' + featureName);
             alert("⚡ " + featureName + " चलाया गया (" + cost + " टोकन कटे)। शेष टोकन: " + aiTokens);
         }
 
@@ -266,10 +309,12 @@
         function askSocraticAI() {
             if(aiTokens < 1) {
                 alert("❌ टोकन समाप्त! कृपया रिचार्ज करें।");
+                openTokenRefillModal();
                 return;
             }
             aiTokens -= 1;
-            document.getElementById('aiTokenCount').innerText = aiTokens;
+            updateAllDisplays();
+            logUserActivity('Digital Library - AI Socratic Tutor');
             document.getElementById('socraticResponse').classList.remove('hidden');
         }
 
@@ -282,6 +327,7 @@
 
         function openSecureReader(title, isPaid, type) {
             document.getElementById('readerTitle').innerText = "सुरक्षित रीडर: " + title;
+            logUserActivity('Digital Library - Read Notes (' + title + ')');
             document.getElementById('secureReaderModal').classList.remove('hidden');
         }
         function closeSecureReader() {
@@ -296,14 +342,21 @@
             if(confirm("क्या आप '" + title + "' को ₹" + price + " में खरीदने के लिए तैयार हैं?")) {
                 currentWallet -= price;
                 aiTokens += 500; // Bonus tokens with elite pass
-                document.getElementById('walletBalance').innerText = "₹" + currentWallet.toFixed(2);
-                document.getElementById('aiTokenCount').innerText = aiTokens;
-                alert("🎉 भुगतान सफल! पास सक्रिय हो गया है और 500 बोनस AI टोकन्स जोड़ दिए गए हैं।");
+                updateAllDisplays();
+                logUserActivity('Digital Library - Purchased Elite Pass (' + title + ')');
+                alert("🎉 भुगतान सफल! पास सक्रिय हो गया है और 500 बोनस AI टोकन्स जोड़ दिए गए हैं।");
             }
         }
 
         function submitDonatedNotes() {
-            alert("🎉 आपके नोट्स निःशुल्क 'डोनेटेड नोट्स' श्रेणी में लाइव कर दिए गए हैं।");
+            let donor = document.getElementById('donorName').value.trim();
+            let exam = document.getElementById('examName').value.trim();
+            if(!donor || !exam) {
+                alert("कृपया अपना नाम और परीक्षा का नाम दर्ज करें!");
+                return;
+            }
+            logUserActivity('Digital Library - Donated Notes (' + exam + ')');
+            alert("🎉 आपके नोट्स निःशुल्क 'डोनेटेड नोट्स' श्रेणी में लाइव कर दिए गए हैं। धन्यवाद!");
             closeTopperModal();
         }
 
@@ -328,7 +381,8 @@
         function executeSearch() {
             let q = document.getElementById('librarySearchInput').value.trim();
             if(!q) { alert("कृपया खोज के लिए कुछ लिखें!"); return; }
-            alert("🔍 AI RAG इंजन द्वारा परिणाम खोजे जा रहे हैं...");
+            logUserActivity('Digital Library - Search RAG (' + q + ')');
+            alert("🔍 AI RAG इंजन द्वारा '" + q + "' के परिणाम खोजे जा रहे हैं...");
         }
     </script>
 </body>
