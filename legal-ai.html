@@ -81,9 +81,20 @@
             </a>
             
             <div class="flex items-center gap-2">
-                <span class="px-3.5 py-1.5 bg-rose-950 border border-rose-500/50 text-rose-300 rounded-full text-xs font-bold flex items-center gap-1.5 shadow">
+                <!-- सेंट्रल वॉलेट बैलेंस (नया सिंक) -->
+                <div class="px-3.5 py-1.5 bg-slate-900 border border-slate-700 rounded-full text-xs font-bold flex items-center gap-2 shadow">
+                    <span class="text-gray-400">💰 वॉलेट:</span>
+                    <span id="walletBalanceDisplay" class="text-emerald-400 font-extrabold">₹0.00</span>
+                </div>
+                <!-- एआई टोकन्स (नया सिंक) -->
+                <div class="px-3.5 py-1.5 bg-purple-950 border border-purple-500/50 rounded-full text-xs font-bold flex items-center gap-2 shadow">
+                    <span class="text-purple-300">⚡ टोकन्स:</span>
+                    <span id="tokenBalanceDisplay" class="text-purple-200 font-extrabold">0</span>
+                </div>
+                
+                <span class="px-3.5 py-1.5 bg-rose-950 border border-rose-500/50 text-rose-300 rounded-full text-xs font-bold flex items-center gap-1.5 shadow hidden sm:flex">
                     <span class="w-2.5 h-2.5 rounded-full bg-rose-500 animate-pulse"></span>
-                    <span>BNS, BNSS, BSA & Companies Act 2013 Active</span>
+                    <span>BNS & Corporate Law Active</span>
                 </span>
             </div>
         </div>
@@ -238,13 +249,65 @@
     </footer>
 
     <script>
-        let isLegalTalking = false;
-        let legalRecognizer = null;
-        let isLegalRecording = false;
+        // =======================================================
+        // मास्टर सिंक व एक्टिविटी लेजर (Central Wallet Integration)
+        // =======================================================
+        function getWalletBalance() {
+            let balance = localStorage.getItem("dhruv_wallet_balance");
+            return balance !== null ? parseFloat(balance) : 150.00;
+        }
+
+        function getWalletTokens() {
+            let tokens = localStorage.getItem("dhruv_wallet_tokens");
+            return tokens !== null ? parseInt(tokens) : 45;
+        }
+
+        function updateWalletDisplay() {
+            let bal = getWalletBalance();
+            let tok = getWalletTokens();
+            
+            const balDisplay = document.getElementById('walletBalanceDisplay');
+            if(balDisplay) balDisplay.innerText = "₹" + bal.toFixed(2);
+            
+            const tokDisplay = document.getElementById('tokenBalanceDisplay');
+            if(tokDisplay) tokDisplay.innerText = tok;
+        }
+
+        function logUserActivity(moduleName) {
+            let history = JSON.parse(localStorage.getItem("user_activity_log")) || [];
+            let timestamp = new Date().toLocaleString();
+            history.unshift({ module: moduleName, time: timestamp });
+            if(history.length > 15) history.pop();
+            localStorage.setItem("user_activity_log", JSON.stringify(history));
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            updateWalletDisplay();
+            logUserActivity('Legal AI Hub Loaded');
+        });
+
+        // 1 टोकन काटने का फंक्शन (विधिक सलाह या ड्राफ्टिंग के लिए)
+        function consumeLegalToken(featureName) {
+            let tokens = getWalletTokens();
+            if (tokens < 1) {
+                alert("⚠️ आपके सेंट्रल वॉलेट में पर्याप्त टोकन नहीं हैं! कृपया मुख्य पोर्टल से रिचार्ज करें।");
+                window.location.href = '/'; 
+                return false;
+            }
+            tokens -= 1;
+            localStorage.setItem("dhruv_wallet_tokens", tokens);
+            updateWalletDisplay();
+            logUserActivity('Legal Hub - Used ' + featureName + ' (-1 Token)');
+            return true;
+        }
 
         // =======================================================
         // 4D Live Advocate AI Canvas Avatar
         // =======================================================
+        let isLegalTalking = false;
+        let legalRecognizer = null;
+        let isLegalRecording = false;
+
         const canvas = document.getElementById('legalHumanCanvas');
         const ctx = canvas.getContext('2d');
         let mouthOpenness = 0;
@@ -361,6 +424,9 @@
                 return;
             }
 
+            // 1 टोकन चार्ज
+            if (!consumeLegalToken('BNS Law Converter')) return;
+
             let resBox = document.getElementById('sectionResultBox');
             resBox.classList.remove('hidden');
             resBox.innerHTML = `<div class="text-rose-400 font-bold animate-pulse">⚖️ BNS / BNSS डेटाबेस से विश्लेषण किया जा रहा है...</div>`;
@@ -414,6 +480,9 @@
                 defaultPrompt = "थाना प्रभारी को वास्तविक व प्रमाणित साक्ष्यों पर आधारित लिखित शिकायत पत्र";
             }
 
+            // 1 टोकन चार्ज
+            if (!consumeLegalToken('Drafting: ' + type)) return;
+
             document.getElementById('draftModalHeader').innerText = headerTitle;
             let contentArea = document.getElementById('draftContentArea');
             contentArea.innerHTML = `<div class="text-rose-400 font-bold animate-pulse">📑 विधि-सम्मत मानक प्रारूप तैयार किया जा रहा है...</div>`;
@@ -454,6 +523,7 @@
                 jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
             };
             html2pdf().set(opt).from(el).save();
+            logUserActivity('Legal Hub - Downloaded PDF Draft');
         }
 
         async function submitLegalQuestion() {
@@ -462,6 +532,9 @@
                 alert("कृपया कोई प्रश्न दर्ज करें!");
                 return;
             }
+
+            // 1 टोकन चार्ज
+            if (!consumeLegalToken('Legal Consultation')) return;
 
             let out = document.getElementById('legalOutputBoard');
             out.innerHTML += `<div class="p-2.5 bg-slate-900 rounded-xl border border-slate-800 text-rose-300 font-semibold">👤 प्रश्न: "${q}"</div>`;
