@@ -19,11 +19,10 @@ import urllib.request
 import urllib.error
 
 from fastapi import FastAPI, UploadFile, File, Form, Depends, HTTPException, Request, Response, status
-from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse
+from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse, FileResponse
 from sqlalchemy import create_engine, Column, Integer, String, DateTime, Boolean, JSON, Text
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, Session
-from fastapi.responses import FileResponse
 
 app = FastAPI(title="Dhruv Academy Master Ecosystem")
 
@@ -319,7 +318,7 @@ def super_admin_dashboard(user: AdminUser = Depends(get_current_admin), db: Sess
     """
 
 # ------------------------------------------------------------------------------
-# 5. मुख्य डैशबोर्ड व API रूट्स
+# 5. मुख्य डैशबोर्ड व सुरक्षित HTML फाइल राउट्स (सटीक मैपिंग)
 # ------------------------------------------------------------------------------
 @app.get("/", response_class=HTMLResponse)
 def master_ecosystem_dashboard(request: Request, db: Session = Depends(get_db)):
@@ -327,9 +326,54 @@ def master_ecosystem_dashboard(request: Request, db: Session = Depends(get_db)):
     log_activity(db, "Portal Visited", "Main Portal", "User loaded ecosystem dashboard", "Visitor", client_ip)
     index_path = Path("index.html")
     if index_path.exists():
-        with open(index_path, "r", encoding="utf-8") as f:
-            return f.read()
+        return FileResponse("index.html")
     return HTMLResponse("<h1>index.html missing</h1>", status_code=404)
+
+@app.get("/ai-core", response_class=FileResponse)
+@app.get("/ai-core.html", response_class=FileResponse)
+def serve_ai_core():
+    return FileResponse("ai-core.html")
+
+@app.get("/ai-auto-healing", response_class=FileResponse)
+@app.get("/ai-auto-healing.html", response_class=FileResponse)
+def serve_auto_healing():
+    return FileResponse("ai-auto-healing.html")
+
+@app.get("/digital-library", response_class=FileResponse)
+@app.get("/digital-library.html", response_class=FileResponse)
+def serve_digital_library():
+    return FileResponse("digital-library.html")
+
+@app.get("/kids-zone", response_class=FileResponse)
+@app.get("/kids-zone.html", response_class=FileResponse)
+def serve_kids_zone():
+    return FileResponse("kids-zone.html")
+
+@app.get("/legal-ai", response_class=FileResponse)
+@app.get("/legal-ai.html", response_class=FileResponse)
+@app.get("/legal-hub", response_class=FileResponse)
+@app.get("/legal-hub.html", response_class=FileResponse)
+def serve_legal_ai():
+    if Path("legal-ai.html").exists():
+        return FileResponse("legal-ai.html")
+    return FileResponse("legal-hub.html")
+
+@app.get("/spoken-english", response_class=FileResponse)
+@app.get("/spoken-english.html", response_class=FileResponse)
+def serve_spoken_english():
+    return FileResponse("spoken-english.html")
+
+@app.get("/face-swap-social", response_class=FileResponse)
+@app.get("/face-swap-social.html", response_class=FileResponse)
+def serve_face_swap():
+    return FileResponse("face-swap-social.html")
+
+@app.get("/central-wallet", response_class=FileResponse)
+@app.get("/central-wallet.html", response_class=FileResponse)
+def serve_central_wallet():
+    if Path("central-wallet.html").exists():
+        return FileResponse("central-wallet.html")
+    return FileResponse("index.html")
 
 def get_all_gemini_keys() -> List[str]:
     keys = []
@@ -403,41 +447,6 @@ async def master_admin_panel(user: AdminUser = Depends(get_current_admin), db: S
     rows = "".join([f"<tr class='border-b border-gray-800 text-xs'><td class='py-2 px-3'>{l.timestamp.strftime('%H:%M:%S')}</td><td class='py-2 px-3'>{l.user_identifier}</td><td class='py-2 px-3 text-cyan-300'>{l.module}</td><td class='py-2 px-3 font-bold'>{l.action}</td><td class='py-2 px-3'>{l.details}</td></tr>" for l in logs])
     return f"""<!DOCTYPE html><html lang="hi"><head><meta charset="UTF-8"><title>Live Activity Monitor</title><script src="https://cdn.tailwindcss.com"></script></head><body class="bg-slate-950 text-white p-6 font-sans"><div class="max-w-6xl mx-auto space-y-4"><div class="flex justify-between items-center"><h1 class="text-xl font-bold text-emerald-400">📊 लाइव यूजर एक्टिविटी मॉनिटर</h1><a href="/admin/super-dashboard" class="px-4 py-2 bg-indigo-600 rounded-xl text-xs font-bold">🛡️ ऑडिट ट्रेल व मोनोग्राम पैनल</a></div><div class="bg-slate-900 p-4 rounded-xl border border-gray-800 overflow-x-auto"><table class="w-full text-left"><thead><tr class="bg-slate-800 text-xs text-gray-300"><th class="p-2">समय</th><th class="p-2">यूजर</th><th class="p-2">मॉड्यूल</th><th class="p-2">एक्शन</th><th class="p-2">विवरण</th></tr></thead><tbody>{rows}</tbody></table></div></div></body></html>"""
 
-@app.get("/kids-zone", response_class=HTMLResponse)
-async def kids_zone(request: Request, db: Session = Depends(get_db)):
-    file_path = Path("kids-zone.html")
-    if file_path.exists():
-        with open(file_path, "r", encoding="utf-8") as f: return f.read()
-    return HTMLResponse("<h1>kids-zone.html missing</h1>", status_code=404)
-
-@app.get("/ai-core", response_class=HTMLResponse)
-async def ai_core_page(request: Request, db: Session = Depends(get_db)):
-    file_path = Path("ai-core.html")
-    if file_path.exists():
-        with open(file_path, "r", encoding="utf-8") as f: return f.read()
-    return HTMLResponse("<h1>ai-core.html missing</h1>", status_code=404)
-
-@app.get("/digital-library", response_class=HTMLResponse)
-async def digital_library_page(request: Request, db: Session = Depends(get_db)):
-    file_path = Path("digital-library.html")
-    if file_path.exists():
-        with open(file_path, "r", encoding="utf-8") as f: return f.read()
-    return HTMLResponse("<h1>digital-library.html file missing</h1>", status_code=404)
-
-@app.get("/legal-ai", response_class=HTMLResponse)
-async def legal_ai_page(request: Request, db: Session = Depends(get_db)):
-    file_path = Path("legal-ai.html")
-    if file_path.exists():
-        with open(file_path, "r", encoding="utf-8") as f: return f.read()
-    return HTMLResponse("<h1>legal-ai.html missing</h1>", status_code=404)
-
-@app.get("/spoken-english", response_class=HTMLResponse)
-async def spoken_english_page(request: Request, db: Session = Depends(get_db)):
-    file_path = Path("spoken-english.html")
-    if file_path.exists():
-        with open(file_path, "r", encoding="utf-8") as f: return f.read()
-    return HTMLResponse("<h1>spoken-english.html missing</h1>", status_code=404)
-
 # ------------------------------------------------------------------------------
 # कमर्शियल पेमेंट गेटवे, ऑटो-डिटेक्शन और क्रेडिट एनालिसिस मॉड्यूल
 # ------------------------------------------------------------------------------
@@ -468,14 +477,11 @@ def verify_payment_and_add_tokens(
     if not student:
         return JSONResponse(content={"success": False, "message": "छात्र पंजीकृत नहीं है! पहले लॉगिन करें।"})
     
-    # टोकन वॉलेट में जोड़ना
     student.token_balance += tokens_to_add
     
-    # ऑडिट ट्रेल और मोनोग्राम रिकॉर्ड सुरक्षित करना
     audit_msg = f"Wallet Recharge: Mobile {clean_mobile}, Added {tokens_to_add} Tokens, Paid ₹{amount_paid}, PaymentID: {payment_id}"
     monogram_id = record_publicity_audit(db, "Commercial_Wallet_Recharge", audit_msg)
     
-    # ट्रांजैक्शन हिस्ट्री में रिकॉर्ड सेव करना
     tx_record = CreditTransactionHistory(
         mobile=clean_mobile,
         transaction_type="Recharge",
@@ -520,10 +526,6 @@ def get_user_credit_analysis(mobile: str, db: Session = Depends(get_db)):
         "registered_date": student.created_at.strftime('%d-%m-%Y'),
         "transactions": history_list
     })
-
-@app.get("/face-swap-social")
-def serve_face_swap():
-    return FileResponse("face-swap-social.html")
 
 if __name__ == "__main__":
     import uvicorn
