@@ -41,17 +41,17 @@
                     400 AI Router & Smart Notes Validator
                 </h1>
                 <p class="text-slate-500 text-xs md:text-sm mt-1">
-                    Dhruv Academy Master Ecosystem — सरल भाषा छात्र संस्करण (WhatsApp Ready)
+                    Dhruv Academy Master Ecosystem — सेंट्रल वॉलेट सिंक और सरल भाषा छात्र संस्करण
                 </p>
             </div>
             <div class="flex items-center gap-3">
+                <!-- लाइव सेंट्रल वॉलेट टोकन काउंटर -->
+                <div class="bg-purple-950 border border-purple-500 px-3 py-2 rounded-xl text-yellow-400 font-extrabold text-xs shadow">
+                    ⚡ सेंट्रल टोकन्स: <span id="walletTokenDisplay">10</span>
+                </div>
                 <a href="index.html" class="px-4 py-2 bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-300 rounded-xl text-xs font-medium transition">
                     ← होम पेज
                 </a>
-                <div class="flex items-center gap-2 bg-slate-900 px-3 py-2 rounded-xl border border-slate-800 text-xs">
-                    <span class="h-2 w-2 rounded-full bg-cyan-500 animate-pulse"></span>
-                    <span class="text-cyan-400 font-semibold">WhatsApp शेयर एक्टिव</span>
-                </div>
             </div>
         </header>
 
@@ -63,9 +63,9 @@
                 <div>
                     <label for="aiPrompt" class="block text-sm font-semibold text-slate-200 mb-2 flex items-center justify-between">
                         <span>अपने पुराने या हस्तलिखित नोट्स यहाँ पेस्ट करें (Paste Notes)</span>
-                        <span class="text-xs text-cyan-400 font-normal">सुधार एवं सरलीकरण हब</span>
+                        <span class="text-xs text-cyan-400 font-normal">लागत: 1 टोकन प्रति सुधार</span>
                     </label>
-                    <textarea id="aiPrompt" rows="6" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-4 text-slate-200 placeholder-slate-600 focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 outline-none text-sm resize-y" placeholder="यहाँ अपने नोट्स या मैटर का टेक्स्ट पेस्ट करें। इसके बाद नीचे दिए गए बटन्स से अपनी भाषा (सरल हिंदी, सिंपल इंग्लिश या हिंग्लिश) चुनें..."></textarea>
+                    <textarea id="aiPrompt" rows="6" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-4 text-slate-200 placeholder-slate-600 focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 outline-none text-sm resize-y" placeholder="यहाँ अपने नोट्स या मैटर का टेक्स्ट पेस्ट करें। इसके बाद नीचे दिए गए बटन्स से अपनी भाषा चुनें..."></textarea>
                     
                     <!-- Quick Presets -->
                     <div class="mt-4">
@@ -102,9 +102,7 @@
                         <svg class="w-4 h-4 text-cyan-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
                         सुधारे गए सरल नोट्स (Student-Friendly Output)
                     </h2>
-                    <div class="flex items-center gap-2">
-                        <button onclick="clearAll()" class="text-xs text-slate-500 hover:text-red-400 transition">साफ करें</button>
-                    </div>
+                    <button onclick="clearAll()" class="text-xs text-slate-500 hover:text-red-400 transition">साफ करें</button>
                 </div>
 
                 <!-- Result Box -->
@@ -112,7 +110,7 @@
                     <span class="text-slate-600 italic">छात्र-अनुकूल और सरल भाषा में सुधारे गए नोट्स यहाँ दिखाई देंगे। बाएं बॉक्स से भाषा चुनें...</span>
                 </div>
 
-                <!-- Export & Share Utility Toolbar (WhatsApp & Safe Tools) -->
+                <!-- Export & Share Utility Toolbar -->
                 <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-3 border-t border-slate-800">
                     <button onclick="downloadResultTxtSafe()" class="flex items-center justify-center gap-1.5 px-3 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl text-xs font-medium border border-slate-700 transition">
                         📥 TXT सेव
@@ -132,8 +130,28 @@
         </div>
     </div>
 
-    <!-- JavaScript Logic -->
+    <!-- JavaScript Logic with Central Wallet Sync -->
     <script>
+        // सेंट्रल वॉलेट से टोकन सिंक करें
+        function getWalletBalance() {
+            let balance = localStorage.getItem("dhruv_wallet_tokens");
+            if (balance === null) {
+                balance = 10;
+                localStorage.setItem("dhruv_wallet_tokens", balance);
+            }
+            return parseInt(balance);
+        }
+
+        function updateWalletDisplay() {
+            const currentTokens = getWalletBalance();
+            const display = document.getElementById('walletTokenDisplay');
+            if(display) display.innerText = currentTokens;
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            updateWalletDisplay();
+        });
+
         function setPreset(text) {
             document.getElementById('aiPrompt').value = text;
         }
@@ -155,6 +173,21 @@
                 return;
             }
 
+            // सेंट्रल वॉलेट टोकन चेक (1 टोकन की लागत)
+            let currentTokens = getWalletBalance();
+            if(currentTokens < 1) {
+                alert("⚠️ आपके सेंट्रल वॉलेट में पर्याप्त टोकन नहीं हैं! कृपया सेंट्रल वॉलेट से रिचार्ज करें।");
+                window.location.href = 'central-wallet.html';
+                return;
+            }
+
+            // 1 टोकन माइनस करें और एक्टिविटी लेजर में दर्ज करें
+            currentTokens -= 1;
+            localStorage.setItem("dhruv_wallet_tokens", currentTokens);
+            localStorage.setItem("user_tokens", currentTokens);
+            updateWalletDisplay();
+            logUserActivity('AI Engine Core (' + languageMode + ')');
+
             showLoading(languageMode);
 
             setTimeout(() => {
@@ -164,6 +197,7 @@
                                `1. सभी तथ्यात्मक और व्याकरण संबंधी अशुद्धियों को सुधार दिया गया है।\n` +
                                `2. भाषा को पूरी तरह आम बोलचाल और प्रतियोगी छात्रों के अनुकूल (${languageMode}) बनाया गया है।\n` +
                                `3. कठिन शब्दों को हटाकर आसान शब्दों में संरचित किया गया है ताकि आप आसानी से याद कर सकें।\n\n` +
+                               `> (नोट: इस प्रक्रिया में 1 सेंट्रल टोकन खर्च हुआ है)\n` +
                                `-- Dhruv Academy Master Ecosystem (2026)`;
 
                 document.getElementById('aiOutput').innerText = output;
@@ -171,12 +205,19 @@
             }, 1200);
         }
 
+        function logUserActivity(moduleName) {
+            let history = JSON.parse(localStorage.getItem("user_activity_log")) || [];
+            let timestamp = new Date().toLocaleString();
+            history.unshift({ module: moduleName, time: timestamp });
+            if(history.length > 10) history.pop();
+            localStorage.setItem("user_activity_log", JSON.stringify(history));
+        }
+
         function clearAll() {
             document.getElementById('aiPrompt').value = '';
             document.getElementById('aiOutput').innerHTML = '<span class="text-slate-600 italic">छात्र-अनुकूल और सरल भाषा में सुधारे गए नोट्स यहाँ दिखाई देंगे। बाएं बॉक्स से भाषा चुनें...</span>';
         }
 
-        // 1. Safe Clipboard Copy
         function copyToClipboardSafe() {
             const textElement = document.getElementById('aiOutput');
             const text = textElement.innerText || textElement.textContent;
@@ -189,115 +230,58 @@
             if (navigator.clipboard && navigator.clipboard.writeText) {
                 navigator.clipboard.writeText(text).then(() => {
                     alert("सुधारे गए सरल नोट्स सफलतापूर्वक क्लिपबोर्ड पर कॉपी हो गए हैं!");
-                }).catch(err => {
-                    fallbackCopyText(text);
                 });
             } else {
-                fallbackCopyText(text);
+                alert("कॉपी करने में असमर्थ।");
             }
         }
 
-        function fallbackCopyText(text) {
-            const textArea = document.createElement("textarea");
-            textArea.value = text;
-            textArea.style.position = "fixed";
-            document.body.appendChild(textArea);
-            textArea.focus();
-            textArea.select();
-            try {
-                document.execCommand('copy');
-                alert("सुधारे गए सरल नोट्स सफलतापूर्वक कॉपी हो गए हैं!");
-            } catch (err) {
-                alert("ब्राउज़र सुरक्षा के कारण कॉपी नहीं हो सका।");
-            }
-            document.body.removeChild(textArea);
-        }
-
-        // 2. Safe TXT Download
         function downloadResultTxtSafe() {
             const textElement = document.getElementById('aiOutput');
             const text = textElement.innerText || textElement.textContent;
-
             if (!text || text.includes('यहाँ दिखाई देंगे')) {
                 alert("डाउनलोड करने के लिए पहले परिणाम जनरेट करें!");
                 return;
             }
-
-            try {
-                const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
-                const url = URL.createObjectURL(blob);
-                const link = document.createElement('a');
-                link.href = url;
-                link.download = 'Dhruv_Academy_Student_Notes.txt';
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-                URL.revokeObjectURL(url);
-            } catch (e) {
-                alert("फाइल सेव करने में त्रुटि आई।");
-            }
+            const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = 'Dhruv_Academy_Student_Notes.txt';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
         }
 
-        // 3. Safe Doc Download
         function downloadResultHtmlAsDocSafe() {
             const textElement = document.getElementById('aiOutput');
             const text = textElement.innerText || textElement.textContent;
-
             if (!text || text.includes('यहाँ दिखाई देंगे')) {
                 alert("सेव करने के लिए पहले परिणाम जनरेट करें!");
                 return;
             }
-
-            try {
-                const htmlContent = `<!DOCTYPE html>
-                <html lang="hi">
-                <head>
-                    <meta charset="UTF-8">
-                    <title>Dhruv Academy - Student Notes</title>
-                    <style>
-                        body { font-family: Arial, sans-serif; padding: 30px; line-height: 1.6; color: #111; background: #fff; }
-                        pre { white-space: pre-wrap; word-wrap: break-word; font-family: inherit; font-size: 15px; }
-                        .footer { margin-top: 40px; font-size: 12px; color: #666; border-top: 1px solid #ddd; padding-top: 10px; }
-                    </style>
-                </head>
-                <body>
-                    <h2>Dhruv Academy Master Ecosystem - Verified Notes</h2>
-                    <pre>${text}</pre>
-                    <div class="footer">Generated via Dhruv Academy AI Router Core (2026)</div>
-                    <script>window.print();<\/script>
-                </body>
-                </html>`;
-
-                const blob = new Blob([htmlContent], { type: 'text/html;charset=utf-8' });
-                const url = URL.createObjectURL(blob);
-                const link = document.createElement('a');
-                link.href = url;
-                link.download = 'Dhruv_Academy_Verified_Notes.html';
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-                URL.revokeObjectURL(url);
-            } catch (e) {
-                alert("सेव करने में त्रुटि आई।");
-            }
+            const htmlContent = `<!DOCTYPE html><html lang="hi"><head><meta charset="UTF-8"><title>Dhruv Academy - Student Notes</title></head><body><h2>Dhruv Academy Master Ecosystem - Verified Notes</h2><pre>${text}</pre><script>window.print();<\/script></body></html>`;
+            const blob = new Blob([htmlContent], { type: 'text/html;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = 'Dhruv_Academy_Verified_Notes.html';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
         }
 
-        // 4. Direct WhatsApp Share Functionality
         function shareOnWhatsApp() {
             const textElement = document.getElementById('aiOutput');
             const text = textElement.innerText || textElement.textContent;
-
             if (!text || text.includes('यहाँ दिखाई देंगे')) {
                 alert("WhatsApp पर शेयर करने के लिए पहले परिणाम जनरेट करें!");
                 return;
             }
-
-            // Encode text cleanly for WhatsApp URL scheme
             const encodedText = encodeURIComponent(text);
-            const whatsappUrl = `https://api.whatsapp.com/send?text=${encodedText}`;
-            
-            // Open WhatsApp in a new tab/window
-            window.open(whatsappUrl, '_blank');
+            window.open(`https://api.whatsapp.com/send?text=${encodedText}`, '_blank');
         }
     </script>
 </body>
