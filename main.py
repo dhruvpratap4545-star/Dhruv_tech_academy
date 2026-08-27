@@ -539,6 +539,16 @@ def get_user_credit_analysis(mobile: str, db: Session = Depends(get_db)):
         "transactions": history_list
     })
 
+# 5. 3D Blackboard Explicit Route (ताकि यह कभी एआई कोर पर न जाए)
+@app.get("/3d-blackboard.html", response_class=HTMLResponse)
+@app.get("/3d-blackboard", response_class=HTMLResponse)
+async def serve_3d_blackboard():
+    path = "3d-blackboard.html"
+    if os.path.exists(path):
+        with open(path, "r", encoding="utf-8") as f:
+            return f.read()
+    return "3d-blackboard.html file not found", 404
+
 @app.get("/coaching-hub.html", response_class=HTMLResponse)
 @app.get("/coaching-hub", response_class=HTMLResponse)
 async def serve_coaching_hub():
