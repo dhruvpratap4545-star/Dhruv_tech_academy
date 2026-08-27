@@ -179,7 +179,7 @@ def require_superadmin(current_user: AdminUser = Depends(get_current_admin)):
     return current_user
 
 # ------------------------------------------------------------------------------
-# 3. एडमिन लॉगिन व छात्र रजिस्ट्रेशन रूट्स
+# 3. एडमिन लॉगिन व छात्र रजिस्ट्रेशन रूट्स (डिफ़ॉल्ट OTP 1234 के साथ)
 # ------------------------------------------------------------------------------
 @app.get("/secret-admin-login-dhruv", response_class=HTMLResponse)
 def secret_login_page(error: Optional[str] = None):
@@ -248,11 +248,21 @@ def admin_logout(request: Request, db: Session = Depends(get_db)):
     return res
 
 @app.post("/api/register-student")
-def register_student_endpoint(mobile: str = Form(...), dhruv_mitra_code: Optional[str] = Form(None), db: Session = Depends(get_db)):
+def register_student_endpoint(mobile: str = Form(...), otp: Optional[str] = Form(None), dhruv_mitra_code: Optional[str] = Form(None), db: Session = Depends(get_db)):
     clean_mobile = mobile.strip()
+    
+    if otp and otp.strip() != "1234":
+        return JSONResponse(content={"success": False, "message": "अमान्य OTP! डिफ़ॉल्ट OTP 1234 दर्ज करें।", "default_otp": "1234"})
+
     existing_user = db.query(RegisteredStudent).filter_by(mobile=clean_mobile).first()
     if existing_user:
-        return JSONResponse(content={"success": True, "already_registered": True, "message": "आप पहले से पंजीकृत हैं!", "token_balance": existing_user.token_balance})
+        return JSONResponse(content={
+            "success": True, 
+            "already_registered": True, 
+            "message": "आप पहले से पंजीकृत हैं!", 
+            "token_balance": existing_user.token_balance,
+            "default_otp": "1234"
+        })
     
     initial_tokens = 10
     clean_code = dhruv_mitra_code.strip() if dhruv_mitra_code else None
@@ -262,7 +272,13 @@ def register_student_endpoint(mobile: str = Form(...), dhruv_mitra_code: Optiona
     new_student = RegisteredStudent(name="Student", email=f"{clean_mobile}@dhruvacademy.com", mobile=clean_mobile, dhruv_mitra_code_used=clean_code, token_balance=initial_tokens)
     db.add(new_student)
     db.commit()
-    return JSONResponse(content={"success": True, "already_registered": False, "message": f"सफलतापूर्वक पंजीकरण! {initial_tokens} टोकन क्रेडिट कर दिए गए हैं।", "token_balance": initial_tokens})
+    return JSONResponse(content={
+        "success": True, 
+        "already_registered": False, 
+        "message": f"सफलतापूर्वक पंजीकरण! 10 टोकन क्रेडिट कर दिए गए हैं।", 
+        "token_balance": initial_tokens,
+        "default_otp": "1234"
+    })
 
 # ------------------------------------------------------------------------------
 # 4. सुपर-एडमिन कंट्रोल पैनल व ऑडिट ट्रेल
@@ -318,13 +334,11 @@ def super_admin_dashboard(user: AdminUser = Depends(get_current_admin), db: Sess
     """
 
 # ------------------------------------------------------------------------------
-# 5. मुख्य डैशबोर्ड व सुरक्षित अलग-अलग HTML फाइल राउट्स (सटीक मैपिंग)
+# 5. मुख्य डैशबोर्ड व सटीक HTML फाइल राउट्स (बिना किसी रीडायरेक्ट गड़बड़ी के)
 # ------------------------------------------------------------------------------
 @app.get("/", response_class=FileResponse)
 def serve_index():
-    if Path("index.html").exists():
-        return FileResponse("index.html")
-    return FileResponse("ai-core.html")
+    return FileResponse("index.html")
 
 @app.get("/ai-core", response_class=FileResponse)
 @app.get("/ai-core.html", response_class=FileResponse)
@@ -364,6 +378,13 @@ def serve_spoken_english():
 @app.get("/face-swap-social.html", response_class=FileResponse)
 def serve_face_swap():
     return FileResponse("face-swap-social.html")
+
+@app.get("/central-wallet", response_class=FileResponse)
+@app.get("/central-wallet.html", response_class=FileResponse)
+def serve_central_wallet():
+    if Path("central-wallet.html").exists():
+        return FileResponse("central-wallet.html")
+    return FileResponse("index.html")
 
 def get_all_gemini_keys() -> List[str]:
     keys = []
