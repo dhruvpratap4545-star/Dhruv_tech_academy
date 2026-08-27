@@ -23,6 +23,7 @@ from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse
 from sqlalchemy import create_engine, Column, Integer, String, DateTime, Boolean, JSON, Text
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, Session
+from fastapi.responses import FileResponse
 
 app = FastAPI(title="Dhruv Academy Master Ecosystem")
 
@@ -519,6 +520,10 @@ def get_user_credit_analysis(mobile: str, db: Session = Depends(get_db)):
         "registered_date": student.created_at.strftime('%d-%m-%Y'),
         "transactions": history_list
     })
+
+@app.get("/face-swap-social")
+def serve_face_swap():
+    return FileResponse("face-swap-social.html")
 
 if __name__ == "__main__":
     import uvicorn
