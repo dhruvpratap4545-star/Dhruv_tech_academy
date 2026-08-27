@@ -23,6 +23,7 @@ from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse, File
 from sqlalchemy import create_engine, Column, Integer, String, DateTime, Boolean, JSON, Text
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, Session
+from fastapi.responses import HTMLResponse
 
 app = FastAPI(title="Dhruv Academy Master Ecosystem")
 
@@ -537,6 +538,13 @@ def get_user_credit_analysis(mobile: str, db: Session = Depends(get_db)):
         "registered_date": student.created_at.strftime('%d-%m-%Y'),
         "transactions": history_list
     })
+
+@app.get("/coaching-hub.html", response_class=HTMLResponse)
+async def serve_coaching_hub():
+    if os.path.exists("coaching-hub.html"):
+        with open("coaching-hub.html", "r", encoding="utf-8") as f:
+            return f.read()
+    return "Coaching Hub file not found", 404
 
 if __name__ == "__main__":
     import uvicorn
