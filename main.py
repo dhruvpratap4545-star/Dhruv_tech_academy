@@ -318,7 +318,7 @@ def super_admin_dashboard(user: AdminUser = Depends(get_current_admin), db: Sess
     """
 
 # ------------------------------------------------------------------------------
-# 5. मुख्य डैशबोर्ड व सुरक्षित HTML फाइल राउट्स (सटीक मैपिंग)
+# 5. मुख्य डैशबोर्ड व सुरक्षित अलग-अलग HTML फाइल राउट्स (सटीक मैपिंग)
 # ------------------------------------------------------------------------------
 @app.get("/", response_class=HTMLResponse)
 def master_ecosystem_dashboard(request: Request, db: Session = Depends(get_db)):
@@ -367,13 +367,6 @@ def serve_spoken_english():
 @app.get("/face-swap-social.html", response_class=FileResponse)
 def serve_face_swap():
     return FileResponse("face-swap-social.html")
-
-@app.get("/central-wallet", response_class=FileResponse)
-@app.get("/central-wallet.html", response_class=FileResponse)
-def serve_central_wallet():
-    if Path("central-wallet.html").exists():
-        return FileResponse("central-wallet.html")
-    return FileResponse("index.html")
 
 def get_all_gemini_keys() -> List[str]:
     keys = []
