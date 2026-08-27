@@ -539,6 +539,16 @@ def get_user_credit_analysis(mobile: str, db: Session = Depends(get_db)):
         "transactions": history_list
     })
 
+# 9. Competition Solver Explicit Route (ताकि यह कभी एआई कोर पर न जाए)
+@app.get("/competition-solver.html", response_class=HTMLResponse)
+@app.get("/competition-solver", response_class=HTMLResponse)
+async def serve_competition_solver():
+    path = "competition-solver.html"
+    if os.path.exists(path):
+        with open(path, "r", encoding="utf-8") as f:
+            return f.read()
+    return "competition-solver.html file not found", 404
+
 # 5. 3D Blackboard Explicit Route (ताकि यह कभी एआई कोर पर न जाए)
 @app.get("/3d-blackboard.html", response_class=HTMLResponse)
 @app.get("/3d-blackboard", response_class=HTMLResponse)
