@@ -130,7 +130,7 @@
                 </div>
             </div>
 
-            <!-- 11 ओरिजिनल मॉड्यूल्स ग्रिड -->
+            <!-- 11 ओरिजिनल मॉड्यूल्स ग्रिड (सटीक सही राउट्स के साथ) -->
             <div>
                 <h4 class="text-xs font-bold text-purple-400 uppercase tracking-wider mb-3 px-1" data-key="modulesHeading">🚀 सभी 11 मास्टर मॉड्यूल्स (Active Modules):</h4>
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
@@ -151,7 +151,7 @@
                         <div class="text-xs text-slate-300">400-AI मल्टी-एजेंट न्यूट्रल कोर, डीप रिसर्च व लॉजिक टूल्स.</div>
                     </a>
 
-                    <a href="/ai-core" onclick="logUserActivity('AI Auto-Healing')" class="module-card group bg-slate-950/80 hover:bg-indigo-950/40 border border-slate-800 hover:border-indigo-500 p-4 rounded-2xl block shadow">
+                    <a href="/ai-auto-healing" onclick="logUserActivity('AI Auto-Healing')" class="module-card group bg-slate-950/80 hover:bg-indigo-950/40 border border-slate-800 hover:border-indigo-500 p-4 rounded-2xl block shadow">
                         <div class="text-lg md:text-xl font-extrabold text-indigo-400 mb-1 flex items-center justify-between">
                             <span>3. AI Auto-Healing</span>
                             <span class="text-xs bg-indigo-950 text-indigo-300 px-2 py-0.5 rounded-full">Active</span>
@@ -159,7 +159,7 @@
                         <div class="text-xs text-slate-300">सॉफ्टवेयर त्रुटियों को स्वतः ठीक करने वाला स्कैनर.</div>
                     </a>
 
-                    <a href="/ai-core" onclick="logUserActivity('Face-Swap Social')" class="module-card group bg-slate-950/80 hover:bg-blue-950/40 border border-slate-800 hover:border-blue-500 p-4 rounded-2xl block shadow">
+                    <a href="/face-swap-social" onclick="logUserActivity('Face-Swap Social')" class="module-card group bg-slate-950/80 hover:bg-blue-950/40 border border-slate-800 hover:border-blue-500 p-4 rounded-2xl block shadow">
                         <div class="text-lg md:text-xl font-extrabold text-blue-400 mb-1 flex items-center justify-between">
                             <span>4. Face-Swap Social</span>
                             <span class="text-xs bg-blue-950 text-blue-300 px-2 py-0.5 rounded-full">Active</span>
@@ -336,7 +336,6 @@
     <!-- जावास्क्रिप्ट लॉजिक -->
     <script>
         let currentLang = 'hi';
-        // सेंट्रल वॉलेट सिंक - LocalStorage से बैलेंस फेच करें
         let userTokens = parseInt(localStorage.getItem("dhruv_wallet_tokens")) || parseInt(localStorage.getItem("user_tokens")) || 10;
         let currentTheme = 'dark';
 
@@ -350,7 +349,6 @@
         });
 
         function updateTokenDisplay() {
-            // सेंट्रल सिंक स्टोरेज अपडेट
             localStorage.setItem("dhruv_wallet_tokens", userTokens);
             localStorage.setItem("user_tokens", userTokens);
 
