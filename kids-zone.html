@@ -261,7 +261,6 @@
                 </div>
             </div>
 
-            <!-- बेसिक बोर्ड चैलेंजेस -->
             <div class="grid-2">
                 <button onclick="handleChallengeClick('math')" class="btn-action" style="color:#67e8f9;">
                     <span>➕</span> <span id="btnMath">गणित चैलेंज (+20)</span>
@@ -304,7 +303,6 @@
                 </button>
             </div>
 
-            <!-- एआई बुक स्कैनर -->
             <div style="background:#020617; padding:16px; border-radius:18px; border:1px solid rgba(56,189,248,0.4); display:flex; flex-direction:column; gap:10px;">
                 <h3 id="visionTitle" style="color:#38bdf8; font-weight:bold; font-size:14px; text-align:center;">📸 एआई बुक व होमवर्क स्कैनर</h3>
                 <p id="visionDesc" style="color:#94a3b8; font-size:11px; text-align:center;">कक्षा 1 से 5 तक के किसी भी प्रश्न का फोटो खींचें, नेबुला टीचर बिना किसी फालतू परिचय के सीधे पॉइंट-वाइज पूरा हल बताएगी!</p>
@@ -324,7 +322,6 @@
                 </div>
             </div>
 
-            <!-- ऑटो-क्विज़ कियोस्क -->
             <div id="smartQuizModule" class="hidden" style="background:#020617; padding:16px; border-radius:18px; border:1px solid rgba(245,158,11,0.5); display:flex; flex-direction:column; gap:12px;">
                 <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #1e293b; padding-bottom:8px;">
                     <div>
@@ -350,7 +347,6 @@
                 </div>
             </div>
 
-            <!-- स्कूल व्हाट्सएप होमवर्क पोर्टल -->
             <div style="background:#020617; padding:16px; border-radius:18px; border:1px solid rgba(56,189,248,0.4); display:flex; flex-direction:column; gap:10px;">
                 <h3 id="homeworkTitle" style="color:#38bdf8; font-weight:bold; font-size:13px; text-align:center;">🏫 स्कूल / ट्यूटर व्हाट्सएप होमवर्क पोर्टल</h3>
                 <div class="grid-2">
@@ -374,7 +370,6 @@
                 </button>
             </div>
 
-            <!-- छात्र होमवर्क सबमिशन -->
             <div style="background:#020617; padding:16px; border-radius:18px; border:1px solid rgba(52,211,153,0.4); display:flex; flex-direction:column; gap:10px;">
                 <h3 id="submitTitle" style="color:#34d399; font-weight:bold; font-size:13px; text-align:center;">📝 छात्र होमवर्क सबमिशन (होमवर्क वापस भेजें)</h3>
                 <div style="display:flex; flex-direction:column; gap:8px;">
@@ -392,7 +387,6 @@
 
         </div>
 
-        <!-- पेमेंट गेटवे मोडल (Paywall Lock) -->
         <div id="paymentGatewayModal" class="hidden" style="position:fixed; inset:0; background:rgba(0,0,0,0.85); display:flex; align-items:center; justify-content:center; padding:16px; z-index:9999; backdrop-filter:blur(8px);">
             <div style="background:#0f172a; border:2px solid #10b981; border-radius:24px; padding:24px; max-width:400px; width:100%; text-align:center; box-shadow:0 20px 25px rgba(0,0,0,0.5);">
                 <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #334155; padding-bottom:12px; margin-bottom:16px;">
@@ -418,6 +412,7 @@
         </footer>
     </div>
 
+    <!-- मास्टर जावास्क्रिप्ट और सेंट्रल वॉलेट सिंक लॉजिक -->
     <script>
         let studentScore = parseInt(localStorage.getItem('dhruv_student_score') || '0', 10);
         if (isNaN(studentScore)) studentScore = 0;
@@ -434,20 +429,25 @@
         let isQuizActive = false;
         let cheatWarnings = 0;
 
-        // ======================================================================
-        // रीयल-टाइम पेवॉल चेक (कैशे-बायपास के साथ)
-        // ======================================================================
+        // 🔄 एक्टिविटी लेजर (Activity Ledger) में हर गतिविधि दर्ज करने का मास्टर फंक्शन
+        function logUserActivity(moduleName) {
+            let history = JSON.parse(localStorage.getItem("user_activity_log")) || [];
+            let timestamp = new Date().toLocaleString();
+            history.unshift({ module: moduleName, time: timestamp });
+            if(history.length > 15) history.pop();
+            localStorage.setItem("user_activity_log", JSON.stringify(history));
+        }
+
         async function checkFeaturePaywall(featureKey, featureDisplayName) {
             try {
-                // टाइमस्टैम्प जोड़कर कैशे को बायपास करना
                 let res = await fetch(`/api/feature-status/${featureKey}?t=${Date.now()}`);
                 let data = await res.json();
                 
                 if (data.paywalled === true) {
                     openPaymentGatewayModal(featureDisplayName || "प्रीमियम टूल");
-                    return true; // लॉक है
+                    return true;
                 }
-                return false; // फ्री है
+                return false;
             } catch (e) {
                 return false;
             }
@@ -468,6 +468,7 @@
 
         function processKidsPayment() {
             alert("पेमेंट अनुरोध भेजा गया! सुविधा जल्द अनलॉक होगी।");
+            logUserActivity('Kids Zone - Paid Feature Unlock Request');
             closePaymentGatewayModal();
         }
 
@@ -539,26 +540,13 @@
                 {q: "एक पैर है, पर चल नहीं सकता?", a: "मेज"},
                 {q: "ऐसी कौन सी चीज है जो हमेशा बढ़ती है, कभी कम नहीं होती?", a: "उम्र"},
                 {q: "कटोरे में कटोरा, बेटा बाप से भी गोरा। बताओ क्या?", a: "नारियल"},
-                {q: "लाल डिब्बे में पीले खाने, हर खाने में मोती के दाने। बताओ क्या?", a: "अनार"},
-                {q: "हरी डंडी, लाल कमान, तौबा-तौबा करे इंसान।", a: "मिर्च"},
-                {q: "बिना पंख के उड़ती है, बिना पैर के चलती है।", a: "पतंग"},
-                {q: "मैं हर किसी के पास हूँ, पर कोई मुझे देख नहीं सकता।", a: "हवा"},
-                {q: "जितना ज्यादा निकालोगे, उतना ही बड़ा होगा।", a: "गड्ढा"},
-                {q: "एक गुफा में बत्तीस चोर, दिनभर काम रात को आराम।", a: "दांत"},
-                {q: "पानी से पैदा होता है, पानी में ही मर जाता है।", a: "नमक"}
+                {q: "लाल डिब्बे में पीले खाने, हर खाने में मोती के दाने। बताओ क्या?", a: "अनार"}
             ],
             en: [
                 {q: "What is used to write with, but is not a pen?", a: "pencil"},
                 {q: "What has a head and a tail, but no body?", a: "coin"},
                 {q: "What gets wetter as it dries?", a: "towel"},
-                {q: "What has legs, but doesn't walk?", a: "table"},
-                {q: "What has hands but cannot clap?", a: "clock"},
-                {q: "I have branches, but no fruit, trunk or leaves. What am I?", a: "bank"},
-                {q: "What has many keys but can't open a single lock?", a: "piano"},
-                {q: "What is always in front of you but can't be seen?", a: "future"},
-                {q: "The more you take, the more you leave behind. What are they?", a: "footsteps"},
-                {q: "What can you catch, but not throw?", a: "cold"},
-                {q: "What goes up but never comes down?", a: "age"}
+                {q: "What has legs, but doesn't walk?", a: "table"}
             ]
         };
 
@@ -567,25 +555,12 @@
                 {q: "हमारे देश भारत की राजधानी क्या है?", a: "दिल्ली"},
                 {q: "ताजमहल किस शहर में स्थित है?", a: "आगरा"},
                 {q: "हफ्ते में कुल कितने दिन होते हैं?", a: "7"},
-                {q: "भारत का राष्ट्रीय पशु कौन सा है?", a: "बाघ"},
-                {q: "एक साल में कितने महीने होते हैं?", a: "12"},
-                {q: "भारत के प्रथम प्रधानमंत्री कौन थे?", a: "जवाहरलाल नेहरू"},
-                {q: "सौरमंडल का सबसे बड़ा ग्रह कौन सा है?", a: "बृहस्पति"},
-                {q: "स्वतंत्रता दिवस कब मनाया जाता है? (महीना लिखें)", a: "अगस्त"},
-                {q: "गणतंत्र दिवस कब मनाया जाता है? (महीना लिखें)", a: "जनवरी"},
-                {q: "कुतुब मीनार कहाँ है?", a: "दिल्ली"},
-                {q: "लाल किला किस शहर में है?", a: "दिल्ली"}
+                {q: "भारत का राष्ट्रीय पशु कौन सा है?", a: "बाघ"}
             ],
             en: [
                 {q: "What is the capital city of India?", a: "delhi"},
                 {q: "How many days are there in a week?", a: "7"},
-                {q: "What is the national animal of India?", a: "tiger"},
-                {q: "How many months are in a year?", a: "12"},
-                {q: "Which is the largest planet in our solar system?", a: "jupiter"},
-                {q: "Who was the first Prime Minister of India?", a: "jawaharlal nehru"},
-                {q: "In which city is the Taj Mahal located?", a: "agra"},
-                {q: "How many colors are there in a rainbow?", a: "7"},
-                {q: "Which is the fastest land animal?", a: "cheetah"}
+                {q: "What is the national animal of India?", a: "tiger"}
             ]
         };
 
@@ -593,39 +568,20 @@
             hi: [
                 {q: "पेड़-पौधे हमें सांस लेने के लिए कौन सी गैस देते हैं?", a: "ऑक्सीजन"},
                 {q: "सूरज किस दिशा से निकलता है?", a: "पूर्व"},
-                {q: "हमारा राष्ट्रीय पक्षी कौन है?", a: "मोर"},
-                {q: "रात में आसमान में चमकने वाला सबसे बड़ा पिंड क्या है?", a: "चांद"},
-                {q: "जल का रंग कैसा होता है?", a: "पारदर्शी"},
-                {q: "बर्फ पिघलने पर क्या बनती है?", a: "पानी"},
-                {q: "दूध का रंग कैसा होता है?", a: "सफेद"},
-                {q: "मछली कहाँ रहती है?", a: "पानी"},
-                {q: "आसमान का रंग कैसा होता है?", a: "नीला"},
-                {q: "पत्तियों का रंग आमतौर पर कैसा होता है?", a: "हरा"}
+                {q: "हमारा राष्ट्रीय पक्षी कौन है?", a: "मोर"}
             ],
             en: [
                 {q: "Which gas do trees give us to breathe?", a: "oxygen"},
-                {q: "From which direction does the Sun rise?", a: "east"},
-                {q: "What is the national bird of India?", a: "peacock"},
-                {q: "What shines brightly in the night sky?", a: "moon"},
-                {q: "What color is milk?", a: "white"},
-                {q: "What do you call frozen water?", a: "ice"},
-                {q: "Where do fish live?", a: "water"},
-                {q: "What color are most leaves?", a: "green"},
-                {q: "Which planet do we live on?", a: "earth"}
+                {q: "From which direction does the Sun rise?", a: "east"}
             ]
         };
 
         const poemBank = {
             hi: [
-                {q: "🎵 कविता: 'मछली जल की रानी है, जीवन उसका पानी है...' (कविता सुनी? 'हाँ' लिखें)", a: "हाँ"},
-                {q: "🎵 कविता: 'चंदा मामा दूर के, पुए पकाएं बूर के...' (कविता सुनी? 'हाँ' लिखें)", a: "हाँ"},
-                {q: "🎵 कविता: 'नानी तेरी मोरनी को मोर ले गए...' (कविता सुनी? 'हाँ' लिखें)", a: "हाँ"},
-                {q: "🎵 कविता: 'आलू कचालू बेटा कहाँ गए थे...' (कविता सुनी? 'हाँ' लिखें)", a: "हाँ"}
+                {q: "🎵 कविता: 'मछली जल की रानी है, जीवन उसका पानी है...' (कविता सुनी? 'हाँ' लिखें)", a: "हाँ"}
             ],
             en: [
-                {q: "🎵 Poem: 'Twinkle, twinkle, little star...' (Type 'Yes')", a: "yes"},
-                {q: "🎵 Poem: 'Baa, baa, black sheep...' (Type 'Yes')", a: "yes"},
-                {q: "🎵 Poem: 'Humpty Dumpty sat on a wall...' (Type 'Yes')", a: "yes"}
+                {q: "🎵 Poem: 'Twinkle, twinkle, little star...' (Type 'Yes')", a: "yes"}
             ]
         };
 
@@ -666,6 +622,7 @@
                 localStorage.setItem('dhruv_student_score', '0');
                 localStorage.setItem('dhruv_solved_questions', JSON.stringify({}));
                 updateScoreDisplay();
+                logUserActivity('Kids Zone - Reset Score');
                 let msg = currentLang === 'hi' ? "स्कोर रीसेट हो गया है! नया सवाल हल करके अंक बनाएं ⭐" : "Score reset to 0! Solve a question to earn points ⭐";
                 updateBlackboard(msg);
             }
@@ -835,6 +792,7 @@
             }
 
             currentQuestionText = textToShow;
+            logUserActivity('Kids Zone - Challenge Selected (' + category + ')');
             updateBlackboard(`<span style="color:#fef08a;">${textToShow.replace(/\n/g, '<br>')}</span>`);
         }
 
@@ -854,6 +812,7 @@
                 hintText = "💡 Hint: Think carefully, the answer is simple!";
             }
 
+            logUserActivity('Kids Zone - Used Hint');
             updateBlackboard(`<span style="color:#fcd34d; font-weight:bold;">${hintText}</span>`);
         }
 
@@ -902,6 +861,7 @@
                 localStorage.setItem('dhruv_student_score', studentScore.toString());
                 localStorage.setItem('dhruv_solved_questions', JSON.stringify(solvedQuestions));
                 updateScoreDisplay();
+                logUserActivity('Kids Zone - Correct Answer (+20 Points)');
 
                 if (studentScore >= 100) {
                     triggerCelebration();
@@ -909,6 +869,7 @@
                     updateBlackboard(`<span style="color:#6ee7b7; font-weight:bold; font-size:20px;">${d.correctMsg}</span><br><span style="font-size:13px; color:#cbd5e1; margin-top:6px; display:block;">सही उत्तर: ${currentCorrectAnswer}</span>`);
                 }
             } else {
+                logUserActivity('Kids Zone - Wrong Answer Attempt');
                 let warnFeedback = currentLang === 'hi'
                     ? `❌ गलत जवाब! '${userVal}' सही नहीं है। सही उत्तर '${currentCorrectAnswer}' है।`
                     : `❌ Wrong answer! '${userVal}' is incorrect. Correct is '${currentCorrectAnswer}'.`;
@@ -918,6 +879,7 @@
         }
 
         function triggerCelebration() {
+            logUserActivity('Kids Zone - Reached Genius Champion (100 Points)');
             let congratsText = currentLang === 'hi' 
                 ? "अद्भुत! आपने 100 में से 100 अंक प्राप्त कर लिए हैं! आप सचमुच एक जीनियस चैंपियन हैं!" 
                 : "Amazing! You scored 100 out of 100! You are a true Genius Champion!";
@@ -943,6 +905,7 @@
                 recognition.onresult = function(event) {
                     let spokenText = event.results[0][0].transcript;
                     document.getElementById('userInput').value = spokenText;
+                    logUserActivity('Kids Zone - Voice Input Used');
                     verifyAnswer();
                 };
             } catch (e) {
@@ -1003,6 +966,7 @@
                 document.getElementById('imagePreviewContainer').classList.remove('hidden');
                 document.getElementById('scannerActionButtons').classList.remove('hidden');
                 
+                logUserActivity('Kids Zone - Uploaded Homework Image');
                 let readyMsg = currentLang === 'hi' 
                     ? "📸 फोटो तैयार है! अब नीचे 'पूरा सॉल्यूशन देखें' या 'ऑटो-क्विज़ बनाएं' बटन दबाएं।" 
                     : "📸 Photo ready! Click 'View Solution' or 'Generate Quiz' button below.";
@@ -1050,6 +1014,7 @@
                         localStorage.setItem('dhruv_student_score', studentScore.toString());
                         updateScoreDisplay();
                     }
+                    logUserActivity('Kids Zone - AI Homework Solution Generated');
                     updateBlackboard(solText);
                 }
             } catch (err) {
@@ -1088,6 +1053,7 @@
 
                 if (res.success && res.quiz && res.quiz.length > 0) {
                     activeQuizList = res.quiz;
+                    logUserActivity('Kids Zone - Smart Quiz Generated');
                     renderQuizModule();
                 }
             } catch (err) {
@@ -1144,6 +1110,7 @@
             });
 
             isQuizActive = false;
+            logUserActivity('Kids Zone - Submitted Smart Quiz (Score: ' + score + '/5)');
             let finalMsg = `🎯 क्विज़ परिणाम: आपने 5 में से ${score} अंक प्राप्त किए! 🌟`;
             updateBlackboard(finalMsg);
         }
@@ -1160,16 +1127,14 @@
             });
             quizText += "हल करने के लिए पोर्टल खोलें: https://dhruv-tech-academy.onrender.com/kids-zone";
 
+            logUserActivity('Kids Zone - Shared Quiz to WhatsApp');
             window.open("https://wa.me/?text=" + encodeURIComponent(quizText), '_blank');
         }
 
-        // ======================================================================
-        // व्हाट्सएप पोर्टल: बिना पेवॉल चेक के विंडो बिल्कुल नहीं खुलेगी
-        // ======================================================================
         async function sendSchoolHomework() {
             let isLocked = await checkFeaturePaywall('kids_whatsapp_hw', 'स्कूल / ट्यूटर डिजिटल व्हाट्सएप होमवर्क पोर्टल');
             if (isLocked) {
-                return; // पेवॉल ऑन होने पर व्हाट्सएप बिल्कुल नहीं खुलेगा
+                return;
             }
 
             let schoolName = document.getElementById('schoolNameInput').value.trim();
@@ -1181,6 +1146,7 @@
                 alert("कृपया संस्थान का नाम और होमवर्क दोनों भरें!");
                 return;
             }
+            logUserActivity('Kids Zone - Sent School Homework to WhatsApp');
             let message = `🏫 *डिजिटल होमवर्क - ध्रुव एकेडमी मास्टर इकोसिस्टम* 🏫\n\n*संस्थान:* ${schoolName}\n*कक्षा:* ${selectedClass} (${selectedMedium})\n*होमवर्क:* ${homeworkDesc}\n\nhttps://dhruv-tech-academy.onrender.com/`;
             window.open("https://wa.me/?text=" + encodeURIComponent(message), '_blank');
         }
@@ -1188,7 +1154,7 @@
         async function submitStudentWork() {
             let isLocked = await checkFeaturePaywall('kids_student_submit', 'छात्र होमवर्क सबमिशन व स्कोर शेयरिंग');
             if (isLocked) {
-                return; // पेवॉल ऑन होने पर व्हाट्सएप बिल्कुल नहीं खुलेगा
+                return;
             }
 
             let studentName = document.getElementById('studentNameInput').value.trim();
@@ -1199,6 +1165,7 @@
                 alert("कृपया सभी विवरण भरें!");
                 return;
             }
+            logUserActivity('Kids Zone - Student Submitted Homework');
             let message = `📝 *होमवर्क सबमिशन - ध्रुव एकेडमी मास्टर इकोसिस्टम* 📝\n\n*छात्र:* ${studentName}\n*कक्षा:* ${studentClass}\n*स्कोर:* ${studentScore} / 100 अंक\n*कार्य:* ${studentAnswer}\n\nमैंने अपना काम पूरा कर लिया है! 🙏`;
             window.open("https://wa.me/?text=" + encodeURIComponent(message), '_blank');
         }
@@ -1213,6 +1180,7 @@
                 alert("पहले अंक प्राप्त करें!");
                 return;
             }
+            logUserActivity('Kids Zone - Shared Score to WhatsApp');
             let message = `🔥 *ध्रुव एकेडमी मास्टर इकोसिस्टम - एआई किड्स ज़ोन* 🔥\nमैंने आज एआई क्लासरूम में ${studentScore} / 100 अंक हासिल किए हैं!\nhttps://dhruv-tech-academy.onrender.com/`;
             window.open("https://wa.me/?text=" + encodeURIComponent(message), '_blank');
         }
@@ -1220,12 +1188,14 @@
         function sendWhatsAppReport() {
             let inputName = document.getElementById('studentNameInput') ? document.getElementById('studentNameInput').value.trim() : "";
             let studentName = inputName !== "" ? inputName : (currentLang === 'hi' ? "ध्रुव छात्र" : "Dhruv Student");
+            logUserActivity('Kids Zone - Sent WhatsApp Live Report');
             let msg = `🌟 *Nebula AI Classroom Report* 🌟\n\n👤 छात्र: ${studentName}\n⭐ कुल अंक: ${studentScore} / 100\n📚 स्थिति: ${studentScore >= 100 ? "🏆 जीनियस चैंपियन!" : "प्रगति पर है 🌱"}\n\nध्रुव एकेडमी मास्टर इकोसिस्टम वर्चुअल क्लासरूम से प्रेषित!\nhttps://dhruv-tech-academy.onrender.com/`;
             window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(msg)}`, '_blank');
         }
 
         window.addEventListener('DOMContentLoaded', () => {
             updateScoreDisplay();
+            logUserActivity('Kids Zone - Loaded Module');
             if ('speechSynthesis' in window) {
                 window.speechSynthesis.onvoiceschanged = function() {
                     window.speechSynthesis.getVoices();
