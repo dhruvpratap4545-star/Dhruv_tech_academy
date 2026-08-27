@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="hi" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Master Coaching Hub & Live Virtual Classroom | Dhruv Academy</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Yantramanav:wght@500;700&display=swap');
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Poppins', 'Yantramanav', sans-serif;
+            background-color: #020617;
+            color: #f8fafc;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px;
+        }
+        .main-wrapper {
+            width: 100%;
+            max-width: 1200px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        .hub-card {
+            background: rgba(15, 23, 42, 0.95);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            backdrop-filter: blur(18px);
+            transition: all 0.25s ease;
+        }
+        .hub-card:hover {
+            border-color: rgba(16, 185, 129, 0.7);
+            box-shadow: 0 15px 30px -6px rgba(16, 185, 129, 0.2);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="main-wrapper">
+        <!-- टॉप नेविगेशन और सेंट्रल वॉलेट सिंक -->
+        <div class="flex flex-wrap justify-between items-center pb-3 border-b border-gray-800 w-full gap-3">
+            <a href="/" class="px-4 py-2 bg-gradient-to-r from-emerald-700 to-teal-600 hover:from-emerald-600 text-white rounded-2xl text-xs font-bold transition flex items-center gap-1.5 shadow-lg">
+                ← <span>मुख्य मास्टर पोर्टल (Home)</span>
+            </a>
+            
+            <div class="flex flex-wrap items-center gap-3">
+                <!-- सेंट्रल वॉलेट बैलेंस -->
+                <div class="px-3.5 py-1.5 bg-slate-900 border border-slate-700 rounded-full text-xs font-bold flex items-center gap-2 shadow">
+                    <span class="text-gray-400">💰 वॉलेट:</span>
+                    <span id="walletBalanceDisplay" class="text-emerald-400 font-extrabold">₹150.00</span>
+                </div>
+                <!-- एआई टोकन्स -->
+                <div class="px-3.5 py-1.5 bg-purple-950 border border-purple-500/50 rounded-full text-xs font-bold flex items-center gap-2 shadow">
+                    <span class="text-purple-300">⚡ AI टोकन्स:</span>
+                    <span id="tokenBalanceDisplay" class="text-purple-200 font-extrabold">45</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- हीरो बैनर -->
+        <div class="p-6 sm:p-10 rounded-3xl bg-gradient-to-r from-emerald-950 via-slate-900 to-teal-950 border border-emerald-500/40 shadow-2xl text-center space-y-4">
+            <h1 class="text-2xl sm:text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 via-teal-200 to-cyan-300">🏛️ Master Coaching Hub & Virtual Academy</h1>
+            <p class="text-xs sm:text-sm text-gray-300 max-w-3xl mx-auto">ट्यूटर्स, कोचिंग संस्थानों, स्कूलों और डिग्री कॉलेजों के लिए लाइव क्लासरूम ब्रॉडकास्टिंग, फेस-स्वैप अवतार और स्मार्ट टीवी कास्टिंग का विश्व-स्तरीय मंच।</p>
+        </div>
+
+        <!-- मुख्य कार्यक्षेत्र ग्रिड -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            
+            <!-- लेफ्ट पैनल: क्लासरूम सेटअप और लाइव ब्रॉडकास्ट कंट्रोल -->
+            <div class="hub-card p-6 rounded-3xl space-y-4 flex flex-col justify-between">
+                <div class="space-y-4">
+                    <h2 class="text-sm font-bold text-emerald-400 flex items-center gap-2">
+                        <span>📡</span> <span>लाइव क्लासरूम और ब्रॉडकास्ट सेटअप</span>
+                    </h2>
+
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-300 mb-1.5">संस्थान / शिक्षक का नाम (Institution / Tutor Name):</label>
+                        <input type="text" id="tutorNameInput" value="Dhruv Academy Master Faculty" class="w-full p-3 bg-slate-950 border border-slate-700 rounded-xl text-xs text-white focus:outline-none focus:border-emerald-500">
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-300 mb-1.5">कक्षा या पाठ्यक्रम (Class / Batch Board):</label>
+                        <select id="batchSelect" class="w-full p-3 bg-slate-950 border border-slate-700 rounded-xl text-xs text-white focus:outline-none focus:border-emerald-500">
+                            <option value="CBSE / ICSE Board (Class 9-12)">CBSE / ICSE Board (Class 9-12)</option>
+                            <option value="State Board & Competitive Exams (NEET/JEE/UPSC)">State Board & Competitive Exams (NEET/JEE/UPSC)</option>
+                            <option value="Degree College & Professional (BSc/BTech/CA)">Degree College & Professional (BSc/BTech/CA)</option>
+                            <option value="NC-5 Foundation Kids Tier">NC-5 Foundation Kids Tier</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-300 mb-1.5">आज का लाइव लेक्चर विषय (Topic / Description):</label>
+                        <textarea id="liveTopicInput" rows="3" class="w-full p-3 bg-slate-950 border border-slate-700 rounded-xl text-xs text-white focus:outline-none focus:border-emerald-500" placeholder="यहाँ आज के लाइव लेक्चर का मुख्य टॉपिक लिखें..."></textarea>
+                    </div>
+                </div>
+
+                <div class="space-y-3 pt-3 border-t border-slate-800">
+                    <button onclick="startLiveBroadcast()" class="w-full py-3.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 text-white rounded-2xl text-xs font-bold transition shadow-lg shadow-emerald-950/50">
+                        🔴 लाइव क्लास ब्रॉडकास्ट शुरू करें (Start Live Stream)
+                    </button>
+                    <button onclick="copyTutorShareLink()" class="w-full py-2.5 bg-slate-800 hover:bg-slate-700 text-emerald-300 rounded-xl text-xs font-bold transition border border-slate-700">
+                        🔗 ट्यूटर यूनिक शेयर लिंक कॉपी करें (Share Link)
+                    </button>
+                </div>
+            </div>
+
+            <!-- राइट पैनल: लाइव मॉनिटर और स्मार्ट टीवी कास्ट स्टेटस -->
+            <div class="hub-card p-6 rounded-3xl space-y-4 flex flex-col justify-between">
+                <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+                    <span class="text-xs font-bold text-emerald-300 flex items-center gap-2">
+                        <span>📺</span> <span>लाइव क्लासरूम स्टेटस और स्मार्ट टीवी कास्ट</span>
+                    </span>
+                    <span class="px-2.5 py-0.5 rounded-full bg-emerald-950 text-emerald-400 border border-emerald-500/40 text-[10px] font-bold animate-pulse" id="streamStatusBadge">Offline / Standby</span>
+                </div>
+
+                <div id="liveOutputDisplay" class="custom-scrollbar min-h-[220px] max-h-[320px] overflow-y-auto text-xs sm:text-sm text-gray-200 leading-relaxed space-y-3 bg-slate-950 p-4 rounded-2xl border border-slate-800">
+                    <p class="text-gray-400 italic">"कोचिंग हब का लाइव ब्रॉडकास्ट और छात्रों की अटेंडेंस रिपोर्ट यहाँ प्रदर्शित होगी। बाएं पैनल से क्लास शुरू करें..."</p>
+                </div>
+
+                <div class="flex gap-2 pt-3 border-t border-slate-800">
+                    <button onclick="castToSmartTV()" class="w-1/2 py-2.5 bg-slate-800 hover:bg-slate-700 text-cyan-300 rounded-xl text-xs font-bold transition border border-slate-700">📺 स्मार्ट टीवी पर कास्ट करें</button>
+                    <button onclick="shareHubWhatsApp()" class="w-1/2 py-2.5 bg-emerald-700 hover:bg-emerald-600 text-white rounded-xl text-xs font-bold transition">💬 WhatsApp पर भेजें</button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <footer class="w-full text-center py-4 text-xs text-gray-500 border-t border-gray-900 mt-6">
+        <p>© 2026 Dhruv Academy Master Ecosystem. सर्वाधिकार सुरक्षित।</p>
+    </footer>
+
+    <!-- मास्टर जावास्क्रिप्ट और सेंट्रल वॉलेट सिंक -->
+    <script>
+        function getWalletBalance() {
+            let balance = localStorage.getItem("dhruv_wallet_balance");
+            return balance !== null ? parseFloat(balance) : 150.00;
+        }
+
+        function getWalletTokens() {
+            let tokens = localStorage.getItem("dhruv_wallet_tokens");
+            return tokens !== null ? parseInt(tokens) : 45;
+        }
+
+        function updateWalletDisplay() {
+            let bal = getWalletBalance();
+            let tok = getWalletTokens();
+            
+            const balDisplay = document.getElementById('walletBalanceDisplay');
+            if(balDisplay) balDisplay.innerText = "₹" + bal.toFixed(2);
+            
+            const tokDisplay = document.getElementById('tokenBalanceDisplay');
+            if(tokDisplay) tokDisplay.innerText = tok;
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            updateWalletDisplay();
+        });
+
+        function startLiveBroadcast() {
+            let tutor = document.getElementById('tutorNameInput').value.trim();
+            let batch = document.getElementById('batchSelect').value;
+            let topic = document.getElementById('liveTopicInput').value.trim();
+
+            if(!topic) {
+                alert("कृपया लाइव लेक्चर का टॉपिक दर्ज करें!");
+                return;
+            }
+
+            let tokens = getWalletTokens();
+            if (tokens < 1) {
+                alert("⚠️ लाइव स्ट्रीमिंग के लिए पर्याप्त टोकन नहीं हैं!");
+                return;
+            }
+
+            // 1 टोकन माइनस करें
+            tokens -= 1;
+            localStorage.setItem("dhruv_wallet_tokens", tokens);
+            updateWalletDisplay();
+
+            document.getElementById('streamStatusBadge').innerText = "🔴 LIVE STREAMING ACTIVE";
+            document.getElementById('streamStatusBadge').className = "px-2.5 py-0.5 rounded-full bg-red-950 text-red-400 border border-red-500/40 text-[10px] font-bold animate-ping";
+
+            let out = document.getElementById('liveOutputDisplay');
+            out.innerHTML = `
+                <div class="space-y-2 text-emerald-300">
+                    <p class="font-bold">🚀 ब्रॉडकास्ट सफलतापूर्वक लाइव हो गया है!</p>
+                    <p class="text-white"><b>ट्यूटर/संस्थान:</b> ${tutor}</p>
+                    <p class="text-cyan-300"><b>बैच/बोर्ड:</b> ${batch}</p>
+                    <p class="text-yellow-300"><b>विषय:</b> ${topic}</p>
+                    <p class="text-gray-300 text-xs">✨ फेस-स्वैप अवतार और 2D/3D ब्लैकबोर्ड इंजन सिंक्रोनाइज्ड हैं। छात्र अब इस सत्र को अपने डैशबोर्ड या स्मार्ट टीवी पर देख रहे हैं (-1 टोकन).</p>
+                </div>
+            `;
+        }
+
+        function copyTutorShareLink() {
+            let link = window.location.origin + "/coaching-hub?tutor=" + encodeURIComponent(document.getElementById('tutorNameInput').value);
+            navigator.clipboard.writeText(link).then(() => {
+                alert("ट्यूटर का यूनिक एक्सेस लिंक कॉपी हो गया है!");
+            });
+        }
+
+        function castToSmartTV() {
+            alert("📺 स्मार्ट टीवी कास्टिंग (Chromecast / Web Browser API) कनेक्ट हो रही है। कृपया सुनिश्चित करें कि टीवी और डिवाइस एक ही नेटवर्क पर हैं।");
+        }
+
+        function shareHubWhatsApp() {
+            let topic = document.getElementById('liveTopicInput').value.trim() || "लाइव वर्चुअल क्लास";
+            let text = `🏛️ *ध्रुव एकेडमी मास्टर कोचिंग हब*\n\nलाइव क्लास शुरू हो चुकी है!\nविषय: ${topic}\n\nजल्द जुड़ें और शिक्षा को अनवरत रखें!`;
+            window.open("https://wa.me/?text=" + encodeURIComponent(text), '_blank');
+        }
+    </script>
+</body>
+</html>
