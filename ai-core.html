@@ -132,7 +132,6 @@
 
     <!-- JavaScript Logic with Central Wallet Sync -->
     <script>
-        // सेंट्रल वॉलेट से टोकन सिंक करें
         function getWalletBalance() {
             let balance = localStorage.getItem("dhruv_wallet_tokens");
             if (balance === null) {
@@ -173,7 +172,6 @@
                 return;
             }
 
-            // सेंट्रल वॉलेट टोकन चेक (1 टोकन की लागत)
             let currentTokens = getWalletBalance();
             if(currentTokens < 1) {
                 alert("⚠️ आपके सेंट्रल वॉलेट में पर्याप्त टोकन नहीं हैं! कृपया सेंट्रल वॉलेट से रिचार्ज करें।");
@@ -181,7 +179,6 @@
                 return;
             }
 
-            // 1 टोकन माइनस करें और एक्टिविटी लेजर में दर्ज करें
             currentTokens -= 1;
             localStorage.setItem("dhruv_wallet_tokens", currentTokens);
             localStorage.setItem("user_tokens", currentTokens);
