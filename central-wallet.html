@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Central Wallet & Token Hub | Dhruv Academy Master Ecosystem</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-950 text-slate-300 font-sans antialiased min-h-screen flex flex-col items-center justify-center p-4">
+
+    <!-- Central Wallet Main Container -->
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-2xl max-w-lg w-full">
+        
+        <!-- Header -->
+        <div class="flex items-center justify-between border-b border-slate-800 pb-4 mb-5">
+            <div>
+                <h1 class="text-base font-extrabold text-cyan-400 flex items-center gap-2">
+                    <svg class="w-5 h-5 text-cyan-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path></svg>
+                    ध्रुव एकेडमी - सेंट्रल वॉलेट और टोकन हब
+                </h1>
+                <p class="text-xs text-slate-500 mt-0.5">सभी मॉड्यूल्स के लिए एकीकृत और पारदर्शी टोकन प्रबंधन</p>
+            </div>
+            <span class="text-[10px] bg-emerald-950 text-emerald-300 px-2.5 py-1 rounded-full border border-emerald-800 font-medium">सेंट्रल सिंक एक्टिव</span>
+        </div>
+
+        <!-- Live Central Wallet Balance Display -->
+        <div class="grid grid-cols-2 gap-3 mb-5">
+            <div class="bg-slate-950 p-3.5 rounded-xl border border-slate-800 text-center">
+                <div class="text-[11px] text-slate-400 font-medium uppercase">कुल उपलब्ध टोकन</div>
+                <div id="centralTokenDisplay" class="text-2xl font-black text-cyan-400 mt-1">10</div>
+                <div class="text-[10px] text-slate-500 mt-0.5">स्वागत/रिचार्ज क्रेडिट्स</div>
+            </div>
+            <div class="bg-slate-950 p-3.5 rounded-xl border border-slate-800 text-center">
+                <div class="text-[11px] text-slate-400 font-medium uppercase">दैनिक शिक्षण कोटा (50%)</div>
+                <div class="text-2xl font-black text-emerald-400 mt-1" id="dailyQuotaDisplay">सक्रिय</div>
+                <div class="text-[10px] text-slate-500 mt-0.5">मध्यरात्रि स्वतः अपडेट</div>
+            </div>
+        </div>
+
+        <!-- Corrected Recharge Slabs (Gateway Attached Ready) -->
+        <div class="space-y-3">
+            <span class="text-xs text-slate-400 font-semibold block uppercase tracking-wider mb-2">न्यूनतम सहयोग और रिचार्ज पैक्स (ठीक आधा गिफ्ट नियम):</span>
+            
+            <!-- Pack: ₹29 -->
+            <div class="flex items-center justify-between bg-slate-950 p-3.5 rounded-xl border border-slate-800 hover:border-cyan-500 transition">
+                <div>
+                    <div class="text-sm font-bold text-slate-200">सहयोग पैक: ₹29</div>
+                    <div class="text-xs text-cyan-300 mt-0.5">मिलते हैं: <b>6 टोकन</b> + 3 संस्था गिफ्ट = <span class="text-emerald-400 font-bold">9 कुल टोकन</span></div>
+                </div>
+                <button onclick="processCentralRecharge(29, 6)" class="px-4 py-2 bg-cyan-600 hover:bg-cyan-500 text-white rounded-xl text-xs font-semibold transition shadow-md">रिचार्ज करें</button>
+            </div>
+
+            <!-- Pack: ₹49 -->
+            <div class="flex items-center justify-between bg-slate-950 p-3.5 rounded-xl border border-slate-800 hover:border-cyan-500 transition">
+                <div>
+                    <div class="text-sm font-bold text-slate-200">सहयोग पैक: ₹49</div>
+                    <div class="text-xs text-cyan-300 mt-0.5">मिलते हैं: <b>10 टोकन</b> + 5 संस्था गिफ्ट = <span class="text-emerald-400 font-bold">15 कुल टोकन</span></div>
+                </div>
+                <button onclick="processCentralRecharge(49, 10)" class="px-4 py-2 bg-cyan-600 hover:bg-cyan-500 text-white rounded-xl text-xs font-semibold transition shadow-md">रिचार्ज करें</button>
+            </div>
+
+            <!-- Pack: ₹99 -->
+            <div class="flex items-center justify-between bg-slate-950 p-3.5 rounded-xl border border-slate-800 hover:border-cyan-500 transition">
+                <div>
+                    <div class="text-sm font-bold text-slate-200">सहयोग पैक: ₹99</div>
+                    <div class="text-xs text-cyan-300 mt-0.5">मिलते हैं: <b>20 टोकन</b> + 10 संस्था गिफ्ट = <span class="text-emerald-400 font-bold">30 कुल टोकन</span></div>
+                </div>
+                <button onclick="processCentralRecharge(99, 20)" class="px-4 py-2 bg-cyan-600 hover:bg-cyan-500 text-white rounded-xl text-xs font-semibold transition shadow-md">रिचार्ज करें</button>
+            </div>
+
+            <!-- Pack: ₹299 -->
+            <div class="flex items-center justify-between bg-slate-950 p-3.5 rounded-xl border border-slate-800 hover:border-cyan-500 transition">
+                <div>
+                    <div class="text-sm font-bold text-slate-200">सहयोग पैक: ₹299</div>
+                    <div class="text-xs text-cyan-300 mt-0.5">मिलते हैं: <b>60 टोकन</b> + 30 संस्था गिफ्ट = <span class="text-emerald-400 font-bold">90 कुल टोकन</span></div>
+                </div>
+                <button onclick="processCentralRecharge(299, 60)" class="px-4 py-2 bg-cyan-600 hover:bg-cyan-500 text-white rounded-xl text-xs font-semibold transition shadow-md">रिचार्ज करें</button>
+            </div>
+        </div>
+
+        <!-- Footer / Navigation Back -->
+        <div class="mt-5 pt-3 border-t border-slate-800 flex items-center justify-between text-xs">
+            <a href="ai-core.html" class="text-cyan-400 hover:underline">← AI Core पर वापस जाएं</a>
+            <span class="text-slate-500">Dhruv Academy Master Ecosystem (2026)</span>
+        </div>
+
+    </div>
+
+    <!-- Corrected Central Wallet Synchronization Script -->
+    <script>
+        function getCentralWalletBalance() {
+            let balance = localStorage.getItem('dhruv_wallet_tokens');
+            if (balance === null) {
+                balance = 10; // Default welcome bonus
+                localStorage.setItem('dhruv_wallet_tokens', balance);
+            }
+            return parseInt(balance);
+        }
+
+        function updateDisplay() {
+            document.getElementById('centralTokenDisplay').innerText = getCentralWalletBalance();
+        }
+
+        // Process recharge with EXACT 50% (half) bonus rule
+        function processCentralRecharge(price, baseTokens) {
+            const bonusTokens = Math.floor(baseTokens / 2); // Exact half (1/2) as institutional gift/daily quota base
+            const totalAdded = baseTokens + bonusTokens;
+            
+            let currentBalance = getCentralWalletBalance();
+            let newBalance = currentBalance + totalAdded;
+            
+            localStorage.setItem('dhruv_wallet_tokens', newBalance);
+            updateDisplay();
+
+            alert(`सफल भुगतान! ₹${price} के सहयोग पैक से:\n- ${baseTokens} मुख्य टोकन वॉलेट में जुड़े\n- ${bonusTokens} टोकन (ठीक आधा) संस्था की तरफ से दैनिक कोटे हेतु गिफ्ट मिले\n\nकुल ${totalAdded} नए टोकन आपके सेंट्रल वॉलेट में जोड़ दिए गए हैं!`);
+        }
+
+        window.onload = function() {
+            updateDisplay();
+        };
+    </script>
+</body>
+</html>
