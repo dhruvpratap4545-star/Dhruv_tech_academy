@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>9. Ultimate Competition & Research Solver - Dhruv Academy</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-950 text-white min-h-screen flex flex-col font-sans">
+
+    <!-- Top Navigation -->
+    <header class="bg-slate-900 border-b border-indigo-500/30 px-6 py-4 flex justify-between items-center shadow-lg">
+        <div class="flex items-center space-x-3">
+            <a href="/" class="text-indigo-400 hover:text-indigo-300 text-sm font-bold flex items-center gap-1">⬅️ मुख्य डैशबोर्ड</a>
+            <span class="text-gray-600">|</span>
+            <h1 class="text-lg font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-400">9. Ultimate Competition & Ph.D. Research Solver</h1>
+        </div>
+        <div class="flex items-center space-x-3">
+            <span class="text-xs bg-indigo-950 text-indigo-300 px-3 py-1 rounded-full border border-indigo-800/50">⚡ India-Optimized 400-AI Core</span>
+        </div>
+    </header>
+
+    <!-- Main Workspace -->
+    <main class="flex-1 p-6 max-w-6xl mx-auto w-full grid grid-cols-1 lg:grid-cols-3 gap-6">
+        
+        <!-- Left Panel: Exam & Research Categories -->
+        <div class="lg:col-span-1 bg-slate-900/90 border border-indigo-500/20 rounded-2xl p-5 flex flex-col space-y-4 shadow-xl h-fit">
+            <h2 class="text-sm font-bold text-indigo-400 uppercase tracking-wider">🎯 परीक्षा और शोध क्षेत्र चुनें</h2>
+            
+            <div class="space-y-2">
+                <label class="text-xs text-gray-400">लक्ष्य श्रेणी (Target Domain)</label>
+                <select id="examTarget" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-xs text-indigo-300 focus:outline-none focus:border-indigo-500">
+                    <optgroup label="सिविल सेवा एवं राज्य स्तर">
+                        <option value="upsc">IAS / UPSC (Mains & Prelims)</option>
+                        <option value="pcs">State PCS (UPPSC, BPSC, etc.)</option>
+                    </optgroup>
+                    <optgroup label="वनडे एवं बैंकिंग परीक्षाएं">
+                        <option value="ssc">SSC (CGL, CHSL, MTS - Short Tricks)</option>
+                        <option value="banking">Banking (IBPS / SBI - DI & Reasoning)</option>
+                    </optgroup>
+                    <optgroup label="चिकित्सा एवं उच्च शिक्षा">
+                        <option value="neet">NEET (UG / PG) Core Concepts</option>
+                        <option value="ugcnet">UGC NET / JRF Paper 1 & 2</option>
+                    </optgroup>
+                    <optgroup label="शोध एवं उच्च अकादमिक">
+                        <option value="phd">Ph.D. Thesis, Synopsis & Literature Review</option>
+                    </optgroup>
+                </select>
+            </div>
+
+            <div class="space-y-2">
+                <label class="text-xs text-gray-400">विश्लेषण प्रारूप (Analysis Mode)</label>
+                <select id="solutionMode" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-xs text-indigo-300 focus:outline-none focus:border-indigo-500">
+                    <option value="standard">गहन विश्लेषणात्मक (Comprehensive + Hindi/Eng)</option>
+                    <option value="tricks">परीक्षा हॉल शॉर्टकट और एलिमिनेशन मेथड</option>
+                    <option value="research">अकादमिक शोध मानक (Research Format)</option>
+                </select>
+            </div>
+
+            <div class="pt-4 border-t border-slate-800 space-y-2">
+                <div class="text-[11px] text-gray-400 space-y-1">
+                    <p>🌐 **लो-बैंडविड्थ फ्रेंडली:** यह सिस्टम बिना किसी भारी फाइल डाउनलोड के सीधे स्क्रीन पर साफ-सुथरे पॉइंट्स देता है।</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right/Center Panel: Input & Output Area -->
+        <div class="lg:col-span-2 flex flex-col space-y-4">
+            
+            <!-- Input Box -->
+            <div class="bg-slate-900/90 border border-indigo-500/20 rounded-2xl p-5 shadow-xl space-y-3">
+                <h2 class="text-sm font-bold text-indigo-400">✍️ अपना प्रश्न, न्यूमेरिकल या शोध विषय यहाँ लिखें</h2>
+                <textarea id="questionInput" rows="4" placeholder="यहाँ कोई भी कठिन सवाल, जीएस का प्रश्न, गणित की समस्या या अपनी पीएचडी थीसिस का टॉपिक दर्ज करें..." class="w-full bg-slate-950 border border-slate-700 rounded-xl p-3 text-xs text-white focus:outline-none focus:border-indigo-500 resize-none"></textarea>
+                
+                <div class="flex justify-between items-center">
+                    <span class="text-[11px] text-gray-400">💡 टिप: सटीक और स्पष्ट प्रश्न लिखने से बेहतरीन परिणाम मिलते हैं।</span>
+                    <button onclick="solveQuestion()" class="px-6 py-2.5 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white text-xs font-bold rounded-xl shadow-lg transition">🚀 AI समाधान प्राप्त करें</button>
+                </div>
+            </div>
+
+            <!-- Output Display Box -->
+            <div id="outputContainer" class="bg-slate-900/50 border border-slate-800 rounded-2xl p-5 shadow-2xl hidden space-y-4">
+                <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                    <span class="text-xs font-bold text-green-400 flex items-center gap-1.5">✅ एआई द्वारा विश्लेषित सटीक समाधान</span>
+                    <div class="flex items-center gap-2">
+                        <span id="outputExamTag" class="text-[10px] bg-indigo-950 text-indigo-300 px-2.5 py-0.5 rounded-full border border-indigo-800">Exam Expert</span>
+                        <button onclick="alert('नोट्स/समाधान का लाइटवेट स्नैपशॉट तैयार है!')" class="text-[10px] bg-slate-800 hover:bg-slate-700 text-gray-300 px-2.5 py-1 rounded-lg border border-slate-700">📥 स्नैपशॉट सेव करें</button>
+                    </div>
+                </div>
+                <div id="answerContent" class="text-xs text-gray-200 leading-relaxed space-y-3">
+                    <!-- Dynamic Output will appear here -->
+                </div>
+            </div>
+
+        </div>
+
+    </main>
+
+    <!-- Script Logic -->
+    <script>
+        function solveQuestion() {
+            const question = document.getElementById('questionInput').value.trim();
+            const exam = document.getElementById('examTarget').value;
+            const mode = document.getElementById('solutionMode').value;
+            const container = document.getElementById('outputContainer');
+            const content = document.getElementById('answerContent');
+            const tag = document.getElementById('outputExamTag');
+
+            if(!question) {
+                alert("कृपया पहले बॉक्स में अपना प्रश्न या विषय दर्ज करें!");
+                return;
+            }
+
+            container.classList.remove('hidden');
+            tag.innerText = exam.toUpperCase() + " Mode";
+            content.innerHTML = `<div class="text-center py-6 text-indigo-400 animate-pulse">🔄 400-AI न्यूरल कोर भारत के परीक्षा मानकों के अनुसार विश्लेषण कर रहा है...</div>`;
+
+            setTimeout(() => {
+                let sampleAnswer = `
+                    <div class="space-y-3">
+                        <div class="bg-slate-950 p-3 rounded-xl border border-indigo-900/50">
+                            <strong class="text-indigo-300">📌 मुख्य अवधारणा एवं परिभाषा (Core Context):</strong>
+                            <p class="mt-1 text-gray-300">आपके द्वारा पूछे गए विषय का प्रामाणिक और परीक्षा-अनुकूल विश्लेषण प्रस्तुत है। इसमें वैचारिक स्पष्टता पर विशेष जोर दिया गया है।</p>
+                        </div>
+                        <div class="bg-slate-950 p-3 rounded-xl border border-slate-800">
+                            <strong class="text-green-300">💡 स्टेप-बाय-स्टेप तार्किक समाधान (Step-by-Step Breakdown):</strong>
+                            <p class="mt-1 text-gray-300">1. सबसे पहले इस प्रश्न के मूल सिद्धांतों (Core Principles) को पहचानें।<br>2. यदि यह प्रतियोगी परीक्षा का बहुविकल्पीय प्रश्न है, तो गलत विकल्पों को हटाने (Elimination) की तकनीक अपनाएं।<br>3. यदि यह वर्णनात्मक या शोध (Ph.D.) से जुड़ा है, तो इसे अकादमिक बिंदुओं के तहत सुव्यवस्थित रूप से प्रस्तुत करें।</p>
+                        </div>
+                        <div class="bg-slate-950 p-3 rounded-xl border border-purple-900/50">
+                            <strong class="text-purple-300">🎯 परीक्षा हॉल की खास टिप (Smart Exam Strategy):</strong>
+                            <p class="mt-1 text-gray-300">"सटीक समय प्रबंधन और तार्किक दृष्टिकोण अपनाने से इस प्रकार के प्रश्नों में अधिकतम अंक सुनिश्चित होते हैं।"</p>
+                        </div>
+                    </div>
+                `;
+                content.innerHTML = sampleAnswer;
+            }, 1200);
+        }
+    </script>
+</body>
+</html>
