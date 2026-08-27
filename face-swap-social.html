@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="hi" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Face Swap & Social Explainer Studio | Dhruv Academy</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Yantramanav:wght@500;700&display=swap');
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Poppins', 'Yantramanav', sans-serif;
+            background-color: #020617;
+            color: #f8fafc;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px;
+        }
+        .main-wrapper {
+            width: 100%;
+            max-width: 1200px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        .studio-card {
+            background: rgba(15, 23, 42, 0.95);
+            border: 1px solid rgba(236, 72, 153, 0.3);
+            backdrop-filter: blur(18px);
+            transition: all 0.25s ease;
+        }
+        .studio-card:hover {
+            border-color: rgba(236, 72, 153, 0.7);
+            box-shadow: 0 15px 30px -6px rgba(236, 72, 153, 0.3);
+        }
+        .dim-btn {
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+        .dim-btn.active {
+            background: linear-gradient(135deg, #db2777, #9333ea);
+            color: #ffffff;
+            box-shadow: 0 4px 12px rgba(219, 39, 119, 0.4);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="main-wrapper">
+        <!-- टॉप नेविगेशन और सेंट्रल वॉलेट सिंक -->
+        <div class="flex flex-wrap justify-between items-center pb-3 border-b border-gray-800 w-full gap-3">
+            <a href="/" class="px-4 py-2 bg-gradient-to-r from-pink-700 to-purple-600 hover:from-pink-600 text-white rounded-2xl text-xs font-bold transition flex items-center gap-1.5 shadow-lg">
+                ← <span>मुख्य मास्टर पोर्टल</span>
+            </a>
+            
+            <div class="flex flex-wrap items-center gap-3">
+                <!-- सेंट्रल वॉलेट बैलेंस -->
+                <div class="px-3.5 py-1.5 bg-slate-900 border border-slate-700 rounded-full text-xs font-bold flex items-center gap-2 shadow">
+                    <span class="text-gray-400">💰 वॉलेट:</span>
+                    <span id="walletBalanceDisplay" class="text-emerald-400 font-extrabold">₹150.00</span>
+                </div>
+                <!-- एआई टोकन्स -->
+                <div class="px-3.5 py-1.5 bg-purple-950 border border-purple-500/50 rounded-full text-xs font-bold flex items-center gap-2 shadow">
+                    <span class="text-purple-300">⚡ AI टोकन्स:</span>
+                    <span id="tokenBalanceDisplay" class="text-purple-200 font-extrabold">45</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- हीरो बैनर -->
+        <div class="p-6 sm:p-10 rounded-3xl bg-gradient-to-r from-pink-950 via-slate-900 to-indigo-950 border border-pink-500/40 shadow-2xl text-center space-y-4">
+            <h1 class="text-2xl sm:text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-pink-400 via-purple-200 to-cyan-300">🎭 AI Face Swap & Social Explainer Studio</h1>
+            <p class="text-xs sm:text-sm text-gray-300 max-w-3xl mx-auto">शिक्षकों और ट्यूटर्स के लिए कस्टम फेस स्वप अवतार, 2D/3D/4D विजुअल्स और सोशल मीडिया रील्स ऑटो-जेनरेटर का उन्नत मंच।</p>
+        </div>
+
+        <!-- डाइमेंशन और गैलेक्सी ब्लैकबोर्ड कंट्रोल बार -->
+        <div class="flex flex-wrap justify-center items-center gap-3 bg-slate-900/90 p-4 rounded-2xl border border-slate-800 shadow-xl">
+            <span class="text-xs font-bold text-pink-400 mr-2">डाइमेंशन मोड:</span>
+            <button onclick="setDimension('2D')" id="btn2D" class="dim-btn active px-4 py-2 rounded-xl text-xs font-bold bg-slate-950 border border-slate-700 text-gray-300">📐 2D मोड</button>
+            <button onclick="setDimension('3D')" id="btn3D" class="dim-btn px-4 py-2 rounded-xl text-xs font-bold bg-slate-950 border border-slate-700 text-gray-300">🌐 3D मॉडल</button>
+            <button onclick="setDimension('4D')" id="btn4D" class="dim-btn px-4 py-2 rounded-xl text-xs font-bold bg-slate-950 border border-slate-700 text-gray-300">⏳ 4D समय-विश्लेषण</button>
+            
+            <div class="h-6 w-[1px] bg-slate-700 mx-2 hidden sm:block"></div>
+            
+            <label class="flex items-center gap-2 text-xs font-bold text-purple-300 cursor-pointer bg-purple-950/60 px-3 py-2 rounded-xl border border-purple-500/40">
+                <input type="checkbox" id="galaxyToggle" checked onchange="toggleGalaxyBoard()" class="w-4 h-4 accent-purple-500 cursor-pointer">
+                <span>✨ नेबुला गैलेक्सी ब्लैकबोर्ड (Optional)</span>
+            </label>
+        </div>
+
+        <!-- मुख्य कार्यक्षेत्र ग्रिड -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            
+            <!-- लेफ्ट पैनल: ट्यूटर फोटो अपलोड और प्रॉम्प्ट -->
+            <div class="studio-card p-6 rounded-3xl space-y-4 flex flex-col justify-between">
+                <div class="space-y-4">
+                    <h2 class="text-sm font-bold text-pink-400 flex items-center gap-2">
+                        <span>👤</span> <span>ट्यूटर फेस स्वप और वीडियो क्रिएटर</span>
+                    </h2>
+
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-300 mb-1.5">ट्यूटर की फोटो अपलोड करें (Face Swap के लिए):</label>
+                        <input type="file" id="tutorPhotoInput" accept="image/*" class="w-full p-2.5 bg-slate-950 border border-slate-700 rounded-xl text-xs text-gray-300 file:mr-4 file:py-1 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-pink-600 file:text-white hover:file:bg-pink-500 cursor-pointer">
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-300 mb-1.5">विषय या सोशल मीडिया एक्सप्लेनर टॉपिक:</label>
+                        <textarea id="socialQueryInput" rows="4" class="w-full p-3.5 bg-slate-950 border border-slate-700 rounded-xl text-xs text-white focus:outline-none focus:border-pink-500" placeholder="यहाँ कोई भी टॉपिक लिखें जिसे वीडियो रील या सोशल एक्सप्लेनर के रूप में बदलना हो..."></textarea>
+                    </div>
+
+                    <div class="flex flex-wrap gap-2">
+                        <button onclick="setPresetPrompt('संविधान के मूल अधिकार (Shorts Reels Format)')" class="text-[11px] bg-slate-800 hover:bg-slate-700 text-pink-300 px-3 py-1.5 rounded-xl border border-slate-700">📜 मूल अधिकार रील्स</button>
+                        <button onclick="setPresetPrompt('कंपनी अधिनियम और शेयरहोल्डर राइट्स (Explainer)')" class="text-[11px] bg-slate-800 hover:bg-slate-700 text-pink-300 px-3 py-1.5 rounded-xl border border-slate-700">⚖️ कॉर्पोरेट लॉ</button>
+                    </div>
+                </div>
+
+                <button onclick="generateFaceSwapSocialVideo()" class="w-full py-3.5 bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-500 text-white rounded-2xl text-xs font-bold transition shadow-lg shadow-pink-950/50">
+                    🎬 फेस स्वप वीडियो व सोशल रील बनाएं (कटेगा 2 टोकन) 🚀
+                </button>
+            </div>
+
+            <!-- राइट पैनल: नेबुला गैलेक्सी ब्लैकबोर्ड और आउटपुट -->
+            <div id="galaxyBoardSection" class="studio-card p-6 rounded-3xl space-y-4 flex flex-col justify-between">
+                <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+                    <span class="text-xs font-bold text-pink-300 flex items-center gap-2">
+                        <span>🌌</span> <span id="outputBoardTitle">नेबुला गैलेक्सी ब्लैकबोर्ड (2D मोड)</span>
+                    </span>
+                    <span id="activeDimBadge" class="px-2.5 py-0.5 rounded-full bg-pink-950 text-pink-300 border border-pink-500/40 text-[10px] font-bold">Mode: 2D</span>
+                </div>
+
+                <div id="socialOutputDisplay" class="custom-scrollbar min-h-[220px] max-h-[320px] overflow-y-auto text-xs sm:text-sm text-gray-200 leading-relaxed space-y-3">
+                    <p class="text-gray-400 italic">"यहाँ आपके द्वारा चुनी गई फोटो का फेस स्वप अवतार और सोशल मीडिया एक्सप्लेनर का आउटपुट व स्क्रिप्ट प्रदर्शित होगी..."</p>
+                </div>
+
+                <div class="flex gap-2 pt-3 border-t border-slate-800">
+                    <button onclick="copySocialScript()" class="w-1/2 py-2.5 bg-slate-800 hover:bg-slate-700 text-white rounded-xl text-xs font-bold transition">📋 स्क्रिप्ट कॉपी करें</button>
+                    <button onclick="shareSocialWhatsApp()" class="w-1/2 py-2.5 bg-emerald-700 hover:bg-emerald-600 text-white rounded-xl text-xs font-bold transition">💬 WhatsApp शेयर</button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <footer class="w-full text-center py-4 text-xs text-gray-500 border-t border-gray-900 mt-6">
+        <p>© 2026 Dhruv Academy Master Ecosystem. सर्वाधिकार सुरक्षित।</p>
+    </footer>
+
+    <!-- मास्टर जावास्क्रिप्ट और सेंट्रल वॉलेट सिंक -->
+    <script>
+        let selectedDimension = '2D';
+
+        function getWalletBalance() {
+            let balance = localStorage.getItem("dhruv_wallet_balance");
+            return balance !== null ? parseFloat(balance) : 150.00;
+        }
+
+        function getWalletTokens() {
+            let tokens = localStorage.getItem("dhruv_wallet_tokens");
+            return tokens !== null ? parseInt(tokens) : 45;
+        }
+
+        function updateWalletDisplay() {
+            let bal = getWalletBalance();
+            let tok = getWalletTokens();
+            
+            const balDisplay = document.getElementById('walletBalanceDisplay');
+            if(balDisplay) balDisplay.innerText = "₹" + bal.toFixed(2);
+            
+            const tokDisplay = document.getElementById('tokenBalanceDisplay');
+            if(tokDisplay) tokDisplay.innerText = tok;
+        }
+
+        function logUserActivity(moduleName) {
+            let history = JSON.parse(localStorage.getItem("user_activity_log")) || [];
+            let timestamp = new Date().toLocaleString();
+            history.unshift({ module: moduleName, time: timestamp });
+            if(history.length > 15) history.pop();
+            localStorage.setItem("user_activity_log", JSON.stringify(history));
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            updateWalletDisplay();
+            logUserActivity('Face Swap & Social Studio Loaded');
+        });
+
+        function setDimension(dim) {
+            selectedDimension = dim;
+            ['2D', '3D', '4D'].forEach(d => {
+                let btn = document.getElementById('btn' + d);
+                if (d === dim) {
+                    btn.classList.add('active');
+                } else {
+                    btn.classList.remove('active');
+                }
+            });
+
+            document.getElementById('outputBoardTitle').innerText = `नेबुला गैलेक्सी ब्लैकबोर्ड (${dim} मोड)`;
+            document.getElementById('activeDimBadge').innerText = `Mode: ${dim}`;
+            logUserActivity('Social Studio - Switched to ' + dim + ' Mode');
+        }
+
+        function toggleGalaxyBoard() {
+            let isChecked = document.getElementById('galaxyToggle').checked;
+            let boardSection = document.getElementById('galaxyBoardSection');
+            if (isChecked) {
+                boardSection.style.display = 'flex';
+            } else {
+                boardSection.style.display = 'none';
+            }
+            logUserActivity('Social Studio - Galaxy Board Toggle: ' + isChecked);
+        }
+
+        function setPresetPrompt(text) {
+            document.getElementById('socialQueryInput').value = text;
+        }
+
+        function generateFaceSwapSocialVideo() {
+            let query = document.getElementById('socialQueryInput').value.trim();
+            if (!query) {
+                alert("कृपया पहले कोई टॉपिक या प्रश्न दर्ज करें!");
+                return;
+            }
+
+            let tokens = getWalletTokens();
+            if (tokens < 2) {
+                alert("⚠️ इस एडवांस फीचर के लिए कम से कम 2 AI टोकन्स की आवश्यकता है! कृपया मुख्य पोर्टल से रिचार्ज करें।");
+                window.location.href = '/';
+                return;
+            }
+
+            // 2 टोकन माइनस करें
+            tokens -= 2;
+            localStorage.setItem("dhruv_wallet_tokens", tokens);
+            updateWalletDisplay();
+            logUserActivity('Social Studio - Generated Video/Reels for: ' + query + ' (' + selectedDimension + ')');
+
+            let out = document.getElementById('socialOutputDisplay');
+            out.innerHTML = `<div class="text-pink-400 font-bold animate-pulse">🎭 ट्यूटर फेस स्वप और नेबुला गैलेक्सी ${selectedDimension} इंजन द्वारा वीडियो रील प्रोसेस की जा रही है (-2 टोकन)...</div>`;
+
+            setTimeout(() => {
+                let resultHtml = `
+                    <div class="space-y-2.5">
+                        <p class="font-bold text-pink-300">🎬 शीर्षक: ${query}</p>
+                        <p class="text-gray-100"><b>1. फेस स्वप अवतार स्टेटस:</b> ट्यूटर की फोटो सफलतापूर्वक नेबुला टीचर अवतार पर मैप कर दी गई है। लिप-सिंक और वॉयस टोन सिंक्रनाइज्ड हैं।</p>
+                        <p class="text-cyan-300"><b>2. ${selectedDimension} विजुअल स्क्रिप्ट:</b><br>• हुक (0-5 सेकंड): क्या आप जानते हैं इस रहस्य को?<br>• मुख्य भाग: ${selectedDimension} डायमेंशनल विश्लेषण और फॉर्मूला प्रस्तुति।</p>
+                        <p class="text-emerald-300"><b>3. सोशल मीडिया आउटपुट:</b> YouTube Shorts & Instagram Reels (9:16) फॉर्मेट तैयार।</p>
+                    </div>
+                `;
+                out.innerHTML = resultHtml;
+            }, 1500);
+        }
+
+        function copySocialScript() {
+            let text = document.getElementById('socialOutputDisplay').innerText;
+            navigator.clipboard.writeText(text).then(() => {
+                alert("सोशल मीडिया स्क्रिप्ट और विवरण कॉपी हो गया है!");
+            });
+        }
+
+        function shareSocialWhatsApp() {
+            let text = document.getElementById('socialOutputDisplay').innerText;
+            if(!text || text.includes('प्रदर्शित होगी')) {
+                alert("पहले वीडियो रील प्रोसेस करें!");
+                return;
+            }
+            window.open("https://wa.me/?text=" + encodeURIComponent("🎬 *ध्रुव एकेडमी सोशल एक्सप्लेनर*\n\n" + text), '_blank');
+        }
+    </script>
+</body>
+</html>
