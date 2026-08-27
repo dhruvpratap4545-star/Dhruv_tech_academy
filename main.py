@@ -540,11 +540,21 @@ def get_user_credit_analysis(mobile: str, db: Session = Depends(get_db)):
     })
 
 @app.get("/coaching-hub.html", response_class=HTMLResponse)
+@app.get("/coaching-hub", response_class=HTMLResponse)
 async def serve_coaching_hub():
-    if os.path.exists("coaching-hub.html"):
-        with open("coaching-hub.html", "r", encoding="utf-8") as f:
+    path = "coaching-hub.html"
+    if os.path.exists(path):
+        with open(path, "r", encoding="utf-8") as f:
             return f.read()
     return "Coaching Hub file not found", 404
+
+# 2. Global Custom 404 Error Handler
+@app.exception_handler(404)
+async def custom_404_handler(request, exc):
+    if os.path.exists("404.html"):
+        with open("404.html", "r", encoding="utf-8") as f:
+            return HTMLResponse(content=f.read(), status_code=404)
+    return HTMLResponse(content="<h3>404 - Page Not Found</h3>", status_code=404)
 
 if __name__ == "__main__":
     import uvicorn
