@@ -180,7 +180,7 @@
                             <span>6. Digital Library</span>
                             <span class="text-xs bg-cyan-950 text-cyan-300 px-2 py-0.5 rounded-full">Active</span>
                         </div>
-                        <div class="text-xs text-slate-300">एन्क्रिप्टेड ई-बुक्स, नोट्स और डिजिटल वॉलेट वॉलेट.</div>
+                        <div class="text-xs text-slate-300">एन्क्रिप्टेड ई-बुक्स, नोट्स और डिजिटल वॉलेट.</div>
                     </a>
 
                     <a href="/ai-core" onclick="logUserActivity('Coaching Hub')" class="module-card group bg-slate-950/80 hover:bg-orange-950/40 border border-slate-800 hover:border-orange-500 p-4 rounded-2xl block shadow">
@@ -196,7 +196,7 @@
                             <span>9. Competition Solver</span>
                             <span class="text-xs bg-violet-950 text-violet-300 px-2 py-0.5 rounded-full">Active</span>
                         </div>
-                        <div class="text-xs text-slate-300">IAS, IFS, IRS, PCS, Banking, NEET आदि सभी परीक्षाओं का सॉल्व्टर.</div>
+                        <div class="text-xs text-slate-300">IAS, IFS, IRS, PCS, Banking, NEET आदि सभी परीक्षाओं का सॉल्वर.</div>
                     </a>
 
                     <a href="/ai-core" onclick="logUserActivity('Nebula Visual Hub')" class="module-card group bg-slate-950/80 hover:bg-rose-950/40 border border-slate-800 hover:border-rose-500 p-4 rounded-2xl block shadow">
@@ -212,7 +212,7 @@
                             <span>11. Spoken English Master</span>
                             <span class="text-xs bg-green-950 text-green-300 px-2 py-0.5 rounded-full">Active</span>
                         </div>
-                        <div class="text-xs text-slate-300">अदिति मैम के साथ 4D Live AI वॉयस एक्सेंट व आसान बोलचाल मैंटल.</div>
+                        <div class="text-xs text-slate-300">अदिति मैम के साथ 4D Live AI वॉयस एक्सेंट व आसान बोलचाल मैटर.</div>
                     </a>
 
                     <a href="/legal-ai" onclick="logUserActivity('Legal AI')" class="module-card group bg-slate-950/80 hover:bg-yellow-950/40 border border-slate-800 hover:border-yellow-500 p-4 rounded-2xl block shadow md:col-span-2 lg:col-span-3">
@@ -327,7 +327,7 @@
 
     <!-- फुटर (गुप्त एडमिन डॉट के साथ) -->
     <footer class="w-full text-center text-xs text-slate-500 mt-6">
-        <p>© 2026 Dhruv Academy Master Ecosystem. सर्वाधिकार सुरक्षित। आधार कार्ड एवं डेटा सुरक्षित।</p>
+        <p>© 2026 Dhruv Academy Master Ecosystem. सर्वाधिकार सुरक्षित। डेटा पूरी तरह सुरक्षित।</p>
         <div class="mt-1">
             <a href="/secret-admin-login-dhruv" class="text-slate-700 hover:text-slate-400 transition text-xs select-none" title="System Gateway">•</a>
         </div>
@@ -336,7 +336,8 @@
     <!-- जावास्क्रिप्ट लॉजिक -->
     <script>
         let currentLang = 'hi';
-        let userTokens = parseInt(localStorage.getItem("user_tokens")) || 10;
+        // सेंट्रल वॉलेट सिंक - LocalStorage से बैलेंस फेच करें
+        let userTokens = parseInt(localStorage.getItem("dhruv_wallet_tokens")) || parseInt(localStorage.getItem("user_tokens")) || 10;
         let currentTheme = 'dark';
 
         window.addEventListener('DOMContentLoaded', () => {
@@ -349,8 +350,14 @@
         });
 
         function updateTokenDisplay() {
-            document.getElementById('topTokenCount').innerText = userTokens;
-            document.getElementById('dashboardTokenCount').innerText = userTokens;
+            // सेंट्रल सिंक स्टोरेज अपडेट
+            localStorage.setItem("dhruv_wallet_tokens", userTokens);
+            localStorage.setItem("user_tokens", userTokens);
+
+            const topCount = document.getElementById('topTokenCount');
+            const dashCount = document.getElementById('dashboardTokenCount');
+            if(topCount) topCount.innerText = userTokens;
+            if(dashCount) dashCount.innerText = userTokens;
         }
 
         function switchLanguage(lang) {
@@ -383,7 +390,7 @@
                 return;
             }
             localStorage.setItem("user_mobile", mobile);
-            localStorage.setItem("user_tokens", userTokens);
+            localStorage.setItem("dhruv_wallet_tokens", userTokens);
             document.getElementById('authSection').classList.add('hidden');
             document.getElementById('dashboardSection').classList.remove('hidden');
             alert("सफलतापूर्वक लॉगिन हुआ! 10 टोकन जोड़े गए।");
@@ -435,7 +442,6 @@
                 let data = await res.json();
                 if(data.success) {
                     userTokens = data.new_balance;
-                    localStorage.setItem("user_tokens", userTokens);
                     updateTokenDisplay();
                     alert(data.message);
                     closeWalletStore();
@@ -444,9 +450,8 @@
                 }
             } catch (e) {
                 userTokens += tokensToAdd;
-                localStorage.setItem("user_tokens", userTokens);
                 updateTokenDisplay();
-                alert(`सफलतापूर्वक ${tokensToAdd} टोकन जोड़े गए! (Offline Mode)`);
+                alert(`सफलतापूर्वक ${tokensToAdd} टोकन जोड़े गए! (Offline Central Sync Mode)`);
                 closeWalletStore();
             }
         }
