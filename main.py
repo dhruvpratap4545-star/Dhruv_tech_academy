@@ -320,14 +320,11 @@ def super_admin_dashboard(user: AdminUser = Depends(get_current_admin), db: Sess
 # ------------------------------------------------------------------------------
 # 5. मुख्य डैशबोर्ड व सुरक्षित अलग-अलग HTML फाइल राउट्स (सटीक मैपिंग)
 # ------------------------------------------------------------------------------
-@app.get("/", response_class=HTMLResponse)
-def master_ecosystem_dashboard(request: Request, db: Session = Depends(get_db)):
-    client_ip = request.client.host if request.client else "Unknown"
-    log_activity(db, "Portal Visited", "Main Portal", "User loaded ecosystem dashboard", "Visitor", client_ip)
-    index_path = Path("index.html")
-    if index_path.exists():
+@app.get("/", response_class=FileResponse)
+def serve_index():
+    if Path("index.html").exists():
         return FileResponse("index.html")
-    return HTMLResponse("<h1>index.html missing</h1>", status_code=404)
+    return FileResponse("ai-core.html")
 
 @app.get("/ai-core", response_class=FileResponse)
 @app.get("/ai-core.html", response_class=FileResponse)
