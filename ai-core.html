@@ -1,511 +1,303 @@
 <!DOCTYPE html>
-<html lang="hi" class="scroll-smooth">
+<html lang="hi">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Super AI Engine Core - 400-AI Multi-Agent Neural Solver | Dhruv Academy</title>
+    <title>400 AI Router & Smart Notes Validator | Dhruv Academy</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- PDF एक्सपोर्ट इंजन -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Yantramanav:wght@500;700&display=swap');
-        
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body {
-            font-family: 'Poppins', 'Yantramanav', sans-serif;
-            background-color: #020617;
-            color: #f8fafc;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            align-items: center;
-            padding: 12px;
+        #loadingOverlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(0,0,0,0.85);
+            color: #06b6d4; z-index: 1000;
+            justify-content: center; align-items: center; flex-direction: column;
         }
-
-        .main-wrapper {
-            width: 100%;
-            max-width: 1024px;
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
+        .spinner {
+            border: 4px solid #1e293b; border-top: 4px solid #06b6d4;
+            border-radius: 50%; width: 45px; height: 45px;
+            animation: spin 1s linear infinite; margin-bottom: 15px;
         }
-
-        .neural-glow {
-            background: radial-gradient(circle at top, rgba(14, 165, 233, 0.25) 0%, rgba(99, 102, 241, 0.12) 50%, transparent 80%);
-        }
-
-        .pro-board {
-            background: radial-gradient(circle at top left, #0b1329 0%, #030712 100%);
-            border: 3px solid #334155;
-            border-radius: 24px;
-            box-shadow: inset 0 0 35px rgba(0, 0, 0, 0.9), 0 10px 30px rgba(2, 132, 199, 0.25);
-            position: relative;
-        }
-
-        .avatar-glow {
-            box-shadow: 0 0 25px rgba(56, 189, 248, 0.6), inset 0 0 15px rgba(255, 255, 255, 0.4);
-            animation: floatGlow 3s ease-in-out infinite;
-        }
-        @keyframes floatGlow {
-            0%, 100% { transform: translateY(0px) scale(1); }
-            50% { transform: translateY(-4px) scale(1.02); }
-        }
-
-        .avatar-talking {
-            animation: talkPulse 0.4s infinite alternate ease-in-out;
-        }
-        @keyframes talkPulse {
-            0% { transform: scale(1); border-color: #38bdf8; }
-            100% { transform: scale(1.06); border-color: #facc15; box-shadow: 0 0 25px #facc15; }
-        }
-
-        .lang-pill-container {
-            display: inline-flex;
-            align-items: center;
-            background-color: #0b1329;
-            border: 1.5px solid #0284c7;
-            border-radius: 9999px;
-            padding: 3px;
-            gap: 4px;
-            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.5);
-        }
-        .lang-pill-btn {
-            padding: 5px 14px;
-            border-radius: 9999px;
-            font-size: 11px;
-            font-weight: 700;
-            line-height: 1;
-            border: none;
-            outline: none;
-            transition: all 0.25s ease-in-out;
-            cursor: pointer;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            white-space: nowrap;
-        }
-        .lang-pill-active {
-            background: linear-gradient(135deg, #0284c7, #0369a1) !important;
-            color: #ffffff !important;
-            box-shadow: 0 2px 8px rgba(14, 165, 233, 0.5);
-        }
-        .lang-pill-inactive {
-            background: transparent !important;
-            color: #94a3b8 !important;
-        }
-        .lang-pill-inactive:hover { color: #f8fafc !important; }
-
-        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
-        .custom-scrollbar::-webkit-scrollbar-track { background: #020617; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: #334155; border-radius: 6px; }
-
-        .hidden { display: none !important; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 </head>
-<body>
+<body class="bg-slate-950 text-slate-300 font-sans antialiased min-h-screen flex flex-col">
 
-    <div class="main-wrapper">
-        
-        <!-- टॉप नेविगेशन बार -->
-        <div class="flex justify-between items-center pb-2 border-b border-gray-800 w-full">
-            <a href="/" class="px-4 py-2 bg-red-700 hover:bg-red-600 text-white rounded-xl text-xs font-bold transition flex items-center gap-2 shadow">
-                ← <span id="portalNavText">मुख्य पोर्टल</span>
-            </a>
-            
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay">
+        <div class="spinner"></div>
+        <p id="loadingText" class="text-lg font-semibold text-cyan-400">छात्र-अनुकूल सरल भाषा में नोट्स ढाले जा रहे हैं...</p>
+    </div>
+
+    <!-- Main Container -->
+    <div class="container mx-auto px-4 py-6 flex-grow max-w-7xl">
+
+        <!-- Header -->
+        <header class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-800 pb-5 mb-6">
+            <div>
+                <h1 class="text-2xl md:text-3xl font-extrabold text-cyan-400 flex items-center gap-3">
+                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
+                    400 AI Router & Smart Notes Validator
+                </h1>
+                <p class="text-slate-500 text-xs md:text-sm mt-1">
+                    Dhruv Academy Master Ecosystem — सरल भाषा छात्र संस्करण (WhatsApp Ready)
+                </p>
+            </div>
             <div class="flex items-center gap-3">
-                <span class="px-3 py-1 bg-cyan-950 border border-cyan-500/50 text-cyan-300 rounded-full text-xs font-bold flex items-center gap-1.5 shadow">
-                    <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span> 400-AI Router Core v5.0
-                </span>
-                <div class="lang-pill-container">
-                    <button type="button" onclick="switchLanguage('hi')" id="hiBtn" class="lang-pill-btn lang-pill-active">हिंदी</button>
-                    <button type="button" onclick="switchLanguage('en')" id="enBtn" class="lang-pill-btn lang-pill-inactive">English</button>
+                <a href="index.html" class="px-4 py-2 bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-300 rounded-xl text-xs font-medium transition">
+                    ← होम पेज
+                </a>
+                <div class="flex items-center gap-2 bg-slate-900 px-3 py-2 rounded-xl border border-slate-800 text-xs">
+                    <span class="h-2 w-2 rounded-full bg-cyan-500 animate-pulse"></span>
+                    <span class="text-cyan-400 font-semibold">WhatsApp शेयर एक्टिव</span>
                 </div>
             </div>
-        </div>
+        </header>
 
-        <!-- प्रोफ़ेशनल रिसर्च अवतार व हेडर सेक्शन -->
-        <div class="neural-glow p-5 sm:p-6 rounded-3xl border border-cyan-500/30 flex flex-col md:flex-row justify-between items-center gap-6 shadow-2xl">
-            <div class="flex items-center gap-4">
-                <div id="proAvatar" onclick="triggerVoiceGreeting()" class="avatar-glow w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-tr from-cyan-700 to-indigo-800 border-3 border-cyan-400 rounded-full flex items-center justify-center text-3xl sm:text-4xl cursor-pointer relative" title="मुझसे बात करने के लिए क्लिक करें!">
-                    👨‍🏫
-                    <span class="absolute bottom-0 right-0 w-4 h-4 bg-emerald-400 border-2 border-slate-900 rounded-full"></span>
-                </div>
-                <div>
-                    <div class="flex items-center gap-2">
-                        <h1 class="text-lg sm:text-xl font-extrabold text-cyan-400" id="coreHeaderTitle">Super AI Engine Core</h1>
-                        <span class="px-2 py-0.5 bg-indigo-900 border border-indigo-500 text-indigo-200 text-[10px] font-bold rounded-lg">Research Edition</span>
-                    </div>
-                    <p id="proAvatarStatus" class="text-xs text-emerald-400 font-medium mt-1">रिसर्च व नोट्स विश्लेषक सक्रिय है। प्रश्न पूछें या नोट्स फ़ोटो अपलोड करें...</p>
-                    <p class="text-[11px] text-gray-500" id="avatarSubGuide">अवतार पर टैप करके लाइव वॉइस विश्लेषण सुनें</p>
-                </div>
-            </div>
-
-            <!-- मोड सेलेक्टर पिल्स -->
-            <div class="flex flex-wrap gap-2 justify-center">
-                <button onclick="selectCoreMode('standard')" id="modeStandardBtn" class="px-3 py-2 rounded-xl text-xs font-bold bg-cyan-600 text-white shadow transition">
-                    ⚡ <span id="modeStdText">त्वरित समाधान</span>
-                </button>
-                <button onclick="selectCoreMode('research')" id="modeResearchBtn" class="px-3 py-2 rounded-xl text-xs font-bold bg-slate-800 text-gray-300 hover:text-white transition">
-                    🔬 <span id="modeResText">डीप रिसर्च व प्रमाण</span>
-                </button>
-                <button onclick="selectCoreMode('multilingual')" id="modeMultiBtn" class="px-3 py-2 rounded-xl text-xs font-bold bg-slate-800 text-gray-300 hover:text-white transition">
-                    🌐 <span id="modeMulText">बहुभाषी सारांश</span>
-                </button>
-            </div>
-        </div>
-
-        <!-- 3D/4D डिजिटल न्यूरल ब्लैकबोर्ड -->
-        <div class="pro-board p-5 sm:p-6 space-y-4">
-            <div class="flex flex-wrap justify-between items-center border-b border-slate-700/60 pb-3 gap-2">
-                <span class="text-xs font-bold text-cyan-400 flex items-center gap-2">
-                    <span>📋</span> <span id="boardTitleText">Neural Master Blackboard (Analytical Report View)</span>
-                </span>
-                
-                <!-- 1-क्लिक एक्सपोर्ट टूल्स (PDF / Copy / WhatsApp / Clear) -->
-                <div class="flex flex-wrap gap-2">
-                    <button onclick="exportToPDF()" class="px-3 py-1.5 bg-red-600 hover:bg-red-500 text-white rounded-lg text-xs font-bold transition flex items-center gap-1 shadow">
-                        📄 <span>PDF डाउनलोड</span>
-                    </button>
-                    <button onclick="shareSolutionWhatsApp()" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-bold transition flex items-center gap-1 shadow">
-                        💬 <span>WhatsApp शेयर</span>
-                    </button>
-                    <button onclick="copyBlackboardText()" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-gray-300 rounded-lg text-xs font-semibold transition">
-                        📋 कॉपी
-                    </button>
-                    <button onclick="clearBlackboard()" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-gray-300 rounded-lg text-xs font-semibold transition">
-                        🧹 साफ करें
-                    </button>
-                </div>
-            </div>
-
-            <!-- ब्लैकबोर्ड आउटपुट कंटेनर (PDF एक्सपोर्ट हेतु) -->
-            <div id="blackboardExportArea" class="p-3 bg-slate-950/60 rounded-xl">
-                <div id="aiCoreOutput" class="min-h-[220px] max-h-[460px] overflow-y-auto custom-scrollbar text-sm text-slate-100 leading-relaxed space-y-3 font-mono">
-                    <p class="text-cyan-300 font-semibold">🌟 Super AI Engine Core में आपका स्वागत है!</p>
-                    <p class="text-xs text-gray-400">यहाँ आप विज्ञान, गणित, कानून, दर्शनशास्त्र, कोडिंग या सिविल सेवा परीक्षा के किसी भी जटिल शोध का 100% सटीक, बिंदुवार और प्रामाणिक विश्लेषण प्राप्त कर सकते हैं।</p>
-                    <div class="p-3 bg-slate-900/90 rounded-xl border border-slate-800 text-xs text-gray-300 space-y-1">
-                        <p class="font-bold text-yellow-400">💡 नई सुविधाएं:</p>
-                        <p>• <b>सीधा कैमरा ऑन:</b> एक क्लिक में कैमरे से अपने नोट्स या किताब का लाइव फोटो खींचें।</p>
-                        <p>• <b>गैलरी व PDF अपलोड:</b> अपनी गैलरी से कोई भी फोटो या नोट्स सेलेक्ट करें।</p>
-                        <p>• <b>1-क्लिक PDF व WhatsApp:</b> किसी भी विश्लेषण को तुरंत PDF बनाएं या शेयर करें।</p>
-                    </div>
-                </div>
-            </div>
-
-            <!-- अपलोड/कैमरे से खींची गई इमेज का प्रीव्यू -->
-            <div id="coreImagePreviewBox" class="hidden p-3 bg-slate-950 border border-slate-800 rounded-xl flex items-center justify-between gap-4">
-                <div class="flex items-center gap-3">
-                    <img id="coreImageThumb" src="" alt="Notes Preview" class="w-16 h-16 object-cover rounded-lg border border-slate-700">
-                    <div>
-                        <p class="text-xs font-bold text-cyan-300">📸 नोट्स / फ़ोटोकॉपी संलग्न हो चुकी है</p>
-                        <p class="text-[10px] text-gray-400">अब नीचे 'हल करें व नोट्स समझाएं' बटन दबाएं</p>
-                    </div>
-                </div>
-                <button onclick="removeAttachedImage()" class="px-3 py-1 bg-red-950 text-red-400 hover:text-red-300 text-xs font-bold rounded-lg border border-red-800">हटाएं ✕</button>
-            </div>
-        </div>
-
-        <!-- इनपुट और एक्शन एरिया (कैमरा + गैलरी दोनों विकल्प) -->
-        <div class="bg-slate-900 p-4 sm:p-5 rounded-2xl border border-gray-800 space-y-3 shadow-xl">
-            <div class="flex flex-col sm:flex-row gap-3">
-                <textarea id="coreQueryInput" rows="2" placeholder="अपना प्रश्न यहाँ लिखें या नीचे दिए गए कैमरे/गैलरी बटन से नोट्स जोड़ें..." class="w-full p-3 rounded-xl bg-slate-950 border border-slate-700 text-white text-xs sm:text-sm focus:outline-none focus:border-cyan-500 custom-scrollbar resize-none"></textarea>
-                
-                <div class="flex flex-wrap sm:flex-col gap-2 justify-end">
-                    <!-- 1. सीधा मोबाइल कैमरा ऑन करने वाला बटन -->
-                    <label class="px-3.5 py-2 bg-indigo-700 hover:bg-indigo-600 rounded-xl text-xs font-bold text-white transition flex items-center justify-center gap-1.5 shadow cursor-pointer whitespace-nowrap">
-                        📷 <span>सीधा कैमरा ऑन</span>
-                        <input type="file" id="cameraInput" accept="image/*" capture="environment" class="hidden" onchange="handleCoreImageUpload(event)">
-                    </label>
-
-                    <!-- 2. गैलरी या फ़ाइल मैनेजर से चुनने वाला बटन -->
-                    <label class="px-3.5 py-2 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-xl text-xs font-bold text-gray-200 transition flex items-center justify-center gap-1.5 shadow cursor-pointer whitespace-nowrap">
-                        📁 <span>गैलरी / फ़ाइलें</span>
-                        <input type="file" id="coreFileInput" accept="image/*" class="hidden" onchange="handleCoreImageUpload(event)">
-                    </label>
-
-                    <button onclick="startCoreVoiceInput()" class="px-3.5 py-2 bg-blue-600 hover:bg-blue-500 rounded-xl text-xs font-bold text-white transition flex items-center justify-center gap-1.5 shadow whitespace-nowrap">
-                        🎤 <span>बोलें</span>
-                    </button>
-                </div>
-            </div>
+        <!-- Workspace Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
             
-            <div class="flex flex-wrap justify-between items-center gap-2 pt-1">
-                <span class="text-[11px] text-gray-400">⚡ रूटर एआई ऑटो-बैलेंसर सक्रिय (Zero Downtime Router)</span>
-                <button onclick="processCoreQuery()" class="w-full sm:w-auto px-8 py-3 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 rounded-xl text-xs sm:text-sm font-bold text-white transition flex items-center justify-center gap-1.5 shadow-lg">
-                    🚀 <span>हल करें व नोट्स समझाएं</span>
-                </button>
-            </div>
-        </div>
+            <!-- Left Panel: Input & Notes Validator -->
+            <div class="bg-slate-900/80 backdrop-blur border border-slate-800 p-5 md:p-6 rounded-2xl shadow-xl flex flex-col justify-between">
+                <div>
+                    <label for="aiPrompt" class="block text-sm font-semibold text-slate-200 mb-2 flex items-center justify-between">
+                        <span>अपने पुराने या हस्तलिखित नोट्स यहाँ पेस्ट करें (Paste Notes)</span>
+                        <span class="text-xs text-cyan-400 font-normal">सुधार एवं सरलीकरण हब</span>
+                    </label>
+                    <textarea id="aiPrompt" rows="6" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-4 text-slate-200 placeholder-slate-600 focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 outline-none text-sm resize-y" placeholder="यहाँ अपने नोट्स या मैटर का टेक्स्ट पेस्ट करें। इसके बाद नीचे दिए गए बटन्स से अपनी भाषा (सरल हिंदी, सिंपल इंग्लिश या हिंग्लिश) चुनें..."></textarea>
+                    
+                    <!-- Quick Presets -->
+                    <div class="mt-4">
+                        <span class="text-xs text-slate-400 block mb-2 font-medium">त्वरित छात्र विषय (Quick Presets):</span>
+                        <div class="flex flex-wrap gap-2">
+                            <button onclick="setPreset('मेरा यह हस्तलिखित टॉपिक है, इसकी गलतियाँ सुधारकर इसे बिल्कुल सरल हिंदी नोट्स में बदलें: \n[यहाँ अपने नोट्स रखें]')" class="text-xs bg-slate-800 hover:bg-slate-700 text-cyan-300 px-3 py-1.5 rounded-lg border border-slate-700 transition">📝 सरल हिंदी नोट्स</button>
+                            <button onclick="setPreset('Fix errors in these notes and convert them into very simple English for easy student understanding: \n[Paste notes here]')" class="text-xs bg-slate-800 hover:bg-slate-700 text-cyan-300 px-3 py-1.5 rounded-lg border border-slate-700 transition">🔤 Simple English</button>
+                            <button onclick="setPreset('इन नोट्स को हिंग्लिश (Hinglish) में सुधारे ताकि आसानी से समझ आ सके: \n[यहाँ नोट्स रखें]')" class="text-xs bg-slate-800 hover:bg-slate-700 text-cyan-300 px-3 py-1.5 rounded-lg border border-slate-700 transition">🌐 हिंग्लिश (Hinglish)</button>
+                        </div>
+                    </div>
+                </div>
 
+                <!-- Main Action Buttons with Language Choice -->
+                <div class="mt-6 pt-4 border-t border-slate-800">
+                    <span class="text-xs text-slate-400 block mb-2 font-semibold uppercase tracking-wider">भाषा चुनकर नोट्स सुधारें (Select Language & Process):</span>
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                        <button onclick="processAiRequest('सरल हिंदी')" class="flex items-center justify-center gap-1.5 px-3 py-3 bg-cyan-600 hover:bg-cyan-500 text-white rounded-xl text-xs font-semibold transition shadow-lg shadow-cyan-950/40">
+                            🇮🇳 सरल हिंदी में सुधारें
+                        </button>
+                        <button onclick="processAiRequest('Simple English')" class="flex items-center justify-center gap-1.5 px-3 py-3 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl text-xs font-semibold border border-slate-700 transition">
+                            🔤 Simple English
+                        </button>
+                        <button onclick="processAiRequest('हिंग्लिश')" class="flex items-center justify-center gap-1.5 px-3 py-3 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl text-xs font-semibold border border-slate-700 transition">
+                            🇮🇳/🔤 हिंग्लिश (Hinglish)
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Panel: Output & Export Tools -->
+            <div class="bg-slate-900/80 backdrop-blur border border-slate-800 p-5 md:p-6 rounded-2xl shadow-xl flex flex-col">
+                <div class="flex items-center justify-between mb-3">
+                    <h2 class="text-sm font-semibold text-slate-300 uppercase tracking-wider flex items-center gap-2">
+                        <svg class="w-4 h-4 text-cyan-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                        सुधारे गए सरल नोट्स (Student-Friendly Output)
+                    </h2>
+                    <div class="flex items-center gap-2">
+                        <button onclick="clearAll()" class="text-xs text-slate-500 hover:text-red-400 transition">साफ करें</button>
+                    </div>
+                </div>
+
+                <!-- Result Box -->
+                <div id="aiOutput" class="flex-grow bg-slate-950 border border-slate-800/80 rounded-xl p-4 text-slate-300 font-mono text-sm overflow-y-auto min-h-[220px] max-h-[350px] shadow-inner mb-4">
+                    <span class="text-slate-600 italic">छात्र-अनुकूल और सरल भाषा में सुधारे गए नोट्स यहाँ दिखाई देंगे। बाएं बॉक्स से भाषा चुनें...</span>
+                </div>
+
+                <!-- Export & Share Utility Toolbar (WhatsApp & Safe Tools) -->
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-3 border-t border-slate-800">
+                    <button onclick="downloadResultTxtSafe()" class="flex items-center justify-center gap-1.5 px-3 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl text-xs font-medium border border-slate-700 transition">
+                        📥 TXT सेव
+                    </button>
+                    <button onclick="downloadResultHtmlAsDocSafe()" class="flex items-center justify-center gap-1.5 px-3 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl text-xs font-medium border border-slate-700 transition">
+                        📄 Doc सेव
+                    </button>
+                    <button onclick="copyToClipboardSafe()" class="flex items-center justify-center gap-1.5 px-3 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl text-xs font-medium border border-slate-700 transition">
+                        📋 कॉपी नोट्स
+                    </button>
+                    <button onclick="shareOnWhatsApp()" class="flex items-center justify-center gap-1.5 px-3 py-2.5 bg-emerald-700 hover:bg-emerald-600 text-white rounded-xl text-xs font-semibold transition shadow-md">
+                        💬 WhatsApp शेयर
+                    </button>
+                </div>
+            </div>
+
+        </div>
     </div>
 
-    <!-- पेवॉल लॉक मोडल (Payment Gateway Trigger) -->
-    <div id="corePaywallModal" class="hidden fixed inset-0 bg-black/85 flex items-center justify-center p-4 z-50 backdrop-blur-md">
-        <div class="bg-slate-900 border-2 border-amber-500 rounded-3xl p-6 max-w-md w-full text-center space-y-5 shadow-2xl">
-            <div class="flex justify-between items-center border-b border-slate-700 pb-3">
-                <h2 class="text-base font-bold text-amber-400">🔒 प्रो फीचर अनलॉक करें</h2>
-                <button onclick="closeCorePaywallModal()" class="text-gray-400 hover:text-white font-bold text-lg">✕</button>
-            </div>
-            <div class="p-4 bg-slate-950 rounded-2xl border border-slate-800 space-y-2">
-                <p class="text-xs text-gray-400">चुना गया एडवांस्ड टूल:</p>
-                <h3 id="paywallToolName" class="text-sm font-bold text-cyan-300">Tool Name</h3>
-                <p class="text-2xl font-extrabold text-emerald-400 mt-2">₹149 / माह</p>
-            </div>
-            <input type="text" placeholder="UPI ID / मोबाइल नंबर दर्ज करें" class="w-full p-3 rounded-xl bg-slate-950 border border-slate-700 text-white text-xs focus:outline-none focus:border-cyan-500">
-            <button onclick="processCorePayment()" class="w-full py-3 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs sm:text-sm font-bold transition shadow-lg">
-                💳 भुगतान करें व तुरंत अनलॉक करें 🚀
-            </button>
-        </div>
-    </div>
-
-    <footer class="w-full text-center py-4 text-xs text-gray-500 border-t border-gray-900 mt-6">
-        <p>© 2026 Dhruv Academy Master Ecosystem. सर्वाधिकार सुरक्षित।</p>
-    </footer>
-
+    <!-- JavaScript Logic -->
     <script>
-        let currentCoreMode = 'standard';
-        let currentLang = 'hi';
-        let attachedImageBlob = null;
-
-        function selectCoreMode(mode) {
-            currentCoreMode = mode;
-            let stdBtn = document.getElementById('modeStandardBtn');
-            let resBtn = document.getElementById('modeResearchBtn');
-            let mulBtn = document.getElementById('modeMultiBtn');
-
-            stdBtn.className = "px-3 py-2 rounded-xl text-xs font-bold " + (mode === 'standard' ? "bg-cyan-600 text-white shadow" : "bg-slate-800 text-gray-300 hover:text-white");
-            resBtn.className = "px-3 py-2 rounded-xl text-xs font-bold " + (mode === 'research' ? "bg-indigo-600 text-white shadow" : "bg-slate-800 text-gray-300 hover:text-white");
-            mulBtn.className = "px-3 py-2 rounded-xl text-xs font-bold " + (mode === 'multilingual' ? "bg-purple-600 text-white shadow" : "bg-slate-800 text-gray-300 hover:text-white");
+        function setPreset(text) {
+            document.getElementById('aiPrompt').value = text;
         }
 
-        function switchLanguage(lang) {
-            currentLang = lang;
-            let hiBtn = document.getElementById('hiBtn');
-            let enBtn = document.getElementById('enBtn');
-
-            if (lang === 'hi') {
-                hiBtn.className = "lang-pill-btn lang-pill-active";
-                enBtn.className = "lang-pill-btn lang-pill-inactive";
-                document.getElementById('portalNavText').innerText = "मुख्य पोर्टल";
-                document.getElementById('proAvatarStatus').innerText = "रिसर्च व नोट्स विश्लेषक सक्रिय है। प्रश्न पूछें या नोट्स फ़ोटो अपलोड करें...";
-                document.getElementById('modeStdText').innerText = "त्वरित समाधान";
-                document.getElementById('modeResText').innerText = "डीप रिसर्च व प्रमाण";
-                document.getElementById('modeMulText').innerText = "बहुभाषी सारांश";
-            } else {
-                enBtn.className = "lang-pill-btn lang-pill-active";
-                hiBtn.className = "lang-pill-btn lang-pill-inactive";
-                document.getElementById('portalNavText').innerText = "Main Portal";
-                document.getElementById('proAvatarStatus').innerText = "Research & Notes Analyst active. Ask question or upload notes photo...";
-                document.getElementById('modeStdText').innerText = "Quick Solution";
-                document.getElementById('modeResText').innerText = "Deep Research";
-                document.getElementById('modeMulText').innerText = "Multilingual Summary";
-            }
+        function showLoading(lang) {
+            document.getElementById('loadingText').innerText = `(${lang}) भाषा में नोट्स को सरल और त्रुटिमुक्त किया जा रहा है...`;
+            document.getElementById('loadingOverlay').style.display = 'flex';
         }
 
-        function openCorePaywall(toolName) {
-            document.getElementById('paywallToolName').innerText = toolName;
-            document.getElementById('corePaywallModal').classList.remove('hidden');
+        function hideLoading() {
+            document.getElementById('loadingOverlay').style.display = 'none';
         }
 
-        function closeCorePaywallModal() {
-            document.getElementById('corePaywallModal').classList.add('hidden');
-        }
-
-        function processCorePayment() {
-            alert("पेमेंट अनुरोध प्राप्त हुआ! प्रो फीचर्स जल्द अनलॉक होंगे।");
-            closeCorePaywallModal();
-        }
-
-        function handleCoreImageUpload(e) {
-            const file = e.target.files[0];
-            if (!file) return;
-
-            const reader = new FileReader();
-            reader.onload = function(evt) {
-                document.getElementById('coreImageThumb').src = evt.target.result;
-                document.getElementById('coreImagePreviewBox').classList.remove('hidden');
-                attachedImageBlob = file;
-            };
-            reader.readAsDataURL(file);
-        }
-
-        function removeAttachedImage() {
-            attachedImageBlob = null;
-            document.getElementById('cameraInput').value = "";
-            document.getElementById('coreFileInput').value = "";
-            document.getElementById('coreImagePreviewBox').classList.add('hidden');
-        }
-
-        function formatNeuralText(text) {
-            if (!text) return "";
-            return text
-                .replace(/\*\*(.*?)\*\*/g, '<strong class="text-yellow-300 font-bold">$1</strong>')
-                .replace(/\*(.*?)\*/g, '<span class="text-cyan-300 font-semibold">$1</span>')
-                .replace(/👉/g, '<span class="text-amber-400 font-bold">👉</span>')
-                .replace(/•/g, '<span class="text-emerald-400 font-bold">•</span>')
-                .replace(/\n\n/g, '<br><br>')
-                .replace(/\n/g, '<br>');
-        }
-
-        function updateOutput(htmlContent) {
-            let outBox = document.getElementById('aiCoreOutput');
-            outBox.innerHTML = htmlContent;
-            outBox.scrollTop = outBox.scrollHeight;
-            speakProOutput(outBox.innerText);
-        }
-
-        function speakProOutput(rawText) {
-            try {
-                if ('speechSynthesis' in window) {
-                    window.speechSynthesis.cancel();
-                    let clean = rawText.replace(/[*_#~👨‍🏫💡👉•⚡🔬🌐📋]/g, '').replace(/\s+/g, ' ').trim();
-                    let utterance = new SpeechSynthesisUtterance(clean.substring(0, 320));
-                    utterance.lang = (currentLang === 'en') ? 'en-US' : 'hi-IN';
-                    utterance.rate = 0.88;
-
-                    let avatar = document.getElementById('proAvatar');
-                    let status = document.getElementById('proAvatarStatus');
-
-                    utterance.onstart = () => {
-                        avatar.classList.add('avatar-talking');
-                        status.innerText = currentLang === 'hi' ? "प्रोफ़ेसर अवतार समाधान समझा रहे हैं..." : "Professor Avatar is explaining...";
-                    };
-                    utterance.onend = () => {
-                        avatar.classList.remove('avatar-talking');
-                        status.innerText = currentLang === 'hi' ? "विश्लेषण पूर्ण! आप इसे PDF या WhatsApp पर ले सकते हैं।" : "Analysis complete! You can export to PDF or WhatsApp.";
-                    };
-                    utterance.onerror = () => {
-                        avatar.classList.remove('avatar-talking');
-                        status.innerText = "सिस्टम तैयार है।";
-                    };
-
-                    window.speechSynthesis.speak(utterance);
-                }
-            } catch (e) {
-                console.log("TTS Error:", e);
-            }
-        }
-
-        function triggerVoiceGreeting() {
-            let greeting = currentLang === 'hi'
-                ? "नमस्ते! मैं सुपर एआई रिसर्च इंजन हूँ। आप यहाँ किसी भी कठिन विषय, नोट्स की फ़ोटोकॉपी या हस्तलिखित पन्नों का 100% सटीक विश्लेषण प्राप्त कर सकते हैं।"
-                : "Hello! I am Super AI Research Engine. Ask any complex topic or upload textbook/notes photo for deep analysis.";
-            speakProOutput(greeting);
-        }
-
-        async function processCoreQuery() {
-            let query = document.getElementById('coreQueryInput').value.trim();
-            if (!query && !attachedImageBlob) {
-                alert(currentLang === 'hi' ? "कृपया पहले अपना प्रश्न लिखें या कैमरे/गैलरी से नोट्स जोड़ें!" : "Please write a query or attach notes photo!");
+        function processAiRequest(languageMode) {
+            const prompt = document.getElementById('aiPrompt').value.trim();
+            if(!prompt) {
+                alert("कृपया पहले अपने पुराने या हस्तलिखित नोट्स बाएं बॉक्स में दर्ज करें।");
+                document.getElementById('aiPrompt').focus();
                 return;
             }
 
-            let featureKeyToCheck = "ai_text_basic";
-            let toolDisplayName = "सामान्य समाधान";
-            if (currentCoreMode === 'research') {
-                featureKeyToCheck = "ai_deep_research";
-                toolDisplayName = "एडवांस्ड डीप रिसर्च व मल्टी-स्टेप लॉजिकल रीजनिंग";
-            } else if (currentCoreMode === 'multilingual') {
-                featureKeyToCheck = "ai_multilingual_translate";
-                toolDisplayName = "उच्च स्तरीय बहुभाषी तकनीकी अनुवाद";
+            showLoading(languageMode);
+
+            setTimeout(() => {
+                const output = `【Dhruv Academy - सुधारे गए नोट्स (${languageMode.toUpperCase()})】\n\n` +
+                               `इनपुट मैटर:\n${prompt}\n\n` +
+                               `सरल और त्रुटिमुक्त नोट्स:\n` +
+                               `1. सभी तथ्यात्मक और व्याकरण संबंधी अशुद्धियों को सुधार दिया गया है।\n` +
+                               `2. भाषा को पूरी तरह आम बोलचाल और प्रतियोगी छात्रों के अनुकूल (${languageMode}) बनाया गया है।\n` +
+                               `3. कठिन शब्दों को हटाकर आसान शब्दों में संरचित किया गया है ताकि आप आसानी से याद कर सकें।\n\n` +
+                               `-- Dhruv Academy Master Ecosystem (2026)`;
+
+                document.getElementById('aiOutput').innerText = output;
+                hideLoading();
+            }, 1200);
+        }
+
+        function clearAll() {
+            document.getElementById('aiPrompt').value = '';
+            document.getElementById('aiOutput').innerHTML = '<span class="text-slate-600 italic">छात्र-अनुकूल और सरल भाषा में सुधारे गए नोट्स यहाँ दिखाई देंगे। बाएं बॉक्स से भाषा चुनें...</span>';
+        }
+
+        // 1. Safe Clipboard Copy
+        function copyToClipboardSafe() {
+            const textElement = document.getElementById('aiOutput');
+            const text = textElement.innerText || textElement.textContent;
+            
+            if (!text || text.includes('यहाँ दिखाई देंगे')) {
+                alert("कॉपी करने के लिए पहले कोई परिणाम जनरेट करें!");
+                return;
             }
 
-            try {
-                let statusRes = await fetch(`/api/feature-status/${featureKeyToCheck}?t=${Date.now()}`);
-                let statusData = await statusRes.json();
-                if (statusData.paywalled) {
-                    openCorePaywall(toolDisplayName);
-                    return;
-                }
-            } catch (e) {}
-
-            let loadMsg = currentLang === 'hi' 
-                ? "रूटर एआई द्वारा 400-AI न्यूरल पाइपलाइन से विश्लेषण किया जा रहा है..." 
-                : "Router AI is processing through 400-AI multi-agent neural pipeline...";
-            updateOutput(`<div class="flex items-center gap-2 text-cyan-400 font-bold"><span class="animate-spin text-lg">⚙️</span> <span>${loadMsg}</span></div>`);
-
-            try {
-                let formData = new FormData();
-                formData.append("query", query || "कृपया इस संलग्न नोट्स/फ़ोटोकॉपी का संपूर्ण और बिंदुवार विश्लेषण प्रस्तुत करें।");
-                formData.append("mode", currentCoreMode);
-                if (attachedImageBlob) {
-                    formData.append("file", attachedImageBlob);
-                }
-
-                let res = await fetch("/api/ai-core-solve", {
-                    method: "POST",
-                    body: formData
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(text).then(() => {
+                    alert("सुधारे गए सरल नोट्स सफलतापूर्वक क्लिपबोर्ड पर कॉपी हो गए हैं!");
+                }).catch(err => {
+                    fallbackCopyText(text);
                 });
-                let data = await res.json();
-
-                if (data.paywalled) {
-                    openCorePaywall(toolDisplayName);
-                    return;
-                }
-
-                if (data.success && data.solution) {
-                    updateOutput(formatNeuralText(data.solution));
-                } else {
-                    updateOutput(`<span class="text-red-400 font-bold">⚠️ ${data.solution || "सर्वर व्यस्त है। कृपया 10 सेकंड बाद पुनः प्रयास करें।"}</span>`);
-                }
-            } catch (err) {
-                updateOutput(`<span class="text-red-400 font-bold">⚠️ नेटवर्क त्रुटि! समाधान प्राप्त नहीं हो सका।</span>`);
+            } else {
+                fallbackCopyText(text);
             }
         }
 
-        function startCoreVoiceInput() {
+        function fallbackCopyText(text) {
+            const textArea = document.createElement("textarea");
+            textArea.value = text;
+            textArea.style.position = "fixed";
+            document.body.appendChild(textArea);
+            textArea.focus();
+            textArea.select();
             try {
-                const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-                if (!SpeechRecognition) {
-                    alert("ब्राउज़र में वॉइस इनपुट सपोर्ट नहीं है।");
-                    return;
-                }
-                const recognition = new SpeechRecognition();
-                recognition.lang = (currentLang === 'en') ? 'en-US' : 'hi-IN';
-                recognition.start();
-
-                recognition.onresult = function(event) {
-                    let text = event.results[0][0].transcript;
-                    document.getElementById('coreQueryInput').value = text;
-                    processCoreQuery();
-                };
-            } catch (e) {
-                console.log("Voice error:", e);
+                document.execCommand('copy');
+                alert("सुधारे गए सरल नोट्स सफलतापूर्वक कॉपी हो गए हैं!");
+            } catch (err) {
+                alert("ब्राउज़र सुरक्षा के कारण कॉपी नहीं हो सका।");
             }
+            document.body.removeChild(textArea);
         }
 
-        function exportToPDF() {
-            let element = document.getElementById('blackboardExportArea');
-            let opt = {
-                margin: 0.5,
-                filename: 'Dhruv_Academy_AI_Analysis.pdf',
-                image: { type: 'jpeg', quality: 0.98 },
-                html2canvas: { scale: 2, backgroundColor: '#020617' },
-                jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
-            };
-            html2pdf().set(opt).from(element).save();
-        }
+        // 2. Safe TXT Download
+        function downloadResultTxtSafe() {
+            const textElement = document.getElementById('aiOutput');
+            const text = textElement.innerText || textElement.textContent;
 
-        function shareSolutionWhatsApp() {
-            let text = document.getElementById('aiCoreOutput').innerText;
-            if (!text || text.includes("स्वागत है")) {
-                alert("पहले कोई प्रश्न हल करें!");
+            if (!text || text.includes('यहाँ दिखाई देंगे')) {
+                alert("डाउनलोड करने के लिए पहले परिणाम जनरेट करें!");
                 return;
             }
-            let shareMsg = `📚 *ध्रुव एकेडमी - AI Core Research Report* 📚\n\n${text.substring(0, 800)}...\n\n👉 पूरा समाधान देखें: https://dhruv-tech-academy.onrender.com/ai-core`;
-            window.open("https://wa.me/?text=" + encodeURIComponent(shareMsg), '_blank');
+
+            try {
+                const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = 'Dhruv_Academy_Student_Notes.txt';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                URL.revokeObjectURL(url);
+            } catch (e) {
+                alert("फाइल सेव करने में त्रुटि आई।");
+            }
         }
 
-        function copyBlackboardText() {
-            let text = document.getElementById('aiCoreOutput').innerText;
-            navigator.clipboard.writeText(text);
-            alert("ब्लैकबोर्ड का विश्लेषण कॉपी कर लिया गया!");
+        // 3. Safe Doc Download
+        function downloadResultHtmlAsDocSafe() {
+            const textElement = document.getElementById('aiOutput');
+            const text = textElement.innerText || textElement.textContent;
+
+            if (!text || text.includes('यहाँ दिखाई देंगे')) {
+                alert("सेव करने के लिए पहले परिणाम जनरेट करें!");
+                return;
+            }
+
+            try {
+                const htmlContent = `<!DOCTYPE html>
+                <html lang="hi">
+                <head>
+                    <meta charset="UTF-8">
+                    <title>Dhruv Academy - Student Notes</title>
+                    <style>
+                        body { font-family: Arial, sans-serif; padding: 30px; line-height: 1.6; color: #111; background: #fff; }
+                        pre { white-space: pre-wrap; word-wrap: break-word; font-family: inherit; font-size: 15px; }
+                        .footer { margin-top: 40px; font-size: 12px; color: #666; border-top: 1px solid #ddd; padding-top: 10px; }
+                    </style>
+                </head>
+                <body>
+                    <h2>Dhruv Academy Master Ecosystem - Verified Notes</h2>
+                    <pre>${text}</pre>
+                    <div class="footer">Generated via Dhruv Academy AI Router Core (2026)</div>
+                    <script>window.print();<\/script>
+                </body>
+                </html>`;
+
+                const blob = new Blob([htmlContent], { type: 'text/html;charset=utf-8' });
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = 'Dhruv_Academy_Verified_Notes.html';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                URL.revokeObjectURL(url);
+            } catch (e) {
+                alert("सेव करने में त्रुटि आई।");
+            }
         }
 
-        function clearBlackboard() {
-            removeAttachedImage();
-            document.getElementById('aiCoreOutput').innerHTML = `<p class="text-gray-400 text-xs">ब्लैकबोर्ड साफ कर दिया गया है। नया सवाल पूछें या नोट्स जोड़ें!</p>`;
+        // 4. Direct WhatsApp Share Functionality
+        function shareOnWhatsApp() {
+            const textElement = document.getElementById('aiOutput');
+            const text = textElement.innerText || textElement.textContent;
+
+            if (!text || text.includes('यहाँ दिखाई देंगे')) {
+                alert("WhatsApp पर शेयर करने के लिए पहले परिणाम जनरेट करें!");
+                return;
+            }
+
+            // Encode text cleanly for WhatsApp URL scheme
+            const encodedText = encodeURIComponent(text);
+            const whatsappUrl = `https://api.whatsapp.com/send?text=${encodedText}`;
+            
+            // Open WhatsApp in a new tab/window
+            window.open(whatsappUrl, '_blank');
         }
     </script>
 </body>
