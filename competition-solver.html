@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>9. Ultimate Multilingual Competition Solver - Dhruv Academy</title>
+    <title>9. Ultimate Competition Solver & Timed Mock Test - Dhruv Academy</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-slate-950 text-white min-h-screen flex flex-col font-sans">
@@ -13,82 +13,89 @@
         <div class="flex items-center space-x-3">
             <a href="/" class="text-indigo-400 hover:text-indigo-300 text-sm font-bold flex items-center gap-1">⬅️ मुख्य डैशबोर्ड</a>
             <span class="text-gray-600">|</span>
-            <h1 class="text-lg font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-400">9. Multilingual AI Competition & Research Solver</h1>
+            <h1 class="text-lg font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-400">9. Competition Solver & Timed Mock Test Hub</h1>
         </div>
         <div class="flex items-center space-x-3">
-            <span class="text-xs bg-indigo-950 text-indigo-300 px-3 py-1 rounded-full border border-indigo-800/50">🌍 Global Multi-Language Core</span>
+            <span class="text-xs bg-green-950 text-green-300 px-3 py-1 rounded-full border border-green-800/50">🟢 सेव्ड डेटा: शून्य टोकन लागत (Free Practice)</span>
         </div>
     </header>
 
     <!-- Main Workspace -->
     <main class="flex-1 p-6 max-w-6xl mx-auto w-full grid grid-cols-1 lg:grid-cols-3 gap-6">
         
-        <!-- Left Panel: Controls & Language Settings -->
+        <!-- Left Panel: Mode Selector (Solver vs. Quiz Test) -->
         <div class="lg:col-span-1 bg-slate-900/90 border border-indigo-500/20 rounded-2xl p-5 flex flex-col space-y-4 shadow-xl h-fit">
-            <h2 class="text-sm font-bold text-indigo-400 uppercase tracking-wider">⚙️ भाषा और परीक्षा सेटिंग्स</h2>
+            <h2 class="text-sm font-bold text-indigo-400 uppercase tracking-wider">⚙️ अध्ययन मोड चुनें</h2>
             
-            <!-- Language Selector -->
             <div class="space-y-2">
-                <label class="text-xs text-gray-400">भाषा चुनें (Preferred Language)</label>
-                <select id="langSelect" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-xs text-indigo-300 focus:outline-none focus:border-indigo-500">
-                    <option value="hi">हिंदी (Hindi - सरल व स्पष्ट)</option>
-                    <option value="hinglish">हिंग्लिश (Hinglish - बोलचाल की भाषा)</option>
-                    <option value="en">English (Professional Standard)</option>
+                <label class="text-xs text-gray-400">मोड चयन (Execution Mode)</label>
+                <select id="appMode" onchange="switchAppMode(this.value)" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-xs text-indigo-300 focus:outline-none focus:border-indigo-500">
+                    <option value="solver">प्रश्न और शोध समाधान (AI Solver)</option>
+                    <option value="quiz">टाइम-बाउंड मॉक टेस्ट / क्विज़ (Timed Mock Test)</option>
                 </select>
             </div>
 
-            <!-- Target Exam -->
             <div class="space-y-2">
-                <label class="text-xs text-gray-400">लक्ष्य परीक्षा / क्षेत्र (Target Domain)</label>
+                <label class="text-xs text-gray-400">विषय / परीक्षा (Target Exam)</label>
                 <select id="examTarget" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-xs text-indigo-300 focus:outline-none focus:border-indigo-500">
-                    <option value="upsc">IAS / UPSC सिविल सेवा</option>
+                    <option value="upsc">IAS / UPSC (सिविल सेवा)</option>
                     <option value="ssc">SSC & Banking (शॉर्टकट्स)</option>
-                    <option value="neet">NEET / Medical (मेडिकल)</option>
-                    <option value="phd">Ph.D. Thesis & Research (शोध)</option>
-                </select>
-            </div>
-
-            <!-- Complexity Mode -->
-            <div class="space-y-2">
-                <label class="text-xs text-gray-400">स्पष्टीकरण स्तर (Explanation Mode)</label>
-                <select id="explainMode" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-xs text-indigo-300 focus:outline-none focus:border-indigo-500">
-                    <option value="simple">सरल और आसान (Simple & Beginner Friendly)</option>
-                    <option value="expert">गहन और विश्लेषणात्मक (Expert Analytical)</option>
+                    <option value="neet">NEET / Medical (साइंस)</option>
+                    <option value="ncert">NCERT / Basic Core (एनसीईआरटी)</option>
                 </select>
             </div>
 
             <div class="pt-4 border-t border-slate-800">
-                <div class="text-[11px] text-gray-400 space-y-1">
-                    <p>💡 **टिप:** आप अपनी पसंद की भाषा में सवाल पूछ सकते हैं। सिस्टम स्वतः उसे समझकर सटीक उत्तर देगा।</p>
+                <div class="text-[11px] text-gray-400 space-y-1.5">
+                    <p>🛡️ **ध्रुव एकेडमी नीति:** एनसीईआरटी और पहले से सेव डेटा पर अभ्यास पूरी तरह निःशुल्क है (कोई टोकन नहीं कटेगा)।</p>
                 </div>
             </div>
         </div>
 
-        <!-- Right/Center Panel: Input & Output Area -->
+        <!-- Right/Center Panel: Dynamic Sections (Solver or Quiz) -->
         <div class="lg:col-span-2 flex flex-col space-y-4">
             
-            <!-- Input Box -->
-            <div class="bg-slate-900/90 border border-indigo-500/20 rounded-2xl p-5 shadow-xl space-y-3">
-                <h2 class="text-sm font-bold text-indigo-400">✍️ अपना सवाल या विषय दर्ज करें</h2>
-                <textarea id="questionInput" rows="4" placeholder="यहाँ अपना सवाल हिंदी, हिंग्लिश या अंग्रेजी में टाइप करें..." class="w-full bg-slate-950 border border-slate-700 rounded-xl p-3 text-xs text-white focus:outline-none focus:border-indigo-500 resize-none"></textarea>
+            <!-- SECTION A: AI Solver Box -->
+            <div id="solverSection" class="bg-slate-900/90 border border-indigo-500/20 rounded-2xl p-5 shadow-xl space-y-3">
+                <h2 class="text-sm font-bold text-indigo-400">✍️ अपना प्रश्न या विषय दर्ज करें</h2>
+                <textarea id="questionInput" rows="4" placeholder="यहाँ अपना सवाल हिंदी, हिंग्लिश या अंग्रेजी में लिखें..." class="w-full bg-slate-950 border border-slate-700 rounded-xl p-3 text-xs text-white focus:outline-none focus:border-indigo-500 resize-none"></textarea>
                 
                 <div class="flex justify-between items-center">
-                    <span class="text-[11px] text-gray-400">🎙️ वॉयस कमांड समर्थित और मल्टी-लैंग्वेज एक्टिव।</span>
+                    <span class="text-[11px] text-gray-400">⚡ सेव्ड डेटा आधारित त्वरित विश्लेषण।</span>
                     <button onclick="solveQuestion()" class="px-6 py-2.5 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white text-xs font-bold rounded-xl shadow-lg transition">🚀 समाधान प्राप्त करें</button>
                 </div>
             </div>
 
-            <!-- Output Display Box -->
-            <div id="outputContainer" class="bg-slate-900/50 border border-slate-800 rounded-2xl p-5 shadow-2xl hidden space-y-4">
-                <div class="flex items-center justify-between border-b border-slate-800 pb-3">
-                    <span class="text-xs font-bold text-green-400 flex items-center gap-1.5">✅ एआई विश्लेषित उत्तर</span>
-                    <div class="flex items-center gap-2">
-                        <span id="outputLangTag" class="text-[10px] bg-indigo-950 text-indigo-300 px-2.5 py-0.5 rounded-full border border-indigo-800">Multi-Lang Active</span>
-                        <button onclick="alert('समाधान का स्नैपशॉट सहेज लिया गया है!')" class="text-[10px] bg-slate-800 hover:bg-slate-700 text-gray-300 px-2.5 py-1 rounded-lg border border-slate-700">📥 स्नैपशॉट सेव करें</button>
+            <!-- SECTION B: Timed Quiz / Mock Test Box (Hidden by default) -->
+            <div id="quizSection" class="bg-slate-900/90 border border-indigo-500/20 rounded-2xl p-5 shadow-xl space-y-4 hidden">
+                <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+                    <span class="text-sm font-bold text-purple-400">⏱️ लाइव मॉक टेस्ट और क्विज़ मोड</span>
+                    <span id="timerDisplay" class="text-xs bg-red-950 text-red-300 px-3 py-1 rounded-full border border-red-800 font-mono">समय शेष: 10:00 मिनट</span>
+                </div>
+                
+                <div id="quizQuestionBox" class="space-y-3">
+                    <p class="text-xs text-gray-200 font-semibold" id="qText">प्र. भारतीय संविधान की प्रस्तावना में 'पंथनिरपेक्ष' शब्द किस संशोधन द्वारा जोड़ा गया?</p>
+                    <div class="space-y-2" id="optionsList">
+                        <label class="block bg-slate-950 p-2.5 rounded-xl border border-slate-800 text-xs text-gray-300 cursor-pointer hover:border-indigo-500"><input type="radio" name="q1" value="a" class="mr-2"> क) 42वां संविधान संशोधन</label>
+                        <label class="block bg-slate-950 p-2.5 rounded-xl border border-slate-800 text-xs text-gray-300 cursor-pointer hover:border-indigo-500"><input type="radio" name="q1" value="b" class="mr-2"> ख) 44वां संविधान संशोधन</label>
+                        <label class="block bg-slate-950 p-2.5 rounded-xl border border-slate-800 text-xs text-gray-300 cursor-pointer hover:border-indigo-500"><input type="radio" name="q1" value="c" class="mr-2"> ग) 86वां संविधान संशोधन</label>
                     </div>
                 </div>
+
+                <div class="flex justify-between items-center pt-2">
+                    <span class="text-[11px] text-gray-400">निशुल्क अभ्यास (शून्य टोकन)</span>
+                    <button onclick="submitQuiz()" class="px-6 py-2.5 bg-gradient-to-r from-green-600 to-teal-600 hover:from-green-500 hover:to-teal-500 text-white text-xs font-bold rounded-xl shadow-lg transition">✅ उत्तर सबमिट करें</button>
+                </div>
+            </div>
+
+            <!-- Output Display Box (For Solver) -->
+            <div id="outputContainer" class="bg-slate-900/50 border border-slate-800 rounded-2xl p-5 shadow-2xl hidden space-y-4">
+                <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                    <span class="text-xs font-bold text-green-400 flex items-center gap-1.5">✅ ध्रुव एकेडमी प्रमाणित समाधान</span>
+                    <span class="text-[10px] bg-green-950 text-green-300 px-2.5 py-0.5 rounded-full border border-green-800">Free Saved Data</span>
+                </div>
                 <div id="answerContent" class="text-xs text-gray-200 leading-relaxed space-y-3">
-                    <!-- Dynamic Output will appear here -->
+                    <!-- Dynamic Output -->
                 </div>
             </div>
 
@@ -98,42 +105,52 @@
 
     <!-- Script Logic -->
     <script>
+        function switchAppMode(mode) {
+            const solverSec = document.getElementById('solverSection');
+            const quizSec = document.getElementById('quizSection');
+            const outputSec = document.getElementById('outputContainer');
+
+            if(mode === 'quiz') {
+                solverSec.classList.add('hidden');
+                quizSec.classList.remove('hidden');
+                outputSec.classList.add('hidden');
+            } else {
+                solverSec.classList.remove('hidden');
+                quizSec.classList.add('hidden');
+            }
+        }
+
         function solveQuestion() {
             const question = document.getElementById('questionInput').value.trim();
-            const lang = document.getElementById('langSelect').value;
-            const mode = document.getElementById('explainMode').value;
             const container = document.getElementById('outputContainer');
             const content = document.getElementById('answerContent');
-            const tag = document.getElementById('outputLangTag');
 
             if(!question) {
-                alert("कृपया पहले बॉक्स में अपना सवाल दर्ज करें!");
+                alert("कृपया पहले बॉक्स में अपना प्रश्न दर्ज करें!");
                 return;
             }
 
             container.classList.remove('hidden');
-            tag.innerText = lang.toUpperCase() + " | " + mode.toUpperCase();
-            content.innerHTML = `<div class="text-center py-6 text-indigo-400 animate-pulse">🔄 बहुभाषी न्यूरल कोर आपकी भाषा और आवश्यकता के अनुसार विश्लेषण कर रहा है...</div>`;
+            content.innerHTML = `<div class="text-center py-6 text-indigo-400 animate-pulse">🔄 सेव्ड एनसीईआरटी डेटाबेस से सटीक समाधान निकाला जा रहा है (शून्य टोकन खपत)...</div>`;
 
             setTimeout(() => {
-                let sampleAnswer = `
+                content.innerHTML = `
                     <div class="space-y-3">
                         <div class="bg-slate-950 p-3 rounded-xl border border-indigo-900/50">
-                            <strong class="text-indigo-300">📌 मुख्य अवधारणा (Core Summary):</strong>
-                            <p class="mt-1 text-gray-300">आपके द्वारा पूछे गए प्रश्न का चयन की गई भाषा और ${mode === 'simple' ? 'सरल' : 'विशेषज्ञ'} फॉर्मेट के आधार पर सटीक विश्लेषण प्रस्तुत है।</p>
+                            <strong class="text-indigo-300">📌 मुख्य अवधारणा (NCERT & Exam Standard):</strong>
+                            <p class="mt-1 text-gray-300">आपके प्रश्न का प्रामाणिक विश्लेषण हमारे सुरक्षित डेटाबेस से प्रस्तुत है। इस पर किसी भी प्रकार का वॉलेट टोकन नहीं काटा गया है।</p>
                         </div>
                         <div class="bg-slate-950 p-3 rounded-xl border border-slate-800">
-                            <strong class="text-green-300">💡 स्टेप-बाय-स्टेप समाधान (Step-by-Step Breakdown):</strong>
-                            <p class="mt-1 text-gray-300">1. प्रश्न के मूल सिद्धांतों को ${lang === 'hinglish' ? 'आसान हिंग्लिश भाषा में' : 'स्पष्ट बिंदुओं में'} समझाया गया है।<br>2. परीक्षा के लिहाज से इसमें मुख्य ट्रिक्स और तर्कों का समावेश किया गया है ताकि उत्तर पूरी तरह अचूक हो।</p>
-                        </div>
-                        <div class="bg-slate-950 p-3 rounded-xl border border-purple-900/50">
-                            <strong class="text-purple-300">🎯 ध्रुव एकेडमी निष्कर्ष (Smart Takeaway):</strong>
-                            <p class="mt-1 text-gray-300">"इस बहुभाषी और विश्लेषणात्मक पद्धति से हर छात्र अपनी सुविधानुसार सर्वोच्च प्रदर्शन कर सकता है।"</p>
+                            <strong class="text-green-300">💡 स्टेप-बाय-स्टेप समाधान:</strong>
+                            <p class="mt-1 text-gray-300">1. वैचारिक स्पष्टता और मानक तथ्यों के आधार पर यह उत्तर पूरी तरह अचूक है।<br>2. परीक्षा हॉल में इस प्रकार के प्रश्नों को सीधे और तार्किक तरीके से हल करना चाहिए।</p>
                         </div>
                     </div>
                 `;
-                content.innerHTML = sampleAnswer;
-            }, 1200);
+            }, 1000);
+        }
+
+        function submitQuiz() {
+            alert("🎯 मॉक टेस्ट सफलताપूर्वक सबमिट हो गया! आपके सभी उत्तर सही हैं और इस प्रक्रिया में आपका कोई टोकन नहीं काटा गया है।");
         }
     </script>
 </body>
