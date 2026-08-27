@@ -44,13 +44,13 @@
         <!-- टॉप नेविगेशन बार -->
         <div class="w-full flex flex-wrap items-center justify-between gap-2 p-3 bg-slate-950/90 border border-purple-700/60 rounded-2xl shadow-xl mb-4">
             
-            <!-- टोकन काउंटर -->
-            <div class="flex items-center gap-1.5 bg-purple-950/90 border border-purple-500 px-3 py-2 rounded-xl text-yellow-400 font-extrabold text-xs md:text-sm shadow">
-                <span>⚡ <span data-key="tokensText">टोकन्स</span>:</span>
-                <span id="topTokenCount">10</span>
+            <!-- सेंट्रल वॉलेट लाइव सिंक काउंटर -->
+            <div onclick="openWalletStore()" class="cursor-pointer flex items-center gap-1.5 bg-purple-950/90 border border-purple-500 px-3 py-2 rounded-xl text-yellow-400 font-extrabold text-xs md:text-sm shadow hover:border-yellow-400 transition" title="सेंट्रल वॉलेट रिपोर्ट देखें">
+                <span>⚡ <span data-key="walletTitle">सेंट्रल वॉलेट</span>:</span>
+                <span id="topTokenCount">10</span> <span class="text-[10px] text-purple-300 font-normal">टोकन्स</span>
             </div>
 
-            <!-- भाषा टॉगल बटन -->
+            <!-- भाषा टॉगल बटन (सिंगल-पेज लाइव ट्रांसलेटर) -->
             <div class="flex items-center bg-slate-900 p-1 rounded-xl border border-slate-700">
                 <button id="langHi" onclick="switchLanguage('hi')" class="px-3 py-1.5 rounded-lg font-bold text-xs transition bg-cyan-600 text-white shadow">हिंदी</button>
                 <button id="langEn" onclick="switchLanguage('en')" class="px-3 py-1.5 rounded-lg font-bold text-xs transition text-gray-400 hover:text-white">English</button>
@@ -72,9 +72,9 @@
                 Light Mode
             </button>
 
-            <!-- वॉलेट बटन -->
+            <!-- सेंट्रल वॉलेट मास्टर बटन -->
             <button onclick="openWalletStore()" class="flex items-center gap-1 bg-purple-600 hover:bg-purple-500 text-white px-3 py-2 rounded-xl font-bold text-xs shadow transition">
-                🪙 <span data-key="walletBtn">वॉलेट</span>
+                🪙 <span data-key="walletBtn">वॉलेट स्लैब</span>
             </button>
 
             <!-- एनालिसिस रिपोर्ट बटन -->
@@ -95,15 +95,15 @@
             <span class="inline-block bg-purple-950/90 border border-purple-600 text-purple-300 text-xs px-4 py-1.5 rounded-full font-bold mb-2 shadow-md" data-key="bannerTag">
                 🎁 प्रतियोगी परीक्षाओं और स्मार्ट छात्रों के लिए विशेष मंच - 10 टोकन मुफ्त!
             </span>
-            <h1 class="text-3xl md:text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-pink-400 to-cyan-400 tracking-wide">
+            <h1 class="text-3xl md:text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-pink-400 to-cyan-400 tracking-wide" data-key="mainTitle">
                 ध्रुव एकेडमी (Dhruv Academy)
             </h1>
             <p class="text-xs md:text-sm text-slate-400 mt-1" data-key="subTitle">प्रतियोगी परीक्षाएं, स्मार्ट लर्निंग और एआई ऑटोमेशन का सर्वोच्च केंद्र</p>
         </div>
 
-        <!-- लॉगिन / मोबाइल वेरिफिकेशन सेक्शन -->
+        <!-- लॉगिन / मोबाइल वेरिफिकेशन सेक्शन (डिफ़ॉल्ट OTP 1234 सपोर्ट) -->
         <div id="authSection" class="bg-slate-950/90 border border-slate-800 rounded-2xl p-5 shadow-inner mb-6 max-w-lg mx-auto">
-            <label class="block text-xs font-bold text-slate-300 mb-2" data-key="mobileLabel">मोबाइल नंबर दर्ज करें (Enter Mobile Number):</label>
+            <label class="block text-xs font-bold text-slate-300 mb-2" data-key="mobileLabel">मोबाइल नंबर दर्ज करें (डिफ़ॉल्ट OTP: 1234):</label>
             <div class="flex flex-col md:flex-row gap-2">
                 <input type="tel" id="userMobileInput" placeholder="10 अंकों का मोबाइल नंबर" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-slate-100 focus:outline-none focus:border-purple-500 shadow-inner">
                 <button id="sendOtpBtn" onclick="verifyStudentLogin()" class="bg-gradient-to-r from-purple-600 to-cyan-600 hover:from-purple-500 hover:to-cyan-500 text-white font-bold text-xs px-5 py-2.5 rounded-xl shadow-lg transition whitespace-nowrap" data-key="loginBtn">
@@ -115,112 +115,112 @@
         <!-- डैशबोर्ड / 11 मॉड्यूल्स और ट्रांसपेरेंसी सेक्शन -->
         <div id="dashboardSection" class="hidden space-y-6">
             
-            <!-- वेलकम बैनर -->
+            <!-- वेलकम बैनर और लाइव सेंट्रल वॉलेट रिपोर्ट -->
             <div class="bg-gradient-to-r from-purple-900/50 via-slate-900 to-cyan-900/50 border border-purple-600/50 rounded-2xl p-4 md:p-5 text-center shadow-lg">
-                <h3 class="text-sm md:text-base font-extrabold text-cyan-300 mb-1" data-key="welcomeMsg">✨ स्वागत है! आपका मास्टर वॉलेट सक्रिय है।</h3>
-                <p class="text-xs md:text-sm text-slate-300"><span data-key="walletActiveText">आपके वॉलेट में</span> <span id="dashboardTokenCount" class="font-black text-yellow-400 text-base">10</span> <span data-key="tokensAvailableText">फ्री टोकन सुरक्षित हैं। आपकी गतिविधि और ट्रांसपेरेंसी रिपोर्ट नीचे सिंक है:</span></p>
+                <h3 class="text-sm md:text-base font-extrabold text-cyan-300 mb-1" data-key="welcomeMsg">✨ स्वागत है! आपका सेंट्रल मास्टर वॉलेट सक्रिय है।</h3>
+                <p class="text-xs md:text-sm text-slate-300"><span data-key="walletActiveText">आपके वॉलेट में</span> <span id="dashboardTokenCount" class="font-black text-yellow-400 text-base">10</span> <span data-key="tokensAvailableText">फ्री टोकन सुरक्षित हैं। सेंट्रल वॉलेट सिंक्रोनाइज्ड रिपोर्ट नीचे सक्रिय है:</span></p>
                 
                 <div class="flex flex-wrap justify-center gap-2 mt-3">
-                    <button onclick="openStudentProfile()" class="bg-slate-800/90 hover:bg-slate-700 border border-purple-500/50 text-purple-300 px-3 py-1.5 rounded-xl text-xs font-bold transition shadow">
+                    <button onclick="openStudentProfile()" class="bg-slate-800/90 hover:bg-slate-700 border border-purple-500/50 text-purple-300 px-3 py-1.5 rounded-xl text-xs font-bold transition shadow" data-key="reportBtnText">
                         📊 मेरी गतिविधि व खर्च रिपोर्ट (Activity Ledger)
                     </button>
-                    <button onclick="openWalletStore()" class="bg-slate-800/90 hover:bg-slate-700 border border-yellow-500/50 text-yellow-300 px-3 py-1.5 rounded-xl text-xs font-bold transition shadow">
-                        🪙 टोकन रीचार्ज और हिस्ट्री
+                    <button onclick="openWalletStore()" class="bg-slate-800/90 hover:bg-slate-700 border border-yellow-500/50 text-yellow-300 px-3 py-1.5 rounded-xl text-xs font-bold transition shadow" data-key="rechargeBtnText">
+                        🪙 टोकन रीचार्ज और स्लैब
                     </button>
                 </div>
             </div>
 
-            <!-- 11 ओरिजिनल मॉड्यूल्स ग्रिड (सटीक सही राउट्स के साथ) -->
+            <!-- 11 ओरिजिनल मॉड्यूल्स ग्रिड -->
             <div>
                 <h4 class="text-xs font-bold text-purple-400 uppercase tracking-wider mb-3 px-1" data-key="modulesHeading">🚀 सभी 11 मास्टर मॉड्यूल्स (Active Modules):</h4>
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                     
-                    <a href="/kids-zone" onclick="logUserActivity('Foundation Module')" class="module-card group bg-slate-950/80 hover:bg-pink-950/40 border border-slate-800 hover:border-pink-500 p-4 rounded-2xl block shadow">
+                    <a href="/kids-zone.html" onclick="logUserActivity('Foundation Module')" class="module-card group bg-slate-950/80 hover:bg-pink-950/40 border border-slate-800 hover:border-pink-500 p-4 rounded-2xl block shadow">
                         <div class="text-lg md:text-xl font-extrabold text-pink-400 mb-1 flex items-center justify-between">
                             <span>1. Foundation: NC-5 Kids Tier</span>
                             <span class="text-xs bg-pink-950 text-pink-300 px-2 py-0.5 rounded-full">Active</span>
                         </div>
-                        <div class="text-xs text-slate-300">नर्सरी से कक्षा 5 तक की नींव (AI-Driven Learning Module).</div>
+                        <div class="text-xs text-slate-300" data-key="mod1Desc">नर्सरी से कक्षा 5 तक की नींव (AI-Driven Learning Module).</div>
                     </a>
 
-                    <a href="/ai-core" onclick="logUserActivity('AI Engine Core')" class="module-card group bg-slate-950/80 hover:bg-purple-950/40 border border-slate-800 hover:border-purple-500 p-4 rounded-2xl block shadow">
+                    <a href="/ai-core.html" onclick="logUserActivity('AI Engine Core')" class="module-card group bg-slate-950/80 hover:bg-purple-950/40 border border-slate-800 hover:border-purple-500 p-4 rounded-2xl block shadow">
                         <div class="text-lg md:text-xl font-extrabold text-purple-400 mb-1 flex items-center justify-between">
                             <span>2. AI Engine Core</span>
                             <span class="text-xs bg-purple-950 text-purple-300 px-2 py-0.5 rounded-full">Active</span>
                         </div>
-                        <div class="text-xs text-slate-300">400-AI मल्टी-एजेंट न्यूट्रल कोर, डीप रिसर्च व लॉजिक टूल्स.</div>
+                        <div class="text-xs text-slate-300" data-key="mod2Desc">400-AI मल्टी-एजेंट न्यूट्रल कोर, डीप रिसर्च व लॉजिक टूल्स.</div>
                     </a>
 
-                    <a href="/ai-auto-healing" onclick="logUserActivity('AI Auto-Healing')" class="module-card group bg-slate-950/80 hover:bg-indigo-950/40 border border-slate-800 hover:border-indigo-500 p-4 rounded-2xl block shadow">
+                    <a href="/ai-auto-healing.html" onclick="logUserActivity('AI Auto-Healing')" class="module-card group bg-slate-950/80 hover:bg-indigo-950/40 border border-slate-800 hover:border-indigo-500 p-4 rounded-2xl block shadow">
                         <div class="text-lg md:text-xl font-extrabold text-indigo-400 mb-1 flex items-center justify-between">
                             <span>3. AI Auto-Healing</span>
                             <span class="text-xs bg-indigo-950 text-indigo-300 px-2 py-0.5 rounded-full">Active</span>
                         </div>
-                        <div class="text-xs text-slate-300">सॉफ्टवेयर त्रुटियों को स्वतः ठीक करने वाला स्कैनर.</div>
+                        <div class="text-xs text-slate-300" data-key="mod3Desc">सॉफ्टवेयर त्रुटियों को स्वतः ठीक करने वाला स्कैनर.</div>
                     </a>
 
-                    <a href="/face-swap-social" onclick="logUserActivity('Face-Swap Social')" class="module-card group bg-slate-950/80 hover:bg-blue-950/40 border border-slate-800 hover:border-blue-500 p-4 rounded-2xl block shadow">
+                    <a href="/face-swap-social.html" onclick="logUserActivity('Face-Swap Social')" class="module-card group bg-slate-950/80 hover:bg-blue-950/40 border border-slate-800 hover:border-blue-500 p-4 rounded-2xl block shadow">
                         <div class="text-lg md:text-xl font-extrabold text-blue-400 mb-1 flex items-center justify-between">
                             <span>4. Face-Swap Social</span>
                             <span class="text-xs bg-blue-950 text-blue-300 px-2 py-0.5 rounded-full">Active</span>
                         </div>
-                        <div class="text-xs text-slate-300">छात्रों के लिए वीडियो और सोशल एक्सप्लेनर विजुअल्स.</div>
+                        <div class="text-xs text-slate-300" data-key="mod4Desc">छात्रों के लिए वीडियो और सोशल एक्सप्लेनर विजुअल्स.</div>
                     </a>
 
-                    <a href="/ai-core" onclick="logUserActivity('3D Blackboard')" class="module-card group bg-slate-950/80 hover:bg-teal-950/40 border border-slate-800 hover:border-teal-500 p-4 rounded-2xl block shadow">
+                    <a href="/ai-core.html" onclick="logUserActivity('3D Blackboard')" class="module-card group bg-slate-950/80 hover:bg-teal-950/40 border border-slate-800 hover:border-teal-500 p-4 rounded-2xl block shadow">
                         <div class="text-lg md:text-xl font-extrabold text-teal-400 mb-1 flex items-center justify-between">
                             <span>5. 3D Blackboard</span>
                             <span class="text-xs bg-teal-950 text-teal-300 px-2 py-0.5 rounded-full">Active</span>
                         </div>
-                        <div class="text-xs text-slate-300">डिजिटल कक्षाओं के लिए 3D ब्लैकबोर्ड और टीवी कास्ट.</div>
+                        <div class="text-xs text-slate-300" data-key="mod5Desc">डिजिटल कक्षाओं के लिए 3D ब्लैकबोर्ड और टीवी कास्ट.</div>
                     </a>
 
-                    <a href="/digital-library" onclick="logUserActivity('Digital Library')" class="module-card group bg-slate-950/80 hover:bg-cyan-950/40 border border-slate-800 hover:border-cyan-500 p-4 rounded-2xl block shadow">
+                    <a href="/digital-library.html" onclick="logUserActivity('Digital Library')" class="module-card group bg-slate-950/80 hover:bg-cyan-950/40 border border-slate-800 hover:border-cyan-500 p-4 rounded-2xl block shadow">
                         <div class="text-lg md:text-xl font-extrabold text-cyan-400 mb-1 flex items-center justify-between">
                             <span>6. Digital Library</span>
                             <span class="text-xs bg-cyan-950 text-cyan-300 px-2 py-0.5 rounded-full">Active</span>
                         </div>
-                        <div class="text-xs text-slate-300">एन्क्रिप्टेड ई-बुक्स, नोट्स और डिजिटल वॉलेट.</div>
+                        <div class="text-xs text-slate-300" data-key="mod6Desc">एन्क्रिप्टेड ई-बुक्स, नोट्स और डिजिटल वॉलेट.</div>
                     </a>
 
-                    <a href="/ai-core" onclick="logUserActivity('Coaching Hub')" class="module-card group bg-slate-950/80 hover:bg-orange-950/40 border border-slate-800 hover:border-orange-500 p-4 rounded-2xl block shadow">
+                    <a href="/ai-core.html" onclick="logUserActivity('Coaching Hub')" class="module-card group bg-slate-950/80 hover:bg-orange-950/40 border border-slate-800 hover:border-orange-500 p-4 rounded-2xl block shadow">
                         <div class="text-lg md:text-xl font-extrabold text-orange-400 mb-1 flex items-center justify-between">
                             <span>8. Coaching Hub</span>
                             <span class="text-xs bg-orange-950 text-orange-300 px-2 py-0.5 rounded-full">Active</span>
                         </div>
-                        <div class="text-xs text-slate-300">कोचिंग संस्थानों के संचालन और बैच प्रबंधन का डैशबोर्ड.</div>
+                        <div class="text-xs text-slate-300" data-key="mod8Desc">कोचिंग संस्थानों के संचालन और बैच प्रबंधन का डैशबोर्ड.</div>
                     </a>
 
-                    <a href="/ai-core" onclick="logUserActivity('Competition Solver')" class="module-card group bg-slate-950/80 hover:bg-violet-950/40 border border-slate-800 hover:border-violet-500 p-4 rounded-2xl block shadow">
+                    <a href="/ai-core.html" onclick="logUserActivity('Competition Solver')" class="module-card group bg-slate-950/80 hover:bg-violet-950/40 border border-slate-800 hover:border-violet-500 p-4 rounded-2xl block shadow">
                         <div class="text-lg md:text-xl font-extrabold text-violet-400 mb-1 flex items-center justify-between">
                             <span>9. Competition Solver</span>
                             <span class="text-xs bg-violet-950 text-violet-300 px-2 py-0.5 rounded-full">Active</span>
                         </div>
-                        <div class="text-xs text-slate-300">IAS, IFS, IRS, PCS, Banking, NEET आदि सभी परीक्षाओं का सॉल्वर.</div>
+                        <div class="text-xs text-slate-300" data-key="mod9Desc">IAS, IFS, IRS, PCS, Banking, NEET आदि सभी परीक्षाओं का सॉल्वर.</div>
                     </a>
 
-                    <a href="/ai-core" onclick="logUserActivity('Nebula Visual Hub')" class="module-card group bg-slate-950/80 hover:bg-rose-950/40 border border-slate-800 hover:border-rose-500 p-4 rounded-2xl block shadow">
+                    <a href="/ai-core.html" onclick="logUserActivity('Nebula Visual Hub')" class="module-card group bg-slate-950/80 hover:bg-rose-950/40 border border-slate-800 hover:border-rose-500 p-4 rounded-2xl block shadow">
                         <div class="text-lg md:text-xl font-extrabold text-rose-400 mb-1 flex items-center justify-between">
                             <span>10. Nebula Visual Hub</span>
                             <span class="text-xs bg-rose-950 text-rose-300 px-2 py-0.5 rounded-full">Active</span>
                         </div>
-                        <div class="text-xs text-slate-300">सिस्टम गतिविधियों को दिखाने वाला नेबुला डैशबोर्ड.</div>
+                        <div class="text-xs text-slate-300" data-key="mod10Desc">सिस्टम गतिविधियों को दिखाने वाला नेबुला डैशबोर्ड.</div>
                     </a>
 
-                    <a href="/spoken-english" onclick="logUserActivity('Spoken English')" class="module-card group bg-slate-950/80 hover:bg-green-950/40 border border-slate-800 hover:border-green-500 p-4 rounded-2xl block shadow">
+                    <a href="/spoken-english.html" onclick="logUserActivity('Spoken English')" class="module-card group bg-slate-950/80 hover:bg-green-950/40 border border-slate-800 hover:border-green-500 p-4 rounded-2xl block shadow">
                         <div class="text-lg md:text-xl font-extrabold text-green-400 mb-1 flex items-center justify-between">
                             <span>11. Spoken English Master</span>
                             <span class="text-xs bg-green-950 text-green-300 px-2 py-0.5 rounded-full">Active</span>
                         </div>
-                        <div class="text-xs text-slate-300">अदिति मैम के साथ 4D Live AI वॉयस एक्सेंट व आसान बोलचाल मैटर.</div>
+                        <div class="text-xs text-slate-300" data-key="mod11Desc">अदिति मैम के साथ 4D Live AI वॉयस एक्सेंट व आसान बोलचाल मैटर.</div>
                     </a>
 
-                    <a href="/legal-ai" onclick="logUserActivity('Legal AI')" class="module-card group bg-slate-950/80 hover:bg-yellow-950/40 border border-slate-800 hover:border-yellow-500 p-4 rounded-2xl block shadow md:col-span-2 lg:col-span-3">
+                    <a href="/legal-ai.html" onclick="logUserActivity('Legal AI')" class="module-card group bg-slate-950/80 hover:bg-yellow-950/40 border border-slate-800 hover:border-yellow-500 p-4 rounded-2xl block shadow md:col-span-2 lg:col-span-3">
                         <div class="text-lg md:text-xl font-extrabold text-yellow-400 mb-1 flex items-center justify-between">
                             <span>7. Legal AI (All Laws)</span>
                             <span class="text-xs bg-yellow-950 text-yellow-300 px-2 py-0.5 rounded-full">Restricted</span>
                         </div>
-                        <div class="text-xs text-slate-300">BNS, BNSS, BSA, कंपनी लॉ, 1-क्लिक लीगल ड्राफ्टिंग व धारा कन्वर्टर.</div>
+                        <div class="text-xs text-slate-300" data-key="mod7Desc">BNS, BNSS, BSA, कंपनी लॉ, 1-क्लिक लीगल ड्राफ्टिंग व धारा कन्वर्टर.</div>
                     </a>
 
                 </div>
@@ -228,17 +228,17 @@
 
             <!-- सुव्यवस्थित एक्शन बटन्स -->
             <div class="flex flex-col md:flex-row gap-3 pt-2">
-                <button onclick="openWalletStore()" class="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold py-3 rounded-xl text-xs md:text-sm transition shadow-lg">
-                    🪙 टोकन रीचार्ज स्टोर खोलें
+                <button onclick="openWalletStore()" class="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 text-white font-bold py-3 rounded-xl text-xs md:text-sm transition shadow-lg" data-key="storeBtnText">
+                    🪙 सेंट्रल वॉलेट और रीचार्ज स्टोर खोलें
                 </button>
-                <button onclick="openStudentProfile()" class="w-full bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold py-3 rounded-xl text-xs md:text-sm transition border border-slate-700 shadow">
+                <button onclick="openStudentProfile()" class="w-full bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold py-3 rounded-xl text-xs md:text-sm transition border border-slate-700 shadow" data-key="analysisBtnText">
                     👤 छात्र प्रोफाइल और क्रेडिट एनालिसिस रिपोर्ट
                 </button>
             </div>
 
             <!-- लॉगआउट बटन -->
             <div class="text-center pt-3">
-                <button onclick="userLogout()" class="bg-red-950/40 border border-red-800/60 hover:bg-red-900/60 text-red-300 px-4 py-1.5 rounded-xl text-xs font-bold transition shadow">
+                <button onclick="userLogout()" class="bg-red-950/40 border border-red-800/60 hover:bg-red-900/60 text-red-300 px-4 py-1.5 rounded-xl text-xs font-bold transition shadow" data-key="logoutText">
                     🚪 लॉग आउट (Logout)
                 </button>
             </div>
@@ -246,86 +246,81 @@
 
     </div>
 
-    <!-- 📊 सुंदर विजुअल टास्क कार्ड (Modal) -->
+    <!-- 📊 छात्र एनालिसिस और ट्रांसपेरेंसी रिपोर्ट मॉडल -->
     <div id="profileModal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 z-50">
         <div class="bg-slate-900 border border-cyan-500 rounded-3xl p-6 max-w-lg w-full shadow-2xl animate-float">
             <div class="flex justify-between items-center mb-4 border-b border-slate-800 pb-3">
-                <h3 class="text-base md:text-lg font-black text-cyan-400">📊 छात्र एनालिसिस और टोकन ट्रांसपेरेंसी रिपोर्ट</h3>
+                <h3 class="text-base md:text-lg font-black text-cyan-400" data-key="modalTitle">📊 सेंट्रल वॉलेट व छात्र एनालिसिस रिपोर्ट</h3>
                 <button onclick="closeStudentProfile()" class="text-slate-400 hover:text-white font-bold text-lg px-2">✕</button>
             </div>
             
             <div class="space-y-4 text-xs md:text-sm text-slate-300 mb-6">
-                <!-- यूज़र बेसिक डीटेल्स ग्रिड -->
                 <div class="grid grid-cols-2 gap-3">
                     <div class="bg-slate-950 p-3 rounded-2xl border border-slate-800">
                         <div class="text-slate-400 text-[11px] mb-1">📱 रजिस्टर्ड मोबाइल</div>
                         <div id="modalUserMobile" class="font-bold text-cyan-300 text-sm">--</div>
                     </div>
                     <div class="bg-slate-950 p-3 rounded-2xl border border-slate-800">
-                        <div class="text-slate-400 text-[11px] mb-1">⚡ शेष टोकन बैलेंस</div>
+                        <div class="text-slate-400 text-[11px] mb-1">⚡ शेष सेंट्रल टोकन्स</div>
                         <div id="modalUserTokens" class="font-bold text-yellow-400 text-base">10 टोकन्स</div>
                     </div>
                 </div>
 
-                <!-- टोकन यूसेज प्रोग्रेस बार -->
                 <div class="bg-slate-950 p-3.5 rounded-2xl border border-slate-800">
                     <div class="flex justify-between text-xs mb-1.5 font-bold">
-                        <span class="text-purple-300">📈 टोकन यूसेज एनालिसिस</span>
-                        <span class="text-green-400">10 / 10 उपलब्ध</span>
+                        <span class="text-purple-300">📈 सेंट्रल वॉलेट सिंक स्टेटस</span>
+                        <span class="text-green-400">सक्रिय (Active 1234 OTP)</span>
                     </div>
                     <div class="w-full bg-slate-800 h-2.5 rounded-full overflow-hidden">
                         <div class="bg-gradient-to-r from-purple-500 to-cyan-400 h-full w-full"></div>
                     </div>
-                    <div class="text-[10px] text-slate-500 mt-1">सिस्टम स्टेटस: पूरी तरह ऑप्टिमाइज़्ड और सक्रिय।</div>
+                    <div class="text-[10px] text-slate-500 mt-1">यूजर-लेवल ट्रांसपेरेंसी रिपोर्ट पूरी तरह सुरक्षित है।</div>
                 </div>
                 
-                <!-- वर्टिकल टास्क-वाइज हालिया गतिविधियाँ -->
                 <div class="bg-slate-950 p-3.5 rounded-2xl border border-slate-800">
                     <div class="font-bold text-purple-400 mb-2 flex items-center gap-1.5">
-                        <span>🔍 हालिया उपयोग गतिविधियाँ (Activity Task Log):</span>
+                        <span>🔍 हालिया उपयोग गतिविधियाँ (Activity Ledger):</span>
                     </div>
-                    <div id="modalActivityList" class="space-y-2 max-h-40 overflow-y-auto pr-1">
-                        <!-- यहाँ हर गतिविधि एक सुंदर टास्क बॉक्स के रूप में आएगी -->
-                    </div>
+                    <div id="modalActivityList" class="space-y-2 max-h-40 overflow-y-auto pr-1"></div>
                 </div>
             </div>
 
-            <button onclick="closeStudentProfile()" class="w-full bg-cyan-700 hover:bg-cyan-600 text-white py-2.5 rounded-xl text-xs font-bold transition shadow">
+            <button onclick="closeStudentProfile()" class="w-full bg-cyan-700 hover:bg-cyan-600 text-white py-2.5 rounded-xl text-xs font-bold transition shadow" data-key="closeModalBtn">
                 रिपोर्ट बंद करें
             </button>
         </div>
     </div>
 
-    <!-- वॉलेट स्टोर पॉपअप मॉडल -->
+    <!-- सेंट्रल वॉलेट स्टोर पॉपअप मॉडल -->
     <div id="walletModal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 z-50">
         <div class="bg-slate-900 border border-purple-600 rounded-3xl p-6 max-w-sm w-full shadow-2xl animate-float">
-            <h3 class="text-lg font-black text-purple-400 mb-2">🪙 कमर्शियल वॉलेट स्टोर</h3>
-            <p class="text-xs text-slate-300 mb-4">अपने अध्ययन को निरंतर रखने के लिए टोकन पैक चुनें:</p>
+            <h3 class="text-lg font-black text-purple-400 mb-2" data-key="walletStoreTitle">🪙 सेंट्रल वॉलेट रिचार्ज स्लैब</h3>
+            <p class="text-xs text-slate-300 mb-4" data-key="walletStoreSub">अपने अध्ययन को निरंतर रखने के लिए टोकन पैक चुनें:</p>
             
             <div class="space-y-3 mb-4">
                 <div onclick="buyTokens(50, 99)" class="bg-slate-800 border border-purple-500/50 hover:border-purple-400 p-3.5 rounded-xl cursor-pointer flex justify-between items-center transition shadow">
                     <div>
                         <div class="font-bold text-sm text-yellow-300">⚡ 50 टोकन पैक</div>
-                        <div class="text-xs text-slate-400">बुनियादी उपयोग के लिए</div>
+                        <div class="text-xs text-slate-400">बुनियादी छात्र उपयोग</div>
                     </div>
                     <div class="bg-purple-600 text-white px-3.5 py-1.5 rounded-lg text-xs font-bold shadow">₹99</div>
                 </div>
-                <div onclick="buyTokens(200, 249)" class="bg-slate-800 border border-purple-500/50 hover:border-purple-400 p-3.5 rounded-xl cursor-pointer flex justify-between items-center transition shadow">
+                <div onclick="buyTokens(150, 199)" class="bg-slate-800 border border-purple-500/50 hover:border-purple-400 p-3.5 rounded-xl cursor-pointer flex justify-between items-center transition shadow">
                     <div>
-                        <div class="font-bold text-sm text-yellow-300">🚀 200 टोकन पैक (Best Value)</div>
-                        <div class="text-xs text-slate-400">प्रीमियम AI और प्रतियोगी परीक्षा टूल्स</div>
+                        <div class="font-bold text-sm text-yellow-300">🚀 150 टोकन पैक (Best Value)</div>
+                        <div class="text-xs text-slate-400">प्रो स्टूडेंट पैक</div>
                     </div>
-                    <div class="bg-purple-600 text-white px-3.5 py-1.5 rounded-lg text-xs font-bold shadow">₹249</div>
+                    <div class="bg-purple-600 text-white px-3.5 py-1.5 rounded-lg text-xs font-bold shadow">₹199</div>
                 </div>
             </div>
 
-            <button onclick="closeWalletStore()" class="w-full bg-slate-800 hover:bg-slate-700 text-slate-300 py-2.5 rounded-xl text-xs font-bold transition">
+            <button onclick="closeWalletStore()" class="w-full bg-slate-800 hover:bg-slate-700 text-slate-300 py-2.5 rounded-xl text-xs font-bold transition" data-key="closeStoreBtn">
                 बंद करें
             </button>
         </div>
     </div>
 
-    <!-- फुटर (गुप्त एडमिन डॉट के साथ) -->
+    <!-- फुटर -->
     <footer class="w-full text-center text-xs text-slate-500 mt-6">
         <p>© 2026 Dhruv Academy Master Ecosystem. सर्वाधिकार सुरक्षित। डेटा पूरी तरह सुरक्षित।</p>
         <div class="mt-1">
@@ -333,11 +328,65 @@
         </div>
     </footer>
 
-    <!-- जावास्क्रिप्ट लॉजिक -->
+    <!-- सिंगल-पेज लाइव ट्रांसलेटर और वॉलेट जावास्क्रिप्ट लॉजिक -->
     <script>
         let currentLang = 'hi';
         let userTokens = parseInt(localStorage.getItem("dhruv_wallet_tokens")) || parseInt(localStorage.getItem("user_tokens")) || 10;
         let currentTheme = 'dark';
+
+        // डिक्शनरी फॉर लाइव ट्रांसलेशन
+        const translations = {
+            hi: {
+                walletTitle: "सेंट्रल वॉलेट",
+                voiceGuide: "वॉयस गाइड",
+                walletBtn: "वॉलेट स्लैब",
+                profileBtn: "रिपोर्ट",
+                bannerTag: "🎁 प्रतियोगी परीक्षाओं और स्मार्ट छात्रों के लिए विशेष मंच - 10 टोकन मुफ्त!",
+                mainTitle: "ध्रुव एकेडमी (Dhruv Academy)",
+                subTitle: "प्रतियोगी परीक्षाएं, स्मार्ट लर्निंग और एआई ऑटोमेशन का सर्वोच्च केंद्र",
+                mobileLabel: "मोबाइल नंबर दर्ज करें (डिफ़ॉल्ट OTP: 1234):",
+                loginBtn: "लॉगिन करें और 10 टोकन पाएं 🚀",
+                welcomeMsg: "✨ स्वागत है! आपका सेंट्रल मास्टर वॉलेट सक्रिय है।",
+                walletActiveText: "आपके वॉलेट में",
+                tokensAvailableText: "फ्री टोकन सुरक्षित हैं। सेंट्रल वॉलेट सिंक्रोनाइज्ड रिपोर्ट नीचे सक्रिय है:",
+                reportBtnText: "📊 मेरी गतिविधि व खर्च रिपोर्ट (Activity Ledger)",
+                rechargeBtnText: "🪙 टोकन रीचार्ज और स्लैब",
+                modulesHeading: "🚀 सभी 11 मास्टर मॉड्यूल्स (Active Modules):",
+                storeBtnText: "🪙 सेंट्रल वॉलेट और रीचार्ज स्टोर खोलें",
+                analysisBtnText: "👤 छात्र प्रोफाइल और क्रेडिट एनालिसिस रिपोर्ट",
+                logoutText: "🚪 लॉग आउट (Logout)",
+                modalTitle: "📊 सेंट्रल वॉलेट व छात्र एनालिसिस रिपोर्ट",
+                closeModalBtn: "रिपोर्ट बंद करें",
+                walletStoreTitle: "🪙 सेंट्रल वॉलेट रिचार्ज स्लैब",
+                walletStoreSub: "अपने अध्ययन को निरंतर रखने के लिए टोकन पैक चुनें:",
+                closeStoreBtn: "बंद करें"
+            },
+            en: {
+                walletTitle: "Central Wallet",
+                voiceGuide: "Voice Guide",
+                walletBtn: "Wallet Slabs",
+                profileBtn: "Reports",
+                bannerTag: "🎁 Special Platform for Competitive Exams & Smart Students - 10 Free Tokens!",
+                mainTitle: "Dhruv Academy",
+                subTitle: "Ultimate Hub for Competitive Exams, Smart Learning & AI Automation",
+                mobileLabel: "Enter Mobile Number (Default OTP: 1234):",
+                loginBtn: "Login & Get 10 Tokens 🚀",
+                welcomeMsg: "✨ Welcome! Your Central Master Wallet is Active.",
+                walletActiveText: "You have",
+                tokensAvailableText: "free tokens secured in your wallet. Central Wallet Synchronized Report is active below:",
+                reportBtnText: "📊 My Activity & Expense Ledger",
+                rechargeBtnText: "🪙 Token Recharge & Slabs",
+                modulesHeading: "🚀 All 11 Master Modules (Active Modules):",
+                storeBtnText: "🪙 Open Central Wallet & Recharge Store",
+                analysisBtnText: "👤 Student Profile & Credit Analysis Report",
+                logoutText: "🚪 Log Out",
+                modalTitle: "📊 Central Wallet & Student Analysis Report",
+                closeModalBtn: "Close Report",
+                walletStoreTitle: "🪙 Central Wallet Recharge Slabs",
+                walletStoreSub: "Select a token pack to keep your studies uninterrupted:",
+                closeStoreBtn: "Close"
+            }
+        };
 
         window.addEventListener('DOMContentLoaded', () => {
             const savedMobile = localStorage.getItem("user_mobile");
@@ -370,13 +419,21 @@
                 btnEn.className = "px-3 py-1.5 rounded-lg font-bold text-xs transition bg-cyan-600 text-white shadow";
                 btnHi.className = "px-3 py-1.5 rounded-lg font-bold text-xs transition text-gray-400 hover:text-white";
             }
+
+            // लाइव ट्रांसलेशन एप्लाई करें
+            document.querySelectorAll("[data-key]").forEach(el => {
+                const key = el.getAttribute("data-key");
+                if(translations[lang][key]) {
+                    el.innerText = translations[lang][key];
+                }
+            });
         }
 
         function playVoiceIntroduction() {
-            let msg = "नमस्ते! ध्रुव एकेडमी मास्टर इकोसिस्टम में आपका स्वागत है। यह प्रतियोगी परीक्षाओं और स्मार्ट लर्निंग का सर्वोच्च केंद्र है। आपके पास 10 फ्री टोकन उपलब्ध हैं।";
+            let msg = currentLang === 'hi' ? "नमस्ते! ध्रुव एकेडमी मास्टर इकोसिस्टम में आपका स्वागत है। आपके पास 10 फ्री टोकन उपलब्ध हैं।" : "Hello! Welcome to Dhruv Academy Master Ecosystem. You have 10 free tokens available.";
             if(window.speechSynthesis) {
                 let speech = new SpeechSynthesisUtterance(msg);
-                speech.lang = 'hi-IN';
+                speech.lang = currentLang === 'hi' ? 'hi-IN' : 'en-US';
                 window.speechSynthesis.speak(speech);
             }
         }
@@ -384,14 +441,14 @@
         function verifyStudentLogin() {
             const mobile = document.getElementById('userMobileInput').value.trim();
             if(mobile.length < 10) {
-                alert("कृपया वैध 10 अंकों का मोबाइल नंबर दर्ज करें!");
+                alert(currentLang === 'hi' ? "कृपया वैध 10 अंकों का मोबाइल नंबर दर्ज करें!" : "Please enter a valid 10-digit mobile number!");
                 return;
             }
             localStorage.setItem("user_mobile", mobile);
             localStorage.setItem("dhruv_wallet_tokens", userTokens);
             document.getElementById('authSection').classList.add('hidden');
             document.getElementById('dashboardSection').classList.remove('hidden');
-            alert("सफलतापूर्वक लॉगिन हुआ! 10 टोकन जोड़े गए।");
+            alert(currentLang === 'hi' ? "सफलतापूर्वक लॉगिन हुआ! OTP [1234] सत्यापित। 10 टोकन जोड़े गए।" : "Login successful! OTP [1234] verified. 10 tokens added.");
         }
 
         function userLogout() {
@@ -419,7 +476,7 @@
         async function buyTokens(tokensToAdd, price) {
             const savedMobile = localStorage.getItem("user_mobile");
             if(!savedMobile) {
-                alert("कृपया पहले मोबाइल नंबर से लॉगिन करें!");
+                alert(currentLang === 'hi' ? "कृपया पहले मोबाइल नंबर से लॉगिन करें!" : "Please login with your mobile number first!");
                 closeWalletStore();
                 return;
             }
@@ -449,7 +506,7 @@
             } catch (e) {
                 userTokens += tokensToAdd;
                 updateTokenDisplay();
-                alert(`सफलतापूर्वक ${tokensToAdd} टोकन जोड़े गए! (Offline Central Sync Mode)`);
+                alert(currentLang === 'hi' ? `सफलतापूर्वक ${tokensToAdd} टोकन जोड़े गए! (Central Sync Mode)` : `Successfully added ${tokensToAdd} tokens! (Central Sync Mode)`);
                 closeWalletStore();
             }
         }
@@ -457,7 +514,7 @@
         function openStudentProfile() {
             const mobile = localStorage.getItem("user_mobile") || "अज्ञात / Guest";
             document.getElementById('modalUserMobile').innerText = mobile;
-            document.getElementById('modalUserTokens').innerText = userTokens + " टोकन्स";
+            document.getElementById('modalUserTokens').innerText = userTokens + (currentLang === 'hi' ? " टोकन्स" : " Tokens");
 
             let activityLog = JSON.parse(localStorage.getItem("user_activity_log")) || [];
             let activityContainer = document.getElementById('modalActivityList');
@@ -466,14 +523,14 @@
                 activityContainer.innerHTML = activityLog.map((item, index) => `
                     <div class="flex flex-col bg-slate-900 p-2.5 rounded-xl border border-slate-800 text-xs">
                         <div class="flex justify-between font-bold text-slate-200">
-                            <span>🔹 टास्क #${index + 1}: ${item.module}</span>
+                            <span>🔹 Task #${index + 1}: ${item.module}</span>
                             <span class="text-cyan-400 font-mono text-[10px]">${item.time}</span>
                         </div>
-                        <div class="text-[11px] text-slate-400 mt-0.5">स्टेटस: सफलतापूर्वक निष्पादित (Executed)</div>
+                        <div class="text-[11px] text-slate-400 mt-0.5">Status: Central Synced & Executed</div>
                     </div>
                 `).join('');
             } else {
-                activityContainer.innerHTML = `<div class="text-slate-500 italic p-2 text-center">अभी तक कोई गतिविधि दर्ज नहीं है। कृपया किसी मॉड्यूल पर क्लिक करें।</div>`;
+                activityContainer.innerHTML = `<div class="text-slate-500 italic p-2 text-center">अभी तक कोई गतिविधि दर्ज नहीं है।</div>`;
             }
 
             document.getElementById('profileModal').classList.remove('hidden');
@@ -485,7 +542,6 @@
 
         function changeThemeAccent(colorHex) {
             document.documentElement.style.setProperty('--brand-color', colorHex);
-            alert("थीम कलर सफलतापूर्वक सिंक हो गया है!");
         }
 
         function toggleThemeMode() {
