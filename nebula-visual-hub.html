@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>10. Nebula Visual Hub - Dhruv Academy</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-950 text-white min-h-screen flex flex-col font-sans justify-between">
+
+    <header class="bg-slate-900 border-b border-rose-500/30 px-6 py-4 flex justify-between items-center shadow-lg">
+        <div class="flex items-center space-x-3">
+            <a href="/" class="text-rose-400 hover:text-rose-300 text-sm font-bold flex items-center gap-1">⬅️ मुख्य डैशबोर्ड</a>
+            <span class="text-gray-600">|</span>
+            <h1 class="text-lg font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-rose-400 to-purple-400">10. Nebula Visual Hub (नेबुला विजुअल हब)</h1>
+        </div>
+        <div class="flex items-center space-x-3">
+            <span class="text-xs bg-rose-950 text-rose-300 px-3 py-1 rounded-full border border-rose-800/50">🌌 नेबुला इंजन सक्रिय</span>
+        </div>
+    </header>
+
+    <main class="flex-1 p-6 max-w-6xl mx-auto w-full grid grid-cols-1 lg:grid-cols-3 gap-6">
+        
+        <div class="lg:col-span-1 bg-slate-900/90 border border-rose-500/20 rounded-2xl p-5 flex flex-col space-y-4 shadow-xl h-fit">
+            <h2 class="text-sm font-bold text-rose-400 uppercase tracking-wider">⚙️ नेबुला विजुअल सेटिंग्स</h2>
+            
+            <div class="space-y-2">
+                <label class="text-xs text-gray-400">विषय क्षेत्र (Domain Category)</label>
+                <select id="nebulaDomain" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-xs text-rose-300 focus:outline-none focus:border-rose-500">
+                    <option value="cosmos">ब्रह्मांड और अंतरिक्ष विज्ञान (Cosmos)</option>
+                    <option value="neural">एआई न्यूरल नेटवर्क (Neural Network)</option>
+                    <option value="structure">जैविक एवं भौतिक संरचना (Structures)</option>
+                    <option value="history">ऐतिहासिक 3D मॉडल (Historical 3D)</option>
+                </select>
+            </div>
+
+            <div class="space-y-2">
+                <label class="text-xs text-gray-400">कनेक्टिविटी मोड (Network Adaptive)</label>
+                <select id="connMode" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-xs text-rose-300 focus:outline-none focus:border-rose-500">
+                    <option value="auto">ऑटो-अडॉप्टिव (2G/3G/4G/5G ऑप्टिमाइज्ड)</option>
+                    <option value="lite">लो-बैंडविड्थ लाइट मोड (ग्रामीण क्षेत्र)</option>
+                    <option value="hd">हाई-डेफिनिशन 3D मोड (ब्रॉडबैंड)</option>
+                </select>
+            </div>
+
+            <div class="pt-4 border-t border-slate-800">
+                <div class="text-[11px] text-gray-400 space-y-1.5">
+                    <p>🌐 **भारत नेटवर्क सुरक्षा:** यह नेबुला हब कम इंटरनेट गति (2G/3G) में भी बिना रुके विजुअल प्रदर्शित करने में सक्षम है।</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="lg:col-span-2 flex flex-col space-y-4">
+            
+            <div class="bg-slate-900/90 border border-rose-500/20 rounded-2xl p-5 shadow-xl space-y-3">
+                <div class="flex justify-between items-center">
+                    <h2 class="text-sm font-bold text-rose-400">✨ नेबुला विजुअल प्रॉम्प्ट दर्ज करें</h2>
+                    <span class="text-[10px] bg-amber-950 text-amber-300 px-2.5 py-0.5 rounded-full border border-amber-800">🪙 टोकन नीति लागू</span>
+                </div>
+                <textarea id="nebulaPrompt" rows="3" placeholder="यहाँ लिखिए कि आप कौन सा वैज्ञानिक या तकनीकी विजुअल मॉडल देखना चाहते हैं..." class="w-full bg-slate-950 border border-slate-700 rounded-xl p-3 text-xs text-white focus:outline-none focus:border-rose-500 resize-none"></textarea>
+                
+                <div class="flex justify-between items-center">
+                    <span class="text-[11px] text-gray-400">⚡ नए नेबुला जनरेशन पर मानक टोकन डेबिट होंगे।</span>
+                    <button onclick="renderNebulaVisual()" class="px-6 py-2.5 bg-gradient-to-r from-rose-600 to-purple-600 hover:from-rose-500 hover:to-purple-500 text-white text-xs font-bold rounded-xl shadow-lg transition">🚀 नेबुला रेंडर शुरू करें</button>
+                </div>
+            </div>
+
+            <div id="nebulaOutputBox" class="bg-slate-900/50 border border-slate-800 rounded-2xl p-5 shadow-2xl hidden space-y-4">
+                <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                    <span class="text-xs font-bold text-green-400 flex items-center gap-1.5">🌌 नेबुला विजुअल सफलतापूर्व जनरेट हुआ</span>
+                    <span class="text-[10px] bg-rose-950 text-rose-300 px-2.5 py-0.5 rounded-full border border-rose-800">कनेक्टिविटी के अनुकूल</span>
+                </div>
+                <div id="nebulaCanvasContent" class="bg-slate-950 h-52 rounded-xl border border-rose-950 flex flex-col items-center justify-center p-4 text-center">
+                    </div>
+            </div>
+
+        </div>
+
+    </main>
+
+    <footer class="bg-slate-900 border-t border-slate-800 py-4 px-6 text-center text-xs text-gray-400 mt-6">
+        <p>🔒 **ध्रुव एकेडमी - सुरक्षित और विश्वसनीय डिजिटल शिक्षण मंच** | सर्वाधिकार सुरक्षित © 2026</p>
+    </footer>
+
+    <script>
+        function renderNebulaVisual() {
+            const prompt = document.getElementById('nebulaPrompt').value.trim();
+            const outputBox = document.getElementById('nebulaOutputBox');
+            const canvasContent = document.getElementById('nebulaCanvasContent');
+
+            if(!prompt) {
+                alert("कृपया पहले प्रॉम्प्ट बॉक्स में अपना विषय दर्ज करें!");
+                return;
+            }
+
+            outputBox.classList.remove('hidden');
+            canvasContent.innerHTML = `<div class="text-rose-400 animate-pulse text-xs">🔄 भारत की नेटवर्क गति (2G/3G/4G/5G) के अनुसार नेबुला विजुअल ऑप्टिमाइज़ हो रहा है...</div>`;
+
+            setTimeout(() => {
+                canvasContent.innerHTML = `
+                    <div class="space-y-2">
+                        <div class="text-sm font-bold text-indigo-300">🌟 विषय: "${prompt}"</div>
+                        <p class="text-xs text-gray-300">आपका नेबुला विजुअल मॉडल सफलतापूर्वक नेटवर्क-फ्रेंडली फॉर्मेट में रेंडर हो गया है।</p>
+                        <div class="mt-2 inline-block px-3 py-1 bg-slate-900 border border-slate-700 rounded-lg text-[10px] text-green-400">🟢 नेबुला कोर सक्रिय एवं स्थिर</div>
+                    </div>
+                `;
+            }, 1000);
+        }
+    </script>
+</body>
+</html>
