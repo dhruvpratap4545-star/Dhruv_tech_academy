@@ -772,7 +772,7 @@ async def render_auto_heal(request: Request):
             <div class="flex justify-between items-center bg-slate-900 p-6 rounded-2xl border border-slate-800 shadow-xl">
                 <div>
                     <h1 class="text-2xl font-bold text-cyan-400">🛡️ AI Master Code Doctor & Auto-Healing Hub</h1>
-                    <p class="text-sm text-slate-400 mt-1">ध्रुव एकेडमी मास्टर इकोसिस्टम - ऑटोमैटिक कोड करेक्शन और एरर फिक्सिंग सेंटर</p>
+                    <p class="text-sm text-slate-400 mt-1">ध्रुव एकेडमी मास्टर इकोसिस्टम - स्पीकिंग इंग्लिश और अन्य मॉड्यूल्स के लिए ऑटोमैटिक कोड फिक्सर</p>
                 </div>
                 <a href="/admin/super_master_panel" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl text-sm font-medium transition">← कमांड सेंटर वापस जाएं</a>
             </div>
@@ -780,18 +780,18 @@ async def render_auto_heal(request: Request):
             <div class="bg-slate-900 p-6 rounded-2xl border border-slate-800 shadow-xl space-y-4">
                 <div>
                     <label class="block text-sm font-medium text-slate-300 mb-2">मॉड्यूल का नाम (Module Name)</label>
-                    <input type="text" id="moduleName" value="Super Master Module" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-slate-200 focus:outline-none focus:border-cyan-500">
+                    <input type="text" id="moduleName" value="Spoken English Module" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-slate-200 focus:outline-none focus:border-cyan-500">
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-slate-300 mb-2">टूटा हुआ या एरर वाला कोड यहाँ पेस्ट करें (Broken Code):</label>
-                    <textarea id="brokenCode" rows="8" placeholder="यहाँ अपना कोड पेस्ट करें..." class="w-full bg-slate-950 border border-slate-800 rounded-xl p-4 font-mono text-sm text-cyan-300 focus:outline-none focus:border-cyan-500"></textarea>
+                    <label class="block text-sm font-medium text-slate-300 mb-2">स्पीकिंग या टूटा हुआ कोड यहाँ पेस्ट करें (Broken Code):</label>
+                    <textarea id="brokenCode" rows="10" placeholder="यहाँ अपना स्पीकिंग इंग्लिश या अन्य कोड पेस्ट करें..." class="w-full bg-slate-950 border border-slate-800 rounded-xl p-4 font-mono text-sm text-cyan-300 focus:outline-none focus:border-cyan-500"></textarea>
                 </div>
                 <button onclick="healCode()" class="w-full py-3 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-semibold rounded-xl transition shadow-lg shadow-cyan-900/30">✨ ऑटो-हील शुरू करें (Fix Code)</button>
             </div>
 
             <div class="bg-slate-900 p-6 rounded-2xl border border-slate-800 shadow-xl space-y-4">
                 <h2 class="text-lg font-semibold text-emerald-400">✅ ठीक किया गया शुद्ध कोड (Production-Ready Code):</h2>
-                <pre id="resultBox" class="bg-slate-950 p-4 rounded-xl border border-slate-800 font-mono text-sm text-emerald-300 overflow-x-auto min-h-[120px] whitespace-pre-wrap">रिजल्ट यहाँ दिखाई देगा...</pre>
+                <pre id="resultBox" class="bg-slate-950 p-4 rounded-xl border border-slate-800 font-mono text-sm text-emerald-300 overflow-x-auto min-h-[150px] whitespace-pre-wrap">रिजल्ट यहाँ दिखाई देगा...</pre>
             </div>
         </div>
 
@@ -802,21 +802,21 @@ async def render_auto_heal(request: Request):
                 const resultBox = document.getElementById('resultBox');
 
                 if (!code.trim()) {
-                    alert('कृपया पहले टूटा हुआ कोड पेस्ट करें!');
+                    alert('कृपया पहले कोड पेस्ट करें!');
                     return;
                 }
 
-                resultBox.innerText = 'AI कोड को एनालाइज और हील कर रहा है... कृपया प्रतीक्षा करें...';
-
-                const formData = new FormData();
-                formData.append('code', code);
-                formData.append('module', module);
+                resultBox.innerText = 'AI स्पीकिंग कोड को एनालाइज और हील कर रहा है... कृपया प्रतीक्षा करें...';
 
                 try {
                     const response = await fetch('/api/auto-heal-code', {
                         method: 'POST',
-                        body: formData
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded',
+                        },
+                        body: 'code=' + encodeURIComponent(code) + '&module=' + encodeURIComponent(module)
                     });
+                    
                     const data = await response.json();
                     if (data.success) {
                         resultBox.innerText = data.healed_code;
@@ -827,16 +827,12 @@ async def render_auto_heal(request: Request):
                     resultBox.innerText = 'कनेक्शन एरर: ' + err.message;
                 }
             }
-       </script>
+        </script>
     </body>
     </html>
     """
     return HTMLResponse(content=html_content)
-
-@app.get("/auto-heal", response_class=HTMLResponse)
-async def render_auto_heal(request: Request):
-    return HTMLResponse(content=html_content)
-
+    
 if __name__ == '__main__':
     import uvicorn
     port = int(os.environ.get("PORT", 10000))
