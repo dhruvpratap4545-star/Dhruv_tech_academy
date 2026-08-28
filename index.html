@@ -47,13 +47,18 @@
             <!-- सेंट्रल वॉलेट लाइव सिंक काउंटर -->
             <div onclick="openWalletStore()" class="cursor-pointer flex items-center gap-1.5 bg-purple-950/90 border border-purple-500 px-3 py-2 rounded-xl text-yellow-400 font-extrabold text-xs md:text-sm shadow hover:border-yellow-400 transition" title="सेंट्रल वॉलेट रिपोर्ट देखें">
                 <span>⚡ <span data-key="walletTitle">सेंट्रल वॉलेट</span>:</span>
-                <span id="topTokenCount">10</span> <span class="text-[10px] text-purple-300 font-normal">टोकन्स</span>
+                <span id="topTokenCount">10</span> <span class="text-[10px] text-purple-300 font-normal" data-key="tokensUnit">टोकन्स</span>
             </div>
 
-            <!-- भाषा टॉगल बटन (सिंगल-पेज लाइव ट्रांसलेटर) -->
-            <div class="flex items-center bg-slate-900 p-1 rounded-xl border border-slate-700">
-                <button id="langHi" onclick="switchLanguage('hi')" class="px-3 py-1.5 rounded-lg font-bold text-xs transition bg-cyan-600 text-white shadow">हिंदी</button>
-                <button id="langEn" onclick="switchLanguage('en')" class="px-3 py-1.5 rounded-lg font-bold text-xs transition text-gray-400 hover:text-white">English</button>
+            <!-- बहुभाषीय (Multilingual) चयन ड्रॉपडाउन बार -->
+            <div class="flex items-center bg-slate-900 p-1.5 rounded-xl border border-slate-700 gap-1">
+                <span class="text-[11px] text-purple-300 font-bold px-1">🌐</span>
+                <select id="langSelector" onchange="switchLanguage(this.value)" class="bg-slate-800 text-white text-xs font-bold px-2.5 py-1 rounded-lg border border-slate-700 focus:outline-none focus:border-cyan-500 cursor-pointer">
+                    <option value="hi">🇮🇳 हिंदी (Hindi)</option>
+                    <option value="en">🇬🇧 English</option>
+                    <option value="pa">🇮🇳 ਪੰਜਾਬੀ (Punjabi)</option>
+                    <option value="mr">🇮🇳 मराठी (Marathi)</option>
+                </select>
             </div>
 
             <!-- वॉयस गाइड बटन -->
@@ -101,7 +106,7 @@
             <p class="text-xs md:text-sm text-slate-400 mt-1" data-key="subTitle">प्रतियोगी परीक्षाएं, स्मार्ट लर्निंग और एआई ऑटोमेशन का सर्वोच्च केंद्र</p>
         </div>
 
-        <!-- लॉगिन / मोबाइल वेरिफिकेशन सेक्शन (डिफ़ॉल्ट OTP 1234 सपोर्ट) -->
+        <!-- लॉगिन / मोबाइल वेरिफिकेशन सेक्शन -->
         <div id="authSection" class="bg-slate-950/90 border border-slate-800 rounded-2xl p-5 shadow-inner mb-6 max-w-lg mx-auto">
             <label class="block text-xs font-bold text-slate-300 mb-2" data-key="mobileLabel">मोबाइल नंबर दर्ज करें (डिफ़ॉल्ट OTP: 1234):</label>
             <div class="flex flex-col md:flex-row gap-2">
@@ -257,29 +262,29 @@
             <div class="space-y-4 text-xs md:text-sm text-slate-300 mb-6">
                 <div class="grid grid-cols-2 gap-3">
                     <div class="bg-slate-950 p-3 rounded-2xl border border-slate-800">
-                        <div class="text-slate-400 text-[11px] mb-1">📱 रजिस्टर्ड मोबाइल</div>
+                        <div class="text-slate-400 text-[11px] mb-1" data-key="regMobileLabel">📱 रजिस्टर्ड मोबाइल</div>
                         <div id="modalUserMobile" class="font-bold text-cyan-300 text-sm">--</div>
                     </div>
                     <div class="bg-slate-950 p-3 rounded-2xl border border-slate-800">
-                        <div class="text-slate-400 text-[11px] mb-1">⚡ शेष सेंट्रल टोकन्स</div>
+                        <div class="text-slate-400 text-[11px] mb-1" data-key="remTokensLabel">⚡ शेष सेंट्रल टोकन्स</div>
                         <div id="modalUserTokens" class="font-bold text-yellow-400 text-base">10 टोकन्स</div>
                     </div>
                 </div>
 
                 <div class="bg-slate-950 p-3.5 rounded-2xl border border-slate-800">
                     <div class="flex justify-between text-xs mb-1.5 font-bold">
-                        <span class="text-purple-300">📈 सेंट्रल वॉलेट सिंक स्टेटस</span>
-                        <span class="text-green-400">सक्रिय (Active 1234 OTP)</span>
+                        <span class="text-purple-300" data-key="syncStatusLabel">📈 सेंट्रल वॉलेट सिंक स्टेटस</span>
+                        <span class="text-green-400" data-key="activeStatusText">सक्रिय (Active 1234 OTP)</span>
                     </div>
                     <div class="w-full bg-slate-800 h-2.5 rounded-full overflow-hidden">
                         <div class="bg-gradient-to-r from-purple-500 to-cyan-400 h-full w-full"></div>
                     </div>
-                    <div class="text-[10px] text-slate-500 mt-1">यूजर-लेवल ट्रांसपेरेंसी रिपोर्ट पूरी तरह सुरक्षित है।</div>
+                    <div class="text-[10px] text-slate-500 mt-1" data-key="transparencySubText">यूजर-लेवल ट्रांसपेरेंसी रिपोर्ट पूरी तरह सुरक्षित है।</div>
                 </div>
                 
                 <div class="bg-slate-950 p-3.5 rounded-2xl border border-slate-800">
                     <div class="font-bold text-purple-400 mb-2 flex items-center gap-1.5">
-                        <span>🔍 हालिया उपयोग गतिविधियाँ (Activity Ledger):</span>
+                        <span data-key="activityLedgerLabel">🔍 हालिया उपयोग गतिविधियाँ (Activity Ledger):</span>
                     </div>
                     <div id="modalActivityList" class="space-y-2 max-h-40 overflow-y-auto pr-1"></div>
                 </div>
@@ -300,15 +305,15 @@
             <div class="space-y-3 mb-4">
                 <div onclick="buyTokens(50, 99)" class="bg-slate-800 border border-purple-500/50 hover:border-purple-400 p-3.5 rounded-xl cursor-pointer flex justify-between items-center transition shadow">
                     <div>
-                        <div class="font-bold text-sm text-yellow-300">⚡ 50 टोकन पैक</div>
-                        <div class="text-xs text-slate-400">बुनियादी छात्र उपयोग</div>
+                        <div class="font-bold text-sm text-yellow-300" data-key="pack1Title">⚡ 50 टोकन पैक</div>
+                        <div class="text-xs text-slate-400" data-key="pack1Sub">बुनियादी छात्र उपयोग</div>
                     </div>
                     <div class="bg-purple-600 text-white px-3.5 py-1.5 rounded-lg text-xs font-bold shadow">₹99</div>
                 </div>
                 <div onclick="buyTokens(150, 199)" class="bg-slate-800 border border-purple-500/50 hover:border-purple-400 p-3.5 rounded-xl cursor-pointer flex justify-between items-center transition shadow">
                     <div>
-                        <div class="font-bold text-sm text-yellow-300">🚀 150 टोकन पैक (Best Value)</div>
-                        <div class="text-xs text-slate-400">प्रो स्टूडेंट पैक</div>
+                        <div class="font-bold text-sm text-yellow-300" data-key="pack2Title">🚀 150 टोकन पैक (Best Value)</div>
+                        <div class="text-xs text-slate-400" data-key="pack2Sub">प्रो स्टूडेंट पैक</div>
                     </div>
                     <div class="bg-purple-600 text-white px-3.5 py-1.5 rounded-lg text-xs font-bold shadow">₹199</div>
                 </div>
@@ -328,16 +333,17 @@
         </div>
     </footer>
 
-    <!-- सिंगल-पेज लाइव ट्रांसलेटर और वॉलेट जावास्क्रिप्ट लॉजिक -->
+    <!-- बहुभाषीय (Multilingual) ट्रांसलेटर और वॉलेट जावास्क्रिप्ट लॉजिक -->
     <script>
         let currentLang = 'hi';
         let userTokens = parseInt(localStorage.getItem("dhruv_wallet_tokens")) || parseInt(localStorage.getItem("user_tokens")) || 10;
         let currentTheme = 'dark';
 
-        // डिक्शनरी फॉर लाइव ट्रांसलेशन
+        // बहुभाषीय डिक्शनरी (हिंदी, अंग्रेजी, पंजाबी, मराठी)
         const translations = {
             hi: {
                 walletTitle: "सेंट्रल वॉलेट",
+                tokensUnit: "टोकन्स",
                 voiceGuide: "वॉयस गाइड",
                 walletBtn: "वॉलेट स्लैब",
                 profileBtn: "रिपोर्ट",
@@ -356,13 +362,24 @@
                 analysisBtnText: "👤 छात्र प्रोफाइल और क्रेडिट एनालिसिस रिपोर्ट",
                 logoutText: "🚪 लॉग आउट (Logout)",
                 modalTitle: "📊 सेंट्रल वॉलेट व छात्र एनालिसिस रिपोर्ट",
+                regMobileLabel: "📱 रजिस्टर्ड मोबाइल",
+                remTokensLabel: "⚡ शेष सेंट्रल टोकन्स",
+                syncStatusLabel: "📈 सेंट्रल वॉलेट सिंक स्टेटस",
+                activeStatusText: "सक्रिय (Active 1234 OTP)",
+                transparencySubText: "यूजर-लेवल ट्रांसपेरेंसी रिपोर्ट पूरी तरह सुरक्षित है।",
+                activityLedgerLabel: "🔍 हालिया उपयोग गतिविधियाँ (Activity Ledger):",
                 closeModalBtn: "रिपोर्ट बंद करें",
                 walletStoreTitle: "🪙 सेंट्रल वॉलेट रिचार्ज स्लैब",
                 walletStoreSub: "अपने अध्ययन को निरंतर रखने के लिए टोकन पैक चुनें:",
+                pack1Title: "⚡ 50 टोकन पैक",
+                pack1Sub: "बुनियादी छात्र उपयोग",
+                pack2Title: "🚀 150 टोकन पैक (Best Value)",
+                pack2Sub: "प्रो स्टूडेंट पैक",
                 closeStoreBtn: "बंद करें"
             },
             en: {
                 walletTitle: "Central Wallet",
+                tokensUnit: "Tokens",
                 voiceGuide: "Voice Guide",
                 walletBtn: "Wallet Slabs",
                 profileBtn: "Reports",
@@ -381,10 +398,92 @@
                 analysisBtnText: "👤 Student Profile & Credit Analysis Report",
                 logoutText: "🚪 Log Out",
                 modalTitle: "📊 Central Wallet & Student Analysis Report",
+                regMobileLabel: "📱 Registered Mobile",
+                remTokensLabel: "⚡ Remaining Tokens",
+                syncStatusLabel: "📈 Central Wallet Sync Status",
+                activeStatusText: "Active (Active 1234 OTP)",
+                transparencySubText: "User-level transparency report is fully secure.",
+                activityLedgerLabel: "🔍 Recent Activities (Activity Ledger):",
                 closeModalBtn: "Close Report",
                 walletStoreTitle: "🪙 Central Wallet Recharge Slabs",
                 walletStoreSub: "Select a token pack to keep your studies uninterrupted:",
+                pack1Title: "⚡ 50 Token Pack",
+                pack1Sub: "Basic student usage",
+                pack2Title: "🚀 150 Token Pack (Best Value)",
+                pack2Sub: "Pro student pack",
                 closeStoreBtn: "Close"
+            },
+            pa: {
+                walletTitle: "ਸੈਂਟਰਲ ਵਾਲਿਟ",
+                tokensUnit: "ਟੋਕਨ",
+                voiceGuide: "ਵੌਇਸ ਗਾਈਡ",
+                walletBtn: "ਵਾਲਿਟ ਸਲੈਬ",
+                profileBtn: "ਰਿਪੋਰਟ",
+                bannerTag: "🎁 ਮੁਕਾਬਲੇ ਦੀਆਂ ਪ੍ਰੀਖਿਆਵਾਂ ਅਤੇ ਸਮਾਰਟ ਵਿਦਿਆਰਥੀਆਂ ਲਈ ਵਿਸ਼ੇਸ਼ ਪਲੇਟਫਾਰਮ - 10 ਮੁਫ਼ਤ ਟੋਕਨ!",
+                mainTitle: "ਧਰੁਵ ਅਕੈਡਮੀ (Dhruv Academy)",
+                subTitle: "ਪ੍ਰਤੀਯੋਗੀ ਪ੍ਰੀਖਿਆਵਾਂ, ਸਮਾਰਟ ਲਰਨਿੰਗ ਅਤੇ ਏਆਈ ਆਟੋਮੇਸ਼ਨ ਦਾ ਸਰਵਉੱਚ ਕੇਂਦਰ",
+                mobileLabel: "ਮੋਬਾਈਲ ਨੰਬਰ ਦਰਜ ਕਰੋ (ਡਿਫਾਲਟ OTP: 1234):",
+                loginBtn: "ਲਾਗਇਨ ਕਰੋ ਅਤੇ 10 ਟੋਕਨ ਪ੍ਰਾਪਤ ਕਰੋ 🚀",
+                welcomeMsg: "✨ ਜੀ ਆਇਆਂ ਨੂੰ! ਤੁਹਾਡਾ ਸੈਂਟਰਲ ਮਾਸਟਰ ਵਾਲਿਟ ਕਿਰਿਆਸ਼ੀਲ ਹੈ।",
+                walletActiveText: "ਤੁਹਾਡੇ ਵਾਲਿਟ ਵਿੱਚ",
+                tokensAvailableText: "ਮੁਫ਼ਤ ਟੋਕਨ ਸੁਰੱਖਿਅਤ ਹਨ। ਸੈਂਟਰਲ ਵਾਲਿਟ ਸਿੰਕ੍ਰੋਨਾਈਜ਼ਡ ਰਿਪੋਰਟ ਹੇਠਾਂ ਦਿੱਤੀ ਗਈ ਹੈ:",
+                reportBtnText: "📊 ਮੇਰੀ ਗਤੀਵਿਧੀ ਅਤੇ ਖਰਚ ਰਿਪੋਰਟ (Activity Ledger)",
+                rechargeBtnText: "🪙 ਟੋਕਨ ਰੀਚਾਰਜ ਅਤੇ ਸਲੈਬ",
+                modulesHeading: "🚀 ਸਾਰੇ 11 ਮਾਸਟਰ ਮੌਡਿਊਲ (Active Modules):",
+                storeBtnText: "🪙 ਸੈਂਟਰਲ ਵਾਲਿਟ ਅਤੇ ਰੀਚਾਰਜ ਸਟੋਰ ਖੋਲ੍ਹੋ",
+                analysisBtnText: "👤 ਵਿਦਿਆਰਥੀ ਪ੍ਰੋਫਾਈਲ ਅਤੇ ਕ੍ਰੈਡਿਟ ਵਿਸ਼ਲੇਸ਼ਣ ਰਿਪੋਰਟ",
+                logoutText: "🚪 ਲਾਗ ਆਉਟ (Logout)",
+                modalTitle: "📊 ਸੈਂਟਰਲ ਵਾਲਿਟ ਅਤੇ ਵਿਦਿਆਰਥੀ ਵਿਸ਼ਲੇਸ਼ਣ ਰਿਪੋਰਟ",
+                regMobileLabel: "📱 ਰਜਿਸਟਰਡ ਮੋਬਾਈਲ",
+                remTokensLabel: "⚡ ਬਾਕੀ ਟੋਕਨ",
+                syncStatusLabel: "📈 ਸੈਂਟਰਲ ਵਾਲਿਟ ਸਿੰਕ ਸਥਿਤੀ",
+                activeStatusText: "ਕਿਰਿਆਸ਼ੀਲ (Active 1234 OTP)",
+                transparencySubText: "ਵਿਦਿਆਰਥੀ-ਪੱਧਰ ਦੀ ਪਾਰਦਰਸ਼ਤਾ ਰਿਪੋਰਟ ਪੂਰੀ ਤਰ੍ਹਾਂ ਸੁਰੱਖਿਅਤ ਹੈ।",
+                activityLedgerLabel: "🔍 ਹਾਲੀਆ ਗਤੀਵਿਧੀਆਂ (Activity Ledger):",
+                closeModalBtn: "ਰਿਪੋਰਟ ਬੰਦ ਕਰੋ",
+                walletStoreTitle: "🪙 ਸੈਂਟਰਲ ਵਾਲਿਟ ਰੀਚਾਰਜ ਸਲੈਬ",
+                walletStoreSub: "ਆਪਣੀ ਪੜ੍ਹਾਈ ਨੂੰ ਨਿਰੰਤਰ ਰੱਖਣ ਲਈ ਟੋਕਨ ਪੈਕ ਚੁਣੋ:",
+                pack1Title: "⚡ 50 ਟੋਕਨ ਪੈਕ",
+                pack1Sub: "ਮੁਢਲੀ ਵਿਦਿਆਰਥੀ ਵਰਤੋਂ",
+                pack2Title: "🚀 150 ਟੋਕਨ ਪੈਕ (Best Value)",
+                pack2Sub: "ਪ੍ਰੋ ਸਟੂਡੈਂਟ ਪੈਕ",
+                closeStoreBtn: "ਬੰਦ ਕਰੋ"
+            },
+            mr: {
+                walletTitle: "सेंट्रल वॉलेट",
+                tokensUnit: "टोकन्स",
+                voiceGuide: "व्हॉईस गाईड",
+                walletBtn: "वॉलेट स्लॅब",
+                profileBtn: "अहवाल",
+                bannerTag: "🎁 स्पर्धा परीक्षा आणि स्मार्ट विद्यार्थ्यांसाठी विशेष मंच - 10 टोकन विनामूल्य!",
+                mainTitle: "ध्रुव अकादमी (Dhruv Academy)",
+                subTitle: "स्पर्धा परीक्षा, स्मार्ट लर्निंग आणि AI ऑटोमेशनचे सर्वोच्च केंद्र",
+                mobileLabel: "मोबाईल नंबर प्रविष्ट करा (डीफॉल्ट OTP: 1234):",
+                loginBtn: "लॉगिन करा आणि 10 टोकन मिळवा 🚀",
+                welcomeMsg: "✨ स्वागत आहे! तुमचे सेंट्रल मास्टर वॉलेट सक्रिय आहे.",
+                walletActiveText: "तुमच्या वॉलेटमध्ये",
+                tokensAvailableText: "मोफत टोकन सुरक्षित आहेत. सेंट्रल वॉलेट सिंक्रोनाइज्ड अहवाल खाली सक्रिय आहे:",
+                reportBtnText: "📊 माझी क्रियाकलाप आणि खर्च अहवाल (Activity Ledger)",
+                rechargeBtnText: "🪙 टोकन रीचार्ज आणि स्लॅब",
+                modulesHeading: "🚀 सर्व 11 मास्टर मॉड्यूल्स (Active Modules):",
+                storeBtnText: "🪙 सेंट्रल वॉलेट आणि रीचार्ज स्टोअर उघडा",
+                analysisBtnText: "👤 विद्यार्थी प्रोफाइल आणि क्रेडिट विश्लेषण अहवाल",
+                logoutText: "🚪 लॉग आउट (Logout)",
+                modalTitle: "📊 सेंट्रल वॉलेट व विद्यार्थी विश्लेषण अहवाल",
+                regMobileLabel: "📱 नोंदणीकृत मोबाईल",
+                remTokensLabel: "⚡ शिल्लक सेंट्रल टोकन्स",
+                syncStatusLabel: "📈 सेंट्रल वॉलेट सिंक स्थिती",
+                activeStatusText: "सक्रिय (Active 1234 OTP)",
+                transparencySubText: "युजर-लेव्हल पारदर्शकता अहवाल पूर्णपणे सुरक्षित आहे.",
+                activityLedgerLabel: "🔍 अलीकडील क्रियाकलाप (Activity Ledger):",
+                closeModalBtn: "अहवाल बंद करा",
+                walletStoreTitle: "🪙 सेंट्रल वॉलेट रीचार्ज स्लॅब",
+                walletStoreSub: "तुमचा अभ्यास अखंड ठेवण्यासाठी टोकन पॅक निवडा:",
+                pack1Title: "⚡ 50 टोकन पॅक",
+                pack1Sub: "मूलभूत विद्यार्थी वापर",
+                pack2Title: "🚀 150 टोकन पॅक (Best Value)",
+                pack2Sub: "प्रो स्टुडंट पॅक",
+                closeStoreBtn: "बंद करा"
             }
         };
 
@@ -407,33 +506,28 @@
             if(dashCount) dashCount.innerText = userTokens;
         }
 
+        // बहुभाषीय लाइव ट्रांसलेटर फंक्शन
         function switchLanguage(lang) {
             currentLang = lang;
-            const btnHi = document.getElementById('langHi');
-            const btnEn = document.getElementById('langEn');
-            
-            if(lang === 'hi') {
-                btnHi.className = "px-3 py-1.5 rounded-lg font-bold text-xs transition bg-cyan-600 text-white shadow";
-                btnEn.className = "px-3 py-1.5 rounded-lg font-bold text-xs transition text-gray-400 hover:text-white";
-            } else {
-                btnEn.className = "px-3 py-1.5 rounded-lg font-bold text-xs transition bg-cyan-600 text-white shadow";
-                btnHi.className = "px-3 py-1.5 rounded-lg font-bold text-xs transition text-gray-400 hover:text-white";
-            }
-
-            // लाइव ट्रांसलेशन एप्लाई करें
             document.querySelectorAll("[data-key]").forEach(el => {
                 const key = el.getAttribute("data-key");
-                if(translations[lang][key]) {
+                if(translations[lang] && translations[lang][key]) {
                     el.innerText = translations[lang][key];
                 }
             });
         }
 
         function playVoiceIntroduction() {
-            let msg = currentLang === 'hi' ? "नमस्ते! ध्रुव एकेडमी मास्टर इकोसिस्टम में आपका स्वागत है। आपके पास 10 फ्री टोकन उपलब्ध हैं।" : "Hello! Welcome to Dhruv Academy Master Ecosystem. You have 10 free tokens available.";
+            let msgs = {
+                hi: "नमस्ते! ध्रुव एकेडमी मास्टर इकोसिस्टम में आपका स्वागत है। आपके पास 10 फ्री टोकन उपलब्ध हैं।",
+                en: "Hello! Welcome to Dhruv Academy Master Ecosystem. You have 10 free tokens available.",
+                pa: "ਸਤਿ ਸ੍ਰੀ ਅਕਾਲ! ਧਰੁਵ ਅਕੈਡਮੀ ਵਿੱਚ ਤੁਹਾਡਾ ਸਵਾਗਤ ਹੈ। ਤੁਹਾਡੇ ਕੋਲ 10 ਮੁਫ਼ਤ ਟੋਕਨ ਉਪਲਬਧ ਹਨ।",
+                mr: "नमस्कार! ध्रुव अकादमी मास्टर इकोसिस्टममध्ये आपले स्वागत आहे. आपल्याकडे 10 विनामूल्य टोकन्स उपलब्ध आहेत."
+            };
+            let msg = msgs[currentLang] || msgs['hi'];
             if(window.speechSynthesis) {
                 let speech = new SpeechSynthesisUtterance(msg);
-                speech.lang = currentLang === 'hi' ? 'hi-IN' : 'en-US';
+                speech.lang = currentLang === 'hi' ? 'hi-IN' : (currentLang === 'pa' ? 'pa-IN' : (currentLang === 'mr' ? 'mr-IN' : 'en-US'));
                 window.speechSynthesis.speak(speech);
             }
         }
@@ -441,14 +535,27 @@
         function verifyStudentLogin() {
             const mobile = document.getElementById('userMobileInput').value.trim();
             if(mobile.length < 10) {
-                alert(currentLang === 'hi' ? "कृपया वैध 10 अंकों का मोबाइल नंबर दर्ज करें!" : "Please enter a valid 10-digit mobile number!");
+                let alertMsg = {
+                    hi: "कृपया वैध 10 अंकों का मोबाइल नंबर दर्ज करें!",
+                    en: "Please enter a valid 10-digit mobile number!",
+                    pa: "ਕਿਰਪਾ ਕਰਕੇ ਇੱਕ ਵੈਧ 10 ਅੰਕਾਂ ਦਾ ਮੋਬਾਈਲ ਨੰਬਰ ਦਰਜ ਕਰੋ!",
+                    mr: "कृपया वैध 10 अंकी मोबाईल नंबर प्रविष्ट करा!"
+                };
+                alert(alertMsg[currentLang] || alertMsg['hi']);
                 return;
             }
             localStorage.setItem("user_mobile", mobile);
             localStorage.setItem("dhruv_wallet_tokens", userTokens);
             document.getElementById('authSection').classList.add('hidden');
             document.getElementById('dashboardSection').classList.remove('hidden');
-            alert(currentLang === 'hi' ? "सफलतापूर्वक लॉगिन हुआ! OTP [1234] सत्यापित। 10 टोकन जोड़े गए।" : "Login successful! OTP [1234] verified. 10 tokens added.");
+            
+            let successMsg = {
+                hi: "सफलतापूर्वक लॉगिन हुआ! OTP [1234] सत्यापित। 10 टोकन जोड़े गए।",
+                en: "Login successful! OTP [1234] verified. 10 tokens added.",
+                pa: "ਲਾਗਇਨ ਸਫਲ ਰਿਹਾ! OTP [1234] ਤਸਦੀਕ ਹੋ ਗਿਆ। 10 ਟੋਕਨ ਜੋੜੇ ਗਏ।",
+                mr: "लॉगिन यशस्वी झाले! OTP [1234] सत्यापित. 10 टोकन जोडले गेले."
+            };
+            alert(successMsg[currentLang] || successMsg['hi']);
         }
 
         function userLogout() {
@@ -476,7 +583,13 @@
         async function buyTokens(tokensToAdd, price) {
             const savedMobile = localStorage.getItem("user_mobile");
             if(!savedMobile) {
-                alert(currentLang === 'hi' ? "कृपया पहले मोबाइल नंबर से लॉगिन करें!" : "Please login with your mobile number first!");
+                let loginWarn = {
+                    hi: "कृपया पहले मोबाइल नंबर से लॉगिन करें!",
+                    en: "Please login with your mobile number first!",
+                    pa: "ਕਿਰਪਾ ਕਰਕੇ ਪਹਿਲਾਂ ਮੋਬਾਈਲ ਨੰਬਰ ਨਾਲ ਲਾਗਇਨ ਕਰੋ!",
+                    mr: "कृपया आधी मोबाईल नंबरने लॉगिन करा!"
+                };
+                alert(loginWarn[currentLang] || loginWarn['hi']);
                 closeWalletStore();
                 return;
             }
@@ -506,7 +619,13 @@
             } catch (e) {
                 userTokens += tokensToAdd;
                 updateTokenDisplay();
-                alert(currentLang === 'hi' ? `सफलतापूर्वक ${tokensToAdd} टोकन जोड़े गए! (Central Sync Mode)` : `Successfully added ${tokensToAdd} tokens! (Central Sync Mode)`);
+                let syncMsg = {
+                    hi: `सफलतापूर्वक ${tokensToAdd} टोकन जोड़े गए! (Central Sync Mode)`,
+                    en: `Successfully added ${tokensToAdd} tokens! (Central Sync Mode)`,
+                    pa: `ਸਫਲਤਾਪੂਰਵਕ ${tokensToAdd} ਟੋਕਨ ਜੋੜੇ ਗਏ!`,
+                    mr: `यशस्वीपणे ${tokensToAdd} टोकन जोडले गेले!`
+                };
+                alert(syncMsg[currentLang] || syncMsg['hi']);
                 closeWalletStore();
             }
         }
@@ -530,7 +649,13 @@
                     </div>
                 `).join('');
             } else {
-                activityContainer.innerHTML = `<div class="text-slate-500 italic p-2 text-center">अभी तक कोई गतिविधि दर्ज नहीं है।</div>`;
+                let noAct = {
+                    hi: "अभी तक कोई गतिविधि दर्ज नहीं है।",
+                    en: "No activity recorded yet.",
+                    pa: "ਅਜੇ ਤੱਕ ਕੋਈ ਗਤੀਵਿਧੀ ਦਰਜ ਨਹੀਂ ਹੈ।",
+                    mr: "अद्याप कोणतीही क्रिया नोंदवली गेलेली नाही."
+                };
+                activityContainer.innerHTML = `<div class="text-slate-500 italic p-2 text-center">${noAct[currentLang] || noAct['hi']}</div>`;
             }
 
             document.getElementById('profileModal').classList.remove('hidden');
