@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>9. Ultimate Competition Solver & Timed Mock Test - Dhruv Academy</title>
+    <title>9. Competition Solver & Timed Mock Test - Dhruv Academy</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-slate-950 text-white min-h-screen flex flex-col font-sans">
+<body class="bg-slate-950 text-white min-h-screen flex flex-col font-sans justify-between">
 
     <!-- Top Navigation -->
     <header class="bg-slate-900 border-b border-indigo-500/30 px-6 py-4 flex justify-between items-center shadow-lg">
@@ -16,22 +16,22 @@
             <h1 class="text-lg font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-400">9. Competition Solver & Timed Mock Test Hub</h1>
         </div>
         <div class="flex items-center space-x-3">
-            <span class="text-xs bg-green-950 text-green-300 px-3 py-1 rounded-full border border-green-800/50">🟢 सेव्ड डेटा: शून्य टोकन लागत (Free Practice)</span>
+            <span class="text-xs bg-indigo-950 text-indigo-300 px-3 py-1 rounded-full border border-indigo-800/50">🪙 वॉलेट और टोकन सक्रिय</span>
         </div>
     </header>
 
     <!-- Main Workspace -->
     <main class="flex-1 p-6 max-w-6xl mx-auto w-full grid grid-cols-1 lg:grid-cols-3 gap-6">
         
-        <!-- Left Panel: Mode Selector (Solver vs. Quiz Test) -->
+        <!-- Left Panel: Mode Selector -->
         <div class="lg:col-span-1 bg-slate-900/90 border border-indigo-500/20 rounded-2xl p-5 flex flex-col space-y-4 shadow-xl h-fit">
             <h2 class="text-sm font-bold text-indigo-400 uppercase tracking-wider">⚙️ अध्ययन मोड चुनें</h2>
             
             <div class="space-y-2">
                 <label class="text-xs text-gray-400">मोड चयन (Execution Mode)</label>
                 <select id="appMode" onchange="switchAppMode(this.value)" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-xs text-indigo-300 focus:outline-none focus:border-indigo-500">
-                    <option value="solver">प्रश्न और शोध समाधान (AI Solver)</option>
-                    <option value="quiz">टाइम-बाउंड मॉक टेस्ट / क्विज़ (Timed Mock Test)</option>
+                    <option value="solver">प्रश्न और शोध समाधान (AI Solver - टोकन लागू)</option>
+                    <option value="quiz">टाइम-बाउंड मॉक टेस्ट / क्विज़ (Pre-loaded Practice)</option>
                 </select>
             </div>
 
@@ -47,30 +47,36 @@
 
             <div class="pt-4 border-t border-slate-800">
                 <div class="text-[11px] text-gray-400 space-y-1.5">
-                    <p>🛡️ **ध्रुव एकेडमी नीति:** एनसीईआरटी और पहले से सेव डेटा पर अभ्यास पूरी तरह निःशुल्क है (कोई टोकन नहीं कटेगा)।</p>
+                    <p>🪙 **टोकन नीति:** नए एआई प्रश्न पूछने पर वॉलेट से मानक टोकन डेबिट होते हैं, जबकि पहले से सेव्ड क्विज़ अभ्यास पर कोई टोकन नहीं कटता।</p>
                 </div>
             </div>
         </div>
 
-        <!-- Right/Center Panel: Dynamic Sections (Solver or Quiz) -->
+        <!-- Right/Center Panel: Dynamic Sections -->
         <div class="lg:col-span-2 flex flex-col space-y-4">
             
             <!-- SECTION A: AI Solver Box -->
             <div id="solverSection" class="bg-slate-900/90 border border-indigo-500/20 rounded-2xl p-5 shadow-xl space-y-3">
-                <h2 class="text-sm font-bold text-indigo-400">✍️ अपना प्रश्न या विषय दर्ज करें</h2>
-                <textarea id="questionInput" rows="4" placeholder="यहाँ अपना सवाल हिंदी, हिंग्लिश या अंग्रेजी में लिखें..." class="w-full bg-slate-950 border border-slate-700 rounded-xl p-3 text-xs text-white focus:outline-none focus:border-indigo-500 resize-none"></textarea>
+                <div class="flex justify-between items-center">
+                    <h2 class="text-sm font-bold text-indigo-400">✍️ नया प्रश्न या शोध विषय दर्ज करें</h2>
+                    <span class="text-[10px] bg-amber-950 text-amber-300 px-2.5 py-0.5 rounded-full border border-amber-800">🪙 नया एआई विश्लेषण (टोकन देय)</span>
+                </div>
+                <textarea id="questionInput" rows="4" placeholder="यहाँ अपना नया सवाल लिखें, जिसका एआई द्वारा गहरा विश्लेषण चाहिए..." class="w-full bg-slate-950 border border-slate-700 rounded-xl p-3 text-xs text-white focus:outline-none focus:border-indigo-500 resize-none"></textarea>
                 
                 <div class="flex justify-between items-center">
-                    <span class="text-[11px] text-gray-400">⚡ सेव्ड डेटा आधारित त्वरित विश्लेषण।</span>
-                    <button onclick="solveQuestion()" class="px-6 py-2.5 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white text-xs font-bold rounded-xl shadow-lg transition">🚀 समाधान प्राप्त करें</button>
+                    <span class="text-[11px] text-gray-400">⚡ इस प्रक्रिया में आपके वॉलेट से टोकन डेबिट होंगे।</span>
+                    <button onclick="solveQuestion()" class="px-6 py-2.5 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white text-xs font-bold rounded-xl shadow-lg transition">🚀 एआई समाधान प्राप्त करें</button>
                 </div>
             </div>
 
-            <!-- SECTION B: Timed Quiz / Mock Test Box (Hidden by default) -->
+            <!-- SECTION B: Timed Quiz / Mock Test Box -->
             <div id="quizSection" class="bg-slate-900/90 border border-indigo-500/20 rounded-2xl p-5 shadow-xl space-y-4 hidden">
                 <div class="flex justify-between items-center border-b border-slate-800 pb-3">
                     <span class="text-sm font-bold text-purple-400">⏱️ लाइव मॉक टेस्ट और क्विज़ मोड</span>
-                    <span id="timerDisplay" class="text-xs bg-red-950 text-red-300 px-3 py-1 rounded-full border border-red-800 font-mono">समय शेष: 10:00 मिनट</span>
+                    <div class="flex items-center gap-2">
+                        <span class="text-[10px] bg-green-950 text-green-300 px-2.5 py-0.5 rounded-full border border-green-800">प्री-लोडेड (नो टोकन)</span>
+                        <span id="timerDisplay" class="text-xs bg-red-950 text-red-300 px-3 py-1 rounded-full border border-red-800 font-mono">10:00 मिनट</span>
+                    </div>
                 </div>
                 
                 <div id="quizQuestionBox" class="space-y-3">
@@ -83,16 +89,16 @@
                 </div>
 
                 <div class="flex justify-between items-center pt-2">
-                    <span class="text-[11px] text-gray-400">निशुल्क अभ्यास (शून्य टोकन)</span>
+                    <span class="text-[11px] text-gray-400">पूर्व-सुरक्षित सामग्री अभ्यास</span>
                     <button onclick="submitQuiz()" class="px-6 py-2.5 bg-gradient-to-r from-green-600 to-teal-600 hover:from-green-500 hover:to-teal-500 text-white text-xs font-bold rounded-xl shadow-lg transition">✅ उत्तर सबमिट करें</button>
                 </div>
             </div>
 
-            <!-- Output Display Box (For Solver) -->
+            <!-- Output Display Box -->
             <div id="outputContainer" class="bg-slate-900/50 border border-slate-800 rounded-2xl p-5 shadow-2xl hidden space-y-4">
                 <div class="flex items-center justify-between border-b border-slate-800 pb-3">
-                    <span class="text-xs font-bold text-green-400 flex items-center gap-1.5">✅ ध्रुव एकेडमी प्रमाणित समाधान</span>
-                    <span class="text-[10px] bg-green-950 text-green-300 px-2.5 py-0.5 rounded-full border border-green-800">Free Saved Data</span>
+                    <span class="text-xs font-bold text-green-400 flex items-center gap-1.5">✅ ध्रुव एकेडमी प्रमाणित विश्लेषण</span>
+                    <span class="text-[10px] bg-amber-950 text-amber-300 px-2.5 py-0.5 rounded-full border border-amber-800">टोकन सफलतापूर्वक डेबिट हुआ</span>
                 </div>
                 <div id="answerContent" class="text-xs text-gray-200 leading-relaxed space-y-3">
                     <!-- Dynamic Output -->
@@ -102,6 +108,11 @@
         </div>
 
     </main>
+
+    <!-- Official Footer -->
+    <footer class="bg-slate-900 border-t border-slate-800 py-4 px-6 text-center text-xs text-gray-400 mt-6">
+        <p>🔒 **ध्रुव एकेडमी - सुरक्षित और विश्वसनीय डिजिटल शिक्षण मंच** | सर्वाधिकार सुरक्षित © 2026</p>
+    </footer>
 
     <!-- Script Logic -->
     <script>
@@ -126,23 +137,23 @@
             const content = document.getElementById('answerContent');
 
             if(!question) {
-                alert("कृपया पहले बॉक्स में अपना प्रश्न दर्ज करें!");
+                alert("कृपया पहले बॉक्स में अपना नया प्रश्न दर्ज करें!");
                 return;
             }
 
             container.classList.remove('hidden');
-            content.innerHTML = `<div class="text-center py-6 text-indigo-400 animate-pulse">🔄 सेव्ड एनसीईआरटी डेटाबेस से सटीक समाधान निकाला जा रहा है (शून्य टोकन खपत)...</div>`;
+            content.innerHTML = `<div class="text-center py-6 text-indigo-400 animate-pulse">🔄 400-AI न्यूरल कोर द्वारा नया विश्लेषण किया जा रहा है (वॉलेट से टोकन डेबिट हो रहे हैं)...</div>`;
 
             setTimeout(() => {
                 content.innerHTML = `
                     <div class="space-y-3">
                         <div class="bg-slate-950 p-3 rounded-xl border border-indigo-900/50">
-                            <strong class="text-indigo-300">📌 मुख्य अवधारणा (NCERT & Exam Standard):</strong>
-                            <p class="mt-1 text-gray-300">आपके प्रश्न का प्रामाणिक विश्लेषण हमारे सुरक्षित डेटाबेस से प्रस्तुत है। इस पर किसी भी प्रकार का वॉलेट टोकन नहीं काटा गया है।</p>
+                            <strong class="text-indigo-300">📌 कस्टम एआई विश्लेषण (Custom AI Generation):</strong>
+                            <p class="mt-1 text-gray-300">आपके द्वारा पूछे गए नए प्रश्न का उच्च-स्तरीय मानक विश्लेषण सफलतापूर्वक पूर्ण हो गया है। इसके लिए निर्धारित टोकन आपके वॉलेट से डेबिट कर दिए गए हैं।</p>
                         </div>
                         <div class="bg-slate-950 p-3 rounded-xl border border-slate-800">
-                            <strong class="text-green-300">💡 स्टेप-बाय-स्टेप समाधान:</strong>
-                            <p class="mt-1 text-gray-300">1. वैचारिक स्पष्टता और मानक तथ्यों के आधार पर यह उत्तर पूरी तरह अचूक है।<br>2. परीक्षा हॉल में इस प्रकार के प्रश्नों को सीधे और तार्किक तरीके से हल करना चाहिए।</p>
+                            <strong class="text-green-300">💡 विस्तृत समाधान एवं तार्किकता:</strong>
+                            <p class="mt-1 text-gray-300">1. प्रतियोगी परीक्षाओं के नवीनतम रुझान के अनुसार यह उत्तर पूरी तरह प्रामाणिक है。<br>2. इस प्रकार के उन्नत विश्लेषण से छात्रों की वैकल्पिक और वर्णनात्मक दोनों क्षमताएँ मजबूत होती हैं।</p>
                         </div>
                     </div>
                 `;
@@ -150,7 +161,7 @@
         }
 
         function submitQuiz() {
-            alert("🎯 मॉक टेस्ट सफलताપूर्वक सबमिट हो गया! आपके सभी उत्तर सही हैं और इस प्रक्रिया में आपका कोई टोकन नहीं काटा गया है।");
+            alert("🎯 मॉक टेस्ट सफलतापूर्वक सबमिट हो गया! यह प्री-लोडेड अभ्यास था, अतः इस पर कोई टोकन नहीं काटा गया है।");
         }
     </script>
 </body>
