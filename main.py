@@ -367,7 +367,7 @@ def super_master_panel(user: AdminUser = Depends(require_superadmin), db: Sessio
                                 <th class="py-3 px-4">छात्र मोबाइल नंबर</th>
                                 <th class="py-3 px-4">वर्तमान टोकन बैलेंस</th>
                                 <th class="py-3 px-4">पंजीकरण तिथि</th>
-                                <th class="py-3 px-4">सुपर-एडमिन एक्शन (टोकन घटाएं/बढ़ाएं)</th>
+                                <th class="py-3 px-4">सुपर-एडमिन एक्शन (टोकन घटाएं/बढ़ाएं)</th>
                             </tr>
                         </thead>
                         <tbody>{student_rows}</tbody>
@@ -427,7 +427,7 @@ def manage_subadmins_page(user: AdminUser = Depends(require_superadmin), db: Ses
         </tr>
         """
     if not rows:
-        rows = "<tr><td colspan='2' class='py-4 text-center text-gray-500 text-xs'>अभी कोई सब-एडमिन पंजीकृत नहीं है। (नया सब-एडमिन जोड़ने के लिए नीचे फॉर्म भरें)</td></tr>"
+        rows = "<tr><td colspan='2' class='py-4 text-center text-gray-500 text-xs'>अभी कोई सब-एडमिन पंजीकृत नहीं है। (नया सब-एडमिन जोड़ने के लिए नीचे फॉर्म भरें)</td></tr>"
 
     return f"""
     <!DOCTYPE html>
@@ -456,7 +456,7 @@ def manage_subadmins_page(user: AdminUser = Depends(require_superadmin), db: Ses
                         <label class="block mb-1 text-gray-300 font-bold">पासवर्ड</label>
                         <input type="password" name="password" required placeholder="••••••••" class="p-2.5 bg-slate-950 border border-slate-700 rounded-xl text-white">
                     </div>
-                    <button type='submit' class='px-4 py-2.5 bg-emerald-600 hover:bg-emerald-500 rounded-xl font-bold text-white'>सब-एडमिन जोड़ें</button>
+                    <button type='submit' class='px-4 py-2.5 bg-emerald-600 hover:bg-emerald-500 rounded-xl font-bold text-white'>सब-एडमिन जोड़ें</button>
                 </form>
             </div>
 
@@ -579,7 +579,7 @@ async def ai_core_solve_endpoint(
     db: Session = Depends(get_db)
 ):
     client_ip = request.client.host if request.client else "Unknown"
-    prompt_instruction = f"Dhruv Academy Neural Core Analysis:\n\nQuery: {query}\n\nProvide structured solution."
+    prompt_instruction = f"Dhruv Academy Advanced Neural Core:\n\nQuery: {query}\n\nProvide a precise and structured solution."
     parts = [{"text": prompt_instruction}]
 
     if file:
@@ -595,33 +595,48 @@ async def ai_core_solve_endpoint(
 
     api_keys = get_all_gemini_keys()
     if not api_keys:
-        return JSONResponse(content={"success": False, "solution": "⚠️ GEMINI_API_KEY not available."})
+        return JSONResponse(content={"success": False, "solution": "⚠️ कोई भी वैध GEMINI_API_KEY उपलब्ध नहीं है। कृपया एनवायरनमेंट वेरिएबल चेक करें।"})
 
-    router_models = ["gemini-1.5-flash", "gemini-pro"]
+    router_models = [
+        "gemini-3.5-flash",
+        "gemini-2.5-flash",
+        "gemini-1.5-flash",
+        "gemini-pro"
+    ]
+    
     solution_text = ""
+    success_model = ""
+    success_key_index = 0
 
     for model_name in router_models:
-        for key in api_keys:
+        for idx, key in enumerate(api_keys):
             target_url = f"https://generativelanguage.googleapis.com/v1beta/models/{model_name}:generateContent?key={key}"
             try:
-                req = urllib.request.Request(target_url, data=json.dumps(payload).encode("utf-8"), headers={"Content-Type": "application/json"}, method="POST")
+                req = urllib.request.Request(
+                    target_url, 
+                    data=json.dumps(payload).encode("utf-8"), 
+                    headers={"Content-Type": "application/json"}, 
+                    method="POST"
+                )
                 with urllib.request.urlopen(req, timeout=35) as response:
                     res_data = json.loads(response.read().decode("utf-8"))
-                    solution_text = res_data["candidates"][0]["content"]["parts"][0]["text"].strip()
-                    break
-            except Exception:
+                    if "candidates" in res_data and res_data["candidates"]:
+                        solution_text = res_data["candidates"][0]["content"]["parts"][0]["text"].strip()
+                        success_model = model_name
+                        success_key_index = idx + 1
+                        break
+            except Exception as e:
                 continue
         if solution_text:
             break
 
-    # Fail-safe Guardrail: जब तक सफल एआई आउटपुट न मिले, टोकन सुरक्षित रहेंगे और आगे डिडक्ट नहीं होंगे
     if solution_text:
-        monogram_id = record_publicity_audit(db, "AI_Core_Solution", solution_text)
-        final_output = f"{solution_text}\n\n--- \n🛡️ *Verified Dhruv Academy Monogram: {monogram_id}*"
-        log_activity(db, "AI Solved with Monogram", "AI Engine Core", f"Monogram: {monogram_id}", "Student", client_ip)
+        monogram_id = record_publicity_audit(db, f"Smart_Router_{success_model}", solution_text)
+        final_output = f"{solution_text}\n\n--- \n🛡️ *Dhruv Academy Verified Core [Model: {success_model} | Key #{success_key_index} | Monogram: {monogram_id}]*"
+        log_activity(db, f"AI Solved via Router ({success_model})", "Smart AI Router", f"Key #{success_key_index}, Monogram: {monogram_id}", "Student", client_ip)
         return JSONResponse(content={"success": True, "solution": final_output})
 
-    return JSONResponse(content={"success": False, "solution": "⚠️ AI Server busy or API key error. Tokens are fully safe and un-deducted."})
+    return JSONResponse(content={"success": False, "solution": "⚠️ सर्वर व्यस्त है या सभी एपीआई की की सीमा अस्थायी रूप से समाप्त हो गई है। आपके टोकन पूरी तरह सुरक्षित हैं, कृपया कुछ सेकंड बाद पुनः प्रयास करें।"})
 
 @app.get("/admin", response_class=HTMLResponse)
 async def master_admin_panel(user: AdminUser = Depends(get_current_admin), db: Session = Depends(get_db)):
