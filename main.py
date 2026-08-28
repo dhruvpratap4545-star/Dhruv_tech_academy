@@ -753,33 +753,20 @@ import os
 from flask import Flask, request, jsonify
 import google.generativeai as genai
 
-# एनवायरनमेंट वेरिएबल से Gemini API Key स्वतः लोड करना
-GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
-if GEMINI_API_KEY:
-    genai.configure(api_key=GEMINI_API_KEY)
+from fastapi import Request, HTTPException
 
-def get_gemini_model():
-    """जेमिनी के विभिन्न मॉडलों (1.5-flash, 1.5-pro आदि) के लिए ऑटोमैटिक सपोर्ट"""
-    models_to_try = ['gemini-1.5-flash', 'gemini-1.5-pro', 'gemini-pro']
-    for m_name in models_to_try:
-        try:
-            return genai.GenerativeModel(m_name)
-        except Exception:
-            continue
-    return genai.GenerativeModel('gemini-1.5-flash')
-
-@app.route('/api/auto-heal-code', methods=['POST'])
-def auto_heal_code():
+@app.post("/api/auto-heal-code")
+async def auto_heal_code(request: Request):
     try:
         if not GEMINI_API_KEY:
-            return jsonify({"success": False, "error": "सर्वर एनवायरनमेंट में GEMINI_API_KEY सेट नहीं है।"}), 500
+            raise HTTPException(status_code=500, detail="सर्वर एनवायरनमेंट में GEMINI_API_KEY सेट नहीं है।")
             
-        data = request.form
-        broken_code = data.get('code', '')
-        module_name = data.get('module', 'General Module')
+        form_data = await request.form()
+        broken_code = form_data.get('code', '')
+        module_name = form_data.get('module', 'General Module')
         
         if not broken_code:
-            return jsonify({"success": False, "error": "हील करने के लिए कोई कोड प्राप्त नहीं हुआ।"}), 400
+            raise HTTPException(status_code=400, detail="हील करने के लिए कोई कोड प्राप्त नहीं हुआ।")
 
         model = get_gemini_model()
         prompt = f"""
@@ -798,20 +785,18 @@ def auto_heal_code():
         
         if healed_text.startswith("```"):
             lines = healed_text.splitlines()
-            if lines[0].startswith("```"):
-                lines = lines[1:]
-            if lines and lines[-1].startswith("```"):
-                lines = lines[:-1]
+            if lines[0].startswith("```"): lines = lines[1:]
+            if lines and lines[-1].startswith("```"): lines = lines[:-1]
             healed_text = "\n".join(lines)
 
-        return jsonify({
+        return {
             "success": True,
             "healed_code": healed_text
-        })
+        }
         
     except Exception as e:
-        return jsonify({"success": False, "error": str(e)}), 500
-
+        raise HTTPException(status_code=500, detail=str(e))
+        
 if __name__ == '__main__':
     import uvicorn
     port = int(os.environ.get("PORT", 10000))
