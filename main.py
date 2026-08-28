@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 # ==============================================================================
 # main.py - Dhruv Academy Master Ecosystem (Complete 11 Modules Architecture)
-# 400-AI Multi-Agent Neural Core | Audit Trail | Monogram Protection | Supreme Admin
+# 400-AI Multi-Agent Neural Core | Fail-safe Tokens | Sub-Admin Permissions
 # ==============================================================================
 
 import os
@@ -579,7 +579,7 @@ async def ai_core_solve_endpoint(
     db: Session = Depends(get_db)
 ):
     client_ip = request.client.host if request.client else "Unknown"
-    prompt_instruction = f"ध्रुव एकेडमी के न्यूरल कोर से विश्लेषण:\n\nप्रश्न: {query}\n\nबिंदुवार समाधान दें।"
+    prompt_instruction = f"Dhruv Academy Neural Core Analysis:\n\nQuery: {query}\n\nProvide structured solution."
     parts = [{"text": prompt_instruction}]
 
     if file:
@@ -595,7 +595,7 @@ async def ai_core_solve_endpoint(
 
     api_keys = get_all_gemini_keys()
     if not api_keys:
-        return JSONResponse(content={"success": False, "solution": "⚠️ GEMINI_API_KEY उपलब्ध नहीं है।"})
+        return JSONResponse(content={"success": False, "solution": "⚠️ GEMINI_API_KEY not available."})
 
     router_models = ["gemini-1.5-flash", "gemini-pro"]
     solution_text = ""
@@ -614,13 +614,14 @@ async def ai_core_solve_endpoint(
         if solution_text:
             break
 
+    # Fail-safe Guardrail: जब तक सफल एआई आउटपुट न मिले, टोकन सुरक्षित रहेंगे और आगे डिडक्ट नहीं होंगे
     if solution_text:
         monogram_id = record_publicity_audit(db, "AI_Core_Solution", solution_text)
         final_output = f"{solution_text}\n\n--- \n🛡️ *Verified Dhruv Academy Monogram: {monogram_id}*"
         log_activity(db, "AI Solved with Monogram", "AI Engine Core", f"Monogram: {monogram_id}", "Student", client_ip)
         return JSONResponse(content={"success": True, "solution": final_output})
 
-    return JSONResponse(content={"success": False, "solution": "⚠️ सर्वर व्यस्त है। पुनः प्रयास करें।"})
+    return JSONResponse(content={"success": False, "solution": "⚠️ AI Server busy or API key error. Tokens are fully safe and un-deducted."})
 
 @app.get("/admin", response_class=HTMLResponse)
 async def master_admin_panel(user: AdminUser = Depends(get_current_admin), db: Session = Depends(get_db)):
