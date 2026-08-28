@@ -291,7 +291,7 @@ def register_student_endpoint(mobile: str = Form(...), otp: Optional[str] = Form
     })
 
 # ------------------------------------------------------------------------------
-# 4. सुपर-एडमिन सुप्रीम कमांड सेंटर व सब-एडमिन कंट्रोल पैनल
+# 4. सुपर-एडमिन सुप्रीम कमांड सेंटर व सब-एडमिन कंट्रोल पैनल (चेकबॉक्स सहित)
 # ------------------------------------------------------------------------------
 @app.get("/admin/super-master-panel", response_class=HTMLResponse)
 def super_master_panel(user: AdminUser = Depends(require_superadmin), db: Session = Depends(get_db)):
@@ -427,7 +427,7 @@ def manage_subadmins_page(user: AdminUser = Depends(require_superadmin), db: Ses
         </tr>
         """
     if not rows:
-        rows = "<tr><td colspan='2' class='py-4 text-center text-gray-500 text-xs'>अभी कोई सब-एडमिन पंजीकृत नहीं है।</td></tr>"
+        rows = "<tr><td colspan='2' class='py-4 text-center text-gray-500 text-xs'>अभी कोई सब-एडमिन पंजीकृत नहीं है। (नया सब-एडमिन जोड़ने के लिए नीचे फॉर्म भरें)</td></tr>"
 
     return f"""
     <!DOCTYPE html>
@@ -443,6 +443,23 @@ def manage_subadmins_page(user: AdminUser = Depends(require_superadmin), db: Ses
                 <h1 class="text-xl font-extrabold text-cyan-400">🛡️ सब-एडमिन कार्य और अधिकार प्रबंधन (Role Control)</h1>
                 <a href="/admin/super-master-panel" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 rounded-xl text-xs font-bold">← सुपर-एडमिन कमांड सेंटर</a>
             </div>
+
+            <!-- Add Sub-Admin Form -->
+            <div class="bg-slate-900 p-6 rounded-2xl border border-gray-800 shadow-xl space-y-4">
+                <h2 class="text-sm font-bold text-emerald-400">➕ नया सब-एडमिन पंजीकृत करें</h2>
+                <form action="/admin/create-subadmin" method="POST" class="flex flex-wrap gap-4 items-end text-xs">
+                    <div>
+                        <label class="block mb-1 text-gray-300 font-bold">यूजरनेम</label>
+                        <input type="text" name="username" required placeholder="subadmin_name" class="p-2.5 bg-slate-950 border border-slate-700 rounded-xl text-white">
+                    </div>
+                    <div>
+                        <label class="block mb-1 text-gray-300 font-bold">पासवर्ड</label>
+                        <input type="password" name="password" required placeholder="••••••••" class="p-2.5 bg-slate-950 border border-slate-700 rounded-xl text-white">
+                    </div>
+                    <button type='submit' class='px-4 py-2.5 bg-emerald-600 hover:bg-emerald-500 rounded-xl font-bold text-white'>सब-एडमिन जोड़ें</button>
+                </form>
+            </div>
+
             <div class="bg-slate-900 p-6 rounded-2xl border border-gray-800 shadow-xl space-y-4">
                 <h2 class="text-sm font-bold text-emerald-400">📋 सब-एडमिन सूची और मॉड्यूल चेकबॉक्स</h2>
                 <div class="overflow-x-auto rounded-xl border border-gray-800">
@@ -462,6 +479,22 @@ def manage_subadmins_page(user: AdminUser = Depends(require_superadmin), db: Ses
     </html>
     """
 
+@app.post("/admin/create-subadmin")
+def create_subadmin(username: str = Form(...), password: str = Form(...), user: AdminUser = Depends(require_superadmin), db: Session = Depends(get_db)):
+    clean_uname = username.strip()
+    clean_pass = password.strip()
+    existing = db.query(AdminUser).filter_by(username=clean_uname).first()
+    if not existing:
+        new_sa = AdminUser(
+            username=clean_uname,
+            password=clean_pass,
+            role="subadmin",
+            permissions=["ai_core", "competition"]
+        )
+        db.add(new_sa)
+        db.commit()
+    return RedirectResponse(url="/admin/manage-subadmins", status_code=status.HTTP_303_SEE_OTHER)
+
 @app.post("/admin/update-permissions")
 def update_subadmin_permissions(username: str = Form(...), perms: List[str] = Form([]), user: AdminUser = Depends(require_superadmin), db: Session = Depends(get_db)):
     target_user = db.query(AdminUser).filter_by(username=username).first()
@@ -471,7 +504,7 @@ def update_subadmin_permissions(username: str = Form(...), perms: List[str] = Fo
     return RedirectResponse(url="/admin/manage-subadmins", status_code=status.HTTP_303_SEE_OTHER)
 
 # ------------------------------------------------------------------------------
-# 5. मुख्य डैशबोर्ड व सटीक HTML फाइल राउट्स
+# 5. मुख्य डैशबोर्ड व सभी 11 मॉड्यूल सटीक फाइल राउट्स
 # ------------------------------------------------------------------------------
 @app.get("/", response_class=FileResponse)
 def serve_index():
