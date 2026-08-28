@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="hi" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Auto-Healing Hub | Dhruv Academy</title>
+    <script src="[https://cdn.tailwindcss.com](https://cdn.tailwindcss.com)"></script>
+    <style>
+        @import url('[https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap](https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap)');
+        body { font-family: 'Poppins', sans-serif; background-color: #020617; color: #f8fafc; }
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #020617; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #334155; border-radius: 6px; }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between p-4 sm:p-6">
+
+    <div class="max-w-6xl w-full mx-auto space-y-6">
+        
+        <!-- एडमिन हेडर नेविगेशन -->
+        <div class="flex justify-between items-center pb-3 border-b border-slate-800">
+            <div class="flex items-center gap-2">
+                <a href="/admin" class="px-4 py-2 bg-slate-900 border border-slate-700 hover:border-cyan-500 rounded-2xl text-xs font-bold transition flex items-center gap-1.5 shadow">
+                    ← एडमिन डैशबोर्ड
+                </a>
+                <span class="px-3 py-1 bg-slate-900 border border-slate-800 text-slate-300 rounded-xl text-xs font-semibold">
+                    🛡️ Admin Panel Mode
+                </span>
+            </div>
+            <span class="px-3.5 py-1.5 bg-emerald-950 border border-emerald-500/50 text-emerald-300 rounded-full text-xs font-bold shadow flex items-center gap-1.5">
+                <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                Environment API & main.py Connected
+            </span>
+        </div>
+
+        <!-- शीर्षक -->
+        <div class="text-center space-y-1">
+            <h1 class="text-xl sm:text-2xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-sky-200 to-indigo-400">
+                ⚙️ Master Admin Auto-Healing Engine
+            </h1>
+            <p class="text-xs text-gray-400">सिस्टम के किसी भी पेज या मॉड्यूल का टूटा हुआ कोड यहाँ ठीक करें जो सीधे main.py से सिंक होगा।</p>
+        </div>
+
+        <!-- वर्कस्पेस लेआउट -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+            
+            <!-- इनपुट सेक्शन -->
+            <div class="bg-slate-900 border border-slate-800 rounded-3xl p-4 sm:p-5 space-y-3 shadow-xl flex flex-col">
+                <div class="flex justify-between items-center">
+                    <label class="text-xs font-bold text-cyan-400">📥 टारगेट मॉड्यूल और एरर कोड:</label>
+                    <select id="targetModule" class="bg-slate-950 border border-slate-700 text-xs text-gray-300 rounded-xl px-3 py-1.5 focus:outline-none">
+                        <option value="Spoken English">Spoken English Module</option>
+                        <option value="Legal AI Hub">Legal AI Hub</option>
+                        <option value="3D Blackboard">3D Blackboard</option>
+                        <option value="Competition Solver">Competition Solver</option>
+                        <option value="Central Wallet">Central Wallet / Core System</option>
+                    </select>
+                </div>
+                <textarea id="inputBrokenCode" rows="14" placeholder="यहाँ अपने एरर वाले पेज का कोड पेस्ट करें..." class="w-full p-3.5 bg-slate-950 border border-slate-800 rounded-2xl text-xs text-slate-200 font-mono focus:outline-none focus:border-cyan-500 resize-none custom-scrollbar"></textarea>
+                <button onclick="executeAutoHeal()" class="w-full py-3.5 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 rounded-2xl text-xs font-bold text-white transition shadow-lg flex items-center justify-center gap-2">
+                    ⚡ <span>ऑटो-हील और फिक्स करें (AI)</span>
+                </button>
+            </div>
+
+            <!-- आउटपुट सेक्शन -->
+            <div class="bg-slate-900 border border-slate-800 rounded-3xl p-4 sm:p-5 space-y-3 shadow-xl flex flex-col">
+                <div class="flex justify-between items-center">
+                    <label class="text-xs font-bold text-emerald-400">📤 शुद्ध और ठीक किया हुआ कोड (GitHub Ready):</label>
+                    <div class="flex gap-2">
+                        <button onclick="copyHealedCode()" class="text-[11px] text-cyan-400 hover:text-cyan-300 bg-slate-950 border border-slate-800 px-3 py-1 rounded-xl">कॉपी 📋</button>
+                        <button onclick="downloadHealedCode()" class="text-[11px] text-emerald-400 hover:text-emerald-300 bg-slate-950 border border-slate-800 px-3 py-1 rounded-xl">डाउनलोड 💾</button>
+                    </div>
+                </div>
+                <textarea id="outputHealedCode" rows="14" readonly placeholder="यहाँ शुद्ध और व्यवस्थित कोड दिखाई देगा..." class="w-full p-3.5 bg-slate-950 border border-slate-800 rounded-2xl text-xs text-emerald-300 font-mono focus:outline-none resize-none custom-scrollbar"></textarea>
+                <div class="p-3 bg-slate-950 border border-slate-800 rounded-2xl text-[11px] text-gray-400 flex items-center justify-between">
+                    <span>स्थिति: <strong class="text-emerald-400">सक्रिय</strong></span>
+                    <span class="text-cyan-400">सीधे गिटहब पर अपडेट करें</span>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+    <footer class="w-full text-center py-4 text-xs text-gray-500 border-t border-gray-900 mt-6">
+        <p>© 2026 Dhruv Academy Admin Ecosystem. सर्वाधिकार सुरक्षित।</p>
+    </footer>
+
+    <script>
+        async function executeAutoHeal() {
+            let code = document.getElementById('inputBrokenCode').value.trim();
+            let moduleName = document.getElementById('targetModule').value;
+            let outputBox = document.getElementById('outputHealedCode');
+
+            if (!code) {
+                alert("कृपया पहले इनपुट बॉक्स में कोड पेस्ट करें!");
+                return;
+            }
+
+            outputBox.value = "🔄 एनवायरनमेंट एपीआई के जरिए कोड को ठीक किया जा रहा है...";
+
+            try {
+                let formData = new FormData();
+                formData.append("code", code);
+                formData.append("module", moduleName);
+
+                let res = await fetch("/api/auto-heal-code", {
+                    method: "POST",
+                    body: formData
+                });
+                let data = await res.json();
+
+                if (data.success && data.healed_code) {
+                    outputBox.value = data.healed_code;
+                } else {
+                    outputBox.value = "⚠️ एरर: " + (data.error || "कोड ठीक करने में विफल।");
+                }
+            } catch (err) {
+                outputBox.value = "⚠️ सर्वर कनेक्शन त्रुटि! कृपया जांचें कि main.py सक्रिय है या नहीं।";
+            }
+        }
+
+        function copyHealedCode() {
+            let outputBox = document.getElementById('outputHealedCode');
+            if (!outputBox.value) {
+                alert("कॉपी करने के लिए कोई कोड उपलब्ध नहीं है!");
+                return;
+            }
+            navigator.clipboard.writeText(outputBox.value);
+            alert("✅ शुद्ध कोड क्लिपबोर्ड पर कॉपी हो गया है!");
+        }
+
+        function downloadHealedCode() {
+            let code = document.getElementById('outputHealedCode').value;
+            if (!code) {
+                alert("डाउनलोड करने के लिए कोई कोड नहीं है!");
+                return;
+            }
+            let blob = new Blob([code], { type: 'text/html;charset=utf-8;' });
+            let link = document.createElement("a");
+            link.href = URL.createObjectURL(blob);
+            link.download = "healed_module.html";
+            link.click();
+        }
+    </script>
+</body>
+</html>
