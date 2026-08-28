@@ -754,6 +754,7 @@ from flask import Flask, request, jsonify
 import google.generativeai as genai
 
 from fastapi import Request, HTTPException
+from fastapi.responses import HTMLResponse
 
 @app.post("/api/auto-heal-code")
 async def auto_heal_code(request: Request):
@@ -796,6 +797,13 @@ async def auto_heal_code(request: Request):
         
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/auto-heal", response_class=HTMLResponse)
+async def render_auto_heal(request: Request):
+    with open("templates/auto-heal.html", "r", encoding="utf-8") as f:
+        html_content = f.read()
+    return HTMLResponse(content=html_content)
         
 if __name__ == '__main__':
     import uvicorn
