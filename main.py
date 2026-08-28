@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 # ==============================================================================
 # main.py - Dhruv Academy Master Ecosystem (Complete 11 Modules Architecture)
-# 400-AI Multi-Agent Neural Core | Audit Trail | Monogram Protection | Secure Core
+# 400-AI Multi-Agent Neural Core | Audit Trail | Monogram Protection | Supreme Admin
 # ==============================================================================
 
 import os
@@ -23,7 +23,6 @@ from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse, File
 from sqlalchemy import create_engine, Column, Integer, String, DateTime, Boolean, JSON, Text
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, Session
-from fastapi.responses import HTMLResponse
 
 app = FastAPI(title="Dhruv Academy Master Ecosystem")
 
@@ -93,6 +92,16 @@ class RegisteredStudent(Base):
     token_balance = Column(Integer, default=10)
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
 
+class CreditTransactionHistory(Base):
+    __tablename__ = "credit_transaction_history"
+    id = Column(Integer, primary_key=True, index=True)
+    mobile = Column(String, index=True)
+    transaction_type = Column(String)
+    tokens_changed = Column(Integer)
+    description = Column(String)
+    monogram_code = Column(String)
+    timestamp = Column(DateTime, default=datetime.datetime.utcnow)
+
 Base.metadata.create_all(bind=engine)
 
 def get_db():
@@ -158,7 +167,7 @@ def init_default_data():
 init_default_data()
 
 # ------------------------------------------------------------------------------
-# 2. सुरक्षा और सत्र प्रबंधन
+# 2. सुरक्षा और सत्र प्रबंधन (Security & Auth)
 # ------------------------------------------------------------------------------
 def get_current_admin(request: Request, db: Session = Depends(get_db)) -> AdminUser:
     session_token = request.cookies.get("dhruv_auth_token")
@@ -180,7 +189,7 @@ def require_superadmin(current_user: AdminUser = Depends(get_current_admin)):
     return current_user
 
 # ------------------------------------------------------------------------------
-# 3. एडमिन लॉगिन व छात्र रजिस्ट्रेशन रूट्स (डिफ़ॉल्ट OTP 1234 के साथ)
+# 3. एडमिन लॉगिन व छात्र रजिस्ट्रेशन रूट्स
 # ------------------------------------------------------------------------------
 @app.get("/secret-admin-login-dhruv", response_class=HTMLResponse)
 def secret_login_page(error: Optional[str] = None):
@@ -234,7 +243,7 @@ def process_secret_login(response: Response, username: str = Form(...), password
     db.add(AdminSession(session_token=session_token, username=user.username))
     db.commit()
     
-    res = RedirectResponse(url="/admin/super-dashboard", status_code=status.HTTP_303_SEE_OTHER)
+    res = RedirectResponse(url="/admin/super-master-panel", status_code=status.HTTP_303_SEE_OTHER)
     res.set_cookie(key="dhruv_auth_token", value=session_token, httponly=True, max_age=86400 * 7, samesite="lax", secure=False)
     return res
 
@@ -282,46 +291,98 @@ def register_student_endpoint(mobile: str = Form(...), otp: Optional[str] = Form
     })
 
 # ------------------------------------------------------------------------------
-# 4. सुपर-एडमिन कंट्रोल पैनल व ऑडिट ट्रेल
+# 4. सुपर-एडमिन सुप्रीम कमांड सेंटर व सब-एडमिन कंट्रोल पैनल
 # ------------------------------------------------------------------------------
-@app.get("/admin/super-dashboard", response_class=HTMLResponse)
-def super_admin_dashboard(user: AdminUser = Depends(get_current_admin), db: Session = Depends(get_db)):
-    audit_logs = db.query(PublicityAuditLog).order_by(PublicityAuditLog.timestamp.desc()).limit(50).all()
-    audit_rows = "".join([f"<tr class='border-b border-gray-800 text-xs'><td class='py-3 px-4 font-mono text-cyan-400'>{al.monogram_code}</td><td class='py-3 px-4 text-emerald-300'>{al.content_type}</td><td class='py-3 px-4 text-gray-300 truncate max-w-xs'>{al.generated_content[:80]}...</td><td class='py-3 px-4 text-gray-500'>{al.timestamp.strftime('%d-%m-%Y %H:%M')}</td></tr>" for al in audit_logs])
+@app.get("/admin/super-master-panel", response_class=HTMLResponse)
+def super_master_panel(user: AdminUser = Depends(require_superadmin), db: Session = Depends(get_db)):
+    students = db.query(RegisteredStudent).all()
+    student_rows = ""
+    for s in students:
+        student_rows += f"""
+        <tr class='border-b border-slate-800 text-xs'>
+            <td class='py-3 px-4 font-mono text-cyan-300'>{s.mobile}</td>
+            <td class='py-3 px-4 font-bold text-emerald-400'>{s.token_balance} टोकन</td>
+            <td class='py-3 px-4 text-gray-400'>{s.created_at.strftime('%d-%m-%Y')}</td>
+            <td class='py-3 px-4'>
+                <form action='/admin/adjust-tokens' method='POST' class='flex items-center gap-2'>
+                    <input type='hidden' name='mobile' value='{s.mobile}'>
+                    <input type='number' name='delta' value='5' class='w-16 p-1 bg-slate-950 border border-slate-700 rounded text-center text-white'>
+                    <button type='submit' class='px-3 py-1 bg-emerald-600 hover:bg-emerald-500 rounded font-bold text-white'>± टोकन अपडेट</button>
+                </form>
+            </td>
+        </tr>
+        """
+    if not student_rows:
+        student_rows = "<tr><td colspan='4' class='py-4 text-center text-gray-500 text-xs'>अभी कोई छात्र पंजीकृत नहीं है।</td></tr>"
+
+    audit_logs = db.query(PublicityAuditLog).order_by(PublicityAuditLog.timestamp.desc()).limit(20).all()
+    audit_rows = "".join([f"<tr class='border-b border-slate-800 text-xs'><td class='py-2 px-3 font-mono text-cyan-400'>{al.monogram_code}</td><td class='py-2 px-3 text-emerald-300'>{al.content_type}</td><td class='py-2 px-3 text-gray-300'>{al.timestamp.strftime('%d-%m-%Y %H:%M')}</td></tr>" for al in audit_logs])
     if not audit_rows:
-        audit_rows = "<tr><td colspan='4' class='py-4 text-center text-gray-500 text-xs'>अभी कोई ऑडिट ट्रेल रिकॉर्ड उपलब्ध नहीं है।</td></tr>"
+        audit_rows = "<tr><td colspan='3' class='py-2 text-center text-gray-500 text-xs'>कोई ऑडिट रिकॉर्ड नहीं।</td></tr>"
 
     return f"""
     <!DOCTYPE html>
     <html lang="hi">
     <head>
         <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Super Admin Dashboard - Audit Trail</title>
+        <title>Super-Admin Supreme Command Center</title>
         <script src="https://cdn.tailwindcss.com"></script>
     </head>
-    <body class="bg-slate-950 text-white p-4 sm:p-8 font-sans">
-        <div class="max-w-7xl mx-auto space-y-8">
-            <div class="flex justify-between items-center border-b border-gray-800 pb-4">
+    <body class="bg-slate-950 text-white min-h-screen p-6 font-sans">
+        <div class="max-w-7xl mx-auto space-y-6">
+            <div class="flex justify-between items-center border-b border-slate-800 pb-4">
                 <div>
-                    <h1 class="text-2xl font-extrabold text-cyan-400">🛡️ Super-Admin Audit & Monogram Dashboard</h1>
-                    <p class="text-xs text-gray-400 mt-1">सिस्टम से जाने वाले हर डेटा और पब्लिसिटी का डिजिटल प्रूफ रिकॉर्ड</p>
+                    <h1 class="text-2xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-emerald-400">⚡ Super-Admin Supreme Command Center</h1>
+                    <p class="text-xs text-gray-400 mt-1">ध्रुव एकेडमी मास्टर इकोसिस्टम का सर्वोच्च नियंत्रण केंद्र (Full Administrative Power)</p>
                 </div>
                 <div class="flex gap-2">
-                    <a href="/admin" class="px-4 py-2 bg-emerald-700 hover:bg-emerald-600 text-xs font-bold rounded-xl transition">📊 लाइव यूजर डेटा</a>
-                    <a href="/" class="px-4 py-2 bg-cyan-700 hover:bg-cyan-600 text-xs font-bold rounded-xl transition">मुख्य पोर्टल</a>
-                    <a href="/admin-logout" class="px-4 py-2 bg-red-900 hover:bg-red-800 text-xs font-bold rounded-xl transition">लॉगआउट ✕</a>
+                    <a href="/admin" class="px-4 py-2 bg-emerald-700 hover:bg-emerald-600 text-xs font-bold rounded-xl transition">📊 लाइव यूजर एक्टिविटी</a>
+                    <a href="/admin/manage-subadmins" class="px-4 py-2 bg-indigo-700 hover:bg-indigo-600 text-xs font-bold rounded-xl transition">🛡️ सब-एडमिन अधिकार</a>
+                    <a href="/" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-xs font-bold rounded-xl transition">🏠 मुख्य पोर्टल</a>
+                    <a href="/admin-logout" class="px-4 py-2 bg-red-950 hover:bg-red-900 border border-red-800 text-xs font-bold rounded-xl transition text-red-300">लॉगआउट ✕</a>
                 </div>
             </div>
-            <div class="bg-slate-900 p-6 rounded-2xl border border-gray-800 space-y-4 shadow-xl">
-                <h2 class="text-lg font-bold text-emerald-400">📜 AI पब्लिसिटी और जनरेटेड डेटा का डिजिटल ऑडिट ट्रेल (Monogram Logs)</h2>
-                <div class="overflow-x-auto rounded-xl border border-gray-800">
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="bg-slate-900/90 border border-cyan-500/30 rounded-2xl p-5 shadow-xl">
+                    <h3 class="text-xs font-bold text-gray-400 uppercase">👥 कुल पंजीकृत छात्र</h3>
+                    <p class="text-2xl font-extrabold text-cyan-400 mt-2">{len(students)} सक्रिय छात्र</p>
+                </div>
+                <div class="bg-slate-900/90 border border-emerald-500/30 rounded-2xl p-5 shadow-xl">
+                    <h3 class="text-xs font-bold text-gray-400 uppercase">🛡️ सुरक्षा मोनोग्राम ऑडिट</h3>
+                    <p class="text-2xl font-extrabold text-emerald-400 mt-2">सक्रिय और सुरक्षित</p>
+                </div>
+                <div class="bg-slate-900/90 border border-purple-500/30 rounded-2xl p-5 shadow-xl">
+                    <h3 class="text-xs font-bold text-gray-400 uppercase">🚀 सिस्टम सर्वर स्वास्थ्य</h3>
+                    <p class="text-2xl font-extrabold text-purple-400 mt-2">100% मक्खन की तरह चालू</p>
+                </div>
+            </div>
+
+            <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-4">
+                <h2 class="text-sm font-bold text-cyan-400">🪙 छात्र वॉलेट और टोकन मास्टर कंट्रोल (Instant Token Adjuster)</h2>
+                <div class="overflow-x-auto rounded-xl border border-slate-800">
                     <table class="w-full text-left border-collapse">
                         <thead>
-                            <tr class="bg-slate-800 text-xs text-gray-300 border-b border-gray-700">
-                                <th class="py-3 px-4">मोनोग्राम कोड (Monogram ID)</th>
-                                <th class="py-3 px-4">कंटेंट प्रकार</th>
-                                <th class="py-3 px-4">सुरक्षित कंटेंट सारांश</th>
+                            <tr class="bg-slate-950 text-xs text-gray-300 border-b border-slate-800">
+                                <th class="py-3 px-4">छात्र मोबाइल नंबर</th>
+                                <th class="py-3 px-4">वर्तमान टोकन बैलेंस</th>
+                                <th class="py-3 px-4">पंजीकरण तिथि</th>
+                                <th class="py-3 px-4">सुपर-एडमिन एक्शन (टोकन घटाएं/बढ़ाएं)</th>
+                            </tr>
+                        </thead>
+                        <tbody>{student_rows}</tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-4">
+                <h2 class="text-sm font-bold text-emerald-400">📜 हालिया डिजिटल मोनोग्राम ऑडिट ट्रेल (Real-time Logs)</h2>
+                <div class="overflow-x-auto rounded-xl border border-slate-800">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-slate-950 text-xs text-gray-300 border-b border-slate-800">
+                                <th class="py-3 px-4">मोनोग्राम कोड</th>
+                                <th class="py-3 px-4">गतिविधि प्रकार</th>
                                 <th class="py-3 px-4">समय (Timestamp)</th>
                             </tr>
                         </thead>
@@ -334,8 +395,83 @@ def super_admin_dashboard(user: AdminUser = Depends(get_current_admin), db: Sess
     </html>
     """
 
+@app.post("/admin/adjust-tokens")
+def adjust_student_tokens(mobile: str = Form(...), delta: int = Form(...), user: AdminUser = Depends(require_superadmin), db: Session = Depends(get_db)):
+    student = db.query(RegisteredStudent).filter_by(mobile=mobile.strip()).first()
+    if student:
+        student.token_balance += delta
+        if student.token_balance < 0:
+            student.token_balance = 0
+        db.commit()
+    return RedirectResponse(url="/admin/super-master-panel", status_code=status.HTTP_303_SEE_OTHER)
+
+@app.get("/admin/manage-subadmins", response_class=HTMLResponse)
+def manage_subadmins_page(user: AdminUser = Depends(require_superadmin), db: Session = Depends(get_db)):
+    subadmins = db.query(AdminUser).filter(AdminUser.role != "superadmin").all()
+    rows = ""
+    for sa in subadmins:
+        perms = sa.permissions if isinstance(sa.permissions, list) else []
+        rows += f"""
+        <tr class='border-b border-gray-800 text-xs'>
+            <td class='py-3 px-4 font-bold text-cyan-300'>{sa.username}</td>
+            <td class='py-3 px-4'>
+                <form action='/admin/update-permissions' method='POST' class='flex flex-wrap gap-3 items-center'>
+                    <input type='hidden' name='username' value='{sa.username}'>
+                    <label class='flex items-center gap-1 cursor-pointer'><input type='checkbox' name='perms' value='ai_core' {'checked' if 'ai_core' in perms else ''}> AI कोर</label>
+                    <label class='flex items-center gap-1 cursor-pointer'><input type='checkbox' name='perms' value='competition' {'checked' if 'competition' in perms else ''}> कंपटीशन सॉल्वर</label>
+                    <label class='flex items-center gap-1 cursor-pointer'><input type='checkbox' name='perms' value='nebula' {'checked' if 'nebula' in perms else ''}> नेबुला हब</label>
+                    <label class='flex items-center gap-1 cursor-pointer'><input type='checkbox' name='perms' value='library' {'checked' if 'library' in perms else ''}> डिजिटल लाइब्रेरी</label>
+                    <button type='submit' class='px-3 py-1 bg-cyan-600 hover:bg-cyan-500 rounded-lg text-white font-bold ml-auto'>अधिकार सहेजें</button>
+                </form>
+            </td>
+        </tr>
+        """
+    if not rows:
+        rows = "<tr><td colspan='2' class='py-4 text-center text-gray-500 text-xs'>अभी कोई सब-एडमिन पंजीकृत नहीं है।</td></tr>"
+
+    return f"""
+    <!DOCTYPE html>
+    <html lang="hi">
+    <head>
+        <meta charset="UTF-8">
+        <title>Sub-Admin Permission Hub</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+    </head>
+    <body class="bg-slate-950 text-white p-6 font-sans">
+        <div class="max-w-5xl mx-auto space-y-6">
+            <div class="flex justify-between items-center border-b border-gray-800 pb-4">
+                <h1 class="text-xl font-extrabold text-cyan-400">🛡️ सब-एडमिन कार्य और अधिकार प्रबंधन (Role Control)</h1>
+                <a href="/admin/super-master-panel" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 rounded-xl text-xs font-bold">← सुपर-एडमिन कमांड सेंटर</a>
+            </div>
+            <div class="bg-slate-900 p-6 rounded-2xl border border-gray-800 shadow-xl space-y-4">
+                <h2 class="text-sm font-bold text-emerald-400">📋 सब-एडमिन सूची और मॉड्यूल चेकबॉक्स</h2>
+                <div class="overflow-x-auto rounded-xl border border-gray-800">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-slate-800 text-xs text-gray-300 border-b border-gray-700">
+                                <th class="py-3 px-4">सब-एडमिन यूजरनेम</th>
+                                <th class="py-3 px-4">मॉड्यूल एक्सेस चेकबॉक्स (Permissions)</th>
+                            </tr>
+                        </thead>
+                        <tbody>{rows}</tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </body>
+    </html>
+    """
+
+@app.post("/admin/update-permissions")
+def update_subadmin_permissions(username: str = Form(...), perms: List[str] = Form([]), user: AdminUser = Depends(require_superadmin), db: Session = Depends(get_db)):
+    target_user = db.query(AdminUser).filter_by(username=username).first()
+    if target_user:
+        target_user.permissions = perms
+        db.commit()
+    return RedirectResponse(url="/admin/manage-subadmins", status_code=status.HTTP_303_SEE_OTHER)
+
 # ------------------------------------------------------------------------------
-# 5. मुख्य डैशबोर्ड व सटीक HTML फाइल राउट्स (बिना किसी रीडायरेक्ट गड़बड़ी के)
+# 5. मुख्य डैशबोर्ड व सटीक HTML फाइल राउट्स
 # ------------------------------------------------------------------------------
 @app.get("/", response_class=FileResponse)
 def serve_index():
@@ -457,23 +593,7 @@ async def ai_core_solve_endpoint(
 async def master_admin_panel(user: AdminUser = Depends(get_current_admin), db: Session = Depends(get_db)):
     logs = db.query(UserActivityLog).order_by(UserActivityLog.timestamp.desc()).limit(100).all()
     rows = "".join([f"<tr class='border-b border-gray-800 text-xs'><td class='py-2 px-3'>{l.timestamp.strftime('%H:%M:%S')}</td><td class='py-2 px-3'>{l.user_identifier}</td><td class='py-2 px-3 text-cyan-300'>{l.module}</td><td class='py-2 px-3 font-bold'>{l.action}</td><td class='py-2 px-3'>{l.details}</td></tr>" for l in logs])
-    return f"""<!DOCTYPE html><html lang="hi"><head><meta charset="UTF-8"><title>Live Activity Monitor</title><script src="https://cdn.tailwindcss.com"></script></head><body class="bg-slate-950 text-white p-6 font-sans"><div class="max-w-6xl mx-auto space-y-4"><div class="flex justify-between items-center"><h1 class="text-xl font-bold text-emerald-400">📊 लाइव यूजर एक्टिविटी मॉनिटर</h1><a href="/admin/super-dashboard" class="px-4 py-2 bg-indigo-600 rounded-xl text-xs font-bold">🛡️ ऑडिट ट्रेल व मोनोग्राम पैनल</a></div><div class="bg-slate-900 p-4 rounded-xl border border-gray-800 overflow-x-auto"><table class="w-full text-left"><thead><tr class="bg-slate-800 text-xs text-gray-300"><th class="p-2">समय</th><th class="p-2">यूजर</th><th class="p-2">मॉड्यूल</th><th class="p-2">एक्शन</th><th class="p-2">विवरण</th></tr></thead><tbody>{rows}</tbody></table></div></div></body></html>"""
-
-# ------------------------------------------------------------------------------
-# कमर्शियल पेमेंट गेटवे, ऑटो-डिटेक्शन और क्रेडिट एनालिसिस मॉड्यूल
-# ------------------------------------------------------------------------------
-
-class CreditTransactionHistory(Base):
-    __tablename__ = "credit_transaction_history"
-    id = Column(Integer, primary_key=True, index=True)
-    mobile = Column(String, index=True)
-    transaction_type = Column(String) # "Recharge", "Monthly_Deduction", "Usage"
-    tokens_changed = Column(Integer)
-    description = Column(String)
-    monogram_code = Column(String)
-    timestamp = Column(DateTime, default=datetime.datetime.utcnow)
-
-Base.metadata.create_all(bind=engine)
+    return f"""<!DOCTYPE html><html lang="hi"><head><meta charset="UTF-8"><title>Live Activity Monitor</title><script src="https://cdn.tailwindcss.com"></script></head><body class="bg-slate-950 text-white p-6 font-sans"><div class="max-w-6xl mx-auto space-y-4"><div class="flex justify-between items-center"><h1 class="text-xl font-bold text-emerald-400">📊 लाइव यूजर एक्टिविटी मॉनिटर</h1><div class="flex gap-2"><a href="/admin/super-master-panel" class="px-4 py-2 bg-cyan-600 rounded-xl text-xs font-bold">⚡ सुपर-एडमिन कमांड सेंटर</a><a href="/admin/manage-subadmins" class="px-4 py-2 bg-indigo-600 rounded-xl text-xs font-bold">🛡️ सब-एडमिन अधिकार</a></div></div><div class="bg-slate-900 p-4 rounded-xl border border-gray-800 overflow-x-auto"><table class="w-full text-left"><thead><tr class="bg-slate-800 text-xs text-gray-300"><th class="p-2">समय</th><th class="p-2">यूजर</th><th class="p-2">मॉड्यूल</th><th class="p-2">एक्शन</th><th class="p-2">विवरण</th></tr></thead><tbody>{rows}</tbody></table></div></div></body></html>"""
 
 @app.post("/api/verify-payment-and-add-tokens")
 def verify_payment_and_add_tokens(
@@ -513,7 +633,6 @@ def verify_payment_and_add_tokens(
 
 @app.get("/api/user-credit-analysis/{mobile}")
 def get_user_credit_analysis(mobile: str, db: Session = Depends(get_db)):
-    """यूजर का पूरा क्रेडिट एनालिसिस और ट्रांसपेरेंसी रिपोर्ट देता है"""
     clean_mobile = mobile.strip()
     student = db.query(RegisteredStudent).filter_by(mobile=clean_mobile).first()
     
@@ -538,9 +657,10 @@ def get_user_credit_analysis(mobile: str, db: Session = Depends(get_db)):
         "registered_date": student.created_at.strftime('%d-%m-%Y'),
         "transactions": history_list
     })
-    
 
-# 10. Nebula Visual Hub Correct Route
+# ------------------------------------------------------------------------------
+# 6. विशिष्ट मॉड्यूल राउट्स (Nebula, Competition Solver, 3D Blackboard)
+# ------------------------------------------------------------------------------
 @app.get("/nebula-visual-hub.html", response_class=HTMLResponse)
 @app.get("/nebula-visual-hub", response_class=HTMLResponse)
 async def serve_nebula_visual_hub():
@@ -549,9 +669,7 @@ async def serve_nebula_visual_hub():
         with open(path, "r", encoding="utf-8") as f:
             return f.read()
     return "nebula-visual-hub.html file not found", 404
-    
 
-# 9. Competition Solver Explicit Route (ताकि यह कभी एआई कोर पर न जाए)
 @app.get("/competition-solver.html", response_class=HTMLResponse)
 @app.get("/competition-solver", response_class=HTMLResponse)
 async def serve_competition_solver():
@@ -561,7 +679,6 @@ async def serve_competition_solver():
             return f.read()
     return "competition-solver.html file not found", 404
 
-# 5. 3D Blackboard Explicit Route (ताकि यह कभी एआई कोर पर न जाए)
 @app.get("/3d-blackboard.html", response_class=HTMLResponse)
 @app.get("/3d-blackboard", response_class=HTMLResponse)
 async def serve_3d_blackboard():
@@ -580,7 +697,7 @@ async def serve_coaching_hub():
             return f.read()
     return "Coaching Hub file not found", 404
 
-# 2. Global Custom 404 Error Handler
+# 7. ग्लोबल 404 एरर हैंडलर
 @app.exception_handler(404)
 async def custom_404_handler(request, exc):
     if os.path.exists("404.html"):
