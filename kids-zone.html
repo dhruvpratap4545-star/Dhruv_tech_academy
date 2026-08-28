@@ -585,9 +585,10 @@
             ]
         };
 
-        function formatBlackboardText(text) {
+       function formatBlackboardText(text) {
             if (!text) return "";
             return text
+                .replace(/#{1,6}\s?/g, '')
                 .replace(/\*\*(.*?)\*\*/g, '<strong style="color:#facc15; font-weight:bold;">$1</strong>')
                 .replace(/\*(.*?)\*/g, '<span style="color:#67e8f9; font-weight:500;">$1</span>')
                 .replace(/👉/g, '<span style="color:#fbbf24; margin-right:4px;">👉</span>')
