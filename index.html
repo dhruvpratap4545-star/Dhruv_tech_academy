@@ -34,6 +34,61 @@
         ::-webkit-scrollbar { width: 5px; }
         ::-webkit-scrollbar-track { background: #0f172a; }
         ::-webkit-scrollbar-thumb { background: #7c3aed; border-radius: 10px; }
+
+        /* ==========================================================
+           📱 मोबाइल ऐप-स्टाइल रिस्पॉन्सिव ग्रिड (Mobile App View)
+           ========================================================== */
+        @media (max-width: 768px) {
+            body {
+                padding: 4px !important;
+            }
+            .w-full.max-w-5xl {
+                padding: 10px !important;
+                border-radius: 20px !important;
+                border: none !important;
+                box-shadow: none !important;
+                background: transparent !important;
+            }
+            /* 11 मॉड्यूल्स को मोबाइल पर 2-कॉलम ऐप आइकन ग्रिड में बदलना */
+            .grid {
+                display: grid !important;
+                grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+                gap: 8px !important;
+            }
+            .module-card {
+                display: flex !important;
+                flex-direction: column !important;
+                align-items: center !important;
+                text-align: center !important;
+                padding: 12px 6px !important;
+                background: rgba(15, 23, 42, 0.95) !important;
+                border: 1px solid rgba(124, 58, 237, 0.4) !important;
+                border-radius: 18px !important;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6) !important;
+            }
+            /* मोबाइल पर मॉड्यूल का नाम कॉम्पैक्ट और सुंदर */
+            .module-card div:first-child {
+                font-size: 11px !important;
+                font-weight: 800 !important;
+                margin-top: 4px !important;
+                flex-direction: column !important;
+                align-items: center !important;
+            }
+            .module-card div:first-child span:first-child {
+                text-align: center !important;
+            }
+            .module-card div:first-child span.text-xs {
+                margin-top: 2px !important;
+                font-size: 9px !important;
+            }
+            /* मोबाइल पर छोटा विवरण */
+            .module-card div:last-child {
+                font-size: 9px !important;
+                color: #94a3b8 !important;
+                line-height: 1.2 !important;
+                margin-top: 2px !important;
+            }
+        }
     </style>
 </head>
 <body id="pageBody" class="bg-slate-950 text-slate-100 min-h-screen flex flex-col items-center justify-between p-2 md:p-6 transition-colors duration-500">
@@ -54,7 +109,7 @@
             <div class="flex items-center bg-slate-900 p-1.5 rounded-xl border border-slate-700 gap-1">
                 <span class="text-[11px] text-purple-300 font-bold px-1">🌐</span>
                 <select id="langSelector" onchange="switchLanguage(this.value)" class="bg-slate-800 text-white text-xs font-bold px-2.5 py-1 rounded-lg border border-slate-700 focus:outline-none focus:border-cyan-500 cursor-pointer">
-                    <option value="hi">🇮🇳 हिंदी (Hindi - Default)</option>
+                    <option value="hi">🇮🇳 हिंदी (Hindi)</option>
                     <option value="en">🇬🇧 English</option>
                     <option value="pa">🇮🇳 ਪੰਜਾਬੀ (Punjabi)</option>
                     <option value="mr">🇮🇳 मराठी (Marathi)</option>
@@ -335,7 +390,7 @@
 
     <!-- बहुभाषीय (Multilingual), ऑटो-सेव और सिंक्रोनाइज्ड वॉयस गाइड लॉजिक -->
     <script>
-        let currentLang = localStorage.getItem("dhruv_selected_lang") || 'hi'; // डिफ़ॉल्ट हिंदी से शुरू होगा
+        let currentLang = localStorage.getItem("dhruv_selected_lang") || 'hi';
         let userTokens = parseInt(localStorage.getItem("dhruv_wallet_tokens")) || parseInt(localStorage.getItem("user_tokens")) || 10;
         let currentTheme = 'dark';
 
@@ -488,10 +543,9 @@
         };
 
         window.addEventListener('DOMContentLoaded', () => {
-            // ऑटो-सेव भाषा लोड करें और ड्रॉपडाउन को सिंक करें
             const savedLang = localStorage.getItem("dhruv_selected_lang") || 'hi';
             document.getElementById('langSelector').value = savedLang;
-            switchLanguage(savedLang, false); // बिना रीलोड के भाषा अप्लाई करें
+            switchLanguage(savedLang, false);
 
             const savedMobile = localStorage.getItem("user_mobile");
             if(savedMobile) {
@@ -511,11 +565,10 @@
             if(dashCount) dashCount.innerText = userTokens;
         }
 
-        // भाषा परिवर्तन और ऑटो-सेव फंक्शन
         function switchLanguage(lang, saveToStorage = true) {
             currentLang = lang;
             if (saveToStorage) {
-                localStorage.setItem("dhruv_selected_lang", lang); // भाषा अपने आप सेव हो जाएगी
+                localStorage.setItem("dhruv_selected_lang", lang);
             }
             document.querySelectorAll("[data-key]").forEach(el => {
                 const key = el.getAttribute("data-key");
@@ -525,7 +578,6 @@
             });
         }
 
-        // पेज के संदर्भ और चुनी हुई भाषा के अनुसार वॉयस गाइड
         function playVoiceIntroduction() {
             let msgs = {
                 hi: "नमस्ते! ध्रुव एकेडमी मास्टर इकोसिस्टम में आपका स्वागत है। आपके पास 10 फ्री टोकन उपलब्ध हैं।",
@@ -535,7 +587,7 @@
             };
             let msg = msgs[currentLang] || msgs['hi'];
             if(window.speechSynthesis) {
-                window.speechSynthesis.cancel(); // पिछली आवाज रोकें
+                window.speechSynthesis.cancel();
                 let speech = new SpeechSynthesisUtterance(msg);
                 speech.lang = currentLang === 'hi' ? 'hi-IN' : (currentLang === 'pa' ? 'pa-IN' : (currentLang === 'mr' ? 'mr-IN' : 'en-US'));
                 window.speechSynthesis.speak(speech);
