@@ -339,6 +339,7 @@ def super_master_panel(user: AdminUser = Depends(require_superadmin), db: Sessio
                     <a href="/admin" class="px-4 py-2 bg-emerald-700 hover:bg-emerald-600 text-xs font-bold rounded-xl transition">📊 लाइव यूजर एक्टिविटी</a>
                     <a href="/admin/manage-subadmins" class="px-4 py-2 bg-indigo-700 hover:bg-indigo-600 text-xs font-bold rounded-xl transition">🛡️ सब-एडमिन अधिकार</a>
                     <a href="/" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-xs font-bold rounded-xl transition">🏠 मुख्य पोर्टल</a>
+                    <a href="/auto-heal" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-xs font-bold rounded-xl transition">🛡️ ऑटो-हीलिंग हब</a>
                     <a href="/admin-logout" class="px-4 py-2 bg-red-950 hover:bg-red-900 border border-red-800 text-xs font-bold rounded-xl transition text-red-300">लॉगआउट ✕</a>
                 </div>
             </div>
