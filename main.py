@@ -588,7 +588,7 @@ async def ai_core_solve_endpoint(
 
     payload = {
         "contents": [{"parts": parts}],
-        "generationConfig": {"maxOutputTokens": 2048, "temperature": 0.2}
+        "generationConfig": {"maxOutputTokens": 1024, "temperature": 0.2}
     }
 
     active_key = get_gemini_key()
