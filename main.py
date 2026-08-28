@@ -291,7 +291,7 @@ def register_student_endpoint(mobile: str = Form(...), otp: Optional[str] = Form
     })
 
 # ------------------------------------------------------------------------------
-# 4. सुपर-एडमिन सुप्रीम कमांड सेंटर व सब-एडमिन कंट्रोल पैनल (चेकबॉक्स सहित)
+# 4. सुपर-एडमिन सुप्रीम कमांड सेंटर व सब-एडमिन कंट्रोल पैनल
 # ------------------------------------------------------------------------------
 @app.get("/admin/super-master-panel", response_class=HTMLResponse)
 def super_master_panel(user: AdminUser = Depends(require_superadmin), db: Session = Depends(get_db)):
@@ -359,7 +359,7 @@ def super_master_panel(user: AdminUser = Depends(require_superadmin), db: Sessio
             </div>
 
             <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-4">
-                <h2 class="text-sm font-bold text-cyan-400">🪙 छात्र वॉलेट और टोकन मास्टर कंट्रोल (Instant Token Adjuster)</h2>
+                <h2 class="text-sm font-bold text-cyan-400">🪙 छात्र वॉलेट और टोकन मास्टर कंट्रोल</h2>
                 <div class="overflow-x-auto rounded-xl border border-slate-800">
                     <table class="w-full text-left border-collapse">
                         <thead>
@@ -367,7 +367,7 @@ def super_master_panel(user: AdminUser = Depends(require_superadmin), db: Sessio
                                 <th class="py-3 px-4">छात्र मोबाइल नंबर</th>
                                 <th class="py-3 px-4">वर्तमान टोकन बैलेंस</th>
                                 <th class="py-3 px-4">पंजीकरण तिथि</th>
-                                <th class="py-3 px-4">सुपर-एडमिन एक्शन (टोकन घटाएं/बढ़ाएं)</th>
+                                <th class="py-3 px-4">सुपर-एडमिन एक्शन</th>
                             </tr>
                         </thead>
                         <tbody>{student_rows}</tbody>
@@ -376,7 +376,7 @@ def super_master_panel(user: AdminUser = Depends(require_superadmin), db: Sessio
             </div>
 
             <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-4">
-                <h2 class="text-sm font-bold text-emerald-400">📜 हालिया डिजिटल मोनोग्राम ऑडिट ट्रेल (Real-time Logs)</h2>
+                <h2 class="text-sm font-bold text-emerald-400">📜 हालिया डिजिटल मोनोग्राम ऑडिट ट्रेल</h2>
                 <div class="overflow-x-auto rounded-xl border border-slate-800">
                     <table class="w-full text-left border-collapse">
                         <thead>
@@ -427,7 +427,7 @@ def manage_subadmins_page(user: AdminUser = Depends(require_superadmin), db: Ses
         </tr>
         """
     if not rows:
-        rows = "<tr><td colspan='2' class='py-4 text-center text-gray-500 text-xs'>अभी कोई सब-एडमिन पंजीकृत नहीं है। (नया सब-एडमिन जोड़ने के लिए नीचे फॉर्म भरें)</td></tr>"
+        rows = "<tr><td colspan='2' class='py-4 text-center text-gray-500 text-xs'>अभी कोई सब-एडमिन पंजीकृत नहीं है।</td></tr>"
 
     return f"""
     <!DOCTYPE html>
@@ -440,11 +440,10 @@ def manage_subadmins_page(user: AdminUser = Depends(require_superadmin), db: Ses
     <body class="bg-slate-950 text-white p-6 font-sans">
         <div class="max-w-5xl mx-auto space-y-6">
             <div class="flex justify-between items-center border-b border-gray-800 pb-4">
-                <h1 class="text-xl font-extrabold text-cyan-400">🛡️ सब-एडमिन कार्य और अधिकार प्रबंधन (Role Control)</h1>
+                <h1 class="text-xl font-extrabold text-cyan-400">🛡️ सब-एडमिन कार्य और अधिकार प्रबंधन</h1>
                 <a href="/admin/super-master-panel" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 rounded-xl text-xs font-bold">← सुपर-एडमिन कमांड सेंटर</a>
             </div>
 
-            <!-- Add Sub-Admin Form -->
             <div class="bg-slate-900 p-6 rounded-2xl border border-gray-800 shadow-xl space-y-4">
                 <h2 class="text-sm font-bold text-emerald-400">➕ नया सब-एडमिन पंजीकृत करें</h2>
                 <form action="/admin/create-subadmin" method="POST" class="flex flex-wrap gap-4 items-end text-xs">
@@ -556,19 +555,15 @@ def serve_central_wallet():
         return FileResponse("central-wallet.html")
     return FileResponse("index.html")
 
-def get_all_gemini_keys() -> List[str]:
-    keys = []
-    for i in range(1, 16):
-        k_val = (os.environ.get(f"GEMINI_API_KEY{i}") or os.environ.get(f"GEMINI_API_KEY_{i}") or "").strip().strip('"').strip("'")
-        if k_val and k_val not in keys:
-            keys.append(k_val)
-    env_keys_raw = (os.environ.get("GEMINI_API_KEY") or os.environ.get("GEMINI_API_KEYS") or "").strip()
-    if env_keys_raw:
-        for k in env_keys_raw.split(","):
-            cleaned = k.strip().strip('"').strip("'")
-            if cleaned and cleaned not in keys:
-                keys.append(cleaned)
-    return keys
+def get_gemini_key() -> str:
+    # Render में सेट की गई सिंगल या मास्टर की को प्राथमिकता देना
+    for key_name in ["GEMINI_API_KEY1", "GEMINI_API_KEY", "GEMINI_API_KEYS"]:
+        val = os.environ.get(key_name)
+        if val:
+            cleaned = val.strip().strip('"').strip("'")
+            if cleaned:
+                return cleaned.split(",")[0].strip() # यदि कॉमा से अलग कई हों तो पहली लें
+    return ""
 
 @app.post("/api/ai-core-solve")
 async def ai_core_solve_endpoint(
@@ -579,7 +574,7 @@ async def ai_core_solve_endpoint(
     db: Session = Depends(get_db)
 ):
     client_ip = request.client.host if request.client else "Unknown"
-    prompt_instruction = f"Dhruv Academy Advanced Neural Core:\n\nQuery: {query}\n\nProvide a precise and structured solution."
+    prompt_instruction = f"Dhruv Academy Advanced Neural Core Analysis:\n\nQuery: {query}\n\nProvide a precise, structured, and detailed educational solution."
     parts = [{"text": prompt_instruction}]
 
     if file:
@@ -596,10 +591,11 @@ async def ai_core_solve_endpoint(
         "generationConfig": {"maxOutputTokens": 2048, "temperature": 0.2}
     }
 
-    api_keys = get_all_gemini_keys()
-    if not api_keys:
-        return JSONResponse(content={"success": False, "solution": "⚠️ कोई भी वैध GEMINI_API_KEY उपलब्ध नहीं है। कृपया Render Dashboard में अपने एनवायरनमेंट वेरिएबल्स (GEMINI_API_KEY1, GEMINI_API_KEY2, GEMINI_API_KEY3) सेट करें।"})
+    active_key = get_gemini_key()
+    if not active_key:
+        return JSONResponse(content={"success": True, "solution": "⚠️ सिस्टम में कोई वैध GEMINI_API_KEY1 उपलब्ध नहीं है। कृपया Render Dashboard के Environment में अपनी की सेट करें।"})
 
+    # आधुनिक और स्थिर मॉडल्स की सूची (सबसे पहले gemini-3.5-flash)
     router_models = [
         "gemini-3.5-flash",
         "gemini-2.5-flash",
@@ -609,37 +605,32 @@ async def ai_core_solve_endpoint(
     
     solution_text = ""
     success_model = ""
-    success_key_index = 0
 
     for model_name in router_models:
-        for idx, key in enumerate(api_keys):
-            target_url = f"https://generativelanguage.googleapis.com/v1beta/models/{model_name}:generateContent?key={key}"
-            try:
-                req = urllib.request.Request(
-                    target_url, 
-                    data=json.dumps(payload).encode("utf-8"), 
-                    headers={"Content-Type": "application/json"}, 
-                    method="POST"
-                )
-                with urllib.request.urlopen(req, timeout=35) as response:
-                    res_data = json.loads(response.read().decode("utf-8"))
-                    if "candidates" in res_data and res_data["candidates"]:
-                        solution_text = res_data["candidates"][0]["content"]["parts"][0]["text"].strip()
-                        success_model = model_name
-                        success_key_index = idx + 1
-                        break
-            except Exception as e:
-                continue
-        if solution_text:
-            break
+        target_url = f"https://generativelanguage.googleapis.com/v1beta/models/{model_name}:generateContent?key={active_key}"
+        try:
+            req = urllib.request.Request(
+                target_url, 
+                data=json.dumps(payload).encode("utf-8"), 
+                headers={"Content-Type": "application/json"}, 
+                method="POST"
+            )
+            with urllib.request.urlopen(req, timeout=40) as response:
+                res_data = json.loads(response.read().decode("utf-8"))
+                if "candidates" in res_data and res_data["candidates"]:
+                    solution_text = res_data["candidates"][0]["content"]["parts"][0]["text"].strip()
+                    success_model = model_name
+                    break
+        except Exception as e:
+            continue
 
     if solution_text:
-        monogram_id = record_publicity_audit(db, f"Smart_Router_{success_model}", solution_text)
-        final_output = f"{solution_text}\n\n--- \n🛡️ *Dhruv Academy Verified Core [Model: {success_model} | Key #{success_key_index} | Monogram: {monogram_id}]*"
-        log_activity(db, f"AI Solved via Router ({success_model})", "Smart AI Router", f"Key #{success_key_index}, Monogram: {monogram_id}", "Student", client_ip)
+        monogram_id = record_publicity_audit(db, f"SingleKey_Core_{success_model}", solution_text)
+        final_output = f"{solution_text}\n\n--- \n🛡️ *Dhruv Academy Verified Core [Model: {success_model} | Monogram: {monogram_id}]*"
+        log_activity(db, f"AI Solved via Single Key ({success_model})", "Smart AI Core", f"Monogram: {monogram_id}", "Student", client_ip)
         return JSONResponse(content={"success": True, "solution": final_output})
 
-    fallback_solution = "✨ नेबुला डिजिटल ब्लैकबोर्ड: आपकी स्कैन की गई तस्वीर प्राप्त हो गई है। वर्तमान में एपीआई की की रेट-लिमिट (कोटा) पूरी हो चुकी है, कृपया अलग-अलग ईमेल आईडी से नई कीज़ बनाकर Render Environment Variables में जोड़ें या कुछ सेकंड बाद पुनः प्रयास करें।"
+    fallback_solution = "✨ नेबुला डिजिटल ब्लैकबोर्ड: आपकी स्कैन की गई तस्वीर या प्रश्न प्राप्त हो गया है। वर्तमान में गूगल एआई सर्वर का कोटा अस्थायी रूप से व्यस्त है, कृपया कुछ सेकंड बाद पुनः प्रयास करें।"
     return JSONResponse(content={"success": True, "solution": fallback_solution})
 
 @app.get("/admin", response_class=HTMLResponse)
