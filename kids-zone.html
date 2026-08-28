@@ -974,53 +974,48 @@
             });
         }
 
-        async function explainBookPage(e) {
-            if (e) e.preventDefault();
-            
-            let isLocked = await checkFeaturePaywall('kids_ai_scanner', 'एआई बुक व होमवर्क स्कैनर');
-            if (isLocked) return;
-
-            if (!uploadedImageBlob) {
-                alert(currentLang === 'hi' ? "कृपया पहले फोटो खींचें या अपलोड करें!" : "Please take a photo first!");
-                return;
-            }
-
-            let scanMsg = currentLang === 'hi' 
-                ? "🔄 नेबुला एआई सर्वर पर किताब का पूरा सॉल्यूशन प्रोसेस कर रही है..." 
-                : "🔄 Nebula AI is analyzing the entire page on the server...";
-            updateBlackboard(scanMsg);
-
-            let formData = new FormData();
-            formData.append("file", uploadedImageBlob, "homework.jpg");
-            formData.append("lang", currentLang);
-
-            try {
-                let response = await fetch("/analyze-homework", {
-                    method: "POST",
-                    body: formData
-                });
-
-                let result = await response.json();
-
-                if (result.paywalled) {
-                    openPaymentGatewayModal('एआई बुक व होमवर्क स्कैनर');
-                    return;
-                }
-
-                if (result.solution) {
-                    let solText = result.solution;
-                    if (studentScore < 100) {
-                        studentScore = Math.min(100, studentScore + 20);
-                        localStorage.setItem('dhruv_student_score', studentScore.toString());
-                        updateScoreDisplay();
-                    }
-                    logUserActivity('Kids Zone - AI Homework Solution Generated');
-                    updateBlackboard(solText);
-                }
-            } catch (err) {
-                updateBlackboard("त्रुटि: विश्लेषण पूरा नहीं हो सका। पुनः प्रयास करें।");
-            }
+       async function explainBookPage(e) {
+        if (e) e.preventDefault();
+        
+        if (!uploadedImageBlob) {
+            alert(currentLang === 'hi' ? "कृपया पहले फोटो खींचें या अपलोड करें!" : "Please take a photo first!");
+            return;
         }
+
+        let scanMsg = currentLang === 'hi' 
+            ? "🔄 नेबुला एआई सर्वर पर किताब का पूरा सॉल्यूशन प्रोसेस कर रही है..." 
+            : "🔄 Nebula AI is analyzing the entire page on the server...";
+        updateBlackboard(scanMsg);
+
+        let formData = new FormData();
+        formData.append("file", uploadedImageBlob, "homework.jpg");
+        formData.append("query", "इस किताब के पन्ने/तस्वीर का विस्तृत शैक्षणिक विश्लेषण और उत्तर दें।");
+        formData.append("mode", "standard");
+
+        try {
+            let response = await fetch("/api/ai-core-solve", {
+                method: "POST",
+                body: formData
+            });
+
+            let result = await response.json();
+
+            if (result.success && result.solution) {
+                let solText = result.solution;
+                if (studentScore < 100) {
+                    studentScore = Math.min(100, studentScore + 20);
+                    localStorage.setItem('dhruv_student_score', studentScore.toString());
+                    updateScoreDisplay();
+                }
+                logUserActivity('Kids Zone - AI Homework Solution Generated');
+                updateBlackboard(solText);
+            } else {
+                updateBlackboard(result.solution || "त्रुटि: विश्लेषण पूरा नहीं हो सका। पुनः प्रयास करें।");
+            }
+        } catch (err) {
+            updateBlackboard("त्रुटि: विश्लेषण पूरा नहीं हो सका। पुनः प्रयास करें।");
+        }
+    }
 
         async function generateSmartQuiz(e) {
             if (e) e.preventDefault();
