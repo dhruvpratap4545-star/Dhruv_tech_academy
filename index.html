@@ -50,18 +50,18 @@
                 <span id="topTokenCount">10</span> <span class="text-[10px] text-purple-300 font-normal" data-key="tokensUnit">टोकन्स</span>
             </div>
 
-            <!-- बहुभाषीय (Multilingual) चयन ड्रॉपडाउन बार -->
+            <!-- बहुभाषीय (Multilingual) चयन ड्रॉपडाउन बार (ऑटो-सेव समर्थित) -->
             <div class="flex items-center bg-slate-900 p-1.5 rounded-xl border border-slate-700 gap-1">
                 <span class="text-[11px] text-purple-300 font-bold px-1">🌐</span>
                 <select id="langSelector" onchange="switchLanguage(this.value)" class="bg-slate-800 text-white text-xs font-bold px-2.5 py-1 rounded-lg border border-slate-700 focus:outline-none focus:border-cyan-500 cursor-pointer">
-                    <option value="hi">🇮🇳 हिंदी (Hindi)</option>
+                    <option value="hi">🇮🇳 हिंदी (Hindi - Default)</option>
                     <option value="en">🇬🇧 English</option>
                     <option value="pa">🇮🇳 ਪੰਜਾਬੀ (Punjabi)</option>
                     <option value="mr">🇮🇳 मराठी (Marathi)</option>
                 </select>
             </div>
 
-            <!-- वॉयस गाइड बटन -->
+            <!-- चुनी हुई भाषा के अनुसार सिंक्रोनाइज्ड वॉयस गाइड बटन -->
             <button onclick="playVoiceIntroduction()" class="flex items-center gap-1.5 bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-500 hover:to-purple-500 text-white px-3 py-2 rounded-xl font-bold text-xs shadow-lg transition animate-pulse">
                 🔊 <span data-key="voiceGuide">वॉयस गाइड</span>
             </button>
@@ -333,9 +333,9 @@
         </div>
     </footer>
 
-    <!-- बहुभाषीय (Multilingual) ट्रांसलेटर और वॉलेट जावास्क्रिप्ट लॉजिक -->
+    <!-- बहुभाषीय (Multilingual), ऑटो-सेव और सिंक्रोनाइज्ड वॉयस गाइड लॉजिक -->
     <script>
-        let currentLang = 'hi';
+        let currentLang = localStorage.getItem("dhruv_selected_lang") || 'hi'; // डिफ़ॉल्ट हिंदी से शुरू होगा
         let userTokens = parseInt(localStorage.getItem("dhruv_wallet_tokens")) || parseInt(localStorage.getItem("user_tokens")) || 10;
         let currentTheme = 'dark';
 
@@ -441,7 +441,7 @@
                 transparencySubText: "ਵਿਦਿਆਰਥੀ-ਪੱਧਰ ਦੀ ਪਾਰਦਰਸ਼ਤਾ ਰਿਪੋਰਟ ਪੂਰੀ ਤਰ੍ਹਾਂ ਸੁਰੱਖਿਅਤ ਹੈ।",
                 activityLedgerLabel: "🔍 ਹਾਲੀਆ ਗਤੀਵਿਧੀਆਂ (Activity Ledger):",
                 closeModalBtn: "ਰਿਪੋਰਟ ਬੰਦ ਕਰੋ",
-                walletStoreTitle: "🪙 ਸੈਂਟਰਲ ਵਾਲਿਟ ਰੀਚਾਰਜ ਸਲੈਬ",
+                walletStoreTitle: "🪙 ਸੈਂਟਰਲ ਵਾਲਿਟ ਰੀਚਾਰਜ ਸਲੈब",
                 walletStoreSub: "ਆਪਣੀ ਪੜ੍ਹਾਈ ਨੂੰ ਨਿਰੰਤਰ ਰੱਖਣ ਲਈ ਟੋਕਨ ਪੈਕ ਚੁਣੋ:",
                 pack1Title: "⚡ 50 ਟੋਕਨ ਪੈਕ",
                 pack1Sub: "ਮੁਢਲੀ ਵਿਦਿਆਰਥੀ ਵਰਤੋਂ",
@@ -483,11 +483,16 @@
                 pack1Sub: "मूलभूत विद्यार्थी वापर",
                 pack2Title: "🚀 150 टोकन पॅक (Best Value)",
                 pack2Sub: "प्रो स्टुडंट पॅक",
-                closeStoreBtn: "बंद करा"
+                closeStoreBtn: "बंद करो"
             }
         };
 
         window.addEventListener('DOMContentLoaded', () => {
+            // ऑटो-सेव भाषा लोड करें और ड्रॉपडाउन को सिंक करें
+            const savedLang = localStorage.getItem("dhruv_selected_lang") || 'hi';
+            document.getElementById('langSelector').value = savedLang;
+            switchLanguage(savedLang, false); // बिना रीलोड के भाषा अप्लाई करें
+
             const savedMobile = localStorage.getItem("user_mobile");
             if(savedMobile) {
                 document.getElementById('authSection').classList.add('hidden');
@@ -506,9 +511,12 @@
             if(dashCount) dashCount.innerText = userTokens;
         }
 
-        // बहुभाषीय लाइव ट्रांसलेटर फंक्शन
-        function switchLanguage(lang) {
+        // भाषा परिवर्तन और ऑटो-सेव फंक्शन
+        function switchLanguage(lang, saveToStorage = true) {
             currentLang = lang;
+            if (saveToStorage) {
+                localStorage.setItem("dhruv_selected_lang", lang); // भाषा अपने आप सेव हो जाएगी
+            }
             document.querySelectorAll("[data-key]").forEach(el => {
                 const key = el.getAttribute("data-key");
                 if(translations[lang] && translations[lang][key]) {
@@ -517,6 +525,7 @@
             });
         }
 
+        // पेज के संदर्भ और चुनी हुई भाषा के अनुसार वॉयस गाइड
         function playVoiceIntroduction() {
             let msgs = {
                 hi: "नमस्ते! ध्रुव एकेडमी मास्टर इकोसिस्टम में आपका स्वागत है। आपके पास 10 फ्री टोकन उपलब्ध हैं।",
@@ -526,6 +535,7 @@
             };
             let msg = msgs[currentLang] || msgs['hi'];
             if(window.speechSynthesis) {
+                window.speechSynthesis.cancel(); // पिछली आवाज रोकें
                 let speech = new SpeechSynthesisUtterance(msg);
                 speech.lang = currentLang === 'hi' ? 'hi-IN' : (currentLang === 'pa' ? 'pa-IN' : (currentLang === 'mr' ? 'mr-IN' : 'en-US'));
                 window.speechSynthesis.speak(speech);
