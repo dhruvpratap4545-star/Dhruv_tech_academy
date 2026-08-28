@@ -753,8 +753,6 @@ import os
 from flask import Flask, request, jsonify
 import google.generativeai as genai
 
-app = Flask(__name__)
-
 # एनवायरनमेंट वेरिएबल से Gemini API Key स्वतः लोड करना
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 if GEMINI_API_KEY:
