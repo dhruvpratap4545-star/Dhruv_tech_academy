@@ -754,58 +754,89 @@ import os
 from flask import Flask, request, jsonify
 import google.generativeai as genai
 
-from fastapi import Request, HTTPException
 from fastapi.responses import HTMLResponse
-
-@app.post("/api/auto-heal-code")
-async def auto_heal_code(request: Request):
-    try:
-        if not GEMINI_API_KEY:
-            raise HTTPException(status_code=500, detail="सर्वर एनवायरनमेंट में GEMINI_API_KEY सेट नहीं है।")
-            
-        form_data = await request.form()
-        broken_code = form_data.get('code', '')
-        module_name = form_data.get('module', 'General Module')
-        
-        if not broken_code:
-            raise HTTPException(status_code=400, detail="हील करने के लिए कोई कोड प्राप्त नहीं हुआ।")
-
-        model = get_gemini_model()
-        prompt = f"""
-        You are the Master Code Doctor & Full-Stack Architect for 'Dhruv Academy'.
-        Analyze the following HTML/Python/JS code snippet from module '{module_name}'.
-        Identify and fix all syntax errors, broken JavaScript functions, missing HTML tags, and ensure proper fetch/API routes matching main.py structure.
-        Ensure all buttons and navigation links are fully active and correctly mapped.
-        Return ONLY the fully corrected, production-ready clean code block. Do not wrap in markdown backticks.
-        
-        Broken Code:
-        {broken_code}
-        """
-        
-        response = model.generate_content(prompt)
-        healed_text = response.text.strip()
-        
-        if healed_text.startswith("```"):
-            lines = healed_text.splitlines()
-            if lines[0].startswith("```"): lines = lines[1:]
-            if lines and lines[-1].startswith("```"): lines = lines[:-1]
-            healed_text = "\n".join(lines)
-
-        return {
-            "success": True,
-            "healed_code": healed_text
-        }
-        
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
+from fastapi import Request
 
 @app.get("/auto-heal", response_class=HTMLResponse)
 async def render_auto_heal(request: Request):
-    with open("templates/auto-heal.html", "r", encoding="utf-8") as f:
-        html_content = f.read()
+    html_content = """
+    <!DOCTYPE html>
+    <html lang="hi">
+    <head>
+        <meta charset="UTF-8">
+        <title>Dhruv Academy - AI Auto-Healing Hub</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+    </head>
+    <body class="bg-slate-950 text-slate-100 min-h-screen p-6">
+        <div class="max-w-4xl mx-auto space-y-6">
+            <div class="flex justify-between items-center bg-slate-900 p-6 rounded-2xl border border-slate-800 shadow-xl">
+                <div>
+                    <h1 class="text-2xl font-bold text-cyan-400">🛡️ AI Master Code Doctor & Auto-Healing Hub</h1>
+                    <p class="text-sm text-slate-400 mt-1">ध्रुव एकेडमी मास्टर इकोसिस्टम - ऑटोमैटिक कोड करेक्शन और एरर फिक्सिंग सेंटर</p>
+                </div>
+                <a href="/admin/super_master_panel" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl text-sm font-medium transition">← कमांड सेंटर वापस जाएं</a>
+            </div>
+
+            <div class="bg-slate-900 p-6 rounded-2xl border border-slate-800 shadow-xl space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-slate-300 mb-2">मॉड्यूल का नाम (Module Name)</label>
+                    <input type="text" id="moduleName" value="Super Master Module" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-slate-200 focus:outline-none focus:border-cyan-500">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-slate-300 mb-2">टूटा हुआ या एरर वाला कोड यहाँ पेस्ट करें (Broken Code):</label>
+                    <textarea id="brokenCode" rows="8" placeholder="यहाँ अपना कोड पेस्ट करें..." class="w-full bg-slate-950 border border-slate-800 rounded-xl p-4 font-mono text-sm text-cyan-300 focus:outline-none focus:border-cyan-500"></textarea>
+                </div>
+                <button onclick="healCode()" class="w-full py-3 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-semibold rounded-xl transition shadow-lg shadow-cyan-900/30">✨ ऑटो-हील शुरू करें (Fix Code)</button>
+            </div>
+
+            <div class="bg-slate-900 p-6 rounded-2xl border border-slate-800 shadow-xl space-y-4">
+                <h2 class="text-lg font-semibold text-emerald-400">✅ ठीक किया गया शुद्ध कोड (Production-Ready Code):</h2>
+                <pre id="resultBox" class="bg-slate-950 p-4 rounded-xl border border-slate-800 font-mono text-sm text-emerald-300 overflow-x-auto min-h-[120px] whitespace-pre-wrap">रिजल्ट यहाँ दिखाई देगा...</pre>
+            </div>
+        </div>
+
+        <script>
+            async function healCode() {
+                const code = document.getElementById('brokenCode').value;
+                const module = document.getElementById('moduleName').value;
+                const resultBox = document.getElementById('resultBox');
+
+                if (!code.trim()) {
+                    alert('कृपया पहले टूटा हुआ कोड पेस्ट करें!');
+                    return;
+                }
+
+                resultBox.innerText = 'AI कोड को एनालाइज और हील कर रहा है... कृपया प्रतीक्षा करें...';
+
+                const formData = new FormData();
+                formData.append('code', code);
+                formData.append('module', module);
+
+                try {
+                    const response = await fetch('/api/auto-heal-code', {
+                        method: 'POST',
+                        body: formData
+                    });
+                    const data = await response.json();
+                    if (data.success) {
+                        resultBox.innerText = data.healed_code;
+                    } else {
+                        resultBox.innerText = 'एरर: ' + (data.error || 'कुछ गलत हो गया');
+                    }
+                } catch (err) {
+                    resultBox.innerText = 'कनेक्शन एरर: ' + err.message;
+                }
+            }
+       </script>
+    </body>
+    </html>
+    """
     return HTMLResponse(content=html_content)
-        
+
+@app.get("/auto-heal", response_class=HTMLResponse)
+async def render_auto_heal(request: Request):
+    return HTMLResponse(content=html_content)
+
 if __name__ == '__main__':
     import uvicorn
     port = int(os.environ.get("PORT", 10000))
