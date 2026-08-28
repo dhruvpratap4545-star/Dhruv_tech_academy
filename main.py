@@ -588,7 +588,7 @@ async def ai_core_solve_endpoint(
 
     payload = {
         "contents": [{"parts": parts}],
-        "generationConfig": {"maxOutputTokens": 1024, "temperature": 0.2}
+        "generationConfig": {"maxOutputTokens": 1500, "temperature": 0.2}
     }
 
     active_key = get_gemini_key()
@@ -626,7 +626,7 @@ async def ai_core_solve_endpoint(
 
     if solution_text:
         monogram_id = record_publicity_audit(db, f"SingleKey_Core_{success_model}", solution_text)
-        final_output = f"{solution_text}\n\n--- \n🛡️ *Dhruv Academy Verified Core [Model: {success_model} | Monogram: {monogram_id}]*"
+        final_output = f"{solution_text}\n\n--- \nDhruv Academy Verified Core [Monogram: {monogram_id}]"
         log_activity(db, f"AI Solved via Single Key ({success_model})", "Smart AI Core", f"Monogram: {monogram_id}", "Student", client_ip)
         return JSONResponse(content={"success": True, "solution": final_output})
 
