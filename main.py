@@ -540,15 +540,15 @@ def get_user_credit_analysis(mobile: str, db: Session = Depends(get_db)):
     })
     
 
-# 10. Nebula Visual Hub Route (स्वतंत्र पाथ)
-@app.get("/nebula-hub.html", response_class=HTMLResponse)
-@app.get("/nebula-hub", response_class=HTMLResponse)
-async def serve_nebula_hub():
-    path = "nebula-hub.html"
+# 10. Nebula Visual Hub Correct Route
+@app.get("/nebula-visual-hub.html", response_class=HTMLResponse)
+@app.get("/nebula-visual-hub", response_class=HTMLResponse)
+async def serve_nebula_visual_hub():
+    path = "nebula-visual-hub.html"
     if os.path.exists(path):
         with open(path, "r", encoding="utf-8") as f:
             return f.read()
-    return "nebula-hub.html file not found", 404
+    return "nebula-visual-hub.html file not found", 404
     
 
 # 9. Competition Solver Explicit Route (ताकि यह कभी एआई कोर पर न जाए)
