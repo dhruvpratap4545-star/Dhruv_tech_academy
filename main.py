@@ -751,7 +751,6 @@ async def custom_404_handler(request, exc):
     return HTMLResponse(content="<h3>404 - Page Not Found</h3>", status_code=404)
 
 import os
-from flask import Flask, request, jsonify
 import google.generativeai as genai
 
 from fastapi import Request, HTTPException
@@ -760,8 +759,8 @@ from fastapi.responses import HTMLResponse
 @app.post("/api/auto-heal-code")
 async def auto_heal_code(request: Request):
     try:
-        if not GEMINI_API_KEY:
-            return {"success": False, "error": "सर्वर एनवायरनमेंट में GEMINI_API_KEY सेट नहीं है।"}
+        if not GEMINI_API_KEY1:
+            return {"success": False, "error": "सर्वर एनवायरनमेंट में GEMINI_API_KEY1 सेट नहीं है।"}
             
         form_data = await request.form()
         broken_code = form_data.get('code', '')
