@@ -890,6 +890,12 @@ async def auto_heal_page(request: Request):
     </html>
     """)
 
+from fastapi.responses import HTMLResponse
+
+@app.get("/spoken-english", response_class=HTMLResponse)
+async def spoken_english_page(request: Request):
+    with open("templates/spoken-english.html", "r", encoding="utf-8") as f:
+        return HTMLResponse(content=f.read())
     
 if __name__ == '__main__':
     import uvicorn
