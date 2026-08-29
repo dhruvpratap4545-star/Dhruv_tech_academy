@@ -808,33 +808,46 @@ async def auto_heal_page(request: Request):
     <head>
         <meta charset="UTF-8">
         <title>Dhruv Academy - AI Auto-Healing Hub</title>
-        <script src="[https://cdn.tailwindcss.com](https://cdn.tailwindcss.com)"></script>
+        <style>
+            body { background-color: #030712; color: #f3f4f6; font-family: Arial, sans-serif; margin: 0; padding: 20px; }
+            .container { max-width: 800px; margin: 0 auto; background: #111827; padding: 30px; border-radius: 16px; border: 1px solid #1f2937; box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
+            h1 { color: #22d3ee; font-size: 24px; margin-bottom: 5px; }
+            p { color: #9ca3af; font-size: 14px; margin-top: 0; }
+            .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #1f2937; padding-bottom: 15px; margin-bottom: 20px; }
+            .back-btn { background: #1f2937; color: #f3f4f6; padding: 8px 16px; border-radius: 8px; text-decoration: none; font-size: 14px; }
+            .back-btn:hover { background: #374151; }
+            label { display: block; font-size: 14px; font-weight: bold; margin-bottom: 8px; color: #d1d5db; }
+            input, textarea { width: 100%; background: #030712; border: 1px solid #374151; border-radius: 8px; padding: 12px; color: #22d3ee; font-family: monospace; font-size: 14px; box-sizing: border-box; margin-bottom: 20px; }
+            input:focus, textarea:focus { border-color: #22d3ee; outline: none; }
+            button { width: 100%; background: linear-gradient(to right, #0891b2, #2563eb); color: white; border: none; padding: 14px; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.2s; }
+            button:hover { opacity: 0.9; }
+            .result-box { background: #030712; border: 1px solid #1f2937; border-radius: 8px; padding: 15px; font-family: monospace; color: #34d399; white-space: pre-wrap; min-height: 150px; overflow-x: auto; }
+            .section { margin-top: 25px; background: #1f2937; padding: 20px; border-radius: 12px; }
+        </style>
     </head>
-    <body class="bg-slate-950 text-slate-100 min-h-screen p-6">
-        <div class="max-w-4xl mx-auto space-y-6">
-            <div class="flex justify-between items-center bg-slate-900 p-6 rounded-2xl border border-slate-800 shadow-xl">
+    <body>
+        <div class="container">
+            <div class="header">
                 <div>
-                    <h1 class="text-2xl font-bold text-cyan-400">🛡️ AI Master Code Doctor & Auto-Healing Hub</h1>
-                    <p class="text-sm text-slate-400 mt-1">ध्रुव एकेडमी मास्टर इकोसिस्टम - ऑटोमैटिक कोड करेक्शन सेंटर</p>
+                    <h1>🛡️ AI Auto-Healing Hub</h1>
+                    <p>ध्रुव एकेडमी मास्टर इकोसिस्टम - ऑटोमैटिक कोड करेक्शन सेंटर</p>
                 </div>
-                <a href="/admin/super_master_panel" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl text-sm font-medium transition">← कमांड सेंटर वापस जाएं</a>
+                <a href="/admin/super_master_panel" class="back-btn">← कमांड सेंटर</a>
             </div>
 
-            <div class="bg-slate-900 p-6 rounded-2xl border border-slate-800 shadow-xl space-y-4">
-                <div>
-                    <label class="block text-sm font-medium text-slate-300 mb-2">मॉड्यूल का नाम (Module Name)</label>
-                    <input type="text" id="moduleName" value="Spoken English Module" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-slate-200 focus:outline-none focus:border-cyan-500">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-slate-300 mb-2">टूटा हुआ या स्पीकिंग कोड यहाँ पेस्ट करें (Broken Code):</label>
-                    <textarea id="brokenCode" rows="10" placeholder="यहाँ अपना कोड पेस्ट करें..." class="w-full bg-slate-950 border border-slate-800 rounded-xl p-4 font-mono text-sm text-cyan-300 focus:outline-none focus:border-cyan-500"></textarea>
-                </div>
-                <button onclick="healCode()" class="w-full py-3 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-semibold rounded-xl transition shadow-lg shadow-cyan-900/30">✨ ऑटो-हील शुरू करें (Fix Code)</button>
+            <div class="section">
+                <label>मॉड्यूल का नाम (Module Name)</label>
+                <input type="text" id="moduleName" value="Spoken English Module">
+
+                <label>टूटा हुआ या स्पीकिंग कोड यहाँ पेस्ट करें (Broken Code):</label>
+                <textarea id="brokenCode" rows="8" placeholder="यहाँ अपना कोड पेस्ट करें..."></textarea>
+
+                <button onclick="healCode()">✨ ऑटो-हील शुरू करें (Fix Code)</button>
             </div>
 
-            <div class="bg-slate-900 p-6 rounded-2xl border border-slate-800 shadow-xl space-y-4">
-                <h2 class="text-lg font-semibold text-emerald-400">✅ ठीक किया गया शुद्ध कोड (Production-Ready Code):</h2>
-                <pre id="resultBox" class="bg-slate-950 p-4 rounded-xl border border-slate-800 font-mono text-sm text-emerald-300 overflow-x-auto min-h-[150px] whitespace-pre-wrap">रिजल्ट यहाँ दिखाई देगा...</pre>
+            <div class="section">
+                <label style="color: #34d399;">✅ ठीक किया गया शुद्ध कोड (Production-Ready Code):</label>
+                <div id="resultBox" class="result-box">रिजल्ट यहाँ दिखाई देगा...</div>
             </div>
         </div>
 
