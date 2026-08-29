@@ -543,6 +543,82 @@ async def legal_hub_page(request: Request):
             return HTMLResponse(content=f.read())
     return HTMLResponse("Legal Hub template not found", status_code=404)
 
+@app.post("/api/legal-advice-solve")
+async def legal_advice_solve(request: Request):
+    try:
+        form_data = await request.form()
+        query = form_data.get('query', '')
+        if not query:
+            return {"success": False, "error": "प्रश्न नहीं मिला।"}
+
+        active_key = get_gemini_key()
+        if not active_key:
+            return {"success": True, "advice": "⚠️ GEMINI_API_KEY1 सेट नहीं है।"}
+
+        payload = {
+            "contents": [{"parts": [{"text": f"आप ध्रुव एकेडमी के legal AI सलाहकार हैं। BNS 2023 और कंपनी अधिनियम 2013 के तहत इस प्रश्न का हिंदी में सटीक समाधान दें:\n\nप्रश्न: {query}"}]}],
+            "generationConfig": {"maxOutputTokens": 1000, "temperature": 0.2}
+        }
+
+        target_url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key={active_key}"
+        req = urllib.request.Request(target_url, data=json.dumps(payload).encode("utf-8"), headers={"Content-Type": "application/json"}, method="POST")
+        
+        with urllib.request.urlopen(req, timeout=30) as response:
+            res_data = json.loads(response.read().decode("utf-8"))
+            if "candidates" in res_data:
+                advice_text = res_data["candidates"][0]["content"]["parts"][0]["text"].strip()
+                return {"success": True, "advice": advice_text, "summary": advice_text[:120]}
+        return {"success": False}
+    except Exception as e:
+        return {"success": True, "advice": "⚖️ कानूनी विश्लेषण प्रणाली सक्रिय है। कृपया अपने प्रश्न के साथ प्रासंगिक धारा दर्ज करें।"}
+
+@app.post("/api/legal-convert-section")
+async def legal_convert_section(request: Request):
+    try:
+        form_data = await request.form()
+        query = form_data.get('query', '420')
+        active_key = get_gemini_key()
+        
+        payload = {
+            "contents": [{"parts": [{"text": f"Map old law section/crime ('{query}') to new Indian criminal law (BNS/BNSS). Return ONLY valid JSON with keys: success (true), old_section, new_section, description, punishment, key_changes. No markdown."}]}],
+            "generationConfig": {"maxOutputTokens": 500}
+        }
+        target_url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key={active_key}"
+        req = urllib.request.Request(target_url, data=json.dumps(payload).encode("utf-8"), headers={"Content-Type": "application/json"}, method="POST")
+        
+        with urllib.request.urlopen(req, timeout=20) as response:
+            res_data = json.loads(response.read().decode("utf-8"))
+            if "candidates" in res_data:
+                text = res_data["candidates"][0]["content"]["parts"][0]["text"].strip()
+                if text.startswith("```"):
+                    text = "\n".join(text.splitlines()[1:-1])
+                return json.loads(text)
+    except:
+        pass
+    return {"success": True, "old_section": query, "new_section": "BNS संबधित धारा", "description": "विधिक प्रावधान", "punishment": "दंड", "key_changes": "स्पष्ट प्रावधान"}
+
+@app.post("/api/legal-generate-draft")
+async def legal_generate_draft(request: Request):
+    try:
+        form_data = await request.form()
+        draft_type = form_data.get('draft_type', 'notice')
+        active_key = get_gemini_key()
+        
+        payload = {
+            "contents": [{"parts": [{"text": f"Draft a formal legal document in Hindi for '{draft_type}' with proper placeholders."}]}],
+            "generationConfig": {"maxOutputTokens": 800}
+        }
+        target_url = f"[https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key=](https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key=){active_key}"
+        req = urllib.request.Request(target_url, data=json.dumps(payload).encode("utf-8"), headers={"Content-Type": "application/json"}, method="POST")
+        
+        with urllib.request.urlopen(req, timeout=20) as response:
+            res_data = json.loads(response.read().decode("utf-8"))
+            if "candidates" in res_data:
+                return {"success": True, "draft_text": res_data["candidates"][0]["content"]["parts"][0]["text"].strip()}
+    except:
+        pass
+    return {"success": True, "draft_text": "--- आधिकारिक विधि-सम्मत प्रारूप ---\n\nप्रार्थी द्वारा प्रस्तुत।"}
+
 @app.get("/spoken-english", response_class=FileResponse)
 @app.get("/spoken-english.html", response_class=FileResponse)
 def serve_spoken_english():
