@@ -553,7 +553,7 @@ async def legal_convert_section(request: Request):
         
         # यदि जेमिनी उपलब्ध है तो उससे पूछें, अन्यथा सटीक फॉलबैक दें
         try:
-            model = genai.GenerativeModel('gemini-1.5-flash')
+            model = genai.GenerativeModel('gemini-3.5-flash')
             prompt = f"Convert old IPC section or crime name '{query}' to new BNS section in JSON format with keys: success(true), old_section, new_section, description, punishment, key_changes. Return ONLY valid JSON without markdown."
             res = model.generate_content(prompt)
             import json
