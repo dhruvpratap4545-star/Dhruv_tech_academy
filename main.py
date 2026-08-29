@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/init/env python3
 # -*- coding: utf-8 -*-
 # ==============================================================================
 # main.py - Dhruv Academy Master Ecosystem (Complete 11 Modules Architecture)
@@ -26,13 +26,16 @@ from sqlalchemy.orm import sessionmaker, Session
 
 app = FastAPI(title="Dhruv Academy Master Ecosystem")
 
+# BASE DIRECTORY FOR ABSOLUTE PATH RESOLUTION (GitHub & Cloud Deployment Safe)
+BASE_DIR = Path(__file__).resolve().parent
+
 # ------------------------------------------------------------------------------
 # 1. डेटाबेस और स्टोरेज सेटअप
 # ------------------------------------------------------------------------------
-UPLOAD_DIR = Path("dhruv_academy_master_storage")
+UPLOAD_DIR = BASE_DIR / "dhruv_academy_master_storage"
 UPLOAD_DIR.mkdir(exist_ok=True)
 
-DATABASE_URL = "sqlite:///./dhruv_academy_ecosystem.db"
+DATABASE_URL = f"sqlite:///{BASE_DIR / 'dhruv_academy_ecosystem.db'}"
 engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
@@ -504,42 +507,44 @@ def update_subadmin_permissions(username: str = Form(...), perms: List[str] = Fo
     return RedirectResponse(url="/admin/manage-subadmins", status_code=status.HTTP_303_SEE_OTHER)
 
 # ------------------------------------------------------------------------------
-# 5. मुख्य डैशबोर्ड व सभी 11 मॉड्यूल सटीक फाइल राउट्स (Templates Folder Enabled)
+# 5. मुख्य डैशबोर्ड व सभी 11 मॉड्यूल सटीक फाइल राउट्स (Absolute Path Enabled)
 # ------------------------------------------------------------------------------
 @app.get("/", response_class=FileResponse)
 def serve_index():
-    return FileResponse("templates/index.html")
+    return FileResponse(BASE_DIR / "templates/index.html")
 
 @app.get("/ai-core", response_class=FileResponse)
 @app.get("/ai-core.html", response_class=FileResponse)
 def serve_ai_core():
-    return FileResponse("templates/ai-core.html")
+    return FileResponse(BASE_DIR / "templates/ai-core.html")
 
 @app.get("/ai-auto-healing", response_class=FileResponse)
 @app.get("/ai-auto-healing.html", response_class=FileResponse)
 def serve_auto_healing():
-    return FileResponse("templates/ai-auto-healing.html")
+    return FileResponse(BASE_DIR / "templates/ai-auto-healing.html")
 
 @app.get("/digital-library", response_class=FileResponse)
 @app.get("/digital-library.html", response_class=FileResponse)
 def serve_digital_library():
-    return FileResponse("templates/digital-library.html")
+    return FileResponse(BASE_DIR / "templates/digital-library.html")
 
 @app.get("/kids-zone", response_class=FileResponse)
 @app.get("/kids-zone.html", response_class=FileResponse)
 def serve_kids_zone():
-    return FileResponse("templates/kids-zone.html")
+    return FileResponse(BASE_DIR / "templates/kids-zone.html")
 
 @app.get("/legal-hub", response_class=HTMLResponse)
 @app.get("/legal-ai", response_class=HTMLResponse)
 @app.get("/legal-ai.html", response_class=HTMLResponse)
 @app.get("/legal-hub.html", response_class=HTMLResponse)
 async def legal_hub_page(request: Request):
-    if Path("templates/legal-ai.html").exists():
-        with open("templates/legal-ai.html", "r", encoding="utf-8") as f:
+    path_ai = BASE_DIR / "templates/legal-ai.html"
+    path_hub = BASE_DIR / "templates/legal-hub.html"
+    if path_ai.exists():
+        with open(path_ai, "r", encoding="utf-8") as f:
             return HTMLResponse(content=f.read())
-    elif Path("templates/legal-hub.html").exists():
-        with open("templates/legal-hub.html", "r", encoding="utf-8") as f:
+    elif path_hub.exists():
+        with open(path_hub, "r", encoding="utf-8") as f:
             return HTMLResponse(content=f.read())
     return HTMLResponse("Legal Hub template not found", status_code=404)
 
@@ -627,19 +632,20 @@ async def legal_generate_draft(request: Request):
 @app.get("/spoken-english", response_class=FileResponse)
 @app.get("/spoken-english.html", response_class=FileResponse)
 def serve_spoken_english():
-    return FileResponse("templates/spoken-english.html")
+    return FileResponse(BASE_DIR / "templates/spoken-english.html")
 
 @app.get("/face-swap-social", response_class=FileResponse)
 @app.get("/face-swap-social.html", response_class=FileResponse)
 def serve_face_swap():
-    return FileResponse("templates/face-swap-social.html")
+    return FileResponse(BASE_DIR / "templates/face-swap-social.html")
 
 @app.get("/central-wallet", response_class=FileResponse)
 @app.get("/central-wallet.html", response_class=FileResponse)
 def serve_central_wallet():
-    if Path("templates/central-wallet.html").exists():
-        return FileResponse("templates/central-wallet.html")
-    return FileResponse("templates/index.html")
+    path_wallet = BASE_DIR / "templates/central-wallet.html"
+    if path_wallet.exists():
+        return FileResponse(path_wallet)
+    return FileResponse(BASE_DIR / "templates/index.html")
 
 def get_gemini_key() -> str:
     for key_name in ["GEMINI_API_KEY1", "GEMINI_API_KEY", "GEMINI_API_KEYS"]:
@@ -792,8 +798,8 @@ def get_user_credit_analysis(mobile: str, db: Session = Depends(get_db)):
 @app.get("/nebula-visual-hub.html", response_class=HTMLResponse)
 @app.get("/nebula-visual-hub", response_class=HTMLResponse)
 async def serve_nebula_visual_hub():
-    path = "templates/nebula-visual-hub.html"
-    if os.path.exists(path):
+    path = BASE_DIR / "templates/nebula-visual-hub.html"
+    if path.exists():
         with open(path, "r", encoding="utf-8") as f:
             return f.read()
     return "nebula-visual-hub.html file not found", 404
@@ -801,8 +807,8 @@ async def serve_nebula_visual_hub():
 @app.get("/competition-solver.html", response_class=HTMLResponse)
 @app.get("/competition-solver", response_class=HTMLResponse)
 async def serve_competition_solver():
-    path = "templates/competition-solver.html"
-    if os.path.exists(path):
+    path = BASE_DIR / "templates/competition-solver.html"
+    if path.exists():
         with open(path, "r", encoding="utf-8") as f:
             return f.read()
     return "competition-solver.html file not found", 404
@@ -810,8 +816,8 @@ async def serve_competition_solver():
 @app.get("/3d-blackboard.html", response_class=HTMLResponse)
 @app.get("/3d-blackboard", response_class=HTMLResponse)
 async def serve_3d_blackboard():
-    path = "templates/3d-blackboard.html"
-    if os.path.exists(path):
+    path = BASE_DIR / "templates/3d-blackboard.html"
+    if path.exists():
         with open(path, "r", encoding="utf-8") as f:
             return f.read()
     return "3d-blackboard.html file not found", 404
@@ -819,8 +825,8 @@ async def serve_3d_blackboard():
 @app.get("/coaching-hub.html", response_class=HTMLResponse)
 @app.get("/coaching-hub", response_class=HTMLResponse)
 async def serve_coaching_hub():
-    path = "templates/coaching-hub.html"
-    if os.path.exists(path):
+    path = BASE_DIR / "templates/coaching-hub.html"
+    if path.exists():
         with open(path, "r", encoding="utf-8") as f:
             return f.read()
     return "Coaching Hub file not found", 404
@@ -828,12 +834,12 @@ async def serve_coaching_hub():
 # 7. ग्लोबल 404 एरर हैंडलर
 @app.exception_handler(404)
 async def custom_404_handler(request, exc):
-    if os.path.exists("templates/404.html"):
-        with open("templates/404.html", "r", encoding="utf-8") as f:
+    path_404 = BASE_DIR / "templates/404.html"
+    if path_404.exists():
+        with open(path_404, "r", encoding="utf-8") as f:
             return HTMLResponse(content=f.read(), status_code=404)
     return HTMLResponse(content="<h3>404 - Page Not Found</h3>", status_code=404)
 
-import os
 import google.generativeai as genai
 
 @app.post("/api/auto-heal-code")
@@ -1047,7 +1053,8 @@ async def spoken_3level_translate(request: Request):
 
 @app.get("/nebula-hub", response_class=HTMLResponse)
 async def nebula_visual_hub_route(request: Request):
-    with open("templates/nebula-visual-hub.html", "r", encoding="utf-8") as f:
+    path_nebula = BASE_DIR / "templates/nebula-visual-hub.html"
+    with open(path_nebula, "r", encoding="utf-8") as f:
         return HTMLResponse(content=f.read())
 
 import subprocess
@@ -1056,7 +1063,8 @@ import ast
 @app.post("/api/admin/auto-heal-main")
 async def admin_auto_heal_main(request: Request):
     try:
-        with open("main.py", "r", encoding="utf-8") as f:
+        main_path = BASE_DIR / "main.py"
+        with open(main_path, "r", encoding="utf-8") as f:
             code_content = f.read()
         
         ast.parse(code_content)
