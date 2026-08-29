@@ -533,99 +533,15 @@ def serve_kids_zone():
 @app.get("/legal-hub", response_class=HTMLResponse)
 @app.get("/legal-ai", response_class=HTMLResponse)
 @app.get("/legal-ai.html", response_class=HTMLResponse)
+@app.get("/legal-hub.html", response_class=HTMLResponse)
 async def legal_hub_page(request: Request):
-    if Path("templates/legal-hub.html").exists():
+    if Path("legal-ai.html").exists():
+        with open("legal-ai.html", "r", encoding="utf-8") as f:
+            return HTMLResponse(content=f.read())
+    elif Path("templates/legal-hub.html").exists():
         with open("templates/legal-hub.html", "r", encoding="utf-8") as f:
             return HTMLResponse(content=f.read())
-    elif Path("legal-hub.html").exists():
-        with open("legal-hub.html", "r", encoding="utf-8") as f:
-            return HTMLResponse(content=f.read())
     return HTMLResponse("Legal Hub template not found", status_code=404)
-
-@app.post("/api/legal-convert-section")
-async def legal_convert_section(request: Request):
-    try:
-        api_key = os.environ.get("GEMINI_API_KEY1")
-        if api_key:
-            genai.configure(api_key=api_key)
-        form_data = await request.form()
-        query = form_data.get('query', '')
-        
-        # यदि जेमिनी उपलब्ध है तो उससे पूछें, अन्यथा सटीक फॉलबैक दें
-        try:
-            model = genai.GenerativeModel('gemini-3.5-flash')
-            prompt = f"Convert old IPC section or crime name '{query}' to new BNS section in JSON format with keys: success(true), old_section, new_section, description, punishment, key_changes. Return ONLY valid JSON without markdown."
-            res = model.generate_content(prompt)
-            import json
-            text = res.text.strip().replace("```json","").replace("```","")
-            return json.loads(text)
-        except Exception:
-            pass
-
-        return {
-            "success": True, 
-            "old_section": f"IPC / Query: {query}", 
-            "new_section": "BNS Section 316 / संबंधित प्रावधान", 
-            "description": f" '{query}' से संबंधित मामलों में नए भारतीय न्याय संहिता (BNS) के तहत वैधानिक प्रक्रिया लागू होती है।", 
-            "punishment": "कानून के अनुसार निर्धारित कारावास और जुर्माना।", 
-            "key_changes": "डिजिटल और आधुनिक साक्ष्यों को शामिल किया गया है।"
-        }
-    except Exception as e:
-        return {"success": True, "old_section": "IPC 420", "new_section": "BNS 316", "description": "धोखाधड़ी से संबंधित प्रावधान", "punishment": "7 वर्ष तक कारावास", "key_changes": "डिजिटल फ्रॉड शामिल"}
-
-@app.post("/api/legal-generate-draft")
-async def legal_generate_draft(request: Request):
-    try:
-        api_key = os.environ.get("GEMINI_API_KEY1")
-        if api_key:
-            genai.configure(api_key=api_key)
-        form_data = await request.form()
-        dtype = form_data.get('draft_type', 'notice')
-        details = form_data.get('details', '')
-        
-        try:
-            model = genai.GenerativeModel('gemini-1.5-flash')
-            prompt = f"Draft a professional Indian legal document in Hindi for type '{dtype}' about '{details}' in JSON format with keys: success(true), draft_text. Return ONLY valid JSON without markdown."
-            res = model.generate_content(prompt)
-            import json
-            text = res.text.strip().replace("```json","").replace("```","")
-            return json.loads(text)
-        except Exception:
-            pass
-
-        return {
-            "success": True, 
-            "draft_text": f"ध्रुव एकेडमी - आधिकारिक लीगल ड्राफ्ट ({dtype.upper()})\n\nविषय: {details}\n\nमहोदय,\nयह कि सभी तथ्य प्रमाणित हैं तथा कंपनी अधिनियम 2013 एवं BNS के प्रावधानों के तहत यह ड्राफ्ट तैयार किया गया है।\n\nभवदीय,\nध्रुव एकेडमी लीगल सेल"
-        }
-    except Exception as e:
-        return {"success": True, "draft_text": "ध्रुव एकेडमी - आधिकारिक लीगल ड्राफ्ट\n\nविषय: विधिक नोटिस / आवेदन\n\nमहोदय,\nयह कि सभी तथ्य प्रमाणित हैं।\n\nभवदीय,\nध्रुव एकेडमी"}
-
-@app.post("/api/legal-advice-solve")
-async def legal_advice_solve(request: Request):
-    try:
-        api_key = os.environ.get("GEMINI_API_KEY1")
-        if api_key:
-            genai.configure(api_key=api_key)
-        form_data = await request.form()
-        query = form_data.get('query', '')
-        
-        try:
-            model = genai.GenerativeModel('gemini-1.5-flash')
-            prompt = f"Answer Indian legal query '{query}' in Hindi as Advocate Nyay Mitra in JSON format with keys: success(true), advice, summary. Return ONLY valid JSON without markdown."
-            res = model.generate_content(prompt)
-            import json
-            text = res.text.strip().replace("```json","").replace("```","")
-            return json.loads(text)
-        except Exception:
-            pass
-
-        return {
-            "success": True, 
-            "advice": f"आपके प्रश्न ('{query}') पर विधिक राय:\n1. कंपनी अधिनियम 2013 की धारा 88, 118 और 206 के तहत सभी कॉर्पोरेट अभिलेखों का रखरखाव अनिवार्य है।\n2. किसी भी विवाद में बिना ठोस साक्ष्य के आपराधिक रंग देने से बचना चाहिए।", 
-            "summary": "वैधानिक नियमों और कंपनी अधिनियम का पालन करें।"
-        }
-    except Exception as e:
-        return {"success": True, "advice": "कंपनी अधिनियम 2013 और नए BNS के तहत वैधानिक नियमों का पालन करना अनिवार्य है।", "summary": "नियमों का पालन करें।"}
 
 @app.get("/spoken-english", response_class=FileResponse)
 @app.get("/spoken-english.html", response_class=FileResponse)
