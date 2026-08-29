@@ -504,39 +504,39 @@ def update_subadmin_permissions(username: str = Form(...), perms: List[str] = Fo
     return RedirectResponse(url="/admin/manage-subadmins", status_code=status.HTTP_303_SEE_OTHER)
 
 # ------------------------------------------------------------------------------
-# 5. मुख्य डैशबोर्ड व सभी 11 मॉड्यूल सटीक फाइल राउट्स
+# 5. मुख्य डैशबोर्ड व सभी 11 मॉड्यूल सटीक फाइल राउट्स (Templates Folder Enabled)
 # ------------------------------------------------------------------------------
 @app.get("/", response_class=FileResponse)
 def serve_index():
-    return FileResponse("index.html")
+    return FileResponse("templates/index.html")
 
 @app.get("/ai-core", response_class=FileResponse)
 @app.get("/ai-core.html", response_class=FileResponse)
 def serve_ai_core():
-    return FileResponse("ai-core.html")
+    return FileResponse("templates/ai-core.html")
 
 @app.get("/ai-auto-healing", response_class=FileResponse)
 @app.get("/ai-auto-healing.html", response_class=FileResponse)
 def serve_auto_healing():
-    return FileResponse("ai-auto-healing.html")
+    return FileResponse("templates/ai-auto-healing.html")
 
 @app.get("/digital-library", response_class=FileResponse)
 @app.get("/digital-library.html", response_class=FileResponse)
 def serve_digital_library():
-    return FileResponse("digital-library.html")
+    return FileResponse("templates/digital-library.html")
 
 @app.get("/kids-zone", response_class=FileResponse)
 @app.get("/kids-zone.html", response_class=FileResponse)
 def serve_kids_zone():
-    return FileResponse("kids-zone.html")
+    return FileResponse("templates/kids-zone.html")
 
 @app.get("/legal-hub", response_class=HTMLResponse)
 @app.get("/legal-ai", response_class=HTMLResponse)
 @app.get("/legal-ai.html", response_class=HTMLResponse)
 @app.get("/legal-hub.html", response_class=HTMLResponse)
 async def legal_hub_page(request: Request):
-    if Path("legal-ai.html").exists():
-        with open("legal-ai.html", "r", encoding="utf-8") as f:
+    if Path("templates/legal-ai.html").exists():
+        with open("templates/legal-ai.html", "r", encoding="utf-8") as f:
             return HTMLResponse(content=f.read())
     elif Path("templates/legal-hub.html").exists():
         with open("templates/legal-hub.html", "r", encoding="utf-8") as f:
@@ -611,7 +611,7 @@ async def legal_generate_draft(request: Request):
             "contents": [{"parts": [{"text": f"Draft a formal legal document in Hindi for '{draft_type}' with proper placeholders."}]}],
             "generationConfig": {"maxOutputTokens": 800}
         }
-        target_url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key={active_key}"
+        target_url = f"[https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key=](https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key=){active_key}"
         req = urllib.request.Request(target_url, data=json.dumps(payload).encode("utf-8"), headers={"Content-Type": "application/json"}, method="POST")
         
         with urllib.request.urlopen(req, timeout=20) as response:
@@ -627,28 +627,27 @@ async def legal_generate_draft(request: Request):
 @app.get("/spoken-english", response_class=FileResponse)
 @app.get("/spoken-english.html", response_class=FileResponse)
 def serve_spoken_english():
-    return FileResponse("spoken-english.html")
+    return FileResponse("templates/spoken-english.html")
 
 @app.get("/face-swap-social", response_class=FileResponse)
 @app.get("/face-swap-social.html", response_class=FileResponse)
 def serve_face_swap():
-    return FileResponse("face-swap-social.html")
+    return FileResponse("templates/face-swap-social.html")
 
 @app.get("/central-wallet", response_class=FileResponse)
 @app.get("/central-wallet.html", response_class=FileResponse)
 def serve_central_wallet():
-    if Path("central-wallet.html").exists():
-        return FileResponse("central-wallet.html")
-    return FileResponse("index.html")
+    if Path("templates/central-wallet.html").exists():
+        return FileResponse("templates/central-wallet.html")
+    return FileResponse("templates/index.html")
 
 def get_gemini_key() -> str:
-    # Render में सेट की गई सिंगल या मास्टर की को प्राथमिकता देना
     for key_name in ["GEMINI_API_KEY1", "GEMINI_API_KEY", "GEMINI_API_KEYS"]:
         val = os.environ.get(key_name)
         if val:
             cleaned = val.strip().strip('"').strip("'")
             if cleaned:
-                return cleaned.split(",")[0].strip() # यदि कॉमा से अलग कई हों तो पहली लें
+                return cleaned.split(",")[0].strip()
     return ""
 
 @app.post("/api/ai-core-solve")
@@ -681,7 +680,6 @@ async def ai_core_solve_endpoint(
     if not active_key:
         return JSONResponse(content={"success": True, "solution": "⚠️ सिस्टम में कोई वैध GEMINI_API_KEY1 उपलब्ध नहीं है। कृपया Render Dashboard के Environment में अपनी की सेट करें।"})
 
-    # आधुनिक और स्थिर मॉडल्स की सूची (सबसे पहले gemini-3.5-flash)
     router_models = [
         "gemini-3.5-flash",
         "gemini-2.5-flash",
@@ -693,7 +691,7 @@ async def ai_core_solve_endpoint(
     success_model = ""
 
     for model_name in router_models:
-        target_url = f"https://generativelanguage.googleapis.com/v1beta/models/{model_name}:generateContent?key={active_key}"
+        target_url = f"[https://generativelanguage.googleapis.com/v1beta/models/](https://generativelanguage.googleapis.com/v1beta/models/){model_name}:generateContent?key={active_key}"
         try:
             req = urllib.request.Request(
                 target_url, 
@@ -723,7 +721,7 @@ async def ai_core_solve_endpoint(
 async def master_admin_panel(user: AdminUser = Depends(get_current_admin), db: Session = Depends(get_db)):
     logs = db.query(UserActivityLog).order_by(UserActivityLog.timestamp.desc()).limit(100).all()
     rows = "".join([f"<tr class='border-b border-gray-800 text-xs'><td class='py-2 px-3'>{l.timestamp.strftime('%H:%M:%S')}</td><td class='py-2 px-3'>{l.user_identifier}</td><td class='py-2 px-3 text-cyan-300'>{l.module}</td><td class='py-2 px-3 font-bold'>{l.action}</td><td class='py-2 px-3'>{l.details}</td></tr>" for l in logs])
-    return f"""<!DOCTYPE html><html lang="hi"><head><meta charset="UTF-8"><title>Live Activity Monitor</title><script src="https://cdn.tailwindcss.com"></script></head><body class="bg-slate-950 text-white p-6 font-sans"><div class="max-w-6xl mx-auto space-y-4"><div class="flex justify-between items-center"><h1 class="text-xl font-bold text-emerald-400">📊 लाइव यूजर एक्टिविटी मॉनिटर</h1><div class="flex gap-2"><a href="/admin/super-master-panel" class="px-4 py-2 bg-cyan-600 rounded-xl text-xs font-bold">⚡ सुपर-एडमिन कमांड सेंटर</a><a href="/admin/manage-subadmins" class="px-4 py-2 bg-indigo-600 rounded-xl text-xs font-bold">🛡️ सब-एडमिन अधिकार</a></div></div><div class="bg-slate-900 p-4 rounded-xl border border-gray-800 overflow-x-auto"><table class="w-full text-left"><thead><tr class="bg-slate-800 text-xs text-gray-300"><th class="p-2">समय</th><th class="p-2">यूजर</th><th class="p-2">मॉड्यूल</th><th class="p-2">एक्शन</th><th class="p-2">विवरण</th></tr></thead><tbody>{rows}</tbody></table></div></div></body></html>"""
+    return f"""<!DOCTYPE html><html lang="hi"><head><meta charset="UTF-8"><title>Live Activity Monitor</title><script src="[https://cdn.tailwindcss.com](https://cdn.tailwindcss.com)"></script></head><body class="bg-slate-950 text-white p-6 font-sans"><div class="max-w-6xl mx-auto space-y-4"><div class="flex justify-between items-center"><h1 class="text-xl font-bold text-emerald-400">📊 लाइव यूजर एक्टिविटी मॉनिटर</h1><div class="flex gap-2"><a href="/admin/super-master-panel" class="px-4 py-2 bg-cyan-600 rounded-xl text-xs font-bold">⚡ सुपर-एडमिन कमांड सेंटर</a><a href="/admin/manage-subadmins" class="px-4 py-2 bg-indigo-600 rounded-xl text-xs font-bold">🛡️ सब-एडमिन अधिकार</a></div></div><div class="bg-slate-900 p-4 rounded-xl border border-gray-800 overflow-x-auto"><table class="w-full text-left"><thead><tr class="bg-slate-800 text-xs text-gray-300"><th class="p-2">समय</th><th class="p-2">यूजर</th><th class="p-2">मॉड्यूल</th><th class="p-2">एक्शन</th><th class="p-2">विवरण</th></tr></thead><tbody>{rows}</tbody></table></div></div></body></html>"""
 
 @app.post("/api/verify-payment-and-add-tokens")
 def verify_payment_and_add_tokens(
@@ -794,7 +792,7 @@ def get_user_credit_analysis(mobile: str, db: Session = Depends(get_db)):
 @app.get("/nebula-visual-hub.html", response_class=HTMLResponse)
 @app.get("/nebula-visual-hub", response_class=HTMLResponse)
 async def serve_nebula_visual_hub():
-    path = "nebula-visual-hub.html"
+    path = "templates/nebula-visual-hub.html"
     if os.path.exists(path):
         with open(path, "r", encoding="utf-8") as f:
             return f.read()
@@ -803,7 +801,7 @@ async def serve_nebula_visual_hub():
 @app.get("/competition-solver.html", response_class=HTMLResponse)
 @app.get("/competition-solver", response_class=HTMLResponse)
 async def serve_competition_solver():
-    path = "competition-solver.html"
+    path = "templates/competition-solver.html"
     if os.path.exists(path):
         with open(path, "r", encoding="utf-8") as f:
             return f.read()
@@ -812,7 +810,7 @@ async def serve_competition_solver():
 @app.get("/3d-blackboard.html", response_class=HTMLResponse)
 @app.get("/3d-blackboard", response_class=HTMLResponse)
 async def serve_3d_blackboard():
-    path = "3d-blackboard.html"
+    path = "templates/3d-blackboard.html"
     if os.path.exists(path):
         with open(path, "r", encoding="utf-8") as f:
             return f.read()
@@ -821,7 +819,7 @@ async def serve_3d_blackboard():
 @app.get("/coaching-hub.html", response_class=HTMLResponse)
 @app.get("/coaching-hub", response_class=HTMLResponse)
 async def serve_coaching_hub():
-    path = "coaching-hub.html"
+    path = "templates/coaching-hub.html"
     if os.path.exists(path):
         with open(path, "r", encoding="utf-8") as f:
             return f.read()
@@ -830,16 +828,13 @@ async def serve_coaching_hub():
 # 7. ग्लोबल 404 एरर हैंडलर
 @app.exception_handler(404)
 async def custom_404_handler(request, exc):
-    if os.path.exists("404.html"):
-        with open("404.html", "r", encoding="utf-8") as f:
+    if os.path.exists("templates/404.html"):
+        with open("templates/404.html", "r", encoding="utf-8") as f:
             return HTMLResponse(content=f.read(), status_code=404)
     return HTMLResponse(content="<h3>404 - Page Not Found</h3>", status_code=404)
 
 import os
 import google.generativeai as genai
-
-from fastapi import Request, HTTPException
-from fastapi.responses import HTMLResponse
 
 @app.post("/api/auto-heal-code")
 async def auto_heal_code(request: Request):
@@ -886,7 +881,6 @@ async def auto_heal_code(request: Request):
     except Exception as e:
         return {"success": False, "error": str(e)}
 
-
 @app.get("/auto-heal", response_class=HTMLResponse)
 async def auto_heal_page(request: Request):
     return HTMLResponse(content="""
@@ -919,7 +913,7 @@ async def auto_heal_page(request: Request):
                     <h1>🛡️ AI Auto-Healing Hub</h1>
                     <p>ध्रुव एकेडमी मास्टर इकोसिस्टम - ऑटोमैटिक कोड करेक्शन सेंटर</p>
                 </div>
-                <a href="/admin/super_master_panel" class="back-btn">← कमांड सेंटर</a>
+                <a href="/admin/super-master-panel" class="back-btn">← कमांड सेंटर</a>
             </div>
 
             <div class="section">
@@ -975,13 +969,6 @@ async def auto_heal_page(request: Request):
     </html>
     """)
 
-from fastapi.responses import HTMLResponse
-
-@app.get("/spoken-english", response_class=HTMLResponse)
-async def spoken_english_page(request: Request):
-    with open("templates/spoken-english.html", "r", encoding="utf-8") as f:
-        return HTMLResponse(content=f.read())
-
 @app.post("/api/spoken-english-reply")
 async def spoken_english_reply(request: Request):
     try:
@@ -1008,7 +995,6 @@ async def spoken_english_reply(request: Request):
             lines = text.splitlines()
             text = "\n".join(lines[1:-1])
         
-        import json
         return json.loads(text)
     except Exception as e:
         return {
@@ -1047,7 +1033,6 @@ async def spoken_3level_translate(request: Request):
             lines = text.splitlines()
             text = "\n".join(lines[1:-1])
             
-        import json
         return json.loads(text)
     except Exception as e:
         return {
@@ -1060,9 +1045,8 @@ async def spoken_3level_translate(request: Request):
             "fluent_pronounce": "वुड यू माइंड पॉइंटिंग मी इन द राइट डायरेक्शन?"
         }
 
-
 @app.get("/nebula-hub", response_class=HTMLResponse)
-async def nebula_visual_hub(request: Request):
+async def nebula_visual_hub_route(request: Request):
     with open("templates/nebula-visual-hub.html", "r", encoding="utf-8") as f:
         return HTMLResponse(content=f.read())
 
@@ -1072,11 +1056,9 @@ import ast
 @app.post("/api/admin/auto-heal-main")
 async def admin_auto_heal_main(request: Request):
     try:
-        # 1. main.py की सिंटैक्स जांच करें (बिना गिट पुश के)
         with open("main.py", "r", encoding="utf-8") as f:
             code_content = f.read()
         
-        # AST से चेक करें कि कोड में कोई सिंटैक्स एरर तो नहीं है
         ast.parse(code_content)
         
         return {
