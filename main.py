@@ -991,34 +991,22 @@ import ast
 @app.post("/api/admin/auto-heal-main")
 async def admin_auto_heal_main(request: Request):
     try:
-        # 1. main.py की सिंटैक्स जांच करें
+        # 1. main.py की सिंटैक्स जांच करें (बिना गिट पुश के)
         with open("main.py", "r", encoding="utf-8") as f:
             code_content = f.read()
         
         # AST से चेक करें कि कोड में कोई सिंटैक्स एरर तो नहीं है
         ast.parse(code_content)
         
-        # 2. गिट स्टेटस चेक करें और ऑटो कमिट/पुश करें ताकि रेंडर पर डिप्लॉय हो जाए
-        subprocess.run(["git", "config", "--global", "user.email", "admin@dhruvacademy.com"], check=True)
-        subprocess.run(["git", "config", "--global", "user.name", "Dhruv Admin Bot"], check=True)
-        
-        subprocess.run(["git", "add", "main.py"], check=True)
-        
-        # चेक करें कि कोई बदलाव है या नहीं
-        status_res = subprocess.run(["git", "status", "--porcelain"], capture_output=True, text=True)
-        if status_res.stdout.strip():
-            subprocess.run(["git", "commit", "-m", "Auto-healed and updated main.py via Admin Panel"], check=True)
-            subprocess.run(["git", "push", "origin", "main"], check=True)
-            msg = "main.py सफलतापूर्वक दुरुस्त कर दी गई है और GitHub पर कमिट व डिप्लॉय कर दी गई है।"
-        else:
-            msg = "main.py पहले से ही पूरी तरह सही है, कोई बदलाव की आवश्यकता नहीं है।"
-
-        return {"success": True, "message": msg}
+        return {
+            "success": True, 
+            "message": "main.py का सिंटैक्स पूरी तरह से सही और सुरक्षित है।"
+        }
     except SyntaxError as se:
         return {
             "success": False, 
-            "error": f"सिंटैक्स एरर (लाइन {se.lineno}): {se.text}", 
-            "fix_tip": "कृपया main.py में इंडेंटेशन या कोलन (:) की त्रुटि को सुधारें।"
+            "error": f"सिंटैक्स एरर (लाइन {se.lineno}): {se.text}",
+            "fix_tip": "कृपया main.py में इंडेंटेशन या कोलन की त्रुटि को सुधारें।"
         }
     except Exception as e:
         return {"success": False, "error": str(e)}
