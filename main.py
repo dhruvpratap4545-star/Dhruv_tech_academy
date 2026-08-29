@@ -23,6 +23,7 @@ from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse, File
 from sqlalchemy import create_engine, Column, Integer, String, DateTime, Boolean, JSON, Text
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, Session
+import google.generativeai as genai
 
 app = FastAPI(title="Dhruv Academy Master Ecosystem")
 
@@ -360,7 +361,7 @@ def super_master_panel(user: AdminUser = Depends(require_superadmin), db: Sessio
             </div>
 
             <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-4">
-                <h2 class="text-sm font-bold text-cyan-400">🪙 छात्र वॉलेट और टोकन मास्टर कंट्रोल</h2>
+                <h2 class="text-sm font-bold text-cyan-400">🪙 छात्र वॉलेट और टोकन मास्टर नियंत्रण</h2>
                 <div class="overflow-x-auto rounded-xl border border-slate-800">
                     <table class="w-full text-left border-collapse">
                         <thead>
@@ -611,7 +612,7 @@ async def legal_generate_draft(request: Request):
             "contents": [{"parts": [{"text": f"Draft a formal legal document in Hindi for '{draft_type}' with proper placeholders."}]}],
             "generationConfig": {"maxOutputTokens": 800}
         }
-        target_url = f"[https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key=](https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key=){active_key}"
+        target_url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key={active_key}"
         req = urllib.request.Request(target_url, data=json.dumps(payload).encode("utf-8"), headers={"Content-Type": "application/json"}, method="POST")
         
         with urllib.request.urlopen(req, timeout=20) as response:
@@ -691,7 +692,7 @@ async def ai_core_solve_endpoint(
     success_model = ""
 
     for model_name in router_models:
-        target_url = f"[https://generativelanguage.googleapis.com/v1beta/models/](https://generativelanguage.googleapis.com/v1beta/models/){model_name}:generateContent?key={active_key}"
+        target_url = f"https://generativelanguage.googleapis.com/v1beta/models/{model_name}:generateContent?key={active_key}"
         try:
             req = urllib.request.Request(
                 target_url, 
@@ -721,7 +722,7 @@ async def ai_core_solve_endpoint(
 async def master_admin_panel(user: AdminUser = Depends(get_current_admin), db: Session = Depends(get_db)):
     logs = db.query(UserActivityLog).order_by(UserActivityLog.timestamp.desc()).limit(100).all()
     rows = "".join([f"<tr class='border-b border-gray-800 text-xs'><td class='py-2 px-3'>{l.timestamp.strftime('%H:%M:%S')}</td><td class='py-2 px-3'>{l.user_identifier}</td><td class='py-2 px-3 text-cyan-300'>{l.module}</td><td class='py-2 px-3 font-bold'>{l.action}</td><td class='py-2 px-3'>{l.details}</td></tr>" for l in logs])
-    return f"""<!DOCTYPE html><html lang="hi"><head><meta charset="UTF-8"><title>Live Activity Monitor</title><script src="[https://cdn.tailwindcss.com](https://cdn.tailwindcss.com)"></script></head><body class="bg-slate-950 text-white p-6 font-sans"><div class="max-w-6xl mx-auto space-y-4"><div class="flex justify-between items-center"><h1 class="text-xl font-bold text-emerald-400">📊 लाइव यूजर एक्टिविटी मॉनिटर</h1><div class="flex gap-2"><a href="/admin/super-master-panel" class="px-4 py-2 bg-cyan-600 rounded-xl text-xs font-bold">⚡ सुपर-एडमिन कमांड सेंटर</a><a href="/admin/manage-subadmins" class="px-4 py-2 bg-indigo-600 rounded-xl text-xs font-bold">🛡️ सब-एडमिन अधिकार</a></div></div><div class="bg-slate-900 p-4 rounded-xl border border-gray-800 overflow-x-auto"><table class="w-full text-left"><thead><tr class="bg-slate-800 text-xs text-gray-300"><th class="p-2">समय</th><th class="p-2">यूजर</th><th class="p-2">मॉड्यूल</th><th class="p-2">एक्शन</th><th class="p-2">विवरण</th></tr></thead><tbody>{rows}</tbody></table></div></div></body></html>"""
+    return f"""<!DOCTYPE html><html lang="hi"><head><meta charset="UTF-8"><title>Live Activity Monitor</title><script src="https://cdn.tailwindcss.com"></script></head><body class="bg-slate-950 text-white p-6 font-sans"><div class="max-w-6xl mx-auto space-y-4"><div class="flex justify-between items-center"><h1 class="text-xl font-bold text-emerald-400">📊 लाइव यूजर एक्टिविटी मॉनिटर</h1><div class="flex gap-2"><a href="/admin/super-master-panel" class="px-4 py-2 bg-cyan-600 rounded-xl text-xs font-bold">⚡ सुपर-एडमिन कमांड सेंटर</a><a href="/admin/manage-subadmins" class="px-4 py-2 bg-indigo-600 rounded-xl text-xs font-bold">🛡️ सब-एडमिन अधिकार</a></div></div><div class="bg-slate-900 p-4 rounded-xl border border-gray-800 overflow-x-auto"><table class="w-full text-left"><thead><tr class="bg-slate-800 text-xs text-gray-300"><th class="p-2">समय</th><th class="p-2">यूजर</th><th class="p-2">मॉड्यूल</th><th class="p-2">एक्शन</th><th class="p-2">विवरण</th></tr></thead><tbody>{rows}</tbody></table></div></div></body></html>"""
 
 @app.post("/api/verify-payment-and-add-tokens")
 def verify_payment_and_add_tokens(
@@ -832,9 +833,6 @@ async def custom_404_handler(request, exc):
         with open("templates/404.html", "r", encoding="utf-8") as f:
             return HTMLResponse(content=f.read(), status_code=404)
     return HTMLResponse(content="<h3>404 - Page Not Found</h3>", status_code=404)
-
-import os
-import google.generativeai as genai
 
 @app.post("/api/auto-heal-code")
 async def auto_heal_code(request: Request):
