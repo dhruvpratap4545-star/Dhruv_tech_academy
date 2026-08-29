@@ -974,6 +974,12 @@ async def spoken_3level_translate(request: Request):
             "fluent": "Would you mind pointing me in the right direction?",
             "fluent_pronounce": "वुड यू माइंड पॉइंटिंग मी इन द राइट डायरेक्शन?"
         }
+
+
+@app.get("/nebula-hub", response_class=HTMLResponse)
+async def nebula_visual_hub(request: Request):
+    with open("templates/nebula-visual-hub.html", "r", encoding="utf-8") as f:
+        return HTMLResponse(content=f.read())
     
 if __name__ == '__main__':
     import uvicorn
