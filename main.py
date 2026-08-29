@@ -759,9 +759,12 @@ from fastapi.responses import HTMLResponse
 @app.post("/api/auto-heal-code")
 async def auto_heal_code(request: Request):
     try:
-        if not GEMINI_API_KEY1:
+        api_key = os.environ.get("GEMINI_API_KEY1")
+        if not api_key:
             return {"success": False, "error": "सर्वर एनवायरनमेंट में GEMINI_API_KEY1 सेट नहीं है।"}
             
+        genai.configure(api_key=api_key)
+        
         form_data = await request.form()
         broken_code = form_data.get('code', '')
         module_name = form_data.get('module', 'General Module')
@@ -769,7 +772,7 @@ async def auto_heal_code(request: Request):
         if not broken_code:
             return {"success": False, "error": "हील करने के लिए कोई कोड प्राप्त नहीं हुआ।"}
 
-        model = get_gemini_model()
+        model = genai.GenerativeModel('gemini-pro')
         prompt = f"""
         You are the Master Code Doctor & Full-Stack Architect for 'Dhruv Academy'.
         Analyze the following HTML/Python/JS code snippet from module '{module_name}'.
