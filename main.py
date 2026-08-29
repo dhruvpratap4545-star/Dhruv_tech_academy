@@ -604,20 +604,25 @@ async def legal_generate_draft(request: Request):
         draft_type = form_data.get('draft_type', 'notice')
         active_key = get_gemini_key()
         
+        if not active_key:
+            return {"success": True, "draft_text": "--- आधिकारिक विधि-सम्मत प्रारूप ---\n\n(API Key अनुपलब्ध है)"}
+
         payload = {
             "contents": [{"parts": [{"text": f"Draft a formal legal document in Hindi for '{draft_type}' with proper placeholders."}]}],
             "generationConfig": {"maxOutputTokens": 800}
         }
-        target_url = f"[https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key=](https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key=){active_key}"
+        target_url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key={active_key}"
         req = urllib.request.Request(target_url, data=json.dumps(payload).encode("utf-8"), headers={"Content-Type": "application/json"}, method="POST")
         
         with urllib.request.urlopen(req, timeout=20) as response:
             res_data = json.loads(response.read().decode("utf-8"))
             if "candidates" in res_data:
-                return {"success": True, "draft_text": res_data["candidates"][0]["content"]["parts"][0]["text"].strip()}
-    except:
-        pass
-    return {"success": True, "draft_text": "--- आधिकारिक विधि-सम्मत प्रारूप ---\n\nप्रार्थी द्वारा प्रस्तुत।"}
+                draft_res = res_data["candidates"][0]["content"]["parts"][0]["text"].strip()
+                return {"success": True, "draft_text": draft_res}
+    except Exception as e:
+        print(f"Draft error: {e}")
+        
+    return {"success": True, "draft_text": "--- आधिकारिक विधि-सम्मत प्रारूप ---\n\nप्रार्थी द्वारा प्रस्तुत कानूनी नोटिस / आवेदन पत्र।"}
 
 @app.get("/spoken-english", response_class=FileResponse)
 @app.get("/spoken-english.html", response_class=FileResponse)
