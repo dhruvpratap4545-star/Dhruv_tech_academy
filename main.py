@@ -772,7 +772,7 @@ async def auto_heal_code(request: Request):
         if not broken_code:
             return {"success": False, "error": "हील करने के लिए कोई कोड प्राप्त नहीं हुआ।"}
 
-        model = genai.GenerativeModel('gemini-1.5-flash')
+        model = get_gemini_model()
         prompt = f"""
         You are the Master Code Doctor & Full-Stack Architect for 'Dhruv Academy'.
         Analyze the following HTML/Python/JS code snippet from module '{module_name}'.
