@@ -755,6 +755,7 @@ from flask import Flask, request, jsonify
 import google.generativeai as genai
 
 from fastapi import Request, HTTPException
+from fastapi.responses import HTMLResponse
 
 @app.post("/api/auto-heal-code")
 async def auto_heal_code(request: Request):
@@ -797,6 +798,83 @@ async def auto_heal_code(request: Request):
         
     except Exception as e:
         return {"success": False, "error": str(e)}
+
+
+@app.get("/auto-heal", response_class=HTMLResponse)
+async def auto_heal_page(request: Request):
+    return HTMLResponse(content="""
+    <!DOCTYPE html>
+    <html lang="hi">
+    <head>
+        <meta charset="UTF-8">
+        <title>Dhruv Academy - AI Auto-Healing Hub</title>
+        <script src="[https://cdn.tailwindcss.com](https://cdn.tailwindcss.com)"></script>
+    </head>
+    <body class="bg-slate-950 text-slate-100 min-h-screen p-6">
+        <div class="max-w-4xl mx-auto space-y-6">
+            <div class="flex justify-between items-center bg-slate-900 p-6 rounded-2xl border border-slate-800 shadow-xl">
+                <div>
+                    <h1 class="text-2xl font-bold text-cyan-400">🛡️ AI Master Code Doctor & Auto-Healing Hub</h1>
+                    <p class="text-sm text-slate-400 mt-1">ध्रुव एकेडमी मास्टर इकोसिस्टम - ऑटोमैटिक कोड करेक्शन सेंटर</p>
+                </div>
+                <a href="/admin/super_master_panel" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl text-sm font-medium transition">← कमांड सेंटर वापस जाएं</a>
+            </div>
+
+            <div class="bg-slate-900 p-6 rounded-2xl border border-slate-800 shadow-xl space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-slate-300 mb-2">मॉड्यूल का नाम (Module Name)</label>
+                    <input type="text" id="moduleName" value="Spoken English Module" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-slate-200 focus:outline-none focus:border-cyan-500">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-slate-300 mb-2">टूटा हुआ या स्पीकिंग कोड यहाँ पेस्ट करें (Broken Code):</label>
+                    <textarea id="brokenCode" rows="10" placeholder="यहाँ अपना कोड पेस्ट करें..." class="w-full bg-slate-950 border border-slate-800 rounded-xl p-4 font-mono text-sm text-cyan-300 focus:outline-none focus:border-cyan-500"></textarea>
+                </div>
+                <button onclick="healCode()" class="w-full py-3 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-semibold rounded-xl transition shadow-lg shadow-cyan-900/30">✨ ऑटो-हील शुरू करें (Fix Code)</button>
+            </div>
+
+            <div class="bg-slate-900 p-6 rounded-2xl border border-slate-800 shadow-xl space-y-4">
+                <h2 class="text-lg font-semibold text-emerald-400">✅ ठीक किया गया शुद्ध कोड (Production-Ready Code):</h2>
+                <pre id="resultBox" class="bg-slate-950 p-4 rounded-xl border border-slate-800 font-mono text-sm text-emerald-300 overflow-x-auto min-h-[150px] whitespace-pre-wrap">रिजल्ट यहाँ दिखाई देगा...</pre>
+            </div>
+        </div>
+
+        <script>
+            async function healCode() {
+                const code = document.getElementById('brokenCode').value;
+                const module = document.getElementById('moduleName').value;
+                const resultBox = document.getElementById('resultBox');
+
+                if (!code.trim()) {
+                    alert('कृपया पहले कोड पेस्ट करें!');
+                    return;
+                }
+
+                resultBox.innerText = 'AI कोड को एनालाइज और हील कर रहा है... कृपया प्रतीक्षा करें...';
+
+                try {
+                    const response = await fetch('/api/auto-heal-code', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded',
+                        },
+                        body: 'code=' + encodeURIComponent(code) + '&module=' + encodeURIComponent(module)
+                    });
+                    
+                    const data = await response.json();
+                    if (data.success) {
+                        resultBox.innerText = data.healed_code;
+                    } else {
+                        resultBox.innerText = 'एरर: ' + (data.error || 'कुछ गलत हो गया');
+                    }
+                } catch (err) {
+                    resultBox.innerText = 'कनेक्शन एरर: ' + err.message;
+                }
+            }
+        </script>
+    </body>
+    </html>
+    """)
+
     
 if __name__ == '__main__':
     import uvicorn
