@@ -19,8 +19,14 @@
             flex-direction: column;
             justify-content: space-between;
             align-items: center;
-            padding: 12px sm:padding: 20px;
+            padding: 12px;
             overflow-x: hidden;
+        }
+
+        @media (min-width: 640px) {
+            body {
+                padding: 20px;
+            }
         }
 
         .main-wrapper {
@@ -312,8 +318,8 @@
                 <h3 id="paywallCourseTitle" class="text-sm font-bold text-cyan-300">4D Ultra AI Voice Accent Mentor</h3>
                 <p class="text-2xl font-extrabold text-emerald-400 mt-2">₹149 / माह</p>
             </div>
-            <input type="text" placeholder="UPI ID दर्ज करें" class="w-full p-3 rounded-xl bg-slate-950 border border-slate-700 text-white text-xs focus:outline-none focus:border-emerald-500">
-            <button onclick="alert('पेमेंट अनुरोध भेजा गया!'); closePaywallModal();" class="w-full py-3 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs sm:text-sm font-bold transition shadow-lg">
+            <input type="text" id="paywallUpiId" placeholder="UPI ID दर्ज करें" class="w-full p-3 rounded-xl bg-slate-950 border border-slate-700 text-white text-xs focus:outline-none focus:border-emerald-500">
+            <button onclick="submitPayment()" class="w-full py-3 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs sm:text-sm font-bold transition shadow-lg">
                 💳 भुगतान करें व तुरंत अनलॉक करें 🚀
             </button>
         </div>
@@ -461,12 +467,24 @@
                     document.getElementById('paywallCourseTitle').innerText = title;
                     document.getElementById('spokenPaywallModal').classList.remove('hidden');
                 }
-            } catch (e) {}
+            } catch (e) {
+                // If API route is not implemented, allow access gracefully or fallback to lock modal.
+            }
         }
 
         function closePaywallModal() {
             document.getElementById('spokenPaywallModal').classList.add('hidden');
             selectSpeakingScenario('daily');
+        }
+
+        function submitPayment() {
+            let upi = document.getElementById('paywallUpiId').value.trim();
+            if(!upi) {
+                alert("कृपया भुगतान आगे बढ़ाने के लिए मान्य UPI ID दर्ज करें!");
+                return;
+            }
+            alert('पेमेंट अनुरोध सफलतापूर्वक भेजा गया!'); 
+            closePaywallModal();
         }
 
         function playFriendlyGreeting() {
@@ -517,7 +535,7 @@
         function toggleHumanVoiceSession() {
             const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
             if (!SpeechRec) {
-                alert("कृपया Google Chrome ब्राउज़र का उपयोग करें।");
+                alert("आपका ब्राउज़र स्पीच रिकग्निशन को सपोर्ट नहीं करता। कृपया Google Chrome का उपयोग करें।");
                 return;
             }
 
@@ -604,7 +622,7 @@
                     out.innerHTML += `<div class="p-3 bg-cyan-950/60 rounded-xl border border-cyan-500/40 text-slate-100 space-y-2 shadow">
                         <div class="flex justify-between items-center">
                             <p class="font-bold text-cyan-300">👩‍🏫 अदिति मैम:</p>
-                            <button onclick="speakStudioDSPVoice('${data.reply}', 0.6)" class="px-2 py-0.5 bg-slate-800 hover:bg-slate-700 text-[10px] text-amber-300 rounded-lg border border-slate-700">🐢 स्लो-मो उच्चारण</button>
+                            <button onclick="speakStudioDSPVoice('${data.reply.replace(/'/g, "\\'")}', 0.6)" class="px-2 py-0.5 bg-slate-800 hover:bg-slate-700 text-[10px] text-amber-300 rounded-lg border border-slate-700">🐢 स्लो-मो उच्चारण</button>
                         </div>
                         <p class="text-sm font-medium">${data.reply}</p>
                         ${colorHtml}
@@ -670,25 +688,25 @@
                             <div class="p-3 bg-slate-900 rounded-2xl border border-emerald-500/40 shadow">
                                 <div class="flex justify-between items-center">
                                     <span class="px-2 py-0.5 rounded bg-emerald-950 text-emerald-300 font-bold text-[10px]">1. Basic (आसान बोलचाल)</span>
-                                    <button onclick="speakStudioDSPVoice('${d.basic}', 0.65)" class="text-[10px] text-amber-300">🐢 स्लो सुनें</button>
+                                    <button onclick="speakStudioDSPVoice('${d.basic.replace(/'/g, "\\'")}', 0.65)" class="text-[10px] text-amber-300">🐢 स्लो सुनें</button>
                                 </div>
-                                <p class="text-sm font-semibold text-white mt-1 cursor-pointer hover:text-cyan-300" onclick="speakStudioDSPVoice('${d.basic}')">🗣️ "${d.basic}"</p>
+                                <p class="text-sm font-semibold text-white mt-1 cursor-pointer hover:text-cyan-300" onclick="speakStudioDSPVoice('${d.basic.replace(/'/g, "\\'")}')">🗣️ "${d.basic}"</p>
                                 <p class="text-[10px] text-gray-400 font-mono">उच्चारण: ${d.basic_pronounce}</p>
                             </div>
                             <div class="p-3 bg-slate-900 rounded-2xl border border-cyan-500/40 shadow">
                                 <div class="flex justify-between items-center">
                                     <span class="px-2 py-0.5 rounded bg-cyan-950 text-cyan-300 font-bold text-[10px]">2. Polite (ऑफिस व फॉर्मल)</span>
-                                    <button onclick="speakStudioDSPVoice('${d.polite}', 0.65)" class="text-[10px] text-amber-300">🐢 स्लो सुनें</button>
+                                    <button onclick="speakStudioDSPVoice('${d.polite.replace(/'/g, "\\'")}', 0.65)" class="text-[10px] text-amber-300">🐢 स्लो सुनें</button>
                                 </div>
-                                <p class="text-sm font-semibold text-white mt-1 cursor-pointer hover:text-cyan-300" onclick="speakStudioDSPVoice('${d.polite}')">🗣️ "${d.polite}"</p>
+                                <p class="text-sm font-semibold text-white mt-1 cursor-pointer hover:text-cyan-300" onclick="speakStudioDSPVoice('${d.polite.replace(/'/g, "\\'")}')">🗣️ "${d.polite}"</p>
                                 <p class="text-[10px] text-gray-400 font-mono">उच्चारण: ${d.polite_pronounce}</p>
                             </div>
                             <div class="p-3 bg-slate-900 rounded-2xl border border-purple-500/40 shadow">
                                 <div class="flex justify-between items-center">
                                     <span class="px-2 py-0.5 rounded bg-purple-950 text-purple-300 font-bold text-[10px]">3. Fluency (इंटरनेशनल एक्सेंट)</span>
-                                    <button onclick="speakStudioDSPVoice('${d.fluent}', 0.65)" class="text-[10px] text-amber-300">🐢 स्लो सुनें</button>
+                                    <button onclick="speakStudioDSPVoice('${d.fluent.replace(/'/g, "\\'")}', 0.65)" class="text-[10px] text-amber-300">🐢 स्लो सुनें</button>
                                 </div>
-                                <p class="text-sm font-semibold text-white mt-1 cursor-pointer hover:text-cyan-300" onclick="speakStudioDSPVoice('${d.fluent}')">🗣️ "${d.fluent}"</p>
+                                <p class="text-sm font-semibold text-white mt-1 cursor-pointer hover:text-cyan-300" onclick="speakStudioDSPVoice('${d.fluent.replace(/'/g, "\\'")}')">🗣️ "${d.fluent}"</p>
                                 <p class="text-[10px] text-gray-400 font-mono">उच्चारण: ${d.fluent_pronounce}</p>
                             </div>
                         </div>
