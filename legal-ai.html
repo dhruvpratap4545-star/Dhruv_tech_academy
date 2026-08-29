@@ -19,8 +19,14 @@
             flex-direction: column;
             justify-content: space-between;
             align-items: center;
-            padding: 12px sm:padding: 20px;
+            padding: 12px;
             overflow-x: hidden;
+        }
+
+        @media (min-width: 640px) {
+            body {
+                padding: 20px;
+            }
         }
 
         .main-wrapper {
@@ -81,12 +87,12 @@
             </a>
             
             <div class="flex items-center gap-2">
-                <!-- सेंट्रल वॉलेट बैलेंस (नया सिंक) -->
+                <!-- सेंट्रल वॉलेट बैलेंस -->
                 <div class="px-3.5 py-1.5 bg-slate-900 border border-slate-700 rounded-full text-xs font-bold flex items-center gap-2 shadow">
                     <span class="text-gray-400">💰 वॉलेट:</span>
                     <span id="walletBalanceDisplay" class="text-emerald-400 font-extrabold">₹0.00</span>
                 </div>
-                <!-- एआई टोकन्स (नया सिंक) -->
+                <!-- एआई टोकन्स -->
                 <div class="px-3.5 py-1.5 bg-purple-950 border border-purple-500/50 rounded-full text-xs font-bold flex items-center gap-2 shadow">
                     <span class="text-purple-300">⚡ टोकन्स:</span>
                     <span id="tokenBalanceDisplay" class="text-purple-200 font-extrabold">0</span>
@@ -150,7 +156,7 @@
                     <p class="text-rose-200 font-medium">👋 "नमस्ते! मैं आपका एआई कानूनी सलाहकार हूँ। आप नए आपराधिक कानून (BNS/BNSS), आरटीआई आवेदन, लीगल नोटिस या कंपनी कानून (Companies Act 2013) से संबंधित किसी भी विवाद का सटीक विधिक समाधान प्राप्त कर सकते हैं।"</p>
                     
                     <div class="p-2.5 bg-slate-900/80 rounded-2xl border border-slate-800 text-[11px] text-gray-300 space-y-1">
-                        <p class="font-bold text-amber-300">📌 कानूनी मार्गदर्शन नियम:</p>
+                        <p class="font-bold text-amber-300">📌 मार्गदर्शन नियम:</p>
                         <p>• <b>RTI नियम:</b> आरटीआई में केवल रिकॉर्ड माँगें, "क्यों/कैसे" जैसे प्रश्न विधि अनुसार वर्जित हैं।</p>
                         <p>• <b>1-क्लिक ड्राफ्टिंग:</b> नीचे दिए गए बटनों से लीगल नोटिस, वैध आरटीआई या FIR प्रारूप तैयार करें।</p>
                     </div>
@@ -162,7 +168,7 @@
         <div class="bg-slate-900 p-4 sm:p-5 rounded-3xl border border-rose-500/30 space-y-3 shadow-xl">
             <div class="flex justify-between items-center">
                 <h3 class="text-xs sm:text-sm font-bold text-rose-300 flex items-center gap-1.5">
-                    <span>🔄</span> <span>न्यू क्रिमिनल लॉज़ कन्वर्टर (BNS $\leftrightarrow$ IPC, BNSS $\leftrightarrow$ CrPC, BSA $\leftrightarrow$ IEA)</span>
+                    <span>🔄</span> <span>न्यू क्रिमिनल लॉज़ कन्वर्टर (BNS ↔ IPC, BNSS ↔ CrPC, BSA ↔ IEA)</span>
                 </h3>
                 <span class="text-[10px] text-amber-400 font-semibold">1-क्लिक सेक्शन फाइंडर</span>
             </div>
@@ -286,7 +292,6 @@
             logUserActivity('Legal AI Hub Loaded');
         });
 
-        // 1 टोकन काटने का फंक्शन (विधिक सलाह या ड्राफ्टिंग के लिए)
         function consumeLegalToken(featureName) {
             let tokens = getWalletTokens();
             if (tokens < 1) {
@@ -401,15 +406,15 @@
                     let avatar = document.getElementById('legalAvatarFrame');
                     utterance.onstart = () => {
                         isLegalTalking = true;
-                        avatar.classList.add('talking-pulse');
+                        if (avatar) avatar.classList.add('talking-pulse');
                     };
                     utterance.onend = () => {
                         isLegalTalking = false;
-                        avatar.classList.remove('talking-pulse');
+                        if (avatar) avatar.classList.remove('talking-pulse');
                     };
                     utterance.onerror = () => {
                         isLegalTalking = false;
-                        avatar.classList.remove('talking-pulse');
+                        if (avatar) avatar.classList.remove('talking-pulse');
                     };
 
                     window.speechSynthesis.speak(utterance);
@@ -424,7 +429,6 @@
                 return;
             }
 
-            // 1 टोकन चार्ज
             if (!consumeLegalToken('BNS Law Converter')) return;
 
             let resBox = document.getElementById('sectionResultBox');
@@ -480,7 +484,6 @@
                 defaultPrompt = "थाना प्रभारी को वास्तविक व प्रमाणित साक्ष्यों पर आधारित लिखित शिकायत पत्र";
             }
 
-            // 1 टोकन चार्ज
             if (!consumeLegalToken('Drafting: ' + type)) return;
 
             document.getElementById('draftModalHeader').innerText = headerTitle;
@@ -533,7 +536,6 @@
                 return;
             }
 
-            // 1 टोकन चार्ज
             if (!consumeLegalToken('Legal Consultation')) return;
 
             let out = document.getElementById('legalOutputBoard');
@@ -577,7 +579,7 @@
         function toggleLegalVoice() {
             const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
             if (!SpeechRec) {
-                alert("कृपया Chrome ब्राउज़र का उपयोग करें।");
+                alert("कृपया Chrome या संगत ब्राउज़र का उपयोग करें।");
                 return;
             }
 
