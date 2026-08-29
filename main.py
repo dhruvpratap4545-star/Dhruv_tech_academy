@@ -191,6 +191,16 @@ def require_superadmin(current_user: AdminUser = Depends(get_current_admin)):
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="केवल सुपर-एडमिन के लिए उपलब्ध")
     return current_user
 
+# स्मार्ट फाइल पाथ फिक्सर (लोकल और गिटहब दोनों के लिए सुरक्षित)
+def get_safe_file_response(filename: str):
+    path_in_templates = BASE_DIR / "templates" / filename
+    if path_in_templates.exists():
+        return FileResponse(path_in_templates)
+    path_in_root = BASE_DIR / filename
+    if path_in_root.exists():
+        return FileResponse(path_in_root)
+    return HTMLResponse(f"<h3>404 - File {filename} not found</h3>", status_code=404)
+
 # ------------------------------------------------------------------------------
 # 3. एडमिन लॉगिन व छात्र रजिस्ट्रेशन रूट्स
 # ------------------------------------------------------------------------------
@@ -507,45 +517,44 @@ def update_subadmin_permissions(username: str = Form(...), perms: List[str] = Fo
     return RedirectResponse(url="/admin/manage-subadmins", status_code=status.HTTP_303_SEE_OTHER)
 
 # ------------------------------------------------------------------------------
-# 5. मुख्य डैशबोर्ड व सभी 11 मॉड्यूल सटीक फाइल राउट्स (Absolute Path Enabled)
+# 5. मुख्य डैशबोर्ड व सभी 11 मॉड्यूल सटीक फाइल राउट्स (Safe Path Enabled)
 # ------------------------------------------------------------------------------
 @app.get("/", response_class=FileResponse)
 def serve_index():
-    return FileResponse(BASE_DIR / "templates/index.html")
+    return get_safe_file_response("index.html")
 
 @app.get("/ai-core", response_class=FileResponse)
 @app.get("/ai-core.html", response_class=FileResponse)
 def serve_ai_core():
-    return FileResponse(BASE_DIR / "templates/ai-core.html")
+    return get_safe_file_response("ai-core.html")
 
 @app.get("/ai-auto-healing", response_class=FileResponse)
 @app.get("/ai-auto-healing.html", response_class=FileResponse)
 def serve_auto_healing():
-    return FileResponse(BASE_DIR / "templates/ai-auto-healing.html")
+    return get_safe_file_response("ai-auto-healing.html")
 
 @app.get("/digital-library", response_class=FileResponse)
 @app.get("/digital-library.html", response_class=FileResponse)
 def serve_digital_library():
-    return FileResponse(BASE_DIR / "templates/digital-library.html")
+    return get_safe_file_response("digital-library.html")
 
 @app.get("/kids-zone", response_class=FileResponse)
 @app.get("/kids-zone.html", response_class=FileResponse)
 def serve_kids_zone():
-    return FileResponse(BASE_DIR / "templates/kids-zone.html")
+    return get_safe_file_response("kids-zone.html")
 
 @app.get("/legal-hub", response_class=HTMLResponse)
 @app.get("/legal-ai", response_class=HTMLResponse)
 @app.get("/legal-ai.html", response_class=HTMLResponse)
 @app.get("/legal-hub.html", response_class=HTMLResponse)
 async def legal_hub_page(request: Request):
-    path_ai = BASE_DIR / "templates/legal-ai.html"
-    path_hub = BASE_DIR / "templates/legal-hub.html"
-    if path_ai.exists():
-        with open(path_ai, "r", encoding="utf-8") as f:
-            return HTMLResponse(content=f.read())
-    elif path_hub.exists():
-        with open(path_hub, "r", encoding="utf-8") as f:
-            return HTMLResponse(content=f.read())
+    for fname in ["legal-ai.html", "legal-hub.html"]:
+        p1 = BASE_DIR / "templates" / fname
+        p2 = BASE_DIR / fname
+        for p in [p1, p2]:
+            if p.exists():
+                with open(p, "r", encoding="utf-8") as f:
+                    return HTMLResponse(content=f.read())
     return HTMLResponse("Legal Hub template not found", status_code=404)
 
 @app.post("/api/legal-advice-solve")
@@ -632,20 +641,22 @@ async def legal_generate_draft(request: Request):
 @app.get("/spoken-english", response_class=FileResponse)
 @app.get("/spoken-english.html", response_class=FileResponse)
 def serve_spoken_english():
-    return FileResponse(BASE_DIR / "templates/spoken-english.html")
+    return get_safe_file_response("spoken-english.html")
 
 @app.get("/face-swap-social", response_class=FileResponse)
 @app.get("/face-swap-social.html", response_class=FileResponse)
 def serve_face_swap():
-    return FileResponse(BASE_DIR / "templates/face-swap-social.html")
+    return get_safe_file_response("face-swap-social.html")
 
 @app.get("/central-wallet", response_class=FileResponse)
 @app.get("/central-wallet.html", response_class=FileResponse)
 def serve_central_wallet():
-    path_wallet = BASE_DIR / "templates/central-wallet.html"
-    if path_wallet.exists():
-        return FileResponse(path_wallet)
-    return FileResponse(BASE_DIR / "templates/index.html")
+    p1 = BASE_DIR / "templates" / "central-wallet.html"
+    p2 = BASE_DIR / "central-wallet.html"
+    for p in [p1, p2]:
+        if p.exists():
+            return FileResponse(p)
+    return FileResponse(BASE_DIR / "index.html")
 
 def get_gemini_key() -> str:
     for key_name in ["GEMINI_API_KEY1", "GEMINI_API_KEY", "GEMINI_API_KEYS"]:
@@ -798,46 +809,46 @@ def get_user_credit_analysis(mobile: str, db: Session = Depends(get_db)):
 @app.get("/nebula-visual-hub.html", response_class=HTMLResponse)
 @app.get("/nebula-visual-hub", response_class=HTMLResponse)
 async def serve_nebula_visual_hub():
-    path = BASE_DIR / "templates/nebula-visual-hub.html"
-    if path.exists():
-        with open(path, "r", encoding="utf-8") as f:
-            return f.read()
+    for p in [BASE_DIR / "templates" / "nebula-visual-hub.html", BASE_DIR / "nebula-visual-hub.html"]:
+        if p.exists():
+            with open(p, "r", encoding="utf-8") as f:
+                return f.read()
     return "nebula-visual-hub.html file not found", 404
 
 @app.get("/competition-solver.html", response_class=HTMLResponse)
 @app.get("/competition-solver", response_class=HTMLResponse)
 async def serve_competition_solver():
-    path = BASE_DIR / "templates/competition-solver.html"
-    if path.exists():
-        with open(path, "r", encoding="utf-8") as f:
-            return f.read()
+    for p in [BASE_DIR / "templates" / "competition-solver.html", BASE_DIR / "competition-solver.html"]:
+        if p.exists():
+            with open(p, "r", encoding="utf-8") as f:
+                return f.read()
     return "competition-solver.html file not found", 404
 
 @app.get("/3d-blackboard.html", response_class=HTMLResponse)
 @app.get("/3d-blackboard", response_class=HTMLResponse)
 async def serve_3d_blackboard():
-    path = BASE_DIR / "templates/3d-blackboard.html"
-    if path.exists():
-        with open(path, "r", encoding="utf-8") as f:
-            return f.read()
+    for p in [BASE_DIR / "templates" / "3d-blackboard.html", BASE_DIR / "3d-blackboard.html"]:
+        if p.exists():
+            with open(p, "r", encoding="utf-8") as f:
+                return f.read()
     return "3d-blackboard.html file not found", 404
 
 @app.get("/coaching-hub.html", response_class=HTMLResponse)
 @app.get("/coaching-hub", response_class=HTMLResponse)
 async def serve_coaching_hub():
-    path = BASE_DIR / "templates/coaching-hub.html"
-    if path.exists():
-        with open(path, "r", encoding="utf-8") as f:
-            return f.read()
+    for p in [BASE_DIR / "templates" / "coaching-hub.html", BASE_DIR / "coaching-hub.html"]:
+        if p.exists():
+            with open(p, "r", encoding="utf-8") as f:
+                return f.read()
     return "Coaching Hub file not found", 404
 
 # 7. ग्लोबल 404 एरर हैंडलर
 @app.exception_handler(404)
 async def custom_404_handler(request, exc):
-    path_404 = BASE_DIR / "templates/404.html"
-    if path_404.exists():
-        with open(path_404, "r", encoding="utf-8") as f:
-            return HTMLResponse(content=f.read(), status_code=404)
+    for p in [BASE_DIR / "templates" / "404.html", BASE_DIR / "404.html"]:
+        if p.exists():
+            with open(p, "r", encoding="utf-8") as f:
+                return HTMLResponse(content=f.read(), status_code=404)
     return HTMLResponse(content="<h3>404 - Page Not Found</h3>", status_code=404)
 
 import google.generativeai as genai
@@ -1053,9 +1064,11 @@ async def spoken_3level_translate(request: Request):
 
 @app.get("/nebula-hub", response_class=HTMLResponse)
 async def nebula_visual_hub_route(request: Request):
-    path_nebula = BASE_DIR / "templates/nebula-visual-hub.html"
-    with open(path_nebula, "r", encoding="utf-8") as f:
-        return HTMLResponse(content=f.read())
+    for p in [BASE_DIR / "templates" / "nebula-visual-hub.html", BASE_DIR / "nebula-visual-hub.html"]:
+        if p.exists():
+            with open(p, "r", encoding="utf-8") as f:
+                return HTMLResponse(content=f.read())
+    return HTMLResponse("nebula-visual-hub.html not found", status_code=404)
 
 import subprocess
 import ast
