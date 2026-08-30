@@ -191,7 +191,6 @@ def require_superadmin(current_user: AdminUser = Depends(get_current_admin)):
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="केवल सुपर-एडमिन के लिए उपलब्ध")
     return current_user
 
-# स्मार्ट फाइल पाथ फिक्सर (लोकल और गिटहब दोनों के लिए सुरक्षित)
 def get_safe_file_response(filename: str):
     path_in_templates = BASE_DIR / "templates" / filename
     if path_in_templates.exists():
@@ -304,7 +303,30 @@ def register_student_endpoint(mobile: str = Form(...), otp: Optional[str] = Form
     })
 
 # ------------------------------------------------------------------------------
-# 4. सुपर-एडमिन सुप्रीम कमांड सेंटर व सब-एडमिन कंट्रोल पैनल
+# 4. Fast2SMS ओटीपी भेजने का रूट
+# ------------------------------------------------------------------------------
+FAST2SMS_API_KEY = os.environ.get("FAST2SMS_API_KEY", "")
+
+@app.post("/api/send-real-otp")
+def send_real_otp(mobile: str = Form(...)):
+    clean_mobile = mobile.strip()
+    generated_otp = "1234" 
+    
+    message = f"Dhruv Academy OTP is {generated_otp}"
+    encoded_msg = urllib.parse.quote(message)
+    
+    url = f"https://www.fast2sms.com/dev/bulkV2?authorization={FAST2SMS_API_KEY}&route=q&message={encoded_msg}&language=english&flash=0&numbers={clean_mobile}"
+    
+    try:
+        req = urllib.request.Request(url)
+        with urllib.request.urlopen(req, timeout=10) as response:
+            res_data = response.read().decode("utf-8")
+            return JSONResponse(content={"success": True, "message": "ओटीपी सफलतापूर्वक भेज दिया गया है!", "otp": generated_otp})
+    except Exception as e:
+        return JSONResponse(content={"success": False, "message": f"एसएमएस भेजने में त्रुटि: {str(e)}"})
+
+# ------------------------------------------------------------------------------
+# 5. सुपर-एडमिन सुप्रीम कमांड सेंटर व सब-एडमिन कंट्रोल पैनल
 # ------------------------------------------------------------------------------
 @app.get("/admin/super-master-panel", response_class=HTMLResponse)
 def super_master_panel(user: AdminUser = Depends(require_superadmin), db: Session = Depends(get_db)):
@@ -346,7 +368,7 @@ def super_master_panel(user: AdminUser = Depends(require_superadmin), db: Sessio
             <div class="flex justify-between items-center border-b border-slate-800 pb-4">
                 <div>
                     <h1 class="text-2xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-emerald-400">⚡ Super-Admin Supreme Command Center</h1>
-                    <p class="text-xs text-gray-400 mt-1">ध्रुव एकेडमी मास्टर इकोसिस्टम का सर्वोच्च नियंत्रण केंद्र (Full Administrative Power)</p>
+                    <p class="text-xs text-gray-400 mt-1">ध्रुव एकेडमी मास्टर इकोसिस्टम का सर्वोच्च नियंत्रण केंद्र</p>
                 </div>
                 <div class="flex gap-2">
                     <a href="/admin" class="px-4 py-2 bg-emerald-700 hover:bg-emerald-600 text-xs font-bold rounded-xl transition">📊 लाइव यूजर एक्टिविटी</a>
@@ -517,7 +539,7 @@ def update_subadmin_permissions(username: str = Form(...), perms: List[str] = Fo
     return RedirectResponse(url="/admin/manage-subadmins", status_code=status.HTTP_303_SEE_OTHER)
 
 # ------------------------------------------------------------------------------
-# 5. मुख्य डैशबोर्ड व सभी 11 मॉड्यूल सटीक फाइल राउट्स (Safe Path Enabled)
+# 6. मुख्य डैशबोर्ड व सभी 11 मॉड्यूल सटीक फाइल राउट्स
 # ------------------------------------------------------------------------------
 @app.get("/", response_class=FileResponse)
 def serve_index():
@@ -542,101 +564,6 @@ def serve_digital_library():
 @app.get("/kids-zone.html", response_class=FileResponse)
 def serve_kids_zone():
     return get_safe_file_response("kids-zone.html")
-
-@app.get("/legal-hub", response_class=HTMLResponse)
-@app.get("/legal-ai", response_class=HTMLResponse)
-@app.get("/legal-ai.html", response_class=HTMLResponse)
-@app.get("/legal-hub.html", response_class=HTMLResponse)
-async def legal_hub_page(request: Request):
-    for fname in ["legal-ai.html", "legal-hub.html"]:
-        p1 = BASE_DIR / "templates" / fname
-        p2 = BASE_DIR / fname
-        for p in [p1, p2]:
-            if p.exists():
-                with open(p, "r", encoding="utf-8") as f:
-                    return HTMLResponse(content=f.read())
-    return HTMLResponse("Legal Hub template not found", status_code=404)
-
-@app.post("/api/legal-advice-solve")
-async def legal_advice_solve(request: Request):
-    try:
-        form_data = await request.form()
-        query = form_data.get('query', '')
-        if not query:
-            return {"success": False, "error": "प्रश्न नहीं मिला।"}
-
-        active_key = get_gemini_key()
-        if not active_key:
-            return {"success": True, "advice": "⚠️ GEMINI_API_KEY1 सेट नहीं है।"}
-
-        payload = {
-            "contents": [{"parts": [{"text": f"आप ध्रुव एकेडमी के legal AI सलाहकार हैं। BNS 2023 और कंपनी अधिनियम 2013 के तहत इस प्रश्न का हिंदी में सटीक समाधान दें:\n\nप्रश्न: {query}"}]}],
-            "generationConfig": {"maxOutputTokens": 1000, "temperature": 0.2}
-        }
-
-        target_url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key={active_key}"
-        req = urllib.request.Request(target_url, data=json.dumps(payload).encode("utf-8"), headers={"Content-Type": "application/json"}, method="POST")
-        
-        with urllib.request.urlopen(req, timeout=30) as response:
-            res_data = json.loads(response.read().decode("utf-8"))
-            if "candidates" in res_data:
-                advice_text = res_data["candidates"][0]["content"]["parts"][0]["text"].strip()
-                return {"success": True, "advice": advice_text, "summary": advice_text[:120]}
-        return {"success": False}
-    except Exception as e:
-        return {"success": True, "advice": "⚖️ कानूनी विश्लेषण प्रणाली सक्रिय है। कृपया अपने प्रश्न के साथ प्रासंगिक धारा दर्ज करें।"}
-
-@app.post("/api/legal-convert-section")
-async def legal_convert_section(request: Request):
-    try:
-        form_data = await request.form()
-        query = form_data.get('query', '420')
-        active_key = get_gemini_key()
-        
-        payload = {
-            "contents": [{"parts": [{"text": f"Map old law section/crime ('{query}') to new Indian criminal law (BNS/BNSS). Return ONLY valid JSON with keys: success (true), old_section, new_section, description, punishment, key_changes. No markdown."}]}],
-            "generationConfig": {"maxOutputTokens": 500}
-        }
-        target_url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key={active_key}"
-        req = urllib.request.Request(target_url, data=json.dumps(payload).encode("utf-8"), headers={"Content-Type": "application/json"}, method="POST")
-        
-        with urllib.request.urlopen(req, timeout=20) as response:
-            res_data = json.loads(response.read().decode("utf-8"))
-            if "candidates" in res_data:
-                text = res_data["candidates"][0]["content"]["parts"][0]["text"].strip()
-                if text.startswith("```"):
-                    text = "\n".join(text.splitlines()[1:-1])
-                return json.loads(text)
-    except:
-        pass
-    return {"success": True, "old_section": query, "new_section": "BNS संबधित धारा", "description": "विधिक प्रावधान", "punishment": "दंड", "key_changes": "स्पष्ट प्रावधान"}
-
-@app.post("/api/legal-generate-draft")
-async def legal_generate_draft(request: Request):
-    try:
-        form_data = await request.form()
-        draft_type = form_data.get('draft_type', 'notice')
-        active_key = get_gemini_key()
-        
-        if not active_key:
-            return {"success": True, "draft_text": "--- आधिकारिक विधि-सम्मत प्रारूप ---\n\n(API Key अनुपलब्ध है)"}
-
-        payload = {
-            "contents": [{"parts": [{"text": f"Draft a formal legal document in Hindi for '{draft_type}' with proper placeholders."}]}],
-            "generationConfig": {"maxOutputTokens": 800}
-        }
-        target_url = f"[https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key=](https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key=){active_key}"
-        req = urllib.request.Request(target_url, data=json.dumps(payload).encode("utf-8"), headers={"Content-Type": "application/json"}, method="POST")
-        
-        with urllib.request.urlopen(req, timeout=20) as response:
-            res_data = json.loads(response.read().decode("utf-8"))
-            if "candidates" in res_data:
-                draft_res = res_data["candidates"][0]["content"]["parts"][0]["text"].strip()
-                return {"success": True, "draft_text": draft_res}
-    except Exception as e:
-        print(f"Draft error: {e}")
-        
-    return {"success": True, "draft_text": "--- आधिकारिक विधि-सम्मत प्रारूप ---\n\nप्रार्थी द्वारा प्रस्तुत कानूनी नोटिस / आवेदन पत्र।"}
 
 @app.get("/spoken-english", response_class=FileResponse)
 @app.get("/spoken-english.html", response_class=FileResponse)
@@ -708,7 +635,7 @@ async def ai_core_solve_endpoint(
     success_model = ""
 
     for model_name in router_models:
-        target_url = f"[https://generativelanguage.googleapis.com/v1beta/models/](https://generativelanguage.googleapis.com/v1beta/models/){model_name}:generateContent?key={active_key}"
+        target_url = f"https://generativelanguage.googleapis.com/v1beta/models/{model_name}:generateContent?key={active_key}"
         try:
             req = urllib.request.Request(
                 target_url, 
@@ -738,7 +665,7 @@ async def ai_core_solve_endpoint(
 async def master_admin_panel(user: AdminUser = Depends(get_current_admin), db: Session = Depends(get_db)):
     logs = db.query(UserActivityLog).order_by(UserActivityLog.timestamp.desc()).limit(100).all()
     rows = "".join([f"<tr class='border-b border-gray-800 text-xs'><td class='py-2 px-3'>{l.timestamp.strftime('%H:%M:%S')}</td><td class='py-2 px-3'>{l.user_identifier}</td><td class='py-2 px-3 text-cyan-300'>{l.module}</td><td class='py-2 px-3 font-bold'>{l.action}</td><td class='py-2 px-3'>{l.details}</td></tr>" for l in logs])
-    return f"""<!DOCTYPE html><html lang="hi"><head><meta charset="UTF-8"><title>Live Activity Monitor</title><script src="[https://cdn.tailwindcss.com](https://cdn.tailwindcss.com)"></script></head><body class="bg-slate-950 text-white p-6 font-sans"><div class="max-w-6xl mx-auto space-y-4"><div class="flex justify-between items-center"><h1 class="text-xl font-bold text-emerald-400">📊 लाइव यूजर एक्टिविटी मॉनिटर</h1><div class="flex gap-2"><a href="/admin/super-master-panel" class="px-4 py-2 bg-cyan-600 rounded-xl text-xs font-bold">⚡ सुपर-एडमिन कमांड सेंटर</a><a href="/admin/manage-subadmins" class="px-4 py-2 bg-indigo-600 rounded-xl text-xs font-bold">🛡️ सब-एडमिन अधिकार</a></div></div><div class="bg-slate-900 p-4 rounded-xl border border-gray-800 overflow-x-auto"><table class="w-full text-left"><thead><tr class="bg-slate-800 text-xs text-gray-300"><th class="p-2">समय</th><th class="p-2">यूजर</th><th class="p-2">मॉड्यूल</th><th class="p-2">एक्शन</th><th class="p-2">विवरण</th></tr></thead><tbody>{rows}</tbody></table></div></div></body></html>"""
+    return f"""<!DOCTYPE html><html lang="hi"><head><meta charset="UTF-8"><title>Live Activity Monitor</title><script src="https://cdn.tailwindcss.com"></script></head><body class="bg-slate-950 text-white p-6 font-sans"><div class="max-w-6xl mx-auto space-y-4"><div class="flex justify-between items-center"><h1 class="text-xl font-bold text-emerald-400">📊 लाइव यूजर एक्टिविटी मॉनिटर</h1><div class="flex gap-2"><a href="/admin/super-master-panel" class="px-4 py-2 bg-cyan-600 rounded-xl text-xs font-bold">⚡ सुपर-एडमिन कमांड सेंटर</a><a href="/admin/manage-subadmins" class="px-4 py-2 bg-indigo-600 rounded-xl text-xs font-bold">🛡️ सब-एडमिन अधिकार</a></div></div><div class="bg-slate-900 p-4 rounded-xl border border-gray-800 overflow-x-auto"><table class="w-full text-left"><thead><tr class="bg-slate-800 text-xs text-gray-300"><th class="p-2">समय</th><th class="p-2">यूजर</th><th class="p-2">मॉड्यूल</th><th class="p-2">एक्शन</th><th class="p-2">विवरण</th></tr></thead><tbody>{rows}</tbody></table></div></div></body></html>"""
 
 @app.post("/api/verify-payment-and-add-tokens")
 def verify_payment_and_add_tokens(
@@ -803,9 +730,6 @@ def get_user_credit_analysis(mobile: str, db: Session = Depends(get_db)):
         "transactions": history_list
     })
 
-# ------------------------------------------------------------------------------
-# 6. विशिष्ट मॉड्यूल राउट्स (Nebula, Competition Solver, 3D Blackboard)
-# ------------------------------------------------------------------------------
 @app.get("/nebula-visual-hub.html", response_class=HTMLResponse)
 @app.get("/nebula-visual-hub", response_class=HTMLResponse)
 async def serve_nebula_visual_hub():
@@ -842,16 +766,11 @@ async def serve_coaching_hub():
                 return f.read()
     return "Coaching Hub file not found", 404
 
-# 7. ग्लोबल 404 एरर हैंडलर
-@app.exception_handler(404)
-async def custom_404_handler(request, exc):
-    for p in [BASE_DIR / "templates" / "404.html", BASE_DIR / "404.html"]:
-        if p.exists():
-            with open(p, "r", encoding="utf-8") as f:
-                return HTMLResponse(content=f.read(), status_code=404)
-    return HTMLResponse(content="<h3>404 - Page Not Found</h3>", status_code=404)
-
+# ------------------------------------------------------------------------------
+# 7. AI Auto-Healing Hub (ऑटो-हीलिंग और सिंटैक्स चेकर)
+# ------------------------------------------------------------------------------
 import google.generativeai as genai
+import ast
 
 @app.post("/api/auto-heal-code")
 async def auto_heal_code(request: Request):
@@ -894,13 +813,12 @@ async def auto_heal_code(request: Request):
             "success": True,
             "healed_code": healed_text
         }
-        
     except Exception as e:
         return {"success": False, "error": str(e)}
 
 @app.get("/auto-heal", response_class=HTMLResponse)
 async def auto_heal_page(request: Request):
-    return HTMLResponse(content="""
+    return HTMLResponse(content=""""
     <!DOCTYPE html>
     <html lang="hi">
     <head>
@@ -986,93 +904,6 @@ async def auto_heal_page(request: Request):
     </html>
     """)
 
-@app.post("/api/spoken-english-reply")
-async def spoken_english_reply(request: Request):
-    try:
-        api_key = os.environ.get("GEMINI_API_KEY1")
-        if not api_key:
-            return {"success": False, "error": "API Key not set"}
-        genai.configure(api_key=api_key)
-        
-        form_data = await request.form()
-        user_speech = form_data.get('user_speech', '')
-        mode = form_data.get('mode', 'daily')
-        
-        model = genai.GenerativeModel('gemini-1.5-flash')
-        prompt = f"""
-        You are 'Aditi Ma'am', an expert 4D Ultra Live AI English Mentor for 'Dhruv Academy'.
-        The user spoke: "{user_speech}" in mode: '{mode}'.
-        Provide a friendly, encouraging mentor reply in English (with Indian contextual touch), a phonetic breakdown of tricky words with status ('ok', 'warn', 'error') and anatomy guidance, a simple Hindi pronunciation guide, Hindi meaning, and a gentle correction if needed.
-        Return response in valid JSON format with keys: success (true), reply, confidence_score, pronounce_score, colored_words (list of objects with word, status, anatomy), hindi_pronounce, hindi_meaning, correction.
-        Return ONLY valid JSON without markdown backticks.
-        """
-        response = model.generate_content(prompt)
-        text = response.text.strip()
-        if text.startswith("```"):
-            lines = text.splitlines()
-            text = "\n".join(lines[1:-1])
-        
-        return json.loads(text)
-    except Exception as e:
-        return {
-            "success": True,
-            "reply": f"That's wonderful! Let's keep practicing together, dear.",
-            "confidence_score": "96",
-            "pronounce_score": "95",
-            "colored_words": [{"word": "practice", "status": "ok", "anatomy": "Lips relaxed"}],
-            "hindi_pronounce": "दैट्स वंडरफुल! लेट्स कीप प्रैक्टिसिंग।",
-            "hindi_meaning": "यह बहुत अच्छा है! हम साथ अभ्यास जारी रखते हैं।",
-            "correction": "Your sentence was great!"
-        }
-
-@app.post("/api/spoken-3level-translate")
-async def spoken_3level_translate(request: Request):
-    try:
-        api_key = os.environ.get("GEMINI_API_KEY1")
-        if not api_key:
-            return {"success": False, "error": "API Key not set"}
-        genai.configure(api_key=api_key)
-        
-        form_data = await request.form()
-        text_input = form_data.get('regional_text', '')
-        
-        model = genai.GenerativeModel('gemini-3.5-flash')
-        prompt = f"""
-        Translate the following regional/Hindi sentence into 3 English levels: Basic, Polite, and Fluency (International Accent).
-        Input sentence: "{text_input}"
-        Provide pronunciation guides for each in Hindi script.
-        Return response in valid JSON format with keys: success (true), basic, basic_pronounce, polite, polite_pronounce, fluent, fluent_pronounce.
-        Return ONLY valid JSON without markdown backticks.
-        """
-        response = model.generate_content(prompt)
-        text = response.text.strip()
-        if text.startswith("```"):
-            lines = text.splitlines()
-            text = "\n".join(lines[1:-1])
-            
-        return json.loads(text)
-    except Exception as e:
-        return {
-            "success": True,
-            "basic": "Please tell me the way.",
-            "basic_pronounce": "प्लीज टेल मी द वे।",
-            "polite": "Could you kindly guide me?",
-            "polite_pronounce": "कुड यू काइंडली गाइड मी?",
-            "fluent": "Would you mind pointing me in the right direction?",
-            "fluent_pronounce": "वुड यू माइंड पॉइंटिंग मी इन द राइट डायरेक्शन?"
-        }
-
-@app.get("/nebula-hub", response_class=HTMLResponse)
-async def nebula_visual_hub_route(request: Request):
-    for p in [BASE_DIR / "templates" / "nebula-visual-hub.html", BASE_DIR / "nebula-visual-hub.html"]:
-        if p.exists():
-            with open(p, "r", encoding="utf-8") as f:
-                return HTMLResponse(content=f.read())
-    return HTMLResponse("nebula-visual-hub.html not found", status_code=404)
-
-import subprocess
-import ast
-
 @app.post("/api/admin/auto-heal-main")
 async def admin_auto_heal_main(request: Request):
     try:
@@ -1094,7 +925,15 @@ async def admin_auto_heal_main(request: Request):
         }
     except Exception as e:
         return {"success": False, "error": str(e)}
-    
+
+@app.exception_handler(404)
+async def custom_404_handler(request, exc):
+    for p in [BASE_DIR / "templates" / "404.html", BASE_DIR / "404.html"]:
+        if p.exists():
+            with open(p, "r", encoding="utf-8") as f:
+                return HTMLResponse(content=f.read(), status_code=404)
+    return HTMLResponse(content="<h3>404 - Page Not Found</h3>", status_code=404)
+
 if __name__ == '__main__':
     import uvicorn
     port = int(os.environ.get("PORT", 10000))
