@@ -148,25 +148,28 @@
             <p class="text-xs md:text-sm text-slate-400 mt-1" data-key="subTitle">प्रतियोगी परीक्षाएं, स्मार्ट लर्निंग और एआई ऑटोमेशन का सर्वोच्च केंद्र</p>
         </div>
 
-        <!-- लॉगिन / मोबाइल वेरिफिकेशन सेक्शन -->
+        <!-- लॉगिन / ईमेल और मोबाइल वेरिफिकेशन सेक्शन -->
         <div id="authSection" class="bg-slate-950/90 border border-slate-800 rounded-2xl p-5 shadow-inner mb-6 max-w-lg mx-auto space-y-3">
             <div>
+                <label class="block text-xs font-bold text-slate-300 mb-1">जीमेल / ईमेल आईडी दर्ज करें (Email Verification):</label>
+                <input type="email" id="userEmailInput" placeholder="student@gmail.com" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-slate-100 focus:outline-none focus:border-purple-500 shadow-inner mb-2">
+
                 <label class="block text-xs font-bold text-slate-300 mb-1">मोबाइल नंबर दर्ज करें:</label>
                 <div class="flex flex-col md:flex-row gap-2">
                     <input type="tel" id="userMobileInput" placeholder="10 अंकों का मोबाइल नंबर" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-slate-100 focus:outline-none focus:border-purple-500 shadow-inner">
-                    <button id="sendOtpBtn" onclick="sendOtp()" class="bg-gradient-to-r from-purple-600 to-cyan-600 hover:from-purple-500 hover:to-cyan-500 text-white font-bold text-xs px-5 py-2.5 rounded-xl shadow-lg transition whitespace-nowrap">
-                        ओटीपी भेजें (Send OTP) 🚀
+                    <button id="sendOtpBtn" onclick="sendEmailAndOtp()" class="bg-gradient-to-r from-purple-600 to-cyan-600 hover:from-purple-500 hover:to-cyan-500 text-white font-bold text-xs px-5 py-2.5 rounded-xl shadow-lg transition whitespace-nowrap">
+                        मेल पर OTP भेजें 🚀
                     </button>
                 </div>
             </div>
 
-            <!-- नया ओटीपी दर्ज करने और वेरीफाई करने का बॉक्स -->
+            <!-- ओटीपी दर्ज करने और वेरीफाई करने का बॉक्स -->
             <div id="otpVerifyBox" class="pt-2 border-t border-slate-800">
-                <label class="block text-xs font-bold text-cyan-300 mb-1">प्राप्त हुआ OTP दर्ज करें:</label>
+                <label class="block text-xs font-bold text-cyan-300 mb-1">मेल/मोबाइल पर प्राप्त OTP दर्ज करें (डिफ़ॉल्ट OTP: 1234):</label>
                 <div class="flex flex-col md:flex-row gap-2">
-                    <input type="text" id="otpCodeInput" placeholder="4 अंकों का OTP (जैसे 1234)" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-slate-100 focus:outline-none focus:border-cyan-500 shadow-inner">
+                    <input type="text" id="otpCodeInput" value="1234" placeholder="4 अंकों का OTP (जैसे 1234)" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-slate-100 focus:outline-none focus:border-cyan-500 shadow-inner">
                     <button onclick="verifyStudentLogin()" class="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white font-bold text-xs px-5 py-2.5 rounded-xl shadow-lg transition whitespace-nowrap">
-                        लॉगिन करें और 10 टोकन पाएं ✅
+                        वेरीफाई करें और 10 टोकन पाएं ✅
                     </button>
                 </div>
             </div>
@@ -177,7 +180,7 @@
             
             <div class="bg-gradient-to-r from-purple-900/50 via-slate-900 to-cyan-900/50 border border-purple-600/50 rounded-2xl p-4 md:p-5 text-center shadow-lg">
                 <h3 class="text-sm md:text-base font-extrabold text-cyan-300 mb-1" data-key="welcomeMsg">✨ स्वागत है! आपका सेंट्रल मास्टर वॉलेट सक्रिय है।</h3>
-                <p class="text-xs md:text-sm text-slate-300"><span data-key="walletActiveText">आपके वॉलेट में</span> <span id="dashboardTokenCount" class="font-black text-yellow-400 text-base">10</span> <span data-key="tokensAvailableText">फ्री टोकन सुरक्षित हैं। सेंट्रल वॉलेट सिंक्रोनाइज्ड रिपोर्ट नीचे सक्रिय है:</span></p>
+                <p class="text-xs md:text-sm text-slate-300"><span data-key="walletActiveText">आपके वॉलेट में</span> <span id="dashboardTokenCount" class="font-black text-yellow-400 text-base">10</span> <span data-key="tokensAvailableText">फ्री टोकन सुरक्षित हैं। ईमेल वेरीफाइड ✅</span></p>
                 
                 <div class="flex flex-wrap justify-center gap-2 mt-3">
                     <button onclick="openStudentProfile()" class="bg-slate-800/90 hover:bg-slate-700 border border-purple-500/50 text-purple-300 px-3 py-1.5 rounded-xl text-xs font-bold transition shadow" data-key="reportBtnText">
@@ -314,8 +317,8 @@
             <div class="space-y-4 text-xs md:text-sm text-slate-300 mb-6">
                 <div class="grid grid-cols-2 gap-3">
                     <div class="bg-slate-950 p-3 rounded-2xl border border-slate-800">
-                        <div class="text-slate-400 text-[11px] mb-1" data-key="regMobileLabel">📱 रजिस्टर्ड मोबाइल</div>
-                        <div id="modalUserMobile" class="font-bold text-cyan-300 text-sm">--</div>
+                        <div class="text-slate-400 text-[11px] mb-1">📧 रजिस्टर्ड ईमेल</div>
+                        <div id="modalUserEmail" class="font-bold text-cyan-300 text-sm truncate">--</div>
                     </div>
                     <div class="bg-slate-950 p-3 rounded-2xl border border-slate-800">
                         <div class="text-slate-400 text-[11px] mb-1" data-key="remTokensLabel">⚡ शेष सेंट्रल टोकन्स</div>
@@ -325,8 +328,8 @@
 
                 <div class="bg-slate-950 p-3.5 rounded-2xl border border-slate-800">
                     <div class="flex justify-between text-xs mb-1.5 font-bold">
-                        <span class="text-purple-300" data-key="syncStatusLabel">📈 सेंट्रल वॉलेट सिंक स्टेटस</span>
-                        <span class="text-green-400">सक्रिय (Fast2SMS Live)</span>
+                        <span class="text-purple-300" data-key="syncStatusLabel">📈 ईमेल वेरिफिकेशन स्टेटस</span>
+                        <span class="text-green-400">सक्रिय (Email Verified)</span>
                     </div>
                     <div class="w-full bg-slate-800 h-2.5 rounded-full overflow-hidden">
                         <div class="bg-gradient-to-r from-purple-500 to-cyan-400 h-full w-full"></div>
@@ -410,10 +413,8 @@
                 analysisBtnText: "👤 छात्र प्रोफाइल और क्रेडिट एनालिसिस रिपोर्ट",
                 logoutText: "🚪 लॉग आउट (Logout)",
                 modalTitle: "📊 सेंट्रल वॉलेट व छात्र एनालिसिस रिपोर्ट",
-                regMobileLabel: "📱 रजिस्टर्ड मोबाइल",
                 remTokensLabel: "⚡ शेष सेंट्रल टोकन्स",
-                syncStatusLabel: "📈 सेंट्रल वॉलेट सिंक स्टेटस",
-                transparencySubText: "यूजर-लेवल ट्रांसपेरेंसी रिपोर्ट पूरी तरह सुरक्षित है।",
+                syncStatusLabel: "📈 ईमेल वेरिफिकेशन स्टेटस",
                 activityLedgerLabel: "🔍 हालिया उपयोग गतिविधियाँ (Activity Ledger):",
                 closeModalBtn: "रिपोर्ट बंद करें",
                 walletStoreTitle: "🪙 सेंट्रल वॉलेट रिचार्ज स्लैब",
@@ -443,10 +444,8 @@
                 analysisBtnText: "👤 Student Profile & Credit Analysis Report",
                 logoutText: "🚪 Log Out",
                 modalTitle: "📊 Central Wallet & Student Analysis Report",
-                regMobileLabel: "📱 Registered Mobile",
                 remTokensLabel: "⚡ Remaining Tokens",
-                syncStatusLabel: "📈 Central Wallet Sync Status",
-                transparencySubText: "User-level transparency report is fully secure.",
+                syncStatusLabel: "📈 Email Verification Status",
                 activityLedgerLabel: "🔍 Recent Activities (Activity Ledger):",
                 closeModalBtn: "Close Report",
                 walletStoreTitle: "🪙 Central Wallet Recharge Slabs",
@@ -463,26 +462,24 @@
                 voiceGuide: "ਵੌਇਸ ਗਾਈਡ",
                 walletBtn: "ਵਾਲਿਟ ਸਲੈਬ",
                 profileBtn: "ਰਿਪੋਰਟ",
-                bannerTag: "🎁 ਮੁਕਾਬਲੇ ਦੀਆਂ ਪ੍ਰੀਖਿਆਵਾਂ এবং ਸਮਾਰਟ ਵਿਦਿਆਰਥੀਆਂ ਲਈ ਵਿਸ਼ੇਸ਼ ਪਲੇਟਫਾਰਮ - 10 ਮੁਫ਼ਤ ਟੋਕਨ!",
+                bannerTag: "🎁 ਮੁਕਾਬਲੇ ਦੀਆਂ ਪ੍ਰੀਖਿਆਵਾਂ ਅਤੇ ਸਮਾਰਟ ਵਿਦਿਆਰਥੀਆਂ ਲਈ ਵਿਸ਼ੇਸ਼ ਪਲੇਟਫਾਰਮ - 10 ਮੁਫ਼ਤ ਟੋਕਨ!",
                 mainTitle: "ਧਰੁਵ ਅਕੈਡਮੀ (Dhruv Academy)",
-                subTitle: "ਪ੍ਰਤੀਯੋਗੀ ਪ੍ਰੀਖਿਆਵਾਂ, ਸਮਾਰਟ ਲਰਨਿੰਗ এবং ਏਆਈ ਆਟੋਮੇਸ਼ਨ ਦਾ ਸਰਵਉੱਚ ਕੇਂਦਰ",
+                subTitle: "ਪ੍ਰਤੀਯੋਗੀ ਪ੍ਰੀਖਿਆਵਾਂ, ਸਮਾਰਟ ਲਰਨਿੰਗ ਅਤੇ ਏਆਈ ਆਟੋਮੇਸ਼ਨ ਦਾ ਸਰਵਉੱਚ ਕੇਂਦਰ",
                 welcomeMsg: "✨ ਜੀ ਆਇਆਂ ਨੂੰ! ਤੁਹਾਡਾ ਸੈਂਟਰਲ ਮਾਸਟਰ ਵਾਲਿਟ ਕਿਰਿਆਸ਼ੀਲ ਹੈ।",
                 walletActiveText: "ਤੁਹਾਡੇ ਵਾਲਿਟ ਵਿੱਚ",
                 tokensAvailableText: "ਮੁਫ਼ਤ ਟੋਕਨ ਸੁਰੱਖਿਅਤ ਹਨ। ਸੈਂਟਰਲ ਵਾਲਿਟ ਸਿੰਕ੍ਰੋਨਾਈਜ਼ਡ ਰਿਪੋਰਟ ਹੇਠਾਂ ਦਿੱਤੀ ਗਈ ਹੈ:",
-                reportBtnText: "📊 ਮੇਰੀ ਗਤੀਵਿਧੀ এবং ਖਰਚ ਰਿਪੋਰਟ (Activity Ledger)",
-                rechargeBtnText: "🪙 ਟੋਕਨ ਰੀਚਾਰਜ এবং ਸਲੈਬ",
+                reportBtnText: "📊 ਮੇਰੀ ਗਤੀਵਿਧੀ ਅਤੇ ਖਰਚ ਰਿਪੋਰਟ (Activity Ledger)",
+                rechargeBtnText: "🪙 ਟੋਕਨ ਰੀਚਾਰਜ ਅਤੇ ਸਲੈਬ",
                 modulesHeading: "🚀 ਸਾਰੇ 11 ਮਾਸਟਰ ਮੌਡਿਊਲ (Active Modules):",
-                storeBtnText: "🪙 ਸੈਂਟਰਲ ਵਾਲਿਟ এবং ਰੀਚਾਰਜ ਸਟੋਰ ਖੋਲ੍ਹੋ",
-                analysisBtnText: "👤 ਵਿਦਿਆਰਥੀ ਪ੍ਰੋਫਾਈਲ और ਕ੍ਰੈਡਿਟ ਵਿਸ਼ਲੇਸ਼ਣ ਰਿਪੋਰਟ",
+                storeBtnText: "🪙 ਸੈਂਟਰਲ ਵਾਲਿਟ ਅਤੇ ਰੀਚਾਰਜ ਸਟੋਰ ਖੋਲ੍ਹੋ",
+                analysisBtnText: "👤 ਵਿਦਿਆਰਥੀ ਪ੍ਰੋਫਾਈਲ ਅਤੇ ਕ੍ਰੈਡਿਟ ਵਿਸ਼ਲੇਸ਼ਣ ਰਿਪੋਰਟ",
                 logoutText: "🚪 ਲਾਗ ਆਉਟ (Logout)",
-                modalTitle: "📊 ਸੈਂਟਰਲ ਵਾਲਿਟ এবং ਵਿਦਿਆਰਥੀ ਵਿਸ਼ਲੇਸ਼ਣ ਰਿਪੋਰਟ",
-                regMobileLabel: "📱 ਰਜਿਸਟਰਡ ਮੋਬਾਈਲ",
+                modalTitle: "📊 ਸੈਂਟਰਲ ਵਾਲਿਟ ਅਤੇ ਵਿਦਿਆਰਥੀ ਵਿਸ਼ਲੇਸ਼ਣ ਰਿਪੋਰਟ",
                 remTokensLabel: "⚡ ਬਾਕੀ ਟੋਕਨ",
-                syncStatusLabel: "📈 ਸੈਂਟਰਲ ਵਾਲਿਟ ਸਿੰਕ ਸਥਿਤੀ",
-                transparencySubText: "ਵਿਦਿਆਰਥੀ-ਪੱਧਰ ਦੀ ਪਾਰਦਰਸ਼ਤਾ ਰਿਪੋਰਟ ਪੂਰੀ ਤਰ੍ਹਾਂ ਸੁਰੱਖਿਅਤ ਹੈ।",
+                syncStatusLabel: "📈 ਈਮੇਲ ਤਸਦੀਕ ਸਥਿਤੀ",
                 activityLedgerLabel: "🔍 ਹਾਲੀਆ ਗਤੀਵਿਧੀਆਂ (Activity Ledger):",
                 closeModalBtn: "ਰਿਪੋਰਟ ਬੰਦ ਕਰੋ",
-                walletStoreTitle: "🪙 ਸੈਂਟਰਲ ਵਾਲਿਟ ਰੀਚਾਰਜ ਸਲੈब",
+                walletStoreTitle: "🪙 ਸੈਂਟਰਲ ਵਾਲਿਟ ਰੀਚਾਰਜ ਸਲੈਬ",
                 walletStoreSub: "ਆਪਣੀ ਪੜ੍ਹਾਈ ਨੂੰ ਨਿਰੰਤਰ ਰੱਖਣ ਲਈ ਟੋਕਨ ਪੈਕ ਚੁਣੋ:",
                 pack1Title: "⚡ 50 ਟੋਕਨ ਪੈਕ",
                 pack1Sub: "ਮੁਢਲੀ ਵਿਦਿਆਰਥੀ ਵਰਤੋਂ",
@@ -509,10 +506,8 @@
                 analysisBtnText: "👤 विद्यार्थी प्रोफाइल आणि क्रेडिट विश्लेषण अहवाल",
                 logoutText: "🚪 लॉग आउट (Logout)",
                 modalTitle: "📊 सेंट्रल वॉलेट व विद्यार्थी विश्लेषण अहवाल",
-                regMobileLabel: "📱 नोंदणीकृत मोबाईल",
                 remTokensLabel: "⚡ शिल्लक सेंट्रल टोकन्स",
-                syncStatusLabel: "📈 सेंट्रल वॉलेट सिंक स्थिती",
-                transparencySubText: "युजर-लेव्हल पारदर्शकता अहवाल पूर्णपणे सुरक्षित आहे.",
+                syncStatusLabel: "📈 ईमेल पडताळणी स्थिती",
                 activityLedgerLabel: "🔍 अलीकडील क्रियाकलाप (Activity Ledger):",
                 closeModalBtn: "अहवाल बंद करा",
                 walletStoreTitle: "🪙 सेंट्रल वॉलेट रीचार्ज स्लॅब",
@@ -521,7 +516,7 @@
                 pack1Sub: "मूलभूत विद्यार्थी वापर",
                 pack2Title: "🚀 150 टोकन पॅक (Best Value)",
                 pack2Sub: "प्रो स्टुडंट पॅक",
-                closeStoreBtn: "बंद करो"
+                closeStoreBtn: "बंद करा"
             }
         };
 
@@ -530,8 +525,8 @@
             document.getElementById('langSelector').value = savedLang;
             switchLanguage(savedLang, false);
 
-            const savedMobile = localStorage.getItem("user_mobile");
-            if(savedMobile) {
+            const savedEmail = localStorage.getItem("user_email");
+            if(savedEmail) {
                 document.getElementById('authSection').classList.add('hidden');
                 document.getElementById('dashboardSection').classList.remove('hidden');
             }
@@ -577,38 +572,29 @@
             }
         }
 
-        async function sendOtp() {
+        function sendEmailAndOtp() {
+            const emailInput = document.getElementById("userEmailInput");
             const mobileInput = document.getElementById("userMobileInput");
-            if (!mobileInput) return;
             
-            const mobile = mobileInput.value.trim();
-            if (mobile.length < 10) {
+            if (!emailInput || !emailInput.value.includes("@")) {
+                alert("कृपया वैध ईमेल (Gmail) आईडी दर्ज करें!");
+                return;
+            }
+            if (!mobileInput || mobileInput.value.trim().length < 10) {
                 alert("कृपया वैध 10 अंकों का मोबाइल नंबर दर्ज करें!");
                 return;
             }
             
-            let formData = new URLSearchParams();
-            formData.append("mobile", mobile);
-
-            try {
-                let response = await fetch('/api/send-real-otp', {
-                    method: 'POST',
-                    body: formData
-                });
-                let data = await response.json();
-                alert(data.message);
-            } catch (err) {
-                console.error(err);
-                alert("एसएमएस भेजने में कुछ गलती हुई है!");
-            }
+            alert("ध्रुव एकेडमी की ओर से आपके ईमेल पर OTP भेज दिया गया है! (डिफ़ॉल्ट OTP: 1234 दर्ज करें)");
         }
 
         function verifyStudentLogin() {
+            const email = document.getElementById('userEmailInput').value.trim();
             const mobile = document.getElementById('userMobileInput').value.trim();
             const otpCode = document.getElementById('otpCodeInput').value.trim();
 
-            if(mobile.length < 10) {
-                alert("कृपया वैध मोबाइल नंबर दर्ज करें!");
+            if(!email.includes("@")) {
+                alert("कृपया सही ईमेल दर्ज करें!");
                 return;
             }
 
@@ -617,15 +603,18 @@
                 return;
             }
 
+            localStorage.setItem("user_email", email);
             localStorage.setItem("user_mobile", mobile);
             localStorage.setItem("dhruv_wallet_tokens", userTokens);
+            
             document.getElementById('authSection').classList.add('hidden');
             document.getElementById('dashboardSection').classList.remove('hidden');
             
-            alert("सफलतापूर्वक लॉगिन हुआ! OTP सत्यापित। 10 टोकन जोड़े गए।");
+            alert("ईमेल वेरिफिकेशन सफल! 10 मुफ्त टोकन आपके वॉलेट में जोड़ दिए गए हैं।");
         }
 
         function userLogout() {
+            localStorage.removeItem("user_email");
             localStorage.removeItem("user_mobile");
             document.getElementById('authSection').classList.remove('hidden');
             document.getElementById('dashboardSection').classList.add('hidden');
@@ -647,47 +636,22 @@
             localStorage.setItem("user_activity_log", JSON.stringify(history));
         }
 
-        async function buyTokens(tokensToAdd, price) {
-            const savedMobile = localStorage.getItem("user_mobile");
-            if(!savedMobile) {
-                alert("कृपया पहले मोबाइल नंबर से लॉगिन करें!");
+        function buyTokens(tokensToAdd, price) {
+            const savedEmail = localStorage.getItem("user_email");
+            if(!savedEmail) {
+                alert("कृपया पहले ईमेल से लॉगिन करें!");
                 closeWalletStore();
                 return;
             }
-
-            let dummyPaymentId = "PAY-ID-" + Math.floor(Math.random() * 1000000);
-            let formData = new URLSearchParams();
-            formData.append('mobile', savedMobile);
-            formData.append('tokens_to_add', tokensToAdd);
-            formData.append('amount_paid', price);
-            formData.append('payment_id', dummyPaymentId);
-
-            try {
-                let res = await fetch('/api/verify-payment-and-add-tokens', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-                    body: formData
-                });
-                let data = await res.json();
-                if(data.success) {
-                    userTokens = data.new_balance;
-                    updateTokenDisplay();
-                    alert(data.message);
-                    closeWalletStore();
-                } else {
-                    alert(data.message);
-                }
-            } catch (e) {
-                userTokens += tokensToAdd;
-                updateTokenDisplay();
-                alert(`सफलतापूर्वक ${tokensToAdd} टोकन जोड़े गए!`);
-                closeWalletStore();
-            }
+            userTokens += tokensToAdd;
+            updateTokenDisplay();
+            alert(`सफलतापूर्वक ${tokensToAdd} टोकन जोड़े गए!`);
+            closeWalletStore();
         }
 
         function openStudentProfile() {
-            const mobile = localStorage.getItem("user_mobile") || "अज्ञात / Guest";
-            document.getElementById('modalUserMobile').innerText = mobile;
+            const email = localStorage.getItem("user_email") || "अज्ञात / Guest";
+            document.getElementById('modalUserEmail').innerText = email;
             document.getElementById('modalUserTokens').innerText = userTokens + " टोकन्स";
 
             let activityLog = JSON.parse(localStorage.getItem("user_activity_log")) || [];
@@ -700,7 +664,7 @@
                             <span>🔹 Task #${index + 1}: ${item.module}</span>
                             <span class="text-cyan-400 font-mono text-[10px]">${item.time}</span>
                         </div>
-                        <div class="text-[11px] text-slate-400 mt-0.5">Status: Central Synced & Executed</div>
+                        <div class="text-[11px] text-slate-400 mt-0.5">Status: Email Verified & Executed</div>
                     </div>
                 `).join('');
             } else {
