@@ -166,8 +166,7 @@
             <label class="block text-xs font-bold text-slate-300 mb-2" data-key="mobileLabel">मोबाइल नंबर दर्ज करें (डिफ़ॉल्ट OTP: 1234):</label>
             <div class="flex flex-col md:flex-row gap-2">
                 <input type="tel" id="userMobileInput" placeholder="10 अंकों का मोबाइल नंबर" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-slate-100 focus:outline-none focus:border-purple-500 shadow-inner">
-                <button id="sendOtpBtn" onclick="verifyStudentLogin()" class="bg-gradient-to-r from-purple-600 to-cyan-600 hover:from-purple-500 hover:to-cyan-500 text-white font-bold text-xs px-5 py-2.5 rounded-xl shadow-lg transition whitespace-nowrap" data-key="loginBtn">
-                    लॉगिन करें और 10 टोकन पाएं 🚀
+                <button id="sendOtpBtn" onclick="sendOtp()" class="bg-gradient-to-r from-purple-600 to-cyan-600 hover:from-purple-500 hover:to-cyan-500 text-white font-bold text-xs px-5 py-2.5 rounded-xl shadow-lg transition whitespace-nowrap" data-key="loginBtn">लॉगिन करें और 10 टोकन पाएं टोकन पाएं 🚀
                 </button>
             </div>
         </div>
@@ -744,6 +743,36 @@
                 themeBtn.innerText = "Light Mode";
             }
         }
+        
+async function sendOtp() {
+    const mobileInput = document.getElementById("mobile");
+    if (!mobileInput) {
+        alert("मोबाइल नंबर वाला इनपुट (id='mobile') नहीं मिला!");
+        return;
+    }
+    
+    const mobile = mobileInput.value.trim();
+    if (!mobile) {
+        alert("कृपया अपना मोबाइल नंबर दर्ज करें!");
+        return;
+    }
+    
+    let formData = new URLSearchParams();
+    formData.append("mobile", mobile);
+
+    try {
+        let response = await fetch('/api/send-real-otp', {
+            method: 'POST',
+            body: formData
+        });
+        let data = await response.json();
+        alert(data.message);
+    } catch (err) {
+        console.error(err);
+        alert("एसएमएस भेजने में कुछ गलती हुई है!");
+    }
+}
+        
     </script>
 </body>
 </html>
