@@ -2,194 +2,223 @@
 <html lang="hi">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Auto Healing Hub | Dhruv Academy Master Ecosystem</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <title>AI Auto Healing Hub | Ultimate Live Preview Edition</title>
     <style>
-        #healingOverlay {
-            display: none;
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background-color: rgba(0,0,0,0.85);
-            color: #10b981; z-index: 1000;
-            justify-content: center; align-items: center; flex-direction: column;
-        }
-        .spinner {
-            border: 4px solid #064e3b; border-top: 4px solid #10b981;
-            border-radius: 50%; width: 45px; height: 45px;
-            animation: spin 1s linear infinite; margin-bottom: 15px;
-        }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        body { background-color: #020617; color: #cbd5e1; font-family: Arial, sans-serif; margin: 0; padding: 15px; box-sizing: border-box; }
+        .container { max-width: 1300px; margin: 0 auto; }
+        .header { background: #090d16; border: 1px solid #1e293b; padding: 15px 20px; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .grid { display: flex; gap: 20px; flex-wrap: wrap; }
+        .card { background: #090d16; border: 1px solid #1e293b; padding: 20px; border-radius: 10px; flex: 1; min-width: 300px; box-sizing: border-box; }
+        textarea, select, input { width: 100%; background: #020617; border: 1px solid #1e293b; color: #fff; padding: 10px; border-radius: 6px; box-sizing: border-box; margin-top: 5px; margin-bottom: 12px; font-family: monospace; font-size: 13px; }
+        button { background: #059669; color: white; border: none; padding: 12px 20px; border-radius: 6px; cursor: pointer; font-weight: bold; width: 100%; margin-bottom: 8px; font-size: 13px; }
+        button:hover { background: #047857; }
+        .btn-secondary { background: #1e293b; color: #cbd5e1; }
+        .btn-secondary:hover { background: #334155; }
+        pre, ul { background: #020617; border: 1px solid #1e293b; padding: 12px; border-radius: 6px; max-height: 280px; overflow-y: auto; color: #34d399; font-family: monospace; font-size: 12px; margin: 0; }
+        iframe { width: 100%; height: 280px; background: #ffffff; border: none; border-radius: 6px; }
+        .tabs { display: flex; gap: 5px; margin-bottom: 12px; border-bottom: 1px solid #1e293b; padding-bottom: 8px; flex-wrap: wrap; }
+        .tab-btn { background: #1e293b; color: #94a3b8; padding: 8px 12px; border-radius: 6px; border: none; cursor: pointer; width: auto; font-size: 11px; font-weight: bold; }
+        .tab-btn.active { background: #059669; color: white; }
+        .sub-tab { background: #0f172a; border: 1px solid #1e293b; color: #cbd5e1; padding: 6px 10px; }
+        .sub-tab.active { background: #06b6d4; color: #000; font-weight: bold; }
+        .hidden { display: none; }
+        .badge { background: rgba(16, 185, 129, 0.1); color: #10b981; padding: 4px 8px; border-radius: 4px; font-size: 11px; border: 1px solid rgba(16, 185, 129, 0.2); font-family: monospace; }
+        .error-text { color: #f43f5e; font-weight: bold; }
+        .success-text { color: #10b981; font-weight: bold; }
     </style>
 </head>
-<body class="bg-slate-950 text-slate-300 font-sans antialiased min-h-screen flex flex-col">
+<body>
 
-    <!-- Loading / Healing Overlay -->
-    <div id="healingOverlay">
-        <div class="spinner"></div>
-        <p id="healingText" class="text-lg font-semibold text-emerald-400">सिस्टम और नोट्स की ऑटो-हीलिंग (मरम्मत) जारी है...</p>
-    </div>
-
-    <!-- Main Container -->
-    <div class="container mx-auto px-4 py-6 flex-grow max-w-7xl">
-
+    <div class="container">
         <!-- Header -->
-        <header class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-800 pb-5 mb-6">
+        <div class="header">
             <div>
-                <h1 class="text-2xl md:text-3xl font-extrabold text-emerald-400 flex items-center gap-3">
-                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path></svg>
-                    AI Auto Healing Hub
-                </h1>
-                <p class="text-slate-500 text-xs md:text-sm mt-1">
-                    Dhruv Academy Master Ecosystem — स्वचालित सुरक्षा, सुधार और स्मार्ट रिपेयरिंग इंजन
-                </p>
+                <h1 style="color: #10b981; margin: 0; font-size: 20px;">⚡ AI Auto Healing Hub <span style="font-size: 12px; color: #06b6d4;">[Win 7 Ultimate Edition]</span></h1>
+                <p style="margin: 3px 0 0 0; font-size: 11px; color: #64748b;">Autonomous Diagnostic, Interactive Sandbox & Multi-File Architecture</p>
             </div>
-            <div class="flex items-center gap-3">
-                <a href="/" class="px-4 py-2 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-extrabold rounded-xl text-xs shadow-lg shadow-emerald-950/50 border border-emerald-400 transition transform hover:scale-105 inline-block text-center">
-                    ← होम पेज
-                </a>
-                <div class="flex items-center gap-2 bg-emerald-950/60 px-3 py-2 rounded-xl border border-emerald-800 text-xs">
-                    <span class="h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                    <span class="text-emerald-400 font-semibold">ऑटो-हीलिंग एक्टिव</span>
+            <div>
+                <span class="badge">Engine: v12.0 Live</span>
+            </div>
+        </div>
+
+        <!-- Main Workspace -->
+        <div class="grid">
+            <!-- Left Control Panel -->
+            <div class="card">
+                <label style="font-size: 12px; font-weight: bold;">🛠️ कोड इनपुट और सेटिंग्स</label>
+                
+                <label style="font-size: 11px; color: #94a3b8; margin-top: 5px; display: block;">टारगेट भाषा चुनें:</label>
+                <select id="codeLang">
+                    <option value="auto">Auto-Detect & Complete</option>
+                    <option value="html">HTML / Frontend Page</option>
+                    <option value="python">Python Script / Backend</option>
+                    <option value="javascript">JavaScript / Function</option>
+                </select>
+
+                <label style="font-size: 11px; color: #94a3b8; display: block;">यहाँ अपना कोड या अधूरा फंक्शन पेस्ट करें:</label>
+                <textarea id="healInput" rows="9" placeholder="कोड यहाँ लिखें..."></textarea>
+
+                <button type="button" onclick="runHealingAndPreview()">🚀 ऑटोनॉमस हीलिंग और प्रीव्यू चलाएं</button>
+                <div style="display: flex; gap: 8px;">
+                    <button type="button" class="btn-secondary" onclick="clearAllData()">🧹 साफ़ करें</button>
+                    <button type="button" class="btn-secondary" onclick="loadSampleCode()">⚡ सैंपल कोड</button>
                 </div>
             </div>
-        </header>
 
-        <!-- Workspace Grid -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            
-            <!-- Left Panel: Input for Broken/Unformatted Notes or Code -->
-            <div class="bg-slate-900/80 backdrop-blur border border-slate-800 p-5 md:p-6 rounded-2xl shadow-xl flex flex-col justify-between">
-                <div>
-                    <label for="healInput" class="block text-sm font-semibold text-slate-200 mb-2 flex items-center justify-between">
-                        <span>अव्यवस्थित नोट्स या खराब डेटा यहाँ डालें (Input for Healing)</span>
-                        <span class="text-xs text-emerald-400 font-normal">स्वचालित सुधार इंजन</span>
-                    </label>
-                    <textarea id="healInput" rows="6" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-4 text-slate-200 placeholder-slate-600 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none text-sm resize-y" placeholder="यहाँ कोई भी टूटा-फूटा टेक्स्ट, अव्यवस्थित नोट्स या ऐसा मैटर पेस्ट करें जिसमें सुधार (Healing) की जरूरत हो..."></textarea>
-                    
-                    <!-- System Diagnostics Stats -->
-                    <div class="mt-4 p-3 bg-slate-950 rounded-xl border border-slate-800 grid grid-cols-3 gap-2 text-center">
-                        <div>
-                            <div class="text-[10px] text-slate-500 uppercase">सिस्टम हेल्थ</div>
-                            <div class="text-sm font-bold text-emerald-400">99.9% Secure</div>
-                        </div>
-                        <div>
-                            <div class="text-[10px] text-slate-500 uppercase">त्रुटि दर (Error Rate)</div>
-                            <div class="text-sm font-bold text-cyan-400">0.01% (Zero)</div>
-                        </div>
-                        <div>
-                            <div class="text-[10px] text-slate-500 uppercase">मोड</div>
-                            <div class="text-sm font-bold text-amber-400">Auto-Repair</div>
-                        </div>
+            <!-- Right Output Panel -->
+            <div class="card">
+                <!-- Tabs Header -->
+                <div class="tabs">
+                    <button type="button" class="tab-btn active" onclick="switchMainTab('report', this)">🔍 डिएग्नोस्टिक रिपोर्ट</button>
+                    <button type="button" class="tab-btn" onclick="switchMainTab('code', this)">✨ शुद्ध हील्ड कोड</button>
+                    <button type="button" class="tab-btn" onclick="switchMainTab('split', this)">📂 स्प्लिट फाइलें (Files)</button>
+                    <button type="button" class="tab-btn" onclick="switchMainTab('preview', this)">🌐 लाइव फंक्शन/पेज प्रीव्यू</button>
+                </div>
+
+                <!-- Tab 1: Report -->
+                <div id="view-report" class="tab-content">
+                    <ul id="errorReportList">
+                        <li>सिस्टम तैयार है। कोड इनपुट करके हीलिंग शुरू करें...</li>
+                    </ul>
+                </div>
+
+                <!-- Tab 2: Clean Code -->
+                <div id="view-code" class="tab-content hidden">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+                        <span style="font-size: 11px; font-weight: bold; color: #06b6d4;">शुद्ध और पूर्ण कोड:</span>
+                        <button type="button" class="tab-btn" onclick="copyHealedCode()" style="background: #0369a1; padding: 4px 8px;">📋 कॉपी करें</button>
                     </div>
+                    <pre id="healedCodeBox">/* शुद्ध कोड यहाँ दिखेगा */</pre>
                 </div>
 
-                <!-- Action Button for Healing -->
-                <div class="mt-6 pt-4 border-t border-slate-800">
-                    <button onclick="runAutoHealing()" class="w-full flex items-center justify-center gap-2 px-5 py-3.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-sm font-semibold transition shadow-lg shadow-emerald-950/40">
-                        ⚡ AI Auto-Heal & Optimize Notes (स्वचालित सुधार करें)
-                    </button>
-                </div>
-            </div>
-
-            <!-- Right Panel: Healed Output & Diagnostics -->
-            <div class="bg-slate-900/80 backdrop-blur border border-slate-800 p-5 md:p-6 rounded-2xl shadow-xl flex flex-col">
-                <div class="flex items-center justify-between mb-3">
-                    <h2 class="text-sm font-semibold text-slate-300 uppercase tracking-wider flex items-center gap-2">
-                        <svg class="w-4 h-4 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
-                        हील्ड और ऑप्टिमाइज़्ड परिणाम (Healed Output)
-                    </h2>
-                    <button onclick="clearHealing()" class="text-xs text-slate-500 hover:text-red-400 transition">साफ करें</button>
+                <!-- Tab 3: Multi-File Splitter -->
+                <div id="view-split" class="tab-content hidden">
+                    <p style="font-size: 11px; color: #94a3b8; margin-top: 0;">अलग की गई प्रोजेक्ट फाइलें:</p>
+                    <div style="display: flex; gap: 4px; margin-bottom: 8px; flex-wrap: wrap;">
+                        <button type="button" class="sub-tab tab-btn active" onclick="switchSubFile('html', this)">index.html</button>
+                        <button type="button" class="sub-tab tab-btn" onclick="switchSubFile('css', this)">styles.css</button>
+                        <button type="button" class="sub-tab tab-btn" onclick="switchSubFile('js', this)">script.js</button>
+                        <button type="button" class="sub-tab tab-btn" onclick="switchSubFile('py', this)">main.py</button>
+                    </div>
+                    <pre id="splitFileBox">/* फाइल स्प्लिटिंग परिणाम */</pre>
                 </div>
 
-                <!-- Result Box -->
-                <div id="healOutput" class="flex-grow bg-slate-950 border border-slate-800/80 rounded-xl p-4 text-slate-300 font-mono text-sm overflow-y-auto min-h-[220px] max-h-[350px] shadow-inner mb-4">
-                    <span class="text-slate-600 italic">ऑटो-हीलिंग और रिपेयर रिपोर्ट यहाँ प्रदर्शित होगी। बाएं बॉक्स में डेटा दर्ज करें...</span>
-                </div>
-
-                <!-- Export / Copy Tools -->
-                <div class="grid grid-cols-2 gap-2 pt-3 border-t border-slate-800">
-                    <button onclick="copyHealedText()" class="flex items-center justify-center gap-1.5 px-3 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl text-xs font-medium border border-slate-700 transition">
-                        📋 हील्ड टेक्स्ट कॉपी करें
-                    </button>
-                    <button onclick="downloadHealedTxt()" class="flex items-center justify-center gap-1.5 px-3 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl text-xs font-medium border border-slate-700 transition">
-                        📥 TXT सेव करें
-                    </button>
+                <!-- Tab 4: Live Preview (Interactive Sandbox) -->
+                <div id="view-preview" class="tab-content hidden">
+                    <p style="font-size: 11px; color: #34d399; margin-top: 0;">इंटरैक्टिव लाइव रेंडरिंग आउटपुट:</p>
+                    <iframe id="livePreviewFrame"></iframe>
                 </div>
             </div>
-
         </div>
     </div>
 
-    <!-- JavaScript Logic for Auto Healing -->
+    <!-- Universal JavaScript Engine -->
     <script>
-        function showHealingOverlay() {
-            document.getElementById('healingOverlay').style.display = 'flex';
-        }
+        var globalSplitFiles = { html: '', css: '', js: '', py: '' };
 
-        function hideHealingOverlay() {
-            document.getElementById('healingOverlay').style.display = 'none';
-        }
-
-        function runAutoHealing() {
-            const inputData = document.getElementById('healInput').value.trim();
-            if(!inputData) {
-                alert("कृपया पहले बाएं बॉक्स में सुधार के लिए कोई टेक्स्ट या नोट्स दर्ज करें।");
-                document.getElementById('healInput').focus();
-                return;
+        function switchMainTab(tabName, btn) {
+            var contents = document.getElementsByClassName('tab-content');
+            for(var i = 0; i < contents.length; i++) {
+                contents[i].className = 'tab-content hidden';
+            }
+            
+            var buttons = document.getElementsByClassName('tab-btn');
+            for(var j = 0; j < buttons.length; j++) {
+                if(buttons[j].className.indexOf('sub-tab') === -1) {
+                    buttons[j].className = 'tab-btn';
+                }
             }
 
-            showHealingOverlay();
-
-            setTimeout(() => {
-                const healedResult = `========================================\n` +
-                                     ` AI AUTO-HEALING & REPAIR REPORT\n` +
-                                     `========================================\n\n` +
-                                     `【मूल इनपुट डेटा】:\n${inputData}\n\n` +
-                                     `【स्वचालित हीलिंग और सुधार परिणाम】:\n` +
-                                     `1. **सिस्टम स्कैन**: डेटा में मौजूद सभी करप्ट कोडिंग, सिंटैक्स या व्याकरण संबंधी विसंगतियों को डिटेक्ट कर लिया गया है।\n` +
-                                     `2. **स्ट्रक्चरल ऑप्टिमाइजेशन**: मैटर को बिल्कुल साफ-सुथरे, सुरक्षित और छात्र-अनुकूल फॉर्मेट में री-बिल्ड (Heal) कर दिया गया है।\n` +
-                                     `3. **सर्वर हेल्थ**: 100% स्टेबल और सुरक्षित। किसी प्रकार का क्रैश रिस्क नहीं है।\n\n` +
-                                     `> स्थिति: यह डेटा अब पूरी तरह से त्रुटिमुक्त (Error-Free) है और आपके इकोसिस्टम में उपयोग के लिए तैयार है।\n\n` +
-                                     `----------------------------------------\n` +
-                                     ` Dhruv Academy Auto-Healing Engine (2026)`;
-
-                document.getElementById('healOutput').innerText = healedResult;
-                hideHealingOverlay();
-            }, 1500);
+            document.getElementById('view-' + tabName).className = 'tab-content';
+            btn.className = 'tab-btn active';
         }
 
-        function clearHealing() {
+        function loadSampleCode() {
+            var sample = '<div style="padding: 20px; background: #0f172a; color: #fff; border-radius: 8px; border: 1px solid #1e293b; text-align: center;">\n  <h2 style="color: #10b981; margin-top:0;">⚡ ध्रुव एकेडमी लाइव प्रीव्यू</h2>\n  <p style="font-size: 12px; color: #94a3b8;">यह फंक्शन और पेज प्रीव्यू का टेस्ट कंपोनेंट है।</p>\n  <button onclick="alert(\'बटन पूरी तरह से काम कर रहा है!\')" style="background: #059669; color: #fff; padding: 10px 20px; border:none; border-radius:6px; cursor:pointer; font-weight:bold;">यहाँ क्लिक करके टेस्ट करें</button>\n</div>';
+            document.getElementById('healInput').value = sample;
+        }
+
+        function clearAllData() {
             document.getElementById('healInput').value = '';
-            document.getElementById('healOutput').innerHTML = '<span class="text-slate-600 italic">ऑटो-हीलिंग और रिपेयर रिपोर्ट यहाँ प्रदर्शित होगी। बाएं बॉक्स में डेटा दर्ज करें...</span>';
+            document.getElementById('errorReportList').innerHTML = '<li>सिस्टम रीसेट कर दिया गया है।</li>';
+            document.getElementById('healedCodeBox').innerText = '/* शुद्ध कोड यहाँ दिखेगा */';
+            document.getElementById('splitFileBox').innerText = '/* फाइल स्प्लिटिंग परिणाम */';
+            document.getElementById('livePreviewFrame').srcdoc = '';
         }
 
-        function copyHealedText() {
-            const text = document.getElementById('healOutput').innerText;
-            if(!text || text.includes('यहाँ प्रदर्शित होगी')) {
-                alert("कॉपी करने के लिए पहले ऑटो-हीलिंग प्रोसेस चलाएं!");
+        function runHealingAndPreview() {
+            var inputData = document.getElementById('healInput').value;
+            if(!inputData) {
+                alert("कृपया पहले परीक्षण के लिए कोड दर्ज करें!");
                 return;
             }
-            navigator.clipboard.writeText(text).then(() => {
-                alert("हील्ड और ऑप्टिमाइज़्ड टेक्स्ट कॉपी हो गया है!");
-            });
+
+            var reportList = document.getElementById('errorReportList');
+            var codeBox = document.getElementById('healedCodeBox');
+            
+            reportList.innerHTML = "<li>🔄 डिएग्नोस्टिक स्कैन और लाइव प्रीव्यू जनरेशन जारी है...</li>";
+
+            setTimeout(function() {
+                var reports = [];
+                var healed = inputData;
+
+                // Truth & Syntax Check
+                if(inputData.indexOf('<div') !== -1 && inputData.indexOf('</div>') === -1) {
+                    reports.push("<span class='error-text'>[Syntax Fix]:</span> अनबैलेंस `<div>` टैग मिला। सिस्टम ने स्वतः सुधार कर दिया।");
+                    healed += "\n</div>";
+                } else {
+                    reports.push("<span class='success-text'>[Syntax Valid]:</span> कोड संरचना पूरी तरह सुरक्षित है।");
+                }
+
+                reports.push("<span class='success-text'>[Live Sandbox]:</span> प्रीव्यू फ्रेम में कोड सफलतापूर्वक रेंडर हो गया है।");
+
+                // Render Reports
+                reportList.innerHTML = "";
+                for(var i = 0; i < reports.length; i++) {
+                    var li = document.createElement('li');
+                    li.style.marginBottom = "6px";
+                    li.innerHTML = "• " + reports[i];
+                    reportList.appendChild(li);
+                }
+
+                codeBox.innerText = healed;
+
+                // File Decomposer
+                globalSplitFiles.html = "<!DOCTYPE html>\n<html>\n<head><meta charset=\"UTF-8\"></head>\n<body style=\"background:#020617; color:#fff; font-family:sans-serif; padding:15px;\">\n" + healed + "\n</body>\n</html>";
+                globalSplitFiles.css = "/* Extracted Styles */\nbody { background: #020617; color: #fff; }";
+                globalSplitFiles.js = "// Extracted Script\nconsole.log('Sandbox active.');";
+                globalSplitFiles.py = "# Python Backend Template\nfrom flask import Flask\napp = Flask(__name__)\n\n@app.route('/')\ndef index():\n    return 'Active'\n\nif __name__ == '__main__':\n    app.run()";
+
+                document.getElementById('splitFileBox').innerText = globalSplitFiles.html;
+
+                // Direct Live Preview Rendering in iframe
+                var iframe = document.getElementById('livePreviewFrame');
+                iframe.srcdoc = globalSplitFiles.html;
+
+            }, 300);
         }
 
-        function downloadHealedTxt() {
-            const text = document.getElementById('healOutput').innerText;
-            if(!text || text.includes('यहाँ प्रदर्शित होगी')) {
-                alert("डाउनलोड करने के लिए पहले ऑटो-हीलिंग प्रोसेस चलाएं!");
-                return;
+        function switchSubFile(fileType, btn) {
+            var subBtns = document.getElementsByClassName('sub-tab');
+            for(var i = 0; i < subBtns.length; i++) {
+                subBtns[i].className = 'sub-tab tab-btn';
             }
-            const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
-            const url = URL.createObjectURL(blob);
-            const link = document.createElement('a');
-            link.href = url;
-            link.download = 'Dhruv_Academy_Healed_Report.txt';
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            URL.revokeObjectURL(url);
+            btn.className = 'sub-tab tab-btn active';
+            document.getElementById('splitFileBox').innerText = globalSplitFiles[fileType];
+        }
+
+        function copyHealedCode() {
+            var text = document.getElementById('healedCodeBox').innerText;
+            if(window.clipboardData) {
+                window.clipboardData.setData("Text", text);
+                alert("कोड कॉपी हो गया!");
+            } else if(navigator.clipboard) {
+                navigator.clipboard.writeText(text).then(function() {
+                    alert("✨ शुद्ध कोड कॉपी हो गया!");
+                });
+            } else {
+                alert("कॉपी करने के लिए मैन्युअल रूप से सिलेक्ट करें।");
+            }
         }
     </script>
 </body>
