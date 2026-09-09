@@ -185,17 +185,53 @@
 
                 codeBox.innerText = healed;
 
-                // File Decomposer
-                globalSplitFiles.html = "<!DOCTYPE html>\n<html>\n<head><meta charset=\"UTF-8\"></head>\n<body style=\"background:#020617; color:#fff; font-family:sans-serif; padding:15px;\">\n" + healed + "\n</body>\n</html>";
-                globalSplitFiles.css = "/* Extracted Styles */\nbody { background: #020617; color: #fff; }";
-                globalSplitFiles.js = "// Extracted Script\nconsole.log('Sandbox active.');";
-                globalSplitFiles.py = "# Python Backend Template\nfrom flask import Flask\napp = Flask(__name__)\n\n@app.route('/')\ndef index():\n    return 'Active'\n\nif __name__ == '__main__':\n    app.run()";
 
-                document.getElementById('splitFileBox').innerText = globalSplitFiles.html;
+                // File Decomposer (Clean & Error-Free Format)
+        globalSplitFiles.html = [
+            "<!DOCTYPE html>",
+            "<html>",
+            "<head><meta charset=\"UTF-8\"></head>",
+            "<body style=\"background:#020617; color:#fff; font-family:sans-serif; padding:15px;\">",
+            healed,
+            "</body>",
+            "</html>"
+        ].join("\n");
+        
+        globalSplitFiles.css = [
+            "/* Extracted Styles */",
+            "body {",
+            "    background-color: #020617;",
+            "    color: #cbd5e1;",
+            "    font-family: sans-serif;",
+            "}"
+        ].join("\n");
+        
+        globalSplitFiles.js = [
+            "// Extracted Client Script",
+            "document.addEventListener('DOMContentLoaded', function() {",
+            "    console.log('Sandbox active.');",
+            "});"
+        ].join("\n");
+        
+        globalSplitFiles.py = [
+            "# Python Backend Template (Flask)",
+            "from flask import Flask",
+            "app = Flask(__name__)",
+            "",
+            "@app.route('/')",
+            "def index():",
+            "    return 'Active'",
+            "",
+            "if __name__ == '__main__':",
+            "    app.run(port=8000)"
+        ].join("\n");
 
-                // Direct Live Preview Rendering in iframe
-                var iframe = document.getElementById('livePreviewFrame');
-                iframe.srcdoc = globalSplitFiles.html;
+        document.getElementById('splitFileBox').innerText = globalSplitFiles.html;
+
+        // Direct Live Preview Rendering in iframe
+        var iframe = document.getElementById('livePreviewFrame');
+        iframe.srcdoc = globalSplitFiles.html;
+
 
             }, 300);
         }
