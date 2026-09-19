@@ -390,7 +390,7 @@ def super_master_panel(user: AdminUser = Depends(require_superadmin), db: Sessio
                 </div>
                 <div class="bg-slate-900/90 border border-purple-500/30 rounded-2xl p-5 shadow-xl">
                     <h3 class="text-xs font-bold text-gray-400 uppercase">🚀 सिस्टम सर्वर स्वास्थ्य</h3>
-                    <p class="text-2xl font-extrabold text-purple-400 mt-2">100% मक्खन की तरह चालू</p>
+                    <p class="text-2xl font-extrabold text-purple-400 mt-2">100% Good Health</p>
                 </div>
             </div>
 
@@ -412,7 +412,7 @@ def super_master_panel(user: AdminUser = Depends(require_superadmin), db: Sessio
             </div>
 
             <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-4">
-                <h2 class="text-sm font-bold text-emerald-400">📜 हालिया डिजिटल मोनोग्राम ऑडिट ट्रेल</h2>
+                <h2 class="text-sm font-bold text-emerald-400">📜 डिजिटल मोनोग्राम ऑडिट ट्रेल</h2>
                 <div class="overflow-x-auto rounded-xl border border-slate-800">
                     <table class="w-full text-left border-collapse">
                         <thead>
