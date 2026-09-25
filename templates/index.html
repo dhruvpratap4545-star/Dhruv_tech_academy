@@ -1,0 +1,926 @@
+<!DOCTYPE html>
+<html lang="hi" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title data-key="pageTitle">ध्रुव एकेडमी - प्रतियोगी परीक्षाओं एवं स्मार्ट लर्निंग का सर्वोच्च केंद्र</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: { 50: '#f5f3ff', 500: '#8b5cf6', 600: '#7c3aed', 700: '#6d28d9' }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-4px); }
+        }
+        .animate-float { animation: float 4s ease-in-out infinite; }
+        .module-card {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .module-card:hover {
+            transform: translateY(-4px) scale(1.02);
+            box-shadow: 0 10px 25px -5px rgba(124, 58, 237, 0.4);
+        }
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-track { background: #0f172a; }
+        ::-webkit-scrollbar-thumb { background: #7c3aed; border-radius: 10px; }
+
+        @media (max-width: 768px) {
+            body { padding: 4px !important; }
+            .w-full.max-w-5xl {
+                padding: 10px !important;
+                border-radius: 20px !important;
+                border: none !important;
+                box-shadow: none !important;
+                background: transparent !important;
+            }
+            .grid {
+                display: grid !important;
+                grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+                gap: 8px !important;
+            }
+            .module-card {
+                display: flex !important;
+                flex-direction: column !important;
+                align-items: center !important;
+                text-align: center !important;
+                padding: 12px 6px !important;
+                background: rgba(15, 23, 42, 0.95) !important;
+                border: 1px solid rgba(124, 58, 237, 0.4) !important;
+                border-radius: 18px !important;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6) !important;
+            }
+            .module-card div:first-child {
+                font-size: 11px !important;
+                font-weight: 800 !important;
+                margin-top: 4px !important;
+                flex-direction: column !important;
+                align-items: center !important;
+            }
+            .module-card div:first-child span:first-child { text-align: center !important; }
+            .module-card div:first-child span.text-xs {
+                margin-top: 2px !important;
+                font-size: 9px !important;
+            }
+            .module-card div:last-child {
+                font-size: 9px !important;
+                color: #94a3b8 !important;
+                line-height: 1.2 !important;
+                margin-top: 2px !important;
+            }
+        }
+    </style>
+</head>
+<body id="pageBody" class="bg-slate-950 text-slate-100 min-h-screen flex flex-col items-center justify-between p-2 md:p-6 transition-colors duration-500">
+
+    <!-- मास्टर कंटेनर -->
+    <div class="w-full max-w-5xl bg-slate-900/95 border border-purple-800/60 rounded-3xl p-4 md:p-8 shadow-2xl backdrop-blur-xl animate-float">
+        
+        <!-- टॉप नेविगेशन बार -->
+        <div class="w-full flex flex-wrap items-center justify-between gap-2 p-3 bg-slate-950/90 border border-purple-700/60 rounded-2xl shadow-xl mb-4">
+            
+            <div onclick="openWalletStore()" class="cursor-pointer flex items-center gap-1.5 bg-purple-950/90 border border-purple-500 px-3 py-2 rounded-xl text-yellow-400 font-extrabold text-xs md:text-sm shadow hover:border-yellow-400 transition" title="Central Wallet Report">
+                <span>⚡ <span data-key="walletTitle">Central Wallet</span>:</span>
+                <span id="topTokenCount">10</span> <span class="text-[10px] text-purple-300 font-normal" data-key="tokensUnit">Tokens</span>
+            </div>
+
+            <!-- भाषा चयन ड्रॉपडाउन -->
+            <div class="flex items-center bg-slate-900 p-1.5 rounded-xl border border-slate-700 gap-1">
+                <span class="text-[11px] text-purple-300 font-bold px-1">🌐</span>
+                <select id="langSelector" onchange="switchLanguage(this.value)" class="bg-slate-800 text-white text-xs font-bold px-2.5 py-1 rounded-lg border border-slate-700 focus:outline-none focus:border-cyan-500 cursor-pointer">
+                    <option value="hi">🇮🇳 हिंदी (Hindi)</option>
+                    <option value="en">🇬🇧 English</option>
+                    <option value="pa">🇮🇳 ਪੰਜਾਬੀ (Punjabi)</option>
+                    <option value="mr">🇮🇳 मराठी (Marathi)</option>
+                </select>
+            </div>
+
+            <button onclick="playVoiceIntroduction()" class="flex items-center gap-1.5 bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-500 hover:to-purple-500 text-white px-3 py-2 rounded-xl font-bold text-xs shadow-lg transition animate-pulse">
+                🔊 <span data-key="voiceGuide">Voice Guide</span>
+            </button>
+
+            <div class="flex items-center gap-1 bg-slate-800 px-2 py-1.5 rounded-xl border border-slate-700">
+                <span class="text-[10px] text-slate-300">Theme:</span>
+                <input type="color" id="themeColorPicker" value="#7c3aed" onchange="changeThemeAccent(this.value)" class="w-5 h-5 rounded cursor-pointer bg-transparent border-0" title="Change Theme Accent">
+            </div>
+
+            <button id="themeToggleBtn" onclick="toggleThemeMode()" class="px-3 py-2 rounded-xl font-bold text-xs bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition" data-key="themeToggleBtn">
+                Light Mode
+            </button>
+
+            <button onclick="openWalletStore()" class="flex items-center gap-1 bg-purple-600 hover:bg-purple-500 text-white px-3 py-2 rounded-xl font-bold text-xs shadow transition">
+                🪙 <span data-key="walletBtn">Wallet Slabs</span>
+            </button>
+
+            <button onclick="openStudentProfile()" class="flex items-center gap-1 bg-cyan-700 hover:bg-cyan-600 text-white px-3 py-2 rounded-xl font-bold text-xs shadow transition">
+                👤 <span data-key="profileBtn">Report</span>
+            </button>
+        </div>
+
+        <!-- रनिंग मारकी टिकर -->
+        <div class="w-full bg-purple-950/80 border border-purple-700/50 rounded-xl overflow-hidden py-1.5 mb-4 shadow-inner">
+            <marquee behavior="scroll" direction="left" scrollamount="5" class="text-xs font-bold text-cyan-300 tracking-wide">
+                🌟 <span data-key="marquee1">Welcome to Dhruv Academy Master Ecosystem</span> | 🚀 <span data-key="marquee2">Ultimate AI Platform for Competitive Exams & Smart Learning</span> | 🔥 <span data-key="marquee3">Dhruv Academy - Ultimate Smart Learning & AI Ecosystem</span>
+            </marquee>
+        </div>
+
+        <!-- हेडर बैनर -->
+        <div class="text-center mb-6">
+            <span class="inline-block bg-purple-950/90 border border-purple-600 text-purple-300 text-xs px-4 py-1.5 rounded-full font-bold mb-2 shadow-md" data-key="bannerTag">
+                🎁 Special Platform for Competitive Exams & Smart Students - 10 Free Tokens!
+            </span>
+            <div class="flex flex-col items-center justify-center my-4">
+                <div class="relative w-16 h-16 flex items-center justify-center rounded-2xl bg-slate-900 overflow-hidden shadow-[0_0_30px_rgba(56,189,248,0.6)] border border-cyan-400/60 animate-bounce" style="animation-duration: 4s;">
+                    <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-purple-900/80 via-indigo-950/90 to-black animate-pulse"></div>
+                    
+                    <svg class="absolute inset-0 w-full h-full animate-spin-slow drop-shadow-[0_0_12px_rgba(56,189,248,0.9)]" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M50 5 L58 38 L91 50 L58 62 L50 95 L42 62 L9 50 L42 38 Z" fill="url(#star-gradient)" opacity="0.9"/>
+                        <path d="M50 20 L55 45 L80 50 L55 55 L50 80 L45 55 L20 50 L45 45 Z" fill="#FFFFFF" class="animate-ping" style="animation-duration: 3s;"/>
+                        <defs>
+                            <linearGradient id="star-gradient" x1="0" y1="0" x2="100" y2="100" gradientUnits="userSpaceOnUse">
+                                <stop stop-color="#38BDF8"/>
+                                <stop offset="0.5" stop-color="#A855F7"/>
+                                <stop offset="1" stop-color="#F43F5E"/>
+                            </linearGradient>
+                        </defs>
+                    </svg>
+
+                    <span class="relative z-10 text-xl font-black tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-cyan-200 via-white to-pink-300 drop-shadow-[0_2px_6px_rgba(0,0,0,0.9)]" style="font-family: 'Courier New', monospace;">DA</span>
+                </div>
+            </div>
+            <div class="flex flex-col items-center justify-center my-6 text-center">
+                <h1 class="text-3xl md:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-pink-400 to-cyan-400 tracking-wide pb-2" style="line-height: 1.3;" data-key="mainTitle">
+                    Dhruv Academy
+                </h1>
+                
+                <div class="mt-3 px-6 py-2.5 rounded-xl bg-slate-900/80 border border-indigo-500/50 shadow-[0_0_20px_rgba(99,102,241,0.3)] backdrop-blur-md">
+                    <p class="text-xs md:text-sm font-semibold tracking-wide text-cyan-300 drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]" data-key="subTitle">
+                        🔥 Apex Center for Competitive Exams, Smart Learning & AI Automation
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- लॉगिन / ईमेल और मोबाइल वेरिफिकेशन सेक्शन -->
+        <div id="authSection" class="bg-slate-950/90 border border-slate-800 rounded-2xl p-5 shadow-inner mb-6 max-w-lg mx-auto space-y-3">
+            <div>
+                <label class="block text-xs font-bold text-slate-300 mb-1" data-key="emailLabel">Enter Email ID (Email Verification):</label>
+                <input type="email" id="userEmailInput" placeholder="student@gmail.com" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-slate-100 focus:outline-none focus:border-purple-500 shadow-inner mb-2">
+
+                <label class="block text-xs font-bold text-slate-300 mb-1" data-key="mobileLabel">Enter Mobile Number:</label>
+                <div class="flex flex-col md:flex-row gap-2">
+                    <input type="tel" id="userMobileInput" placeholder="10-digit mobile number" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-slate-100 focus:outline-none focus:border-purple-500 shadow-inner">
+                    <button id="sendOtpBtn" onclick="sendEmailAndOtp()" class="bg-gradient-to-r from-purple-600 to-cyan-600 hover:from-purple-500 hover:to-cyan-500 text-white font-bold text-xs px-5 py-2.5 rounded-xl shadow-lg transition whitespace-nowrap" data-key="sendOtpBtn">
+                        Send OTP on Email 🚀
+                    </button>
+                </div>
+            </div>
+
+            <!-- ओटीपी दर्ज करने और वेरीफाई करने का बॉक्स -->
+            <div id="otpVerifyBox" class="pt-2 border-t border-slate-800">
+                <label class="block text-xs font-bold text-cyan-300 mb-1" data-key="otpLabel">Enter OTP received on Email/Mobile (Default: 1234):</label>
+                <div class="flex flex-col md:flex-row gap-2">
+                    <input type="text" id="otpCodeInput" value="1234" placeholder="4-digit OTP" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-slate-100 focus:outline-none focus:border-cyan-500 shadow-inner">
+                    <button onclick="verifyStudentLogin()" class="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white font-bold text-xs px-5 py-2.5 rounded-xl shadow-lg transition whitespace-nowrap" data-key="verifyOtpBtn">
+                        Verify & Get 10 Tokens ✅
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- डैशबोर्ड / मॉड्यूल्स सेक्शन -->
+        <div id="dashboardSection" class="hidden space-y-6">
+            
+            <div class="bg-gradient-to-r from-purple-900/50 via-slate-900 to-cyan-900/50 border border-purple-600/50 rounded-2xl p-4 md:p-5 text-center shadow-lg">
+                <h3 class="text-sm md:text-base font-extrabold text-cyan-300 mb-1" data-key="welcomeMsg">✨ Welcome! Your Central Master Wallet is Active.</h3>
+                <p class="text-xs md:text-sm text-slate-300">
+                    <span data-key="walletActiveText">You have</span> 
+                    <span id="dashboardTokenCount" class="font-black text-yellow-400 text-base">10</span> 
+                    <span data-key="tokensAvailableText">free tokens secured. Email Verified ✅</span>
+                </p>
+                
+                <div class="flex flex-wrap justify-center gap-2 mt-3">
+                    <button onclick="openStudentProfile()" class="bg-slate-800/90 hover:bg-slate-700 border border-purple-500/50 text-purple-300 px-3 py-1.5 rounded-xl text-xs font-bold transition shadow" data-key="reportBtnText">
+                        📊 My Activity & Expense Ledger
+                    </button>
+                    <button onclick="openWalletStore()" class="bg-slate-800/90 hover:bg-slate-700 border border-yellow-500/50 text-yellow-300 px-3 py-1.5 rounded-xl text-xs font-bold transition shadow" data-key="rechargeBtnText">
+                        🪙 Token Recharge & Slabs
+                    </button>
+                </div>
+            </div>
+
+            <!-- मास्टर मॉड्यूल्स ग्रिड (सारे 13 मॉड्यूल्स data-key के साथ) -->
+            <div>
+                <h4 class="text-xs font-bold text-purple-400 uppercase tracking-wider mb-3 px-1" data-key="modulesHeading">🚀 All Master Modules (Active Modules):</h4>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                    
+                    <!-- 1. Foundation: Kids Tier -->
+                    <a href="/kids-zone.html" onclick="logUserActivity('Foundation Module')" class="module-card group bg-slate-950/80 hover:bg-pink-950/40 border border-slate-800 hover:border-pink-500 p-4 rounded-2xl block shadow">
+                        <div class="text-lg md:text-xl font-extrabold text-pink-400 mb-1 flex items-center justify-between">
+                            <span data-key="mod1Title">1. Foundation: NC-5 Kids Tier</span>
+                            <span class="text-xs bg-pink-950 text-pink-300 px-2 py-0.5 rounded-full" data-key="badgeActive">Active</span>
+                        </div>
+                        <div class="text-xs text-slate-300" data-key="mod1Desc">Nursery to Class 5 foundation (AI-Driven Learning Module).</div>
+                    </a>
+
+                    <!-- 2. AI Engine Core -->
+                    <a href="/ai-core.html" onclick="logUserActivity('AI Engine Core')" class="module-card group bg-slate-950/80 hover:bg-purple-950/40 border border-slate-800 hover:border-purple-500 p-4 rounded-2xl block shadow">
+                        <div class="text-lg md:text-xl font-extrabold text-purple-400 mb-1 flex items-center justify-between">
+                            <span data-key="mod2Title">2. AI Engine Core</span>
+                            <span class="text-xs bg-purple-950 text-purple-300 px-2 py-0.5 rounded-full" data-key="badgeActive">Active</span>
+                        </div>
+                        <div class="text-xs text-slate-300" data-key="mod2Desc">400-AI multi-agent neural core, deep research & logic tools.</div>
+                    </a>
+
+                    <!-- 3. AI Auto-Healing -->
+                    <a href="/ai-auto-healing.html" onclick="logUserActivity('AI Auto-Healing')" class="module-card group bg-slate-950/80 hover:bg-indigo-950/40 border border-slate-800 hover:border-indigo-500 p-4 rounded-2xl block shadow">
+                        <div class="text-lg md:text-xl font-extrabold text-indigo-400 mb-1 flex items-center justify-between">
+                            <span data-key="mod3Title">3. AI Auto-Healing</span>
+                            <span class="text-xs bg-indigo-950 text-indigo-300 px-2 py-0.5 rounded-full" data-key="badgeActive">Active</span>
+                        </div>
+                        <div class="text-xs text-slate-300" data-key="mod3Desc">Automated ecosystem diagnostics and self-error correction scanner.</div>
+                    </a>
+
+                    <!-- 4. Face-Swap Social -->
+                    <a href="/face-swap-social.html" onclick="logUserActivity('Face-Swap Social')" class="module-card group bg-slate-950/80 hover:bg-blue-950/40 border border-slate-800 hover:border-blue-500 p-4 rounded-2xl block shadow">
+                        <div class="text-lg md:text-xl font-extrabold text-blue-400 mb-1 flex items-center justify-between">
+                            <span data-key="mod4Title">4. Face-Swap Social</span>
+                            <span class="text-xs bg-blue-950 text-blue-300 px-2 py-0.5 rounded-full" data-key="badgeActive">Active</span>
+                        </div>
+                        <div class="text-xs text-slate-300" data-key="mod4Desc">Interactive social explainer visuals and video learning.</div>
+                    </a>
+
+                    <!-- 5. 3D Blackboard -->
+                    <a href="/3d-blackboard.html" onclick="logUserActivity('3D Blackboard')" class="module-card group bg-slate-950/80 hover:bg-teal-950/40 border border-slate-800 hover:border-teal-500 p-4 rounded-2xl block shadow">
+                        <div class="text-lg md:text-xl font-extrabold text-teal-400 mb-1 flex items-center justify-between">
+                            <span data-key="mod5Title">5. 3D Blackboard</span>
+                            <span class="text-xs bg-teal-950 text-teal-300 px-2 py-0.5 rounded-full" data-key="badgeActive">Active</span>
+                        </div>
+                        <div class="text-xs text-slate-300" data-key="mod5Desc">Computerized 3D scientific blackboard, simulations & TV cast.</div>
+                    </a>
+
+                    <!-- 6. Digital Library -->
+                    <a href="/digital-library.html" onclick="logUserActivity('Digital Library')" class="module-card group bg-slate-950/80 hover:bg-cyan-950/40 border border-slate-800 hover:border-cyan-500 p-4 rounded-2xl block shadow">
+                        <div class="text-lg md:text-xl font-extrabold text-cyan-400 mb-1 flex items-center justify-between">
+                            <span data-key="mod6Title">6. Digital Library</span>
+                            <span class="text-xs bg-cyan-950 text-cyan-300 px-2 py-0.5 rounded-full" data-key="badgeActive">Active</span>
+                        </div>
+                        <div class="text-xs text-slate-300" data-key="mod6Desc">Encrypted e-books, academic notes & verified knowledge matrix.</div>
+                    </a>
+
+                    <!-- 8. Coaching Hub -->
+                    <a href="/coaching-hub.html" onclick="logUserActivity('Coaching Hub')" class="module-card group bg-slate-950/80 hover:bg-orange-950/40 border border-slate-800 hover:border-orange-500 p-4 rounded-2xl block shadow">
+                        <div class="text-lg md:text-xl font-extrabold text-orange-400 mb-1 flex items-center justify-between">
+                            <span data-key="mod8Title">8. Coaching Hub</span>
+                            <span class="text-xs bg-orange-950 text-orange-300 px-2 py-0.5 rounded-full" data-key="badgeActive">Active</span>
+                        </div>
+                        <div class="text-xs text-slate-300" data-key="mod8Desc">Institutional coaching dashboard, syllabus and batch operations.</div>
+                    </a>
+
+                    <!-- 9. Competition Solver -->
+                    <a href="/competition-solver.html" onclick="logUserActivity('Competition Solver')" class="module-card group bg-slate-950/80 hover:bg-violet-950/40 border border-slate-800 hover:border-violet-500 p-4 rounded-2xl block shadow">
+                        <div class="text-lg md:text-xl font-extrabold text-violet-400 mb-1 flex items-center justify-between">
+                            <span data-key="mod9Title">9. Competition Solver</span>
+                            <span class="text-xs bg-violet-950 text-violet-300 px-2 py-0.5 rounded-full" data-key="badgeActive">Active</span>
+                        </div>
+                        <div class="text-xs text-slate-300" data-key="mod9Desc">AI question solver for IAS, IFS, IRS, PCS, Banking, NEET & exams.</div>
+                    </a>
+
+                    <!-- 10. Nebula Visual Hub -->
+                    <a href="/nebula-visual-hub.html" onclick="logUserActivity('Nebula Visual Hub')" class="module-card group bg-slate-950/80 hover:bg-rose-950/40 border border-slate-800 hover:border-rose-500 p-4 rounded-2xl block shadow">
+                        <div class="text-lg md:text-xl font-extrabold text-rose-400 mb-1 flex items-center justify-between">
+                            <span data-key="mod10Title">10. Nebula Visual Hub</span>
+                            <span class="text-xs bg-rose-950 text-rose-300 px-2 py-0.5 rounded-full" data-key="badgeActive">Active</span>
+                        </div>
+                        <div class="text-xs text-slate-300" data-key="mod10Desc">Real-time ecosystem activity and telemetry visualization.</div>
+                    </a>
+
+                    <!-- 11. Spoken English Master -->
+                    <a href="/spoken-english.html" onclick="logUserActivity('Spoken English')" class="module-card group bg-slate-950/80 hover:bg-green-950/40 border border-slate-800 hover:border-green-500 p-4 rounded-2xl block shadow">
+                        <div class="text-lg md:text-xl font-extrabold text-green-400 mb-1 flex items-center justify-between">
+                            <span data-key="mod11Title">11. Spoken English Master</span>
+                            <span class="text-xs bg-green-950 text-green-300 px-2 py-0.5 rounded-full" data-key="badgeActive">Active</span>
+                        </div>
+                        <div class="text-xs text-slate-300" data-key="mod11Desc">4D Live conversational AI tutor for fluency & accent training.</div>
+                    </a>
+
+                    <!-- 12. Legal AI Assistant -->
+                    <a href="/legal-ai" onclick="logUserActivity('Legal AI Assistant')" class="module-card group bg-slate-950/80 hover:bg-purple-950/40 border border-slate-800 hover:border-purple-500 p-4 rounded-2xl block shadow">
+                        <div class="text-lg md:text-xl font-extrabold text-purple-400 mb-1 flex items-center justify-between">
+                            <span data-key="mod12Title">12. Legal AI Assistant</span>
+                            <span class="text-xs bg-purple-950 text-purple-300 px-2 py-0.5 rounded-full" data-key="badgeActive">Active</span>
+                        </div>
+                        <div class="text-xs text-slate-300" data-key="mod12Desc">Legal advice, AI statutory drafting & document analysis portal.</div>
+                    </a>
+
+                    <!-- 13. Zero-Trust Mobile Shield -->
+                    <a href="/mobile-shield" onclick="logUserActivity('Zero-Trust Mobile Shield')" class="module-card group bg-slate-950/80 hover:bg-emerald-950/40 border border-slate-800 hover:border-emerald-500 p-4 rounded-2xl block shadow">
+                        <div class="text-lg md:text-xl font-extrabold text-emerald-400 mb-1 flex items-center justify-between">
+                            <span data-key="mod13Title">13. Zero-Trust Mobile Shield</span>
+                            <span class="text-xs bg-emerald-950 text-emerald-300 px-2 py-0.5 rounded-full" data-key="badgeActive">Active</span>
+                        </div>
+                        <div class="text-xs text-slate-300" data-key="mod13Desc">Anti-hack, auto-kill screen recorder and security safeguard.</div>
+                    </a>
+
+                </div>
+            </div>
+
+            <div class="flex flex-col md:flex-row gap-3 pt-2">
+                <button onclick="openWalletStore()" class="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 text-white font-bold py-3 rounded-xl text-xs md:text-sm transition shadow-lg" data-key="storeBtnText">
+                    🪙 Open Central Wallet & Recharge Store
+                </button>
+                <button onclick="openStudentProfile()" class="w-full bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold py-3 rounded-xl text-xs md:text-sm transition border border-slate-700 shadow" data-key="analysisBtnText">
+                    👤 Student Profile & Credit Analysis Report
+                </button>
+            </div>
+
+            <div class="text-center pt-3">
+                <button onclick="userLogout()" class="bg-red-950/40 border border-red-800/60 hover:bg-red-900/60 text-red-300 px-4 py-1.5 rounded-xl text-xs font-bold transition shadow" data-key="logoutText">
+                    🚪 Log Out
+                </button>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- 📊 छात्र एनालिसिस मॉडल -->
+    <div id="profileModal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 z-50">
+        <div class="bg-slate-900 border border-cyan-500 rounded-3xl p-6 max-w-lg w-full shadow-2xl animate-float">
+            <div class="flex justify-between items-center mb-4 border-b border-slate-800 pb-3">
+                <h3 class="text-base md:text-lg font-black text-cyan-400" data-key="modalTitle">📊 Central Wallet & Student Analysis Report</h3>
+                <button onclick="closeStudentProfile()" class="text-slate-400 hover:text-white font-bold text-lg px-2">✕</button>
+            </div>
+            
+            <div class="space-y-4 text-xs md:text-sm text-slate-300 mb-6">
+                <div class="grid grid-cols-2 gap-3">
+                    <div class="bg-slate-950 p-3 rounded-2xl border border-slate-800">
+                        <div class="text-slate-400 text-[11px] mb-1" data-key="regEmailLabel">📧 Registered Email</div>
+                        <div id="modalUserEmail" class="font-bold text-cyan-300 text-sm truncate">--</div>
+                    </div>
+                    <div class="bg-slate-950 p-3 rounded-2xl border border-slate-800">
+                        <div class="text-slate-400 text-[11px] mb-1" data-key="remTokensLabel">⚡ Remaining Tokens</div>
+                        <div id="modalUserTokens" class="font-bold text-yellow-400 text-base">10 Tokens</div>
+                    </div>
+                </div>
+
+                <div class="bg-slate-950 p-3.5 rounded-2xl border border-slate-800">
+                    <div class="flex justify-between text-xs mb-1.5 font-bold">
+                        <span class="text-purple-300" data-key="syncStatusLabel">📈 Email Verification Status</span>
+                        <span class="text-green-400" data-key="verifiedBadge">Active (Email Verified)</span>
+                    </div>
+                    <div class="w-full bg-slate-800 h-2.5 rounded-full overflow-hidden">
+                        <div class="bg-gradient-to-r from-purple-500 to-cyan-400 h-full w-full"></div>
+                    </div>
+                </div>
+                
+                <div class="bg-slate-950 p-3.5 rounded-2xl border border-slate-800">
+                    <div class="font-bold text-purple-400 mb-2 flex items-center gap-1.5">
+                        <span data-key="activityLedgerLabel">🔍 Recent Activities (Activity Ledger):</span>
+                    </div>
+                    <div id="modalActivityList" class="space-y-2 max-h-40 overflow-y-auto pr-1"></div>
+                </div>
+            </div>
+
+            <button onclick="closeStudentProfile()" class="w-full bg-cyan-700 hover:bg-cyan-600 text-white py-2.5 rounded-xl text-xs font-bold transition shadow" data-key="closeModalBtn">
+                Close Report
+            </button>
+        </div>
+    </div>
+
+    <!-- सेंट्रल वॉलेट स्टोर पॉपअप मॉडल -->
+    <div id="walletModal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 z-50">
+        <div class="bg-slate-900 border border-purple-600 rounded-3xl p-6 max-w-sm w-full shadow-2xl animate-float">
+            <h3 class="text-lg font-black text-purple-400 mb-2" data-key="walletStoreTitle">🪙 Central Wallet Recharge Slabs</h3>
+            <p class="text-xs text-slate-300 mb-4" data-key="walletStoreSub">Select a token pack to keep your studies uninterrupted:</p>
+            
+            <div class="space-y-3 mb-4">
+                <div onclick="buyTokens(50, 99)" class="bg-slate-800 border border-purple-500/50 hover:border-purple-400 p-3.5 rounded-xl cursor-pointer flex justify-between items-center transition shadow">
+                    <div>
+                        <div class="font-bold text-sm text-yellow-300" data-key="pack1Title">⚡ 50 Token Pack</div>
+                        <div class="text-xs text-slate-400" data-key="pack1Sub">Basic student usage</div>
+                    </div>
+                    <div class="bg-purple-600 text-white px-3.5 py-1.5 rounded-lg text-xs font-bold shadow">₹99</div>
+                </div>
+                <div onclick="buyTokens(150, 199)" class="bg-slate-800 border border-purple-500/50 hover:border-purple-400 p-3.5 rounded-xl cursor-pointer flex justify-between items-center transition shadow">
+                    <div>
+                        <div class="font-bold text-sm text-yellow-300" data-key="pack2Title">🚀 150 Token Pack (Best Value)</div>
+                        <div class="text-xs text-slate-400" data-key="pack2Sub">Pro student pack</div>
+                    </div>
+                    <div class="bg-purple-600 text-white px-3.5 py-1.5 rounded-lg text-xs font-bold shadow">₹199</div>
+                </div>
+            </div>
+
+            <button onclick="closeWalletStore()" class="w-full bg-slate-800 hover:bg-slate-700 text-slate-300 py-2.5 rounded-xl text-xs font-bold transition" data-key="closeStoreBtn">
+                Close
+            </button>
+        </div>
+    </div>
+
+    <!-- फुटर -->
+    <footer class="w-full text-center text-xs text-slate-500 mt-6">
+        <p data-key="footerText">© 2026 Dhruv Academy Master Ecosystem. All Rights Reserved. Data Fully Encrypted.</p>
+        <div class="mt-1">
+            <a href="/secret-admin-login-dhruv" class="text-slate-700 hover:text-slate-400 transition text-xs select-none" title="System Gateway">•</a>
+        </div>
+    </footer>
+
+    <!-- जावास्क्रिप्ट संपूर्ण द्विभाषी व मल्टीलिंगुअल इंजन -->
+    <script>
+        let currentLang = localStorage.getItem("dhruv_selected_lang") || 'hi';
+        let userTokens = parseInt(localStorage.getItem("dhruv_wallet_tokens")) || parseInt(localStorage.getItem("user_tokens")) || 10;
+        let currentTheme = 'dark';
+
+        const translations = {
+            hi: {
+                pageTitle: "ध्रुव एकेडमी - प्रतियोगी परीक्षाओं एवं स्मार्ट लर्निंग का सर्वोच्च केंद्र",
+                walletTitle: "सेंट्रल वॉलेट",
+                tokensUnit: "टोकन्स",
+                voiceGuide: "वॉइस गाइड",
+                walletBtn: "वॉलेट स्लैब",
+                profileBtn: "रिपोर्ट",
+                themeToggleBtn: "लाइट मोड",
+                marquee1: "ध्रुव एकेडमी मास्टर इकोसिस्टम में आपका स्वागत है",
+                marquee2: "प्रतियोगी परीक्षाओं एवं स्मार्ट लर्निंग के लिए सर्वोच्च AI प्लेटफ़ॉर्म",
+                marquee3: "ध्रुव एकेडमी - अल्टीमेट स्मार्ट लर्निंग एवं एआई इकोसिस्टम",
+                bannerTag: "🎁 प्रतियोगी परीक्षाओं और स्मार्ट छात्रों के लिए विशेष मंच - 10 टोकन मुफ्त!",
+                mainTitle: "ध्रुव एकेडमी (Dhruv Academy)",
+                subTitle: "🔥 प्रतियोगी परीक्षाएं, स्मार्ट लर्निंग और एआई ऑटोमेशन का सर्वोच्च केंद्र",
+                emailLabel: "जीमेल / ईमेल आईडी दर्ज करें (Email Verification):",
+                mobileLabel: "मोबाइल नंबर दर्ज करें:",
+                sendOtpBtn: "मेल पर OTP भेजें 🚀",
+                otpLabel: "मेल/मोबाइल पर प्राप्त OTP दर्ज करें (डिफ़ॉल्ट OTP: 1234):",
+                verifyOtpBtn: "वेरीफाई करें और 10 टोकन पाएं ✅",
+                welcomeMsg: "✨ स्वागत है! आपका सेंट्रल मास्टर वॉलेट सक्रिय है।",
+                walletActiveText: "आपके वॉलेट में",
+                tokensAvailableText: "फ्री टोकन सुरक्षित हैं। ईमेल वेरीफाइड ✅",
+                reportBtnText: "📊 मेरी गतिविधि व खर्च रिपोर्ट (Activity Ledger)",
+                rechargeBtnText: "🪙 टोकन रीचार्ज और स्लैब",
+                modulesHeading: "🚀 सभी मास्टर मॉड्यूल्स (Active Modules):",
+                badgeActive: "सक्रिय",
+                mod1Title: "1. फाउंडेशन: NC-5 किड्स टियर",
+                mod1Desc: "नर्सरी से कक्षा 5 तक की नींव (AI-Driven Learning Module).",
+                mod2Title: "2. एआई इंजन कोर",
+                mod2Desc: "400-AI मल्टी-एजेंट न्यूट्रल कोर, डीप रिसर्च व लॉजिक टूल्स.",
+                mod3Title: "3. एआई ऑटो-हीलिंग",
+                mod3Desc: "सॉफ्टवेयर त्रुटियों को स्वतः ठीक करने वाला स्कैनर.",
+                mod4Title: "4. फेस-स्वैप सोशल",
+                mod4Desc: "छात्रों के लिए वीडियो और सोशल एक्सप्लेनर विजुअल्स.",
+                mod5Title: "5. 3D ब्लैकबोर्ड",
+                mod5Desc: "डिजिटल कक्षाओं के लिए 3D ब्लैकबोर्ड और टीवी कास्ट.",
+                mod6Title: "6. डिजिटल लाइब्रेरी",
+                mod6Desc: "एन्क्रिप्टेड ई-बुक्स, नोट्स और डिजिटल नॉलेज मैट्रिक्स.",
+                mod8Title: "8. कोचिंग हब",
+                mod8Desc: "कोचिंग संस्थानों के संचालन और बैच प्रबंधन का डैशबोर्ड.",
+                mod9Title: "9. कंपटीशन सॉल्वर",
+                mod9Desc: "IAS, IFS, IRS, PCS, Banking, NEET आदि सभी परीक्षाओं का सॉल्वर.",
+                mod10Title: "10. नेबुला विजुअल हब",
+                mod10Desc: "सिस्टम गतिविधियों को दिखाने वाला नेबुला डैशबोर्ड.",
+                mod11Title: "11. स्पोकन इंग्लिश मास्टर",
+                mod11Desc: "अदिति मैम के साथ 4D Live AI वॉयस एक्सेंट व आसान बोलचाल.",
+                mod12Title: "12. लीगल एआई असिस्टेंट",
+                mod12Desc: "कानूनी सलाह, एआई ड्राफ्टिंग और दस्तावेज़ विश्लेषण सहायता.",
+                mod13Title: "13. ज़ीरो-ट्रस्ट मोबाइल शील्ड",
+                mod13Desc: "एंटी-हैक, ऑटो-किल स्क्रीन रिकॉर्डर और सुरक्षा कवच.",
+                storeBtnText: "🪙 सेंट्रल वॉलेट और रीचार्ज स्टोर खोलें",
+                analysisBtnText: "👤 छात्र प्रोफाइल और क्रेडिट एनालिसिस रिपोर्ट",
+                logoutText: "🚪 लॉग आउट (Logout)",
+                modalTitle: "📊 सेंट्रल वॉलेट व छात्र एनालिसिस रिपोर्ट",
+                regEmailLabel: "📧 रजिस्टर्ड ईमेल",
+                remTokensLabel: "⚡ शेष सेंट्रल टोकन्स",
+                syncStatusLabel: "📈 ईमेल वेरिफिकेशन स्टेटस",
+                verifiedBadge: "सक्रिय (Email Verified)",
+                activityLedgerLabel: "🔍 हालिया उपयोग गतिविधियाँ (Activity Ledger):",
+                closeModalBtn: "रिपोर्ट बंद करें",
+                walletStoreTitle: "🪙 सेंट्रल वॉलेट रिचार्ज स्लैब",
+                walletStoreSub: "अपने अध्ययन को निरंतर रखने के लिए टोकन पैक चुनें:",
+                pack1Title: "⚡ 50 टोकन पैक",
+                pack1Sub: "बुनियादी छात्र उपयोग",
+                pack2Title: "🚀 150 टोकन पैक (Best Value)",
+                pack2Sub: "प्रो स्टूडेंट पैक",
+                closeStoreBtn: "बंद करें",
+                footerText: "© 2026 ध्रुव एकेडमी मास्टर इकोसिस्टम। सर्वाधिकार सुरक्षित। डेटा पूरी तरह सुरक्षित।"
+            },
+            en: {
+                pageTitle: "Dhruv Academy - The Apex Hub for Competitive Exams & Smart Learning",
+                walletTitle: "Central Wallet",
+                tokensUnit: "Tokens",
+                voiceGuide: "Voice Guide",
+                walletBtn: "Wallet Slabs",
+                profileBtn: "Reports",
+                themeToggleBtn: "Light Mode",
+                marquee1: "Welcome to Dhruv Academy Master Ecosystem",
+                marquee2: "Ultimate AI Platform for Competitive Exams & Smart Learning",
+                marquee3: "Dhruv Academy - Ultimate Smart Learning & AI Ecosystem",
+                bannerTag: "🎁 Special Platform for Competitive Exams & Smart Students - 10 Free Tokens!",
+                mainTitle: "Dhruv Academy",
+                subTitle: "🔥 Apex Center for Competitive Exams, Smart Learning & AI Automation",
+                emailLabel: "Enter Email ID (Email Verification):",
+                mobileLabel: "Enter Mobile Number:",
+                sendOtpBtn: "Send OTP on Email 🚀",
+                otpLabel: "Enter OTP received on Email/Mobile (Default: 1234):",
+                verifyOtpBtn: "Verify & Get 10 Tokens ✅",
+                welcomeMsg: "✨ Welcome! Your Central Master Wallet is Active.",
+                walletActiveText: "You have",
+                tokensAvailableText: "free tokens secured. Email Verified ✅",
+                reportBtnText: "📊 My Activity & Expense Ledger",
+                rechargeBtnText: "🪙 Token Recharge & Slabs",
+                modulesHeading: "🚀 All Master Modules (Active Modules):",
+                badgeActive: "Active",
+                mod1Title: "1. Foundation: NC-5 Kids Tier",
+                mod1Desc: "Nursery to Class 5 foundation (AI-Driven Learning Module).",
+                mod2Title: "2. AI Engine Core",
+                mod2Desc: "400-AI multi-agent neural core, deep research & logic tools.",
+                mod3Title: "3. AI Auto-Healing",
+                mod3Desc: "Automated ecosystem diagnostics and self-error correction scanner.",
+                mod4Title: "4. Face-Swap Social",
+                mod4Desc: "Interactive social explainer visuals and video learning.",
+                mod5Title: "5. 3D Blackboard",
+                mod5Desc: "Computerized 3D scientific blackboard, simulations & TV cast.",
+                mod6Title: "6. Digital Library",
+                mod6Desc: "Encrypted e-books, academic notes & verified knowledge matrix.",
+                mod8Title: "8. Coaching Hub",
+                mod8Desc: "Institutional coaching dashboard, syllabus and batch operations.",
+                mod9Title: "9. Competition Solver",
+                mod9Desc: "AI question solver for IAS, IFS, IRS, PCS, Banking, NEET & exams.",
+                mod10Title: "10. Nebula Visual Hub",
+                mod10Desc: "Real-time ecosystem activity and telemetry visualization.",
+                mod11Title: "11. Spoken English Master",
+                mod11Desc: "4D Live conversational AI tutor for fluency & accent training.",
+                mod12Title: "12. Legal AI Assistant",
+                mod12Desc: "Legal advice, AI statutory drafting & document analysis portal.",
+                mod13Title: "13. Zero-Trust Mobile Shield",
+                mod13Desc: "Anti-hack, auto-kill screen recorder and security safeguard.",
+                storeBtnText: "🪙 Open Central Wallet & Recharge Store",
+                analysisBtnText: "👤 Student Profile & Credit Analysis Report",
+                logoutText: "🚪 Log Out",
+                modalTitle: "📊 Central Wallet & Student Analysis Report",
+                regEmailLabel: "📧 Registered Email",
+                remTokensLabel: "⚡ Remaining Tokens",
+                syncStatusLabel: "📈 Email Verification Status",
+                verifiedBadge: "Active (Email Verified)",
+                activityLedgerLabel: "🔍 Recent Activities (Activity Ledger):",
+                closeModalBtn: "Close Report",
+                walletStoreTitle: "🪙 Central Wallet Recharge Slabs",
+                walletStoreSub: "Select a token pack to keep your studies uninterrupted:",
+                pack1Title: "⚡ 50 Token Pack",
+                pack1Sub: "Basic student usage",
+                pack2Title: "🚀 150 Token Pack (Best Value)",
+                pack2Sub: "Pro student pack",
+                closeStoreBtn: "Close",
+                footerText: "© 2026 Dhruv Academy Master Ecosystem. All Rights Reserved. Data Fully Encrypted."
+            },
+            pa: {
+                pageTitle: "ਧਰੁਵ ਅਕੈਡਮੀ - ਮੁਕਾਬਲੇ ਦੀਆਂ ਪ੍ਰੀਖਿਆਵਾਂ ਅਤੇ ਸਮਾਰਟ ਲਰਨਿੰਗ ਦਾ ਸਭ ਤੋਂ ਵੱਡਾ ਕੇਂਦਰ",
+                walletTitle: "ਸੈਂਟਰਲ ਵਾਲਿਟ",
+                tokensUnit: "ਟੋਕਨ",
+                voiceGuide: "ਵੌਇਸ ਗਾਈਡ",
+                walletBtn: "ਵਾਲਿਟ ਸਲੈਬ",
+                profileBtn: "ਰਿਪੋਰਟ",
+                themeToggleBtn: "ਲਾਈਟ ਮੋਡ",
+                marquee1: "ਧਰੁਵ ਅਕੈਡਮੀ ਵਿੱਚ ਤੁਹਾਡਾ ਸਵਾਗਤ ਹੈ",
+                marquee2: "ਪ੍ਰਤੀਯੋਗੀ ਪ੍ਰੀਖਿਆਵਾਂ ਅਤੇ ਸਮਾਰਟ ਲਰਨਿੰਗ ਲਈ ਸਰਵਉੱਚ ਏਆਈ ਪਲੇਟਫਾਰਮ",
+                marquee3: "ਧਰੁਵ ਅਕੈਡਮੀ - ਸਮਾਰਟ ਲਰਨਿੰਗ ਈਕੋਸਿਸਟਮ",
+                bannerTag: "🎁 ਮੁਕਾਬਲੇ ਦੀਆਂ ਪ੍ਰੀਖਿਆਵਾਂ ਅਤੇ ਸਮਾਰਟ ਵਿਦਿਆਰਥੀਆਂ ਲਈ ਵਿਸ਼ੇਸ਼ ਪਲੇਟਫਾਰਮ - 10 ਮੁਫ਼ਤ ਟੋਕਨ!",
+                mainTitle: "ਧਰੁਵ ਅਕੈਡਮੀ (Dhruv Academy)",
+                subTitle: "🔥 ਪ੍ਰਤੀਯੋਗੀ ਪ੍ਰੀਖਿਆਵਾਂ, ਸਮਾਰਟ ਲਰਨਿੰਗ ਅਤੇ ਏਆਈ ਆਟੋਮੇਸ਼ਨ ਦਾ ਸਰਵਉੱਚ ਕੇਂਦਰ",
+                emailLabel: "ਈਮੇਲ ਆਈਡੀ ਦਰਜ ਕਰੋ (Email Verification):",
+                mobileLabel: "ਮੋਬਾਈਲ ਨੰਬਰ ਦਰਜ ਕਰੋ:",
+                sendOtpBtn: "ਮੇਲ 'ਤੇ ਓਟੀਪੀ ਭੇਜੋ 🚀",
+                otpLabel: "ਮੇਲ/ਮੋਬਾਈਲ 'ਤੇ ਆਇਆ OTP ਦਰਜ ਕਰੋ (Default: 1234):",
+                verifyOtpBtn: "ਤਸਦੀਕ ਕਰੋ ਅਤੇ 10 ਟੋਕਨ ਪ੍ਰਾਪਤ ਕਰੋ ✅",
+                welcomeMsg: "✨ ਜੀ ਆਇਆਂ ਨੂੰ! ਤੁਹਾਡਾ ਸੈਂਟਰਲ ਮਾਸਟਰ ਵਾਲਿਟ ਕਿਰਿਆਸ਼ੀਲ ਹੈ।",
+                walletActiveText: "ਤੁਹਾਡੇ ਵਾਲਿਟ ਵਿੱਚ",
+                tokensAvailableText: "ਮੁਫ਼ਤ ਟੋਕਨ ਸੁਰੱਖਿਅਤ ਹਨ। ਈਮੇਲ ਤਸਦੀਕ ਹੋ ਚੁੱਕੀ ਹੈ ✅",
+                reportBtnText: "📊 ਮੇਰੀ ਗਤੀਵਿਧੀ ਅਤੇ ਖਰਚ ਰਿਪੋਰਟ (Activity Ledger)",
+                rechargeBtnText: "🪙 ਟੋਕਨ ਰੀਚਾਰਜ ਅਤੇ ਸਲੈਬ",
+                modulesHeading: "🚀 ਸਾਰੇ ਮਾਸਟਰ ਮੌਡਿਊਲ (Active Modules):",
+                badgeActive: "ਕਿਰਿਆਸ਼ੀਲ",
+                mod1Title: "1. ਫਾਊਂਡੇਸ਼ਨ: NC-5 ਕਿਡਜ਼ ਟੀਅਰ",
+                mod1Desc: "ਨਰਸਰੀ ਤੋਂ ਕਲਾਸ 5 ਦੀ ਬੁਨਿਆਦ (AI-Driven Learning Module).",
+                mod2Title: "2. ਏਆਈ ਇੰਜਨ ਕੋਰ",
+                mod2Desc: "400-AI ਮਲਟੀ-ਏਜੰਟ ਨਿਊਰਲ ਕੋਰ ਅਤੇ ਡੂੰਘੀ ਖੋਜ ਸੰਦ।",
+                mod3Title: "3. ਏਆਈ ਆਟੋ-ਹੀਲਿੰਗ",
+                mod3Desc: "ਸਿਸਟਮ ਗਲਤੀਆਂ ਨੂੰ ਆਪਣੇ ਆਪ ਠੀਕ ਕਰਨ ਵਾਲਾ ਸਕੈਨਰ।",
+                mod4Title: "4. ਫੇਸ-ਸਵੈਪ ਸੋਸ਼ਲ",
+                mod4Desc: "ਸਮਾਜਿਕ ਵਿਆਖਿਆਕਾਰ ਵਿਜ਼ੂਅਲ ਅਤੇ ਵੀਡੀਓ ਸਿੱਖਿਆ।",
+                mod5Title: "5. 3D ਬਲੈਕਬੋਰਡ",
+                mod5Desc: "ਡਿਜੀਟਲ ਕਲਾਸਾਂ ਲਈ 3D ਬਲੈਕਬੋਰਡ ਅਤੇ ਟੀਵੀ ਕਾਸਟ।",
+                mod6Title: "6. ਡਿਜੀਟਲ ਲਾਇਬ੍ਰੇਰੀ",
+                mod6Desc: "ਇਨਕ੍ਰਿਪਟਡ ਈ-ਕਿਤਾਬਾਂ ਅਤੇ ਵਿੱਦਿਅਕ ਨੋਟਸ।",
+                mod8Title: "8. ਕੋਚਿੰਗ ਹੱਬ",
+                mod8Desc: "ਕੋਚਿੰਗ ਸੰਸਥਾਵਾਂ ਦੇ ਪ੍ਰਬੰਧਨ ਲਈ ਡੈਸ਼ਬੋਰਡ।",
+                mod9Title: "9. ਕੰਪੀਟੀਸ਼ਨ ਸੋਲਵਰ",
+                mod9Desc: "IAS, PCS, Banking, NEET ਆਦਿ ਪ੍ਰੀਖਿਆਵਾਂ ਦਾ ਸੋਲਵਰ।",
+                mod10Title: "10. ਨੇਬੂਲਾ ਵਿਜ਼ੂਅਲ ਹੱਬ",
+                mod10Desc: "ਸਿਸਟਮ ਗਤੀਵਿਧੀਆਂ ਨੂੰ ਦਰਸਾਉਂਦਾ ਡੈਸ਼ਬੋਰਡ।",
+                mod11Title: "11. ਸਪੋਕਨ ਇੰਗਲਿਸ਼ ਮਾਸਟਰ",
+                mod11Desc: "4D ਲਾਈਵ ਏਆਈ ਵੌਇਸ ਐਕਸੈਂਟ ਅਤੇ ਬੋਲਚਾਲ ਅਭਿਆਸ।",
+                mod12Title: "12. ਲੀਗਲ ਏਆਈ ਅਸਿਸਟੈਂਟ",
+                mod12Desc: "ਕਾਨੂੰਨੀ ਸਲਾਹ ਅਤੇ ਦਸਤਾਵੇਜ਼ ਵਿਸ਼ਲੇਸ਼ਣ ਸਹਾਇਤਾ।",
+                mod13Title: "13. ਜ਼ੀਰੋ-ਟਰੱਸਟ ਮੋਬਾਈਲ ਸ਼ੀਲਡ",
+                mod13Desc: "ਐਂਟੀ-ਹੈਕ ਅਤੇ ਸੁਰੱਖਿਆ ਸੁਰੱਖਿਆ ਕਵਚ।",
+                storeBtnText: "🪙 ਸੈਂਟਰਲ ਵਾਲਿਟ ਅਤੇ ਰੀਚਾਰਜ ਸਟੋਰ ਖੋਲ੍ਹੋ",
+                analysisBtnText: "👤 ਵਿਦਿਆਰਥੀ ਪ੍ਰੋਫਾਈਲ ਅਤੇ ਕ੍ਰੈਡਿਟ ਰਿਪੋਰਟ",
+                logoutText: "🚪 ਲਾਗ ਆਉਟ (Logout)",
+                modalTitle: "📊 ਸੈਂਟਰਲ ਵਾਲਿਟ ਅਤੇ ਵਿਦਿਆਰਥੀ ਵਿਸ਼ਲੇਸ਼ਣ ਰਿਪੋਰਟ",
+                regEmailLabel: "📧 ਰਜਿਸਟਰਡ ਈਮੇਲ",
+                remTokensLabel: "⚡ ਬਾਕੀ ਟੋਕਨ",
+                syncStatusLabel: "📈 ਈਮੇਲ ਤਸਦੀਕ ਸਥਿਤੀ",
+                verifiedBadge: "ਸਰਗਰਮ (Email Verified)",
+                activityLedgerLabel: "🔍 ਹਾਲੀਆ ਗਤੀਵਿਧੀਆਂ (Activity Ledger):",
+                closeModalBtn: "ਰਿਪੋਰਟ ਬੰਦ ਕਰੋ",
+                walletStoreTitle: "🪙 ਸੈਂਟਰਲ ਵਾਲਿਟ ਰੀਚਾਰਜ ਸਲੈਬ",
+                walletStoreSub: "ਆਪਣੀ ਪੜ੍ਹਾਈ ਨੂੰ ਨਿਰੰਤਰ ਰੱਖਣ ਲਈ ਟੋਕਨ ਪੈਕ ਚੁਣੋ:",
+                pack1Title: "⚡ 50 ਟੋਕਨ ਪੈਕ",
+                pack1Sub: "ਮੁਢਲੀ ਵਿਦਿਆਰਥੀ ਵਰਤੋਂ",
+                pack2Title: "🚀 150 ਟੋਕਨ ਪੈਕ (Best Value)",
+                pack2Sub: "ਪ੍ਰੋ ਸਟੂਡੈਂਟ ਪੈਕ",
+                closeStoreBtn: "ਬੰਦ ਕਰੋ",
+                footerText: "© 2026 ਧਰੁਵ ਅਕੈਡਮੀ ਮਾਸਟਰ ਈਕੋਸਿਸਟਮ। ਸਾਰੇ ਹੱਕ ਰਾਖਵੇਂ ਹਨ।"
+            },
+            mr: {
+                pageTitle: "ध्रुव अकादमी - स्पर्धा परीक्षा आणि स्मार्ट शिक्षणाचे सर्वोच्च केंद्र",
+                walletTitle: "सेंट्रल वॉलेट",
+                tokensUnit: "टोकन्स",
+                voiceGuide: "व्हॉईस गाईड",
+                walletBtn: "वॉलेट स्लॅब",
+                profileBtn: "अहवाल",
+                themeToggleBtn: "लाईट मोड",
+                marquee1: "ध्रुव अकादमी मास्टर इकोसिस्टममध्ये आपले स्वागत आहे",
+                marquee2: "स्पर्धा परीक्षा आणि स्मार्ट शिक्षणासाठी सर्वोच्च AI प्लॅटफॉर्म",
+                marquee3: "ध्रुव अकादमी - स्मार्ट लर्निंग इकोसिस्टम",
+                bannerTag: "🎁 स्पर्धा परीक्षा आणि स्मार्ट विद्यार्थ्यांसाठी विशेष मंच - 10 टोकन विनामूल्य!",
+                mainTitle: "ध्रुव अकादमी (Dhruv Academy)",
+                subTitle: "🔥 स्पर्धा परीक्षा, स्मार्ट लर्निंग आणि AI ऑटोमेशनचे सर्वोच्च केंद्र",
+                emailLabel: "ईमेल आयडी प्रविष्ट करा (Email Verification):",
+                mobileLabel: "मोबाईल नंबर प्रविष्ट करा:",
+                sendOtpBtn: "मेलवर OTP पाठवा 🚀",
+                otpLabel: "मेल/मोबाईलवर प्राप्त झालेला OTP प्रविष्ट करा (Default: 1234):",
+                verifyOtpBtn: "पडताळणी करा आणि 10 टोकन मिळवा ✅",
+                welcomeMsg: "✨ स्वागत आहे! तुमचे सेंट्रल मास्टर वॉलेट सक्रिय आहे.",
+                walletActiveText: "तुमच्या वॉलेटमध्ये",
+                tokensAvailableText: "मोफत टोकन सुरक्षित आहेत. ईमेल पडताळणी झाली आहे ✅",
+                reportBtnText: "📊 माझी क्रियाकलाप आणि खर्च अहवाल (Activity Ledger)",
+                rechargeBtnText: "🪙 टोकन रीचार्ज आणि स्लॅब",
+                modulesHeading: "🚀 सर्व मास्टर मॉड्यूल्स (Active Modules):",
+                badgeActive: "सक्रिय",
+                mod1Title: "1. फाउंडेशन: NC-5 किड्स टियर",
+                mod1Desc: "नर्सरी ते इयत्ता 5 वी पर्यंतचा पाया (AI-Driven Learning Module).",
+                mod2Title: "2. एआय इंजिन कोर",
+                mod2Desc: "400-AI मल्टी-एजंट न्यूरल कोर आणि सखोल संशोधन साधने.",
+                mod3Title: "3. एआय ऑटो-हीलिंग",
+                mod3Desc: "सिस्टम त्रुटी आपोआप दुरुस्त करणारा स्कॅनर.",
+                mod4Title: "4. फेस-स्वॅप सोशल",
+                mod4Desc: "व्हिडिओ आणि सोशल एक्सप्लेनर व्हिज्युअल शिक्षण.",
+                mod5Title: "5. 3D ब्लॅकबोर्ड",
+                mod5Desc: "डिजिटल वर्गांसाठी 3D ब्लॅकबोर्ड आणि टीव्ही कास्ट.",
+                mod6Title: "6. डिजिटल लायब्ररी",
+                mod6Desc: "एनक्रिप्टेड ई-पुस्तके, नोट्स आणि ज्ञानाचा साठा.",
+                mod8Title: "8. कोचिंग हब",
+                mod8Desc: "कोचिंग संस्थांचे व्यवस्थापन आणि बॅच ऑपरेशन्स.",
+                mod9Title: "9. कॉम्पिटिशन सॉल्व्हर",
+                mod9Desc: "IAS, PCS, Banking, NEET इत्यादी परीक्षांसाठी सॉल्व्हर.",
+                mod10Title: "10. नेब्युला व्हिज्युअल हब",
+                mod10Desc: "सिस्टम क्रियाकलाप दर्शविणारा डॅशबोर्ड.",
+                mod11Title: "11. स्पोकन इंग्लिश मास्टर",
+                mod11Desc: "4D लाइव्ह एआय व्हॉईस संवाद आणि उच्चार सराव.",
+                mod12Title: "12. लीगल एआय असिस्टंट",
+                mod12Desc: "कायदेशीर सल्ला आणि दस्तऐवज विश्लेषण सहाय्य.",
+                mod13Title: "13. झिरो-ट्रस्ट मोबाईल शील्ड",
+                mod13Desc: "अँटी-हॅक, ऑटो-किल स्क्रीन रेकॉर्डर आणि सुरक्षा कवच.",
+                storeBtnText: "🪙 सेंट्रल वॉलेट आणि रीचार्ज स्टोअर उघडा",
+                analysisBtnText: "👤 विद्यार्थी प्रोफाइल आणि क्रेडिट अहवाल",
+                logoutText: "🚪 लॉग आउट (Logout)",
+                modalTitle: "📊 सेंट्रल वॉलेट व विद्यार्थी विश्लेषण अहवाल",
+                regEmailLabel: "📧 नोंदणीकृत ईमेल",
+                remTokensLabel: "⚡ शिल्लक सेंट्रल टोकन्स",
+                syncStatusLabel: "📈 ईमेल पडताळणी स्थिती",
+                verifiedBadge: "सक्रिय (Email Verified)",
+                activityLedgerLabel: "🔍 अलीकडील क्रियाकलाप (Activity Ledger):",
+                closeModalBtn: "अहवाल बंद करा",
+                walletStoreTitle: "🪙 सेंट्रल वॉलेट रीचार्ज स्लॅब",
+                walletStoreSub: "तुमचा अभ्यास अखंड ठेवण्यासाठी टोकन पॅक निवडा:",
+                pack1Title: "⚡ 50 टोकन पॅक",
+                pack1Sub: "मूलभूत विद्यार्थी वापर",
+                pack2Title: "🚀 150 टोकन पॅक (Best Value)",
+                pack2Sub: "प्रो स्टुडंट पॅक",
+                closeStoreBtn: "बंद करा",
+                footerText: "© 2026 ध्रुव अकादमी मास्टर इकोसिस्टम. सर्व हक्क राखीव. डेटा पूर्णपणे सुरक्षित."
+            }
+        };
+
+        window.addEventListener('DOMContentLoaded', () => {
+            const savedLang = localStorage.getItem("dhruv_selected_lang") || 'hi';
+            const langSel = document.getElementById('langSelector');
+            if (langSel) langSel.value = savedLang;
+            switchLanguage(savedLang, false);
+
+            const savedEmail = localStorage.getItem("user_email");
+            if(savedEmail) {
+                document.getElementById('authSection').classList.add('hidden');
+                document.getElementById('dashboardSection').classList.remove('hidden');
+            }
+            updateTokenDisplay();
+        });
+
+        function updateTokenDisplay() {
+            localStorage.setItem("dhruv_wallet_tokens", userTokens);
+            localStorage.setItem("user_tokens", userTokens);
+
+            const topCount = document.getElementById('topTokenCount');
+            const dashCount = document.getElementById('dashboardTokenCount');
+            if(topCount) topCount.innerText = userTokens;
+            if(dashCount) dashCount.innerText = userTokens;
+        }
+
+        // 🌐 केंद्रीय भाषा स्विच फंक्शन
+        function switchLanguage(lang, saveToStorage = true) {
+            currentLang = lang;
+            if (saveToStorage) {
+                localStorage.setItem("dhruv_selected_lang", lang);
+            }
+            document.querySelectorAll("[data-key]").forEach(el => {
+                const key = el.getAttribute("data-key");
+                if(translations[lang] && translations[lang][key]) {
+                    if (el.tagName === 'INPUT') {
+                        el.placeholder = translations[lang][key];
+                    } else {
+                        el.innerText = translations[lang][key];
+                    }
+                }
+            });
+
+            // थीम टॉगल बटन का टेक्स्ट भी भाषा के अनुसार रखें
+            const themeBtn = document.getElementById('themeToggleBtn');
+            if (themeBtn) {
+                if (currentTheme === 'dark') {
+                    themeBtn.innerText = (lang === 'hi' ? "लाइट मोड" : (lang === 'pa' ? "ਲਾਈਟ ਮੋਡ" : (lang === 'mr' ? "लाईट मोड" : "Light Mode")));
+                } else {
+                    themeBtn.innerText = (lang === 'hi' ? "डार्क मोड" : (lang === 'pa' ? "ਡਾਰਕ ਮੋਡ" : (lang === 'mr' ? "डार्क मोड" : "Dark Mode")));
+                }
+            }
+        }
+
+        function playVoiceIntroduction() {
+            let msgs = {
+                hi: "नमस्ते! ध्रुव एकेडमी मास्टर इकोसिस्टम में आपका स्वागत है। आपके पास 10 फ्री टोकन उपलब्ध हैं।",
+                en: "Hello! Welcome to Dhruv Academy Master Ecosystem. You have 10 free tokens available.",
+                pa: "ਸਤਿ ਸ੍ਰੀ ਅਕਾਲ! ਧਰੁਵ ਅਕੈਡਮੀ ਵਿੱਚ ਤੁਹਾਡਾ ਸਵਾਗਤ ਹੈ। ਤੁਹਾਡੇ ਕੋਲ 10 ਮੁਫ਼ਤ ਟੋਕਨ ਉਪਲਬਧ ਹਨ।",
+                mr: "नमस्कार! ध्रुव अकादमी मास्टर इकोसिस्टममध्ये आपले स्वागत आहे. आपल्याकडे 10 विनामूल्य टोकन्स उपलब्ध आहेत."
+            };
+            let msg = msgs[currentLang] || msgs['hi'];
+            if(window.speechSynthesis) {
+                window.speechSynthesis.cancel();
+                let speech = new SpeechSynthesisUtterance(msg);
+                speech.lang = currentLang === 'hi' ? 'hi-IN' : (currentLang === 'pa' ? 'pa-IN' : (currentLang === 'mr' ? 'mr-IN' : 'en-US'));
+                window.speechSynthesis.speak(speech);
+            }
+        }
+
+        function sendEmailAndOtp() {
+            const emailInput = document.getElementById("userEmailInput");
+            const mobileInput = document.getElementById("userMobileInput");
+            
+            if (!emailInput || !emailInput.value.includes("@")) {
+                alert(currentLang === 'en' ? "Please enter a valid Email ID!" : "कृपया वैध ईमेल (Gmail) आईडी दर्ज करें!");
+                return;
+            }
+            if (!mobileInput || mobileInput.value.trim().length < 10) {
+                alert(currentLang === 'en' ? "Please enter a valid 10-digit mobile number!" : "कृपया वैध 10 अंकों का मोबाइल नंबर दर्ज करें!");
+                return;
+            }
+            
+            alert(currentLang === 'en' ? "OTP has been sent to your email from Dhruv Academy! (Enter default OTP: 1234)" : "ध्रुव एकेडमी की ओर से आपके ईमेल पर OTP भेज दिया गया है! (डिफ़ॉल्ट OTP: 1234 दर्ज करें)");
+        }
+
+        function verifyStudentLogin() {
+            const email = document.getElementById('userEmailInput').value.trim();
+            const mobile = document.getElementById('userMobileInput').value.trim();
+            const otpCode = document.getElementById('otpCodeInput').value.trim();
+
+            if(!email.includes("@")) {
+                alert(currentLang === 'en' ? "Please enter a valid email!" : "कृपया सही ईमेल दर्ज करें!");
+                return;
+            }
+
+            if(otpCode !== "1234") {
+                alert(currentLang === 'en' ? "Invalid OTP! Please enter correct OTP (e.g., 1234)." : "गलत OTP! कृपया सही OTP दर्ज करें (जैसे 1234)।");
+                return;
+            }
+
+            localStorage.setItem("user_email", email);
+            localStorage.setItem("user_mobile", mobile);
+            localStorage.setItem("dhruv_wallet_tokens", userTokens);
+            
+            document.getElementById('authSection').classList.add('hidden');
+            document.getElementById('dashboardSection').classList.remove('hidden');
+            
+            alert(currentLang === 'en' ? "Email verification successful! 10 free tokens added to your wallet." : "ईमेल वेरिफिकेशन सफल! 10 मुफ्त टोकन आपके वॉलेट में जोड़ दिए गए हैं।");
+        }
+
+        function userLogout() {
+            localStorage.removeItem("user_email");
+            localStorage.removeItem("user_mobile");
+            document.getElementById('authSection').classList.remove('hidden');
+            document.getElementById('dashboardSection').classList.add('hidden');
+        }
+
+        function openWalletStore() {
+            document.getElementById('walletModal').classList.remove('hidden');
+        }
+
+        function closeWalletStore() {
+            document.getElementById('walletModal').classList.add('hidden');
+        }
+
+        function logUserActivity(moduleName) {
+            let history = JSON.parse(localStorage.getItem("user_activity_log")) || [];
+            let timestamp = new Date().toLocaleString();
+            history.unshift({ module: moduleName, time: timestamp });
+            if(history.length > 10) history.pop();
+            localStorage.setItem("user_activity_log", JSON.stringify(history));
+        }
+
+        function buyTokens(tokensToAdd, price) {
+            const savedEmail = localStorage.getItem("user_email");
+            if(!savedEmail) {
+                alert(currentLang === 'en' ? "Please login with your email first!" : "कृपया पहले ईमेल से लॉगिन करें!");
+                closeWalletStore();
+                return;
+            }
+            userTokens += tokensToAdd;
+            updateTokenDisplay();
+            alert(currentLang === 'en' ? `Successfully added ${tokensToAdd} tokens!` : `सफलतापूर्वक ${tokensToAdd} टोकन जोड़े गए!`);
+            closeWalletStore();
+        }
+
+        function openStudentProfile() {
+            const email = localStorage.getItem("user_email") || "Guest / Guest";
+            document.getElementById('modalUserEmail').innerText = email;
+            document.getElementById('modalUserTokens').innerText = userTokens + (currentLang === 'en' ? " Tokens" : " टोकन्स");
+
+            let activityLog = JSON.parse(localStorage.getItem("user_activity_log")) || [];
+            let activityContainer = document.getElementById('modalActivityList');
+            
+            if(activityLog.length > 0) {
+                activityContainer.innerHTML = activityLog.map((item, index) => `
+                    <div class="flex flex-col bg-slate-900 p-2.5 rounded-xl border border-slate-800 text-xs">
+                        <div class="flex justify-between font-bold text-slate-200">
+                            <span>🔹 Task #${index + 1}: ${item.module}</span>
+                            <span class="text-cyan-400 font-mono text-[10px]">${item.time}</span>
+                        </div>
+                        <div class="text-[11px] text-slate-400 mt-0.5">Status: Verified & Executed</div>
+                    </div>
+                `).join('');
+            } else {
+                activityContainer.innerHTML = `<div class="text-slate-500 italic p-2 text-center">${currentLang === 'en' ? 'No recent activity recorded yet.' : 'अभी तक कोई गतिविधि दर्ज नहीं है।'}</div>`;
+            }
+
+            document.getElementById('profileModal').classList.remove('hidden');
+        }
+
+        function closeStudentProfile() {
+            document.getElementById('profileModal').classList.add('hidden');
+        }
+
+        function changeThemeAccent(colorHex) {
+            document.documentElement.style.setProperty('--brand-color', colorHex);
+        }
+
+        function toggleThemeMode() {
+            const body = document.getElementById('pageBody');
+            const themeBtn = document.getElementById('themeToggleBtn');
+            if(currentTheme === 'dark') {
+                currentTheme = 'light';
+                body.className = "bg-slate-100 text-slate-900 min-h-screen flex flex-col items-center justify-between p-2 md:p-6 transition-colors duration-500";
+                themeBtn.innerText = currentLang === 'hi' ? "डार्क मोड" : "Dark Mode";
+            } else {
+                currentTheme = 'dark';
+                body.className = "bg-slate-950 text-slate-100 min-h-screen flex flex-col items-center justify-between p-2 md:p-6 transition-colors duration-500";
+                themeBtn.innerText = currentLang === 'hi' ? "लाइट मोड" : "Light Mode";
+            }
+        }
+    </script>
+<script type="module"
+      src="https://agent.d-id.com/v2/index.js"
+      data-mode="fabio"
+      data-client-key="ck_dq-JNpKmFXfHKTsFoquZA"
+      data-agent-id="v2_agt_sPcqaTPf"
+      data-name="did-agent"
+      data-monitor="true"
+      data-orientation="horizontal"
+      data-position="right"
+      data-open-mode="expanded">
+</script>
+</body>
+</html>
