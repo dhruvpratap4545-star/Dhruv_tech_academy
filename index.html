@@ -134,21 +134,18 @@
             </marquee>
         </div>
 
-        <!-- अपडेटेड लोगो और हेडर बैनर -->
+        <!-- Updated Official Logo and Header Section -->
         <div class="text-center mb-6">
             <span class="inline-block bg-purple-950/90 border border-purple-600 text-purple-300 text-xs px-4 py-1.5 rounded-full font-bold mb-3 shadow-md" data-key="bannerTag">
                 🎁 Special Platform for Competitive Exams & Smart Students - 10 Free Tokens!
             </span>
             
-            <!-- ⭐ अपडेटेड लोगो (Updated Logo) ⭐ -->
+            <!-- ⭐ Official Circular Logo Image ⭐ -->
             <div class="flex flex-col items-center justify-center my-4">
-                <div class="relative w-20 h-20 md:w-24 md:h-24 flex items-center justify-center rounded-3xl bg-slate-950 overflow-hidden logo-glow border-2 border-cyan-400/80 transition-all duration-500 hover:scale-105 cursor-pointer group">
-                    <div class="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-purple-700/60 via-slate-900 to-black group-hover:from-pink-600/70 transition-all duration-500"></div>
-                    <div class="absolute -inset-2 bg-gradient-to-r from-cyan-500 via-purple-500 to-pink-500 rounded-3xl opacity-30 blur-sm group-hover:opacity-75 transition duration-500"></div>
-                    <span class="relative z-10 text-2xl md:text-3xl font-black tracking-widest text-transparent bg-clip-text bg-gradient-to-tr from-cyan-200 via-white to-pink-300 drop-shadow-[0_2px_10px_rgba(236,72,153,0.8)]" style="font-family: 'Courier New', monospace;">
-                        DA
-                    </span>
-                    <div class="absolute bottom-1 right-1.5 text-[10px] text-yellow-400 animate-pulse">✦</div>
+                <div class="relative w-24 h-24 md:w-28 md:h-28 flex items-center justify-center rounded-full bg-slate-950 overflow-hidden logo-glow border-2 border-cyan-400/80 transition-all duration-500 hover:scale-105 cursor-pointer group shadow-[0_0_25px_rgba(34,211,238,0.4)]">
+                    <div class="absolute inset-0 bg-gradient-to-tr from-purple-900/40 via-transparent to-cyan-900/40 pointer-events-none"></div>
+                    <!-- Yahan aapke GitHub ya static folder ka image path diya gaya hai -->
+                    <img src="{{ url_for('static', filename='images/logo.jpg') }}" alt="Dhruv Academy Official Logo" class="w-full h-full object-cover rounded-full group-hover:scale-110 transition-transform duration-500">
                 </div>
             </div>
 
