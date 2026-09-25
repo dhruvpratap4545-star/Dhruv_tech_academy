@@ -6,12 +6,10 @@ app = Flask(__name__)
 
 @app.route('/')
 def home():
-    """मुख्य होमपेज रेंडर करेगा"""
     return render_template('index.html')
 
 @app.route('/voice-webhook', methods=['GET', 'POST'])
 def voice_webhook():
-    """Twilio एआई वॉइस कॉल वेबहुक"""
     response = VoiceResponse()
     ai_message = "नमस्ते! ध्रुव एकेडमी में आपका स्वागत है। आपके प्रतियोगी परीक्षाओं और स्मार्ट लर्निंग के नए मॉड्यूल्स अब लाइव हो चुके हैं।"
     response.say(ai_message, voice='Polly.Aditi', language='hi-IN')
