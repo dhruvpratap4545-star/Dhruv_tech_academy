@@ -5,3 +5,5 @@ pydantic
 python-multipart
 flask
 google-generativeai
+twilio
+requests
