@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="hi" id="html-root">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title id="page-title">ध्रुव एकेडमी - डिजिटल लाइब्रेरी प्रीव्यू</title>
+    <style>
+        body { 
+            font-family: 'Segoe UI', Arial, sans-serif; 
+            line-height: 1.8; 
+            color: #2c3e50; 
+            max-width: 950px; 
+            margin: 30px auto; 
+            padding: 30px 40px; 
+            background: #fff; 
+            border: 1px solid #dcdde1; 
+            box-shadow: 0 4px 25px rgba(0,0,0,0.08); 
+            border-radius: 12px; 
+            box-sizing: border-box;
+        }
+        .top-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #e2e8f0;
+            padding-bottom: 15px;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .btn-home {
+            background: #0f172a;
+            color: #38bdf8;
+            border: 1px solid #1e293b;
+            padding: 7px 15px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .btn-home:hover {
+            background: #1e293b;
+        }
+        .lang-select-box {
+            background: #f8fafc;
+            border: 1.5px solid #0284c7;
+            color: #0284c7;
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 700;
+            outline: none;
+            cursor: pointer;
+        }
+        header { 
+            text-align: center; 
+            border-bottom: 3px solid #0056b3; 
+            padding-bottom: 15px; 
+            margin-bottom: 30px; 
+        }
+        h1 { 
+            color: #0056b3; 
+            font-size: 28px; 
+            margin: 0 0 5px 0; 
+        }
+        .meta { 
+            font-size: 14px; 
+            color: #555; 
+            margin: 0;
+        }
+        h2 { 
+            color: #1a252f; 
+            border-left: 5px solid #0056b3; 
+            padding-left: 12px; 
+            font-size: 19px; 
+            margin-top: 30px; 
+            margin-bottom: 12px;
+        }
+        p { 
+            font-size: 15px; 
+            text-align: justify; 
+            margin-bottom: 15px; 
+        }
+        .summary-box { 
+            background: #f0f4f8; 
+            border: 1px solid #d9e2ec; 
+            border-left: 5px solid #102a43; 
+            padding: 20px; 
+            margin-bottom: 25px; 
+            border-radius: 8px; 
+        }
+        .code-block { 
+            background: #f1f3f5; 
+            border: 1px solid #ced4da; 
+            border-left: 5px solid #28a745; 
+            padding: 16px; 
+            font-family: 'Courier New', Courier, monospace; 
+            font-size: 15px; 
+            white-space: pre-wrap; 
+            margin: 15px 0; 
+            border-radius: 6px; 
+            color: #1e293b;
+        }
+        .capsule { 
+            background: #e8f4fd; 
+            border: 1px solid #b8daff; 
+            border-left: 5px solid #0056b3; 
+            padding: 15px; 
+            margin: 20px 0; 
+            border-radius: 6px; 
+        }
+        .quiz-container {
+            background: #f8f9fa; 
+            padding: 20px; 
+            margin-bottom: 20px; 
+            border-radius: 8px; 
+            border: 1px solid #dee2e6;
+        }
+        .quiz-option-btn {
+            display: block; 
+            width: 100%; 
+            text-align: left; 
+            padding: 12px 18px; 
+            margin: 8px 0; 
+            background: #f1f3f5; 
+            border: 1px solid #ced4da; 
+            border-radius: 6px; 
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+        .quiz-option-btn:hover {
+            background: #e9ecef;
+        }
+        .footer { 
+            text-align: center; 
+            font-size: 13px; 
+            color: #7f8c8d; 
+            border-top: 1px solid #eee; 
+            margin-top: 40px; 
+            padding-top: 15px; 
+        }
+    </style>
+</head>
+<body>
+
+    <!-- टॉप नेविगेशन व 4-भाषा सेलेक्टर -->
+    <div class="top-nav">
+        <a href="/" id="btnHome" class="btn-home">
+            ← <span>मुख्य पोर्टल</span>
+        </a>
+
+        <!-- 🌐 4-भाषाओं वाला यूनिवर्सल सेलेक्टर -->
+        <div style="display: flex; align-items: center; gap: 8px;">
+            <span style="font-size: 13px;">🌐</span>
+            <select id="langSelector" onchange="switchLanguage(this.value)" class="lang-select-box">
+                <option value="hi">🇮🇳 हिंदी (Hindi)</option>
+                <option value="en">🇬🇧 English</option>
+                <option value="pa">🇮🇳 ਪੰਜਾਬੀ (Punjabi)</option>
+                <option value="mr">🇮🇳 मराठी (Marathi)</option>
+            </select>
+        </div>
+    </div>
+
+    <header>
+        <h1 id="headerMainTitle">ध्रुव एकेडमी - सुप्रीम डिजिटल लाइब्रेरी</h1>
+        <p class="meta" id="headerMeta">कोर्स: <strong>Comprehensive Academic Curriculum</strong> | विषय: <strong>Python & System Architecture</strong></p>
+    </header>
+
+    <div class="summary-box">
+        <h3 id="execSummaryHeading" style="color: #102a43; margin-top: 0; margin-bottom: 10px;">📋 त्वरित सारांश एवं कोर स्नैपशॉट (Executive Summary)</h3>
+        <p id="execSummaryDesc" style="margin-bottom: 0; font-size: 15px; color: #243b53;">यह इस बात का लाइव प्रीव्यू है कि ध्रुव एकेडमी का सिस्टम कैसे शुद्ध और तथ्यात्मक जानकारी प्रस्तुत करता है।</p>
+    </div>
+
+    <h2 id="secTopicTitle">विषय: Variables and Memory Management</h2>
+    <p><strong id="lblConceptIntro">संकल्पना परिचय:</strong></p>
+    <p id="conceptDesc">पाइथन में वेरिएबल्स डेटा को स्टोर करने के कंटेनर होते हैं जो सीधे मेमोरी लोकेशन की ओर इशारा करते हैं।</p>
+
+    <h2 id="secExampleTitle">व्यावहारिक उदाहरण:</h2>
+    <div class="code-block" id="codeSnippetBox">x = 10
+print(id(x))  # मेमोरी एड्रेस दिखाता है</div>
+
+    <div class="capsule">
+        <strong id="lblExamCapsule">🎓 परीक्षा त्वरित पुनरावृत्ति कैप्सूल:</strong>
+        <p id="examCapsuleDesc" style="margin-top: 5px; margin-bottom: 0;">पाइथन डायनेमिकली टाइप्ड भाषा है जहाँ डेटाटाइप खुद-ब-खुद असाइन होता है।</p>
+    </div>
+
+    <h2 id="secQuizHeading">स्व-मूल्यांकन इंटरैक्टिव क्विज़:</h2>
+    <div class="quiz-container">
+        <strong id="quizQuestionText">प्रश्न 1: पाइथन में वेरिएबल को घोषित करने के लिए क्या आवश्यक है?</strong>
+        <div style="margin-top: 12px;" id="quizOptionsWrapper">
+            <button onclick="checkAnswer(this, true)" class="quiz-option-btn" id="quizOptA">A) सीधे मान असाइन करना (जैसे x = 5)</button>
+            <button onclick="checkAnswer(this, false)" class="quiz-option-btn" id="quizOptB">B) डेटाटाइप लिखना अनिवार्य है</button>
+        </div>
+        <p class="result-msg" id="quizResultMsg" style="margin-top: 10px; font-weight: bold; font-size: 14px;"></p>
+    </div>
+
+    <div class="footer">
+        <p id="footerCopy">&copy; 2026 ध्रुव एकेडमी. सर्वाधिकार सुरक्षित।</p>
+    </div>
+
+    <script>
+        let currentLang = localStorage.getItem('user_lang') || 'hi';
+
+        const previewTranslations = {
+            hi: {
+                pageTitle: "ध्रुव एकेडमी - डिजिटल लाइब्रेरी प्रीव्यू",
+                btnHome: "मुख्य पोर्टल",
+                mainTitle: "ध्रुव एकेडमी - सुप्रीम डिजिटल लाइब्रेरी",
+                meta: "कोर्स: <strong>Comprehensive Academic Curriculum</strong> | विषय: <strong>Python & System Architecture</strong>",
+                execHeading: "📋 त्वरित सारांश एवं कोर स्नैपशॉट (Executive Summary)",
+                execDesc: "यह इस बात का लाइव प्रीव्यू है कि ध्रुव एकेडमी का सिस्टम कैसे शुद्ध और तथ्यात्मक जानकारी प्रस्तुत करता है।",
+                topicTitle: "विषय: Variables and Memory Management",
+                conceptIntro: "संकल्पना परिचय:",
+                conceptDesc: "पाइथन में वेरिएबल्स डेटा को स्टोर करने के कंटेनर होते हैं जो सीधे मेमोरी लोकेशन की ओर इशारा करते हैं।",
+                exampleTitle: "व्यावहारिक उदाहरण:",
+                codeComment: "# मेमोरी एड्रेस दिखाता है",
+                examCapsule: "🎓 परीक्षा त्वरित पुनरावृत्ति कैप्सूल:",
+                examCapsuleDesc: "पाइथन डायनेमिकली टाइप्ड भाषा है जहाँ डेटाटाइप खुद-ब-खुद असाइन होता है।",
+                quizHeading: "स्व-मूल्यांकन इंटरैक्टिव क्विज़:",
+                quizQ: "प्रश्न 1: पाइथन में वेरिएबल को घोषित करने के लिए क्या आवश्यक है?",
+                optA: "A) सीधे मान असाइन करना (जैसे x = 5)",
+                optB: "B) डेटाटाइप लिखना अनिवार्य है",
+                msgCorrect: "✅ बहुत बढ़िया! आपका उत्तर बिल्कुल सही है।",
+                msgWrong: "❌ गलत उत्तर। कृपया सही अवधारणा की पुनः जांच करें।",
+                footerCopy: "© 2026 ध्रुव एकेडमी. सर्वाधिकार सुरक्षित।"
+            },
+            en: {
+                pageTitle: "Dhruv Academy - Digital Library Preview",
+                btnHome: "Main Portal",
+                mainTitle: "Dhruv Academy - Supreme Digital Library",
+                meta: "Course: <strong>Comprehensive Academic Curriculum</strong> | Domain: <strong>Python & System Architecture</strong>",
+                execHeading: "📋 Executive Summary & Core Snapshot",
+                execDesc: "This is a verified live preview demonstrating how the Dhruv Academy ecosystem synthesizes structured academic knowledge.",
+                topicTitle: "Topic: Variables and Memory Management",
+                conceptIntro: "Concept Introduction:",
+                conceptDesc: "In Python, variables serve as object-binding containers that directly reference memory allocation addresses.",
+                exampleTitle: "Practical Implementation:",
+                codeComment: "# Displays internal memory address",
+                examCapsule: "🎓 Exam Revision Capsule:",
+                examCapsuleDesc: "Python is a dynamically typed language where data types are inferred automatically at runtime.",
+                quizHeading: "Self-Evaluation Interactive Quiz:",
+                quizQ: "Question 1: What is required to declare a variable in Python?",
+                optA: "A) Assigning value directly (e.g. x = 5)",
+                optB: "B) Explicit datatype declaration is mandatory",
+                msgCorrect: "✅ Excellent! Your answer is absolutely correct.",
+                msgWrong: "❌ Incorrect answer. Please review the core concept.",
+                footerCopy: "© 2026 Dhruv Academy. All Rights Reserved."
+            },
+            pa: {
+                pageTitle: "ਧਰੁਵ ਅਕੈਡਮੀ - ਡਿਜੀਟਲ ਲਾਇਬ੍ਰੇਰੀ ਪ੍ਰੀਵਿਊ",
+                btnHome: "ਮੁੱਖ ਪੋਰਟਲ",
+                mainTitle: "ਧਰੁਵ ਅਕੈਡਮੀ - ਸੁਪਰੀਮ ਡਿਜੀਟਲ ਲਾਇਬ੍ਰੇਰੀ",
+                meta: "ਕੋਰਸ: <strong>Comprehensive Academic Curriculum</strong> | ਵਿਸ਼ਾ: <strong>Python & System Architecture</strong>",
+                execHeading: "📋 ਕਾਰਜਕਾਰੀ ਸੰਖੇਪ (Executive Summary)",
+                execDesc: "ਇਹ ਲਾਈਵ ਪ੍ਰੀਵਿਊ ਦਰਸਾਉਂਦਾ ਹੈ ਕਿ ਧਰੁਵ ਅਕੈਡਮੀ ਸਹੀ ਅਤੇ ਪ੍ਰਮਾਣਿਤ ਗਿਆਨ ਕਿਵੇਂ ਪੇਸ਼ ਕਰਦੀ ਹੈ।",
+                topicTitle: "ਵਿਸ਼ਾ: Variables and Memory Management",
+                conceptIntro: "ਸੰਕਲਪ ਜਾਣ-ਪਛਾਣ:",
+                conceptDesc: "ਪਾਈਥਨ ਵਿੱਚ ਵੇਰੀਏਬਲ ਡੇਟਾ ਸਟੋਰ ਕਰਨ ਦੇ ਕੰਟੇਨਰ ਹੁੰਦੇ ਹਨ ਜੋ ਸਿੱਧੇ ਮੈਮੋਰੀ ਸਥਾਨ ਵੱਲ ਇਸ਼ਾਰਾ ਕਰਦੇ ਹਨ।",
+                exampleTitle: "ਵਿਹਾਰਕ ਉਦਾਹਰਣ:",
+                codeComment: "# ਮੈਮੋਰੀ ਐਡਰੈੱਸ ਦਿਖਾਉਂਦਾ ਹੈ",
+                examCapsule: "🎓 ਪ੍ਰੀਖਿਆ ਦੁਹਰਾਈ ਕੈਪਸੂਲ:",
+                examCapsuleDesc: "ਪਾਈਥਨ ਇੱਕ ਡਾਇਨਾਮਿਕਲੀ ਟਾਈਪ ਕੀਤੀ ਭਾਸ਼ਾ ਹੈ ਜਿੱਥੇ ਡੇਟਾ ਟਾਈਪ ਆਪਣੇ ਆਪ ਨਿਰਧਾਰਤ ਹੁੰਦਾ ਹੈ।",
+                quizHeading: "ਸਵੈ-ਮੁਲਾਂਕਣ ਕੁਇਜ਼:",
+                quizQ: "ਪ੍ਰਸ਼ਨ 1: ਪਾਈਥਨ ਵਿੱਚ ਵੇਰੀਏਬਲ ਬਣਾਉਣ ਲਈ ਕੀ ਜ਼ਰੂਰੀ ਹੈ?",
+                optA: "A) ਸਿੱਧਾ ਮੁੱਲ ਅਸਾਈਨ ਕਰਨਾ (ਜਿਵੇਂ x = 5)",
+                optB: "B) ਡੇਟਾਟਾਈਪ ਲਿਖਣਾ ਲਾਜ਼ਮੀ ਹੈ",
+                msgCorrect: "✅ ਬਹੁਤ ਵਧੀਆ! ਤੁਹਾਡਾ ਜਵਾਬ ਬਿਲਕੁਲ ਸਹੀ ਹੈ।",
+                msgWrong: "❌ ਗਲਤ ਜਵਾਬ। ਕਿਰਪਾ ਕਰਕੇ ਸੰਕਲਪ ਦੀ ਦੁਬਾਰਾ ਜਾਂਚ ਕਰੋ।",
+                footerCopy: "© 2026 ਧਰੁਵ ਅਕੈਡਮੀ. ਸਾਰੇ ਹੱਕ ਰਾਖਵੇਂ ਹਨ।"
+            },
+            mr: {
+                pageTitle: "ध्रुव अकादमी - डिजिटल लायब्ररी पूर्वावलोकन",
+                btnHome: "मुख्य पोर्टल",
+                mainTitle: "ध्रुव अकादमी - सुप्रीम डिजिटल लायब्ररी",
+                meta: "अभ्यासक्रम: <strong>Comprehensive Academic Curriculum</strong> | विषय: <strong>Python & System Architecture</strong>",
+                execHeading: "📋 कार्यकारी सारांश (Executive Summary)",
+                execDesc: "ध्रुव अकादमी प्रणाली कशा प्रकारे अचूक आणि शैक्षणिक ज्ञान सादर करते याचे हे थेट पूर्वावलोकन आहे.",
+                topicTitle: "विषय: Variables and Memory Management",
+                conceptIntro: "संकल्पना परिचय:",
+                conceptDesc: "पायथनमध्ये व्हेरिएबल्स हे डेटा संचयित करण्यासाठी कंटेनर म्हणून काम करतात जे थेट मेमरी स्थानाचा संदर्भ देतात.",
+                exampleTitle: "व्यावहारिक उदाहरण:",
+                codeComment: "# मेमरी ॲड्रेस दर्शवितो",
+                examCapsule: "🎓 परीक्षा पुनरावृत्ती कॅप्सूल:",
+                examCapsuleDesc: "पायथन ही डायनॅमिकली टाइप केलेली भाषा आहे जिथे डेटाप्रकार आपोआप निर्धारित होतो.",
+                quizHeading: "स्वयं-मूल्यांकन संवादात्मक क्विझ:",
+                quizQ: "प्रश्न 1: पायथनमध्ये व्हेरिएबल घोषित करण्यासाठी काय आवश्यक आहे?",
+                optA: "A) थेट मूल्य नियुक्त करणे (उदा. x = 5)",
+                optB: "B) डेटाप्रकार लिहिणे बंधनकारक आहे",
+                msgCorrect: "✅ छान! तुमचे उत्तर अगदी बरोबर आहे.",
+                msgWrong: "❌ चुकीचे उत्तर. कृपया संकल्पनेचे पुनरावलोकन करा.",
+                footerCopy: "© 2026 ध्रुव अकादमी. सर्व हक्क राखीव."
+            }
+        };
+
+        function switchLanguage(lang) {
+            currentLang = lang;
+            localStorage.setItem('user_lang', lang);
+
+            const selector = document.getElementById('langSelector');
+            if (selector) selector.value = lang;
+
+            const d = previewTranslations[lang] || previewTranslations.hi;
+            document.getElementById('html-root').setAttribute('lang', lang);
+            document.getElementById('page-title').innerText = d.pageTitle;
+
+            document.getElementById('btnHome').innerHTML = `← <span>${d.btnHome}</span>`;
+            document.getElementById('headerMainTitle').innerText = d.mainTitle;
+            document.getElementById('headerMeta').innerHTML = d.meta;
+            document.getElementById('execSummaryHeading').innerText = d.execHeading;
+            document.getElementById('execSummaryDesc').innerText = d.execDesc;
+            document.getElementById('secTopicTitle').innerText = d.topicTitle;
+            document.getElementById('lblConceptIntro').innerText = d.conceptIntro;
+            document.getElementById('conceptDesc').innerText = d.conceptDesc;
+            document.getElementById('secExampleTitle').innerText = d.exampleTitle;
+            document.getElementById('codeSnippetBox').innerText = `x = 10\nprint(id(x))  ${d.codeComment}`;
+            document.getElementById('lblExamCapsule').innerText = d.examCapsule;
+            document.getElementById('examCapsuleDesc').innerText = d.examCapsuleDesc;
+            document.getElementById('secQuizHeading').innerText = d.quizHeading;
+            document.getElementById('quizQuestionText').innerText = d.quizQ;
+            document.getElementById('quizOptA').innerText = d.optA;
+            document.getElementById('quizOptB').innerText = d.optB;
+            document.getElementById('footerCopy').innerText = d.footerCopy;
+
+            // रिसेट क्विज़ स्टेट्स
+            const buttons = document.querySelectorAll('#quizOptionsWrapper button');
+            buttons.forEach(btn => {
+                btn.disabled = false;
+                btn.style.cursor = "pointer";
+                btn.style.background = "#f1f3f5";
+                btn.style.borderColor = "#ced4da";
+                btn.style.color = "#2c3e50";
+            });
+            const resultMsg = document.getElementById('quizResultMsg');
+            if (resultMsg) resultMsg.innerHTML = "";
+        }
+
+        function checkAnswer(button, isCorrect) {
+            const d = previewTranslations[currentLang] || previewTranslations.hi;
+            let parent = button.parentElement;
+            let msg = parent.parentElement.querySelector('.result-msg');
+            let buttons = parent.querySelectorAll('button');
+            buttons.forEach(btn => { 
+                btn.disabled = true; 
+                btn.style.cursor = "default"; 
+            });
+
+            if (isCorrect) {
+                button.style.background = "#d4edda"; 
+                button.style.borderColor = "#28a745"; 
+                button.style.color = "#155724";
+                msg.innerHTML = d.msgCorrect; 
+                msg.style.color = "#28a745";
+            } else {
+                button.style.background = "#f8d7da"; 
+                button.style.borderColor = "#dc3545"; 
+                button.style.color = "#721c24";
+                msg.innerHTML = d.msgWrong; 
+                msg.style.color = "#dc3545";
+            }
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            const savedLang = localStorage.getItem('user_lang') || 'hi';
+            switchLanguage(savedLang);
+        });
+    </script>
+</body>
+</html>
