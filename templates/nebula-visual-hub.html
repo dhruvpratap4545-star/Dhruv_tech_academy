@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>10. Nebula Visual Hub - Dhruv Academy</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Rajdhani:wght@500;600;700&display=swap');
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+        .hud-font {
+            font-family: 'Rajdhani', sans-serif;
+        }
+        .nebula-glow {
+            box-shadow: 0 0 25px rgba(244, 63, 94, 0.2);
+        }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col justify-between selection:bg-rose-500 selection:text-white">
+
+    <!-- Header Navigation -->
+    <header class="bg-slate-900/80 backdrop-blur-md border-b border-rose-500/20 px-6 py-4 sticky top-0 z-50 shadow-2xl">
+        <div class="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4">
+            <div class="flex items-center space-x-4 w-full sm:w-auto">
+                <a href="/" id="homeBtn" class="text-rose-400 hover:text-rose-300 text-sm font-semibold flex items-center gap-2 transition duration-200 group">
+                    <span class="transform group-hover:-translate-x-1 transition duration-200">⬅️</span> 
+                    <span>मुख्य डैशबोर्ड</span>
+                </a>
+                <span class="text-slate-800">|</span>
+                <h1 id="headerTitle" class="text-lg font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-rose-400 via-purple-400 to-indigo-400 flex items-center gap-2">
+                    <i class="fa-solid fa-wand-magic-sparkles text-rose-400 animate-pulse"></i>
+                    <span>10. Nebula Visual Hub (नेबुला विजुअल हब)</span>
+                </h1>
+            </div>
+            <div class="flex items-center space-x-3 w-full sm:w-auto justify-end flex-wrap gap-y-2">
+                <!-- 🌐 4-भाषाओं वाला यूनिवर्सल सेलेक्टर -->
+                <div class="flex items-center gap-1.5 bg-slate-950 border border-slate-700 px-3 py-1 rounded-full shadow">
+                    <span class="text-xs">🌐</span>
+                    <select id="langSelector" onchange="switchLanguage(this.value)" class="bg-transparent text-xs font-bold text-rose-300 outline-none cursor-pointer">
+                        <option value="hi" class="bg-slate-900 text-slate-200">🇮🇳 हिंदी (Hindi)</option>
+                        <option value="en" class="bg-slate-900 text-slate-200">🇬🇧 English</option>
+                        <option value="pa" class="bg-slate-900 text-slate-200">🇮🇳 ਪੰਜਾਬੀ (Punjabi)</option>
+                        <option value="mr" class="bg-slate-900 text-slate-200">🇮🇳 मराठी (Marathi)</option>
+                    </select>
+                </div>
+
+                <span id="networkStatus" class="text-xs bg-emerald-950 text-emerald-300 px-3 py-1.5 rounded-full border border-emerald-800/50 flex items-center gap-1.5">
+                    <span class="h-2 w-2 rounded-full bg-emerald-400 animate-ping"></span>
+                    <span id="networkStatusText">सिस्टम सिंक: सामान्य</span>
+                </span>
+                <span class="text-xs bg-rose-950 text-rose-300 px-3 py-1.5 rounded-full border border-rose-800/50 hud-font tracking-wider">
+                    🌌 NEBULA V1.0
+                </span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Grid -->
+    <main class="flex-1 p-4 md:p-6 max-w-7xl mx-auto w-full grid grid-cols-1 lg:grid-cols-3 gap-6">
+        
+        <!-- Left Panel Controls -->
+        <div class="lg:col-span-1 bg-slate-900/90 border border-rose-500/10 rounded-2xl p-5 flex flex-col space-y-5 shadow-2xl h-fit">
+            <div class="border-b border-slate-800 pb-3 flex justify-between items-center">
+                <h2 id="controlPanelHeading" class="text-sm font-bold text-rose-400 uppercase tracking-wider flex items-center gap-2">
+                    <i class="fa-solid fa-sliders text-rose-400"></i>
+                    <span>नेबुला नियंत्रण बोर्ड</span>
+                </h2>
+                <i class="fa-solid fa-circle-nodes text-slate-700"></i>
+            </div>
+            
+            <div class="space-y-2">
+                <label class="text-xs text-slate-400 flex justify-between">
+                    <span id="lblDomain">विषय क्षेत्र (Linguistic Domain)</span>
+                    <i class="fa-solid fa-language text-slate-500"></i>
+                </label>
+                <select id="nebulaDomain" onchange="updateVisualTheme()" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-rose-300 focus:outline-none focus:border-rose-500/50 focus:ring-1 focus:ring-rose-500/20 transition cursor-pointer">
+                    <option value="speech-flow" id="optSpeech">🗣️ स्पीच फ्लो और वेव पैटर्न (Speech Flow Wave)</option>
+                    <option value="neural" id="optNeural">🧠 न्यूरल सिमेंटिक्स (Neural Translation Map)</option>
+                    <option value="syllable" id="optSyllable">🎶 सिलेबल और स्ट्रेस रिदम (Syllable Stress Rhythm)</option>
+                    <option value="cognitive" id="optCognitive">🌌 कॉग्निटिव थॉट नेबुला (Cognitive Thought Nebula)</option>
+                </select>
+            </div>
+
+            <div class="space-y-2">
+                <label class="text-xs text-slate-400 flex justify-between">
+                    <span id="lblConnMode">कनेक्टिविटी मोड (Network Optimization)</span>
+                    <i class="fa-solid fa-wifi text-slate-500"></i>
+                </label>
+                <select id="connMode" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-rose-300 focus:outline-none focus:border-rose-500/50 focus:ring-1 focus:ring-rose-500/20 transition cursor-pointer">
+                    <option value="auto" id="optAuto">ऑटो-अडॉप्टिव (2G/3G/4G/5G ऑटो)</option>
+                    <option value="lite" id="optLite">लो-बैंडविड्थ लाइट (ग्रामीण इलाकों के लिए)</option>
+                    <option value="hd" id="optHd">हाई-डेफिनिशन 3D रेंडर (ब्रॉडबैंड)</option>
+                </select>
+            </div>
+
+            <div class="space-y-2">
+                <label id="lblQuickSelect" class="text-xs text-slate-400">लर्निंग मोड त्वरित चयन:</label>
+                <div class="grid grid-cols-2 gap-2">
+                    <button onclick="setPrompt('Pronunciation analysis of tongue twisters')" class="p-2.5 bg-slate-950 hover:bg-slate-800/80 border border-slate-800 hover:border-rose-500/30 rounded-xl text-[11px] text-left transition text-slate-300 font-medium">
+                        👅 Tongue Twisters
+                    </button>
+                    <button onclick="setPrompt('Sentence syntax neural mapping')" class="p-2.5 bg-slate-950 hover:bg-slate-800/80 border border-slate-800 hover:border-rose-500/30 rounded-xl text-[11px] text-left transition text-slate-300 font-medium">
+                        📂 Syntax Neural Map
+                    </button>
+                    <button onclick="setPrompt('Vowel frequency sound wave')" class="p-2.5 bg-slate-950 hover:bg-slate-800/80 border border-slate-800 hover:border-rose-500/30 rounded-xl text-[11px] text-left transition text-slate-300 font-medium">
+                        🌊 Sound Frequencies
+                    </button>
+                    <button onclick="setPrompt('Daily vocabulary connection hub')" class="p-2.5 bg-slate-950 hover:bg-slate-800/80 border border-slate-800 hover:border-rose-500/30 rounded-xl text-[11px] text-left transition text-slate-300 font-medium">
+                        📚 Vocabulary Hub
+                    </button>
+                </div>
+            </div>
+
+            <div class="pt-4 border-t border-slate-800/80">
+                <div class="bg-slate-950/60 border border-slate-800 p-3.5 rounded-xl text-[11px] text-slate-400 space-y-2">
+                    <div class="flex items-center gap-2 text-rose-400 font-semibold">
+                        <i class="fa-solid fa-shield-halved"></i>
+                        <span id="lblComplianceTitle">भारत नेटवर्क सुरक्षा अनुपालन</span>
+                    </div>
+                    <p id="lblComplianceDesc" class="leading-relaxed">यह नेबुला हब कमजोर इंटरनेट नेटवर्क (2G/3G) में भी बिना रुके उच्च-गुणवत्ता एनीमेशन और सिमेंटिक मैपिंग प्रदर्शित कर सकता है।</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Panels (Input & Canvas Output) -->
+        <div class="lg:col-span-2 flex flex-col space-y-6">
+            
+            <!-- Input Terminal -->
+            <div class="bg-slate-900/90 border border-rose-500/10 rounded-2xl p-5 shadow-2xl space-y-4">
+                <div class="flex justify-between items-center">
+                    <div class="flex items-center gap-2">
+                        <span class="flex h-2 w-2 relative">
+                            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
+                            <span class="relative inline-flex rounded-full h-2 w-2 bg-rose-500"></span>
+                        </span>
+                        <h2 id="lblTerminalHeader" class="text-sm font-bold text-rose-400 tracking-wider uppercase">प्रॉम्प्ट और स्पीच इनपुट टर्मिनल</h2>
+                    </div>
+                    <span id="lblTokenPolicyBadge" class="text-[10px] bg-indigo-950/50 text-indigo-300 px-3 py-1 rounded-full border border-indigo-800/30 flex items-center gap-1.5 font-medium">
+                        <i class="fa-solid fa-coins"></i>
+                        <span>टोकन सुरक्षा नीति</span>
+                    </span>
+                </div>
+
+                <div class="relative">
+                    <textarea id="nebulaPrompt" rows="3" placeholder="यहाँ लिखिए या नीचे दिए माइक का उपयोग करके बोलें कि आप कौन सा भाषाई विजुअल पैटर्न रेंडर करना चाहते हैं..." class="w-full bg-slate-950 border border-slate-800 rounded-xl p-4 pr-12 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-rose-500/50 focus:ring-1 focus:ring-rose-500/20 transition resize-none leading-relaxed"></textarea>
+                    <button onclick="startVoiceInput()" id="micBtn" title="माइक्रोफोन इनपुट शुरू करें" class="absolute right-3 bottom-4 p-2 bg-slate-900/80 text-rose-400 hover:text-rose-300 hover:bg-slate-800 rounded-xl transition duration-150 border border-slate-800 focus:outline-none">
+                        <i class="fa-solid fa-microphone text-base" id="micIcon"></i>
+                    </button>
+                </div>
+                
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pt-1">
+                    <span id="lblDeductNotice" class="text-[11px] text-slate-400 flex items-center gap-1.5">
+                        <i class="fa-solid fa-circle-info text-amber-500"></i>
+                        <span>नए नेबुला विजुअलाइजेशन पर 1 मानक टोकन प्रयुक्त होगा।</span>
+                    </span>
+                    <button onclick="renderNebulaVisual()" id="generateBtn" class="w-full sm:w-auto px-6 py-3 bg-gradient-to-r from-rose-600 via-pink-600 to-indigo-600 hover:from-rose-500 hover:to-indigo-500 text-white text-xs font-bold rounded-xl shadow-xl hover:shadow-rose-900/20 transition duration-300 flex items-center justify-center gap-2 cursor-pointer">
+                        <i class="fa-solid fa-play"></i>
+                        <span id="btnRenderText">रेंडर शुरू करें (Render)</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Visualization Canvas Box -->
+            <div id="nebulaOutputBox" class="bg-slate-900/90 border border-slate-800 rounded-2xl p-5 shadow-2xl hidden space-y-4 nebula-glow transition-all duration-500">
+                <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                    <span id="outputSuccessHeader" class="text-xs font-bold text-emerald-400 flex items-center gap-1.5">
+                        <i class="fa-solid fa-square-check text-base"></i>
+                        <span>नेबुला विजुअल सफलतापूर्वक जनरेट हुआ</span>
+                    </span>
+                    <button onclick="downloadReport()" id="btnDownloadReport" class="text-[10px] text-slate-400 hover:text-white transition flex items-center gap-1 cursor-pointer" title="विजुअल विवरण सेव करें">
+                        <i class="fa-solid fa-download"></i> <span>सेव करें</span>
+                    </button>
+                </div>
+
+                <div id="nebulaCanvasContent" class="bg-slate-950 min-h-[320px] rounded-xl border border-slate-800 flex flex-col items-center justify-center p-4 text-center relative overflow-hidden">
+                    <canvas id="nebulaCanvas" class="absolute inset-0 w-full h-full opacity-60"></canvas>
+                    <div id="canvasStaticInfo" class="relative z-10 space-y-3 pointer-events-none p-4 max-w-md bg-slate-950/80 backdrop-blur-sm rounded-xl border border-slate-800/80">
+                        <!-- Filled dynamically by JavaScript -->
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+    </main>
+
+    <!-- Footer Security Notice -->
+    <footer class="bg-slate-900/60 backdrop-blur-md border-t border-slate-900 py-5 px-6 text-center text-xs text-slate-400 mt-8">
+        <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-3">
+            <p id="footerCopy1" class="flex items-center gap-1.5 justify-center">
+                <i class="fa-solid fa-shield-halved text-emerald-500"></i>
+                <span>ध्रुव एकेडमी - सुरक्षित और विश्वसनीय डिजिटल शिक्षण मंच द्वारा प्रमाणित</span>
+            </p>
+            <p id="footerCopy2" class="text-[11px] text-slate-500">सर्वाधिकार सुरक्षित © 2026 | Spoken English Visual Core API</p>
+        </div>
+    </footer>
+
+    <!-- Audio Player for Pronunciation Feedback (Hidden) -->
+    <audio id="successSound" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-120.wav" preload="auto"></audio>
+
+    <!-- Core Interactive JavaScript & 4-Language Matrix -->
+    <script>
+        let currentLang = localStorage.getItem('user_lang') || 'hi';
+        let animationFrameId = null;
+        let canvas, ctx, particles = [];
+
+        const visualTranslations = {
+            hi: {
+                homeBtn: "मुख्य डैशबोर्ड",
+                headerTitle: "10. Nebula Visual Hub (नेबुला विजुअल हब)",
+                networkStatus: "सिस्टम सिंक: सामान्य",
+                controlPanelHeading: "नेबुला नियंत्रण बोर्ड",
+                lblDomain: "विषय क्षेत्र (Linguistic Domain)",
+                optSpeech: "🗣️ स्पीच फ्लो और वेव पैटर्न (Speech Flow Wave)",
+                optNeural: "🧠 न्यूरल सिमेंटिक्स (Neural Translation Map)",
+                optSyllable: "🎶 सिलेबल और स्ट्रेस रिदम (Syllable Stress Rhythm)",
+                optCognitive: "🌌 कॉग्निटिव थॉट नेबुला (Cognitive Thought Nebula)",
+                lblConnMode: "कनेक्टिविटी मोड (Network Optimization)",
+                optAuto: "ऑटो-अडॉप्टिव (2G/3G/4G/5G ऑटो)",
+                optLite: "लो-बैंडविड्थ लाइट (ग्रामीण इलाकों के लिए)",
+                optHd: "हाई-डेफिनिशन 3D रेंडर (ब्रॉडबैंड)",
+                lblQuickSelect: "लर्निंग मोड त्वरित चयन:",
+                lblComplianceTitle: "भारत नेटवर्क सुरक्षा अनुपालन",
+                lblComplianceDesc: "यह नेबुला हब कमजोर इंटरनेट नेटवर्क (2G/3G) में भी बिना रुके उच्च-गुणवत्ता एनीमेशन और सिमेंटिक मैपिंग प्रदर्शित कर सकता है।",
+                lblTerminalHeader: "प्रॉम्प्ट और स्पीच इनपुट टर्मिनल",
+                lblTokenPolicyBadge: "टोकन सुरक्षा नीति",
+                promptPh: "यहाँ लिखिए या नीचे दिए माइक का उपयोग करके बोलें कि आप कौन सा भाषाई विजुअल पैटर्न रेंडर करना चाहते हैं...",
+                lblDeductNotice: "नए नेबुला विजुअलाइजेशन पर 1 मानक टोकन प्रयुक्त होगा।",
+                btnRenderText: "रेंडर शुरू करें (Render)",
+                outputSuccessHeader: "नेबुला विजुअल सफलतापूर्वक जनरेट हुआ",
+                btnDownloadReport: "सेव करें",
+                footerCopy1: "ध्रुव एकेडमी - सुरक्षित और विश्वसनीय डिजिटल शिक्षण मंच द्वारा प्रमाणित",
+                footerCopy2: "सर्वाधिकार सुरक्षित © 2026 | Spoken English Visual Core API",
+                alertEmptyPrompt: "कृपया पहले प्रॉम्प्ट टर्मिनल में अपना स्पोकन/लर्निंग विषय दर्ज करें!",
+                alertNoVoice: "आपका वेब ब्राउज़र वॉयस डिक्टेशन का समर्थन नहीं करता है।",
+                renderingText: "रेंडर हो रहा है...",
+                renderDescPrefix: "आपका स्पोकन-फोकस मॉडल नेबुला नेटवर्क-फ्रेंडली इंजन पर रेंडर कर दिया गया है।",
+                coreActive: "● कोर: सक्रिय (Active)",
+                timeLabel: "⏳ समय:",
+                nodesLabel: "🔀 नोड्स:"
+            },
+            en: {
+                homeBtn: "Main Dashboard",
+                headerTitle: "10. Nebula Visual Hub (Linguistic AI)",
+                networkStatus: "System Sync: Normal",
+                controlPanelHeading: "Nebula Control Board",
+                lblDomain: "Linguistic Domain",
+                optSpeech: "🗣️ Speech Flow & Wave Pattern",
+                optNeural: "🧠 Neural Semantics Translation Map",
+                optSyllable: "🎶 Syllable & Stress Rhythm",
+                optCognitive: "🌌 Cognitive Thought Nebula",
+                lblConnMode: "Network Optimization",
+                optAuto: "Auto-Adaptive (2G/3G/4G/5G)",
+                optLite: "Low-Bandwidth Lite (Rural Areas)",
+                optHd: "High-Definition 3D (Broadband)",
+                lblQuickSelect: "Quick Learning Presets:",
+                lblComplianceTitle: "India Network Security Compliant",
+                lblComplianceDesc: "This Nebula Hub renders high-quality semantic animations seamlessly even on constrained 2G/3G telecom networks.",
+                lblTerminalHeader: "Prompt & Speech Input Terminal",
+                lblTokenPolicyBadge: "Token Policy Safe",
+                promptPh: "Type here or click the mic to describe the linguistic visual pattern you wish to render...",
+                lblDeductNotice: "1 standard AI token will be consumed per render inference.",
+                btnRenderText: "Launch Render",
+                outputSuccessHeader: "Nebula Visual Generated Successfully",
+                btnDownloadReport: "Save Report",
+                footerCopy1: "Dhruv Academy - Verified by Secure & Resilient Education Engine",
+                footerCopy2: "All Rights Reserved © 2026 | Spoken English Visual Core API",
+                alertEmptyPrompt: "Please enter your spoken learning query in the terminal first!",
+                alertNoVoice: "Your browser does not support Web Speech Recognition.",
+                renderingText: "Rendering...",
+                renderDescPrefix: "Your spoken-focus visual model has rendered cleanly on the Nebula compute engine.",
+                coreActive: "● Core: Active",
+                timeLabel: "⏳ Time:",
+                nodesLabel: "🔀 Nodes:"
+            },
+            pa: {
+                homeBtn: "ਮੁੱਖ ਡੈਸ਼ਬੋਰਡ",
+                headerTitle: "10. ਨੇਬੁਲਾ ਵਿਜ਼ੂਅਲ ਹੱਬ (Nebula Visual Hub)",
+                networkStatus: "ਸਿਸਟਮ ਸਿੰਕ: ਆਮ",
+                controlPanelHeading: "ਨੇਬੁਲਾ ਕੰਟਰੋਲ ਬੋਰਡ",
+                lblDomain: "ਭਾਸ਼ਾ ਖੇਤਰ (Linguistic Domain)",
+                optSpeech: "🗣️ ਸਪੀਚ ਵੇਵ ਪੈਟਰਨ",
+                optNeural: "🧠 ਨਿਊਰਲ ਅਨੁਵਾਦ ਮੈਪ",
+                optSyllable: "🎶 ਸਿਲੇਬਲ ਅਤੇ ਲੈਅ",
+                optCognitive: "🌌 ਥੌਟ ਨੇਬੁਲਾ ਮਾਡਲ",
+                lblConnMode: "ਨੈੱਟਵਰਕ ਮੋਡ",
+                optAuto: "ਆਟੋ (2G/3G/4G/5G)",
+                optLite: "ਲੋਅ-ਬੈਂਡਵਿਡਥ (ਪੇਂਡੂ ਖੇਤਰਾਂ ਲਈ)",
+                optHd: "ਹਾਈ-ਡੈਫੀਨੇਸ਼ਨ 3D ਰੈਂਡਰ",
+                lblQuickSelect: "ਤੁਰੰਤ ਚੋਣ:",
+                lblComplianceTitle: "ਨੈੱਟਵਰਕ ਸੁਰੱਖਿਆ ਪ੍ਰਮਾਣਿਤ",
+                lblComplianceDesc: "ਇਹ ਹੱਬ ਘੱਟ ਇੰਟਰਨੈੱਟ ਸਪੀਡ 'ਤੇ ਵੀ ਬਿਨਾਂ ਰੁਕੇ ਐਨੀਮੇਸ਼ਨ ਦਿਖਾ ਸਕਦਾ ਹੈ।",
+                lblTerminalHeader: "ਇਨਪੁੱਟ ਟਰਮੀਨਲ",
+                lblTokenPolicyBadge: "ਟੋਕਨ ਨੀਤੀ",
+                promptPh: "ਇੱਥੇ ਲਿਖੋ ਜਾਂ ਮਾਈਕ ਦੀ ਵਰਤੋਂ ਕਰੋ...",
+                lblDeductNotice: "ਹਰੇਕ ਰੈਂਡਰ ਲਈ 1 ਟੋਕਨ ਲੱਗੇਗਾ।",
+                btnRenderText: "ਰੈਂਡਰ ਸ਼ੁਰੂ ਕਰੋ",
+                outputSuccessHeader: "ਨੇਬੁਲਾ ਵਿਜ਼ੂਅਲ ਸਫਲਤਾਪੂਰਵਕ ਤਿਆਰ ਹੋਇਆ",
+                btnDownloadReport: "ਸੇਵ ਕਰੋ",
+                footerCopy1: "ਧਰੁਵ ਅਕੈਡਮੀ - ਸੁਰੱਖਿਅਤ ਡਿਜੀਟਲ ਸਿੱਖਿਆ ਪਲੇਟਫਾਰਮ",
+                footerCopy2: "ਸਾਰੇ ਹੱਕ ਰਾਖਵੇਂ ਹਨ © 2026 | Spoken English Visual Core API",
+                alertEmptyPrompt: "ਕਿਰਪਾ ਕਰਕੇ ਪਹਿਲਾਂ ਆਪਣਾ ਵਿਸ਼ਾ ਦਰਜ ਕਰੋ!",
+                alertNoVoice: "ਤੁਹਾਡਾ ਬ੍ਰਾਊਜ਼ਰ ਆਵਾਜ਼ ਪਛਾਣ ਦਾ ਸਮਰਥਨ ਨਹੀਂ ਕਰਦਾ।",
+                renderingText: "ਰੈਂਡਰ ਹੋ ਰਿਹਾ ਹੈ...",
+                renderDescPrefix: "ਤੁਹਾਡਾ ਮਾਡਲ ਨੇਬੁਲਾ ਇੰਜਣ 'ਤੇ ਤਿਆਰ ਹੋ ਗਿਆ ਹੈ।",
+                coreActive: "● ਕੋਰ: ਸਰਗਰਮ (Active)",
+                timeLabel: "⏳ ਸਮਾਂ:",
+                nodesLabel: "🔀 ਨੋਡਸ:"
+            },
+            mr: {
+                homeBtn: "मुख्य डॅशबोर्ड",
+                headerTitle: "10. नेबुला व्हिज्युअल हब (Nebula Visual Hub)",
+                networkStatus: "सिस्टम सिंक: सामान्य",
+                controlPanelHeading: "नेबुला नियंत्रण मंडळ",
+                lblDomain: "भाषिक क्षेत्र (Linguistic Domain)",
+                optSpeech: "🗣️ स्पीच फ्लो आणि वेव्ह पॅटर्न",
+                optNeural: "🧠 न्यूरल ट्रान्सलेशन मॅप",
+                optSyllable: "🎶 सिलेबल आणि स्ट्रेस रिदम",
+                optCognitive: "🌌 कॉग्निटिव्ह थॉट नेबुला",
+                lblConnMode: "नेटवर्क ऑप्टिमायझेशन",
+                optAuto: "ऑटो-अ‍ॅडॉप्टिव्ह (2G/3G/4G/5G)",
+                optLite: "कमी-बँडविड्थ लाइट (ग्रामीण भागासाठी)",
+                optHd: "हाय-डेफिनिशन 3D रेंडर",
+                lblQuickSelect: "त्वरित विषय निवड:",
+                lblComplianceTitle: "भारत नेटवर्क सुरक्षा अनुपालन",
+                lblComplianceDesc: "हे हब 2G/3G नेटवर्कवरही विनाव्यत्यय उच्च-गुणवत्तेचे व्हिज्युअल रेंडर करू शकते.",
+                lblTerminalHeader: "प्रॉम्प्ट आणि स्पीच इनपुट टर्मिनल",
+                lblTokenPolicyBadge: "टोकन धोरण",
+                promptPh: "येथे लिहा किंवा माइकद्वारे बोला...",
+                lblDeductNotice: "प्रत्येक रेंडरसाठी 1 मानक टोकन वापरले जाईल.",
+                btnRenderText: "रेंडर सुरू करा",
+                outputSuccessHeader: "नेबुला व्हिज्युअल यशस्वीरित्या तयार झाले",
+                btnDownloadReport: "सेव्ह करा",
+                footerCopy1: "ध्रुव अकादमी - सुरक्षित डिजिटल शिक्षण मंच",
+                footerCopy2: "सर्व हक्क राखीव © 2026 | Spoken English Visual Core API",
+                alertEmptyPrompt: "कृपया आधी आपला विषय लिहा!",
+                alertNoVoice: "आपला ब्राउझर व्हॉइस इनपुटला सपोर्ट करत नाही.",
+                renderingText: "रेंडर होत आहे...",
+                renderDescPrefix: "आपले मॉडेल नेबुला इंजिनवर यशस्वीरित्या रेंडर झाले आहे.",
+                coreActive: "● कोर: सक्रिय (Active)",
+                timeLabel: "⏳ वेळ:",
+                nodesLabel: "🔀 नोड्स:"
+            }
+        };
+
+        function switchLanguage(lang) {
+            currentLang = lang;
+            localStorage.setItem('user_lang', lang);
+
+            const selector = document.getElementById('langSelector');
+            if (selector) selector.value = lang;
+
+            const d = visualTranslations[lang] || visualTranslations.hi;
+
+            document.getElementById('homeBtn').innerHTML = `<span class="transform group-hover:-translate-x-1 transition duration-200">⬅️</span> <span>${d.homeBtn}</span>`;
+            document.getElementById('headerTitle').innerHTML = `<i class="fa-solid fa-wand-magic-sparkles text-rose-400 animate-pulse"></i> <span>${d.headerTitle}</span>`;
+            document.getElementById('networkStatusText').innerText = d.networkStatus;
+            document.getElementById('controlPanelHeading').innerHTML = `<i class="fa-solid fa-sliders text-rose-400"></i> <span>${d.controlPanelHeading}</span>`;
+            document.getElementById('lblDomain').innerText = d.lblDomain;
+            document.getElementById('optSpeech').innerText = d.optSpeech;
+            document.getElementById('optNeural').innerText = d.optNeural;
+            document.getElementById('optSyllable').innerText = d.optSyllable;
+            document.getElementById('optCognitive').innerText = d.optCognitive;
+            document.getElementById('lblConnMode').innerText = d.lblConnMode;
+            document.getElementById('optAuto').innerText = d.optAuto;
+            document.getElementById('optLite').innerText = d.optLite;
+            document.getElementById('optHd').innerText = d.optHd;
+            document.getElementById('lblQuickSelect').innerText = d.lblQuickSelect;
+            document.getElementById('lblComplianceTitle').innerText = d.lblComplianceTitle;
+            document.getElementById('lblComplianceDesc').innerText = d.lblComplianceDesc;
+            document.getElementById('lblTerminalHeader').innerText = d.lblTerminalHeader;
+            document.getElementById('lblTokenPolicyBadge').innerHTML = `<i class="fa-solid fa-coins"></i> <span>${d.lblTokenPolicyBadge}</span>`;
+            document.getElementById('nebulaPrompt').placeholder = d.promptPh;
+            document.getElementById('lblDeductNotice').innerHTML = `<i class="fa-solid fa-circle-info text-amber-500"></i> <span>${d.lblDeductNotice}</span>`;
+            document.getElementById('btnRenderText').innerText = d.btnRenderText;
+            document.getElementById('outputSuccessHeader').innerHTML = `<i class="fa-solid fa-square-check text-base"></i> <span>${d.outputSuccessHeader}</span>`;
+            document.getElementById('btnDownloadReport').innerHTML = `<i class="fa-solid fa-download"></i> <span>${d.btnDownloadReport}</span>`;
+            document.getElementById('footerCopy1').innerHTML = `<i class="fa-solid fa-shield-halved text-emerald-500"></i> <span>${d.footerCopy1}</span>`;
+            document.getElementById('footerCopy2').innerText = d.footerCopy2;
+        }
+
+        const themes = {
+            'speech-flow': { color: '#f43f5e', label: 'Speech wave sequence generated', count: 120 },
+            'neural': { color: '#818cf8', label: 'Neural node semantic link created', count: 180 },
+            'syllable': { color: '#fbbf24', label: 'Sound rhythm stressed visual active', count: 90 },
+            'cognitive': { color: '#34d399', label: 'Cognitive thought maps compiled', count: 150 }
+        };
+
+        function setPrompt(text) {
+            document.getElementById('nebulaPrompt').value = text;
+        }
+
+        function startVoiceInput() {
+            const d = visualTranslations[currentLang] || visualTranslations.hi;
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            const micIcon = document.getElementById('micIcon');
+            const micBtn = document.getElementById('micBtn');
+
+            if (!SpeechRecognition) {
+                alert(d.alertNoVoice);
+                return;
+            }
+
+            const recognition = new SpeechRecognition();
+            if (currentLang === 'en') recognition.lang = 'en-US';
+            else if (currentLang === 'pa') recognition.lang = 'pa-IN';
+            else if (currentLang === 'mr') recognition.lang = 'mr-IN';
+            else recognition.lang = 'hi-IN';
+
+            recognition.interimResults = false;
+            recognition.maxAlternatives = 1;
+
+            recognition.onstart = () => {
+                micIcon.className = "fa-solid fa-microphone-lines text-rose-500 animate-bounce";
+                micBtn.classList.add("border-rose-500", "bg-rose-950/20");
+            };
+
+            recognition.onresult = (event) => {
+                const speechResult = event.results[0][0].transcript;
+                document.getElementById('nebulaPrompt').value = speechResult;
+            };
+
+            recognition.onerror = () => {
+                micIcon.className = "fa-solid fa-microphone text-rose-400";
+                micBtn.classList.remove("border-rose-500", "bg-rose-950/20");
+            };
+
+            recognition.onend = () => {
+                micIcon.className = "fa-solid fa-microphone text-rose-400";
+                micBtn.classList.remove("border-rose-500", "bg-rose-950/20");
+            };
+
+            recognition.start();
+        }
+
+        function updateVisualTheme() {
+            const outputBox = document.getElementById('nebulaOutputBox');
+            if (!outputBox.classList.contains('hidden')) {
+                renderNebulaVisual();
+            }
+        }
+
+        function setupCanvas(themeKey, density) {
+            canvas = document.getElementById('nebulaCanvas');
+            if (!canvas) return;
+            ctx = canvas.getContext('2d');
+            
+            const connMode = document.getElementById('connMode').value;
+            let resolutionScale = 1;
+            let speedMultiplier = 1;
+
+            if (connMode === 'lite') {
+                resolutionScale = 0.5;
+                density = density * 0.4;
+                speedMultiplier = 0.5;
+            } else if (connMode === 'hd') {
+                resolutionScale = 1.5;
+                density = density * 1.5;
+                speedMultiplier = 1.2;
+            }
+
+            canvas.width = canvas.parentElement.clientWidth * resolutionScale;
+            canvas.height = canvas.parentElement.clientHeight * resolutionScale;
+
+            const colorTheme = themes[themeKey].color;
+            particles = [];
+            
+            for (let i = 0; i < density; i++) {
+                particles.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height,
+                    radius: Math.random() * 2.5 + 0.5,
+                    vx: (Math.random() - 0.5) * 1.5 * speedMultiplier,
+                    vy: (Math.random() - 0.5) * 1.5 * speedMultiplier,
+                    color: colorTheme,
+                    alpha: Math.random() * 0.5 + 0.2
+                });
+            }
+
+            if (animationFrameId) cancelAnimationFrame(animationFrameId);
+            animate(colorTheme);
+        }
+
+        function animate(colorTheme) {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            ctx.strokeStyle = colorTheme;
+            for (let i = 0; i < particles.length; i++) {
+                let p1 = particles[i];
+                for (let j = i + 1; j < particles.length; j++) {
+                    let p2 = particles[j];
+                    let dx = p1.x - p2.x;
+                    let dy = p1.y - p2.y;
+                    let dist = Math.sqrt(dx * dx + dy * dy);
+                    if (dist < 55) {
+                        ctx.beginPath();
+                        ctx.moveTo(p1.x, p1.y);
+                        ctx.lineTo(p2.x, p2.y);
+                        ctx.strokeStyle = `rgba(${hexToRgb(colorTheme)}, ${0.1 * (1 - dist/55)})`;
+                        ctx.lineWidth = 0.6;
+                        ctx.stroke();
+                    }
+                }
+            }
+
+            for (let i = 0; i < particles.length; i++) {
+                let p = particles[i];
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+                ctx.fillStyle = p.color;
+                ctx.globalAlpha = p.alpha;
+                ctx.fill();
+                
+                p.x += p.vx;
+                p.y += p.vy;
+
+                if (p.x < 0) p.x = canvas.width;
+                if (p.x > canvas.width) p.x = 0;
+                if (p.y < 0) p.y = canvas.height;
+                if (p.y > canvas.height) p.y = 0;
+            }
+            
+            ctx.globalAlpha = 1.0;
+            animationFrameId = requestAnimationFrame(() => animate(colorTheme));
+        }
+
+        function hexToRgb(hex) {
+            const bigint = parseInt(hex.slice(1), 16);
+            const r = (bigint >> 16) & 255;
+            const g = (bigint >> 8) & 255;
+            const b = bigint & 255;
+            return `${r},${g},${b}`;
+        }
+
+        function renderNebulaVisual() {
+            const d = visualTranslations[currentLang] || visualTranslations.hi;
+            const prompt = document.getElementById('nebulaPrompt').value.trim();
+            const domain = document.getElementById('nebulaDomain').value;
+            const connMode = document.getElementById('connMode').value;
+            const outputBox = document.getElementById('nebulaOutputBox');
+            const canvasContent = document.getElementById('canvasStaticInfo');
+            const generateBtn = document.getElementById('generateBtn');
+
+            if (!prompt) {
+                alert(d.alertEmptyPrompt);
+                return;
+            }
+
+            generateBtn.disabled = true;
+            generateBtn.innerHTML = `<i class="fa-solid fa-circle-notch animate-spin"></i> <span>${d.renderingText}</span>`;
+            
+            outputBox.classList.remove('hidden');
+            canvasContent.innerHTML = `
+                <div class="space-y-2 p-4 text-center">
+                    <i class="fa-solid fa-atom text-4xl text-rose-500 animate-spin"></i>
+                    <p class="text-xs text-rose-300 font-medium">[${connMode.toUpperCase()}] Visualizing...</p>
+                </div>
+            `;
+
+            setTimeout(() => {
+                generateBtn.disabled = false;
+                generateBtn.innerHTML = `<i class="fa-solid fa-play"></i> <span id="btnRenderText">${d.btnRenderText}</span>`;
+                
+                try { document.getElementById('successSound').play(); } catch(e){}
+
+                canvasContent.innerHTML = `
+                    <div class="space-y-3">
+                        <div class="flex items-center gap-2 justify-center text-sm font-bold text-transparent bg-clip-text bg-gradient-to-r from-rose-400 to-indigo-400 uppercase tracking-wide">
+                            <i class="fa-solid fa-satellite-dish text-rose-400"></i>
+                            <span>${prompt.substring(0, 32)}${prompt.length > 32 ? '...' : ''}</span>
+                        </div>
+                        <p class="text-xs text-slate-300 leading-relaxed">
+                            ${d.renderDescPrefix} (${domain.toUpperCase()})
+                        </p>
+                        <div class="flex flex-wrap justify-center gap-2 pt-1.5">
+                            <span class="px-2.5 py-0.5 bg-slate-900 border border-slate-800 rounded-md text-[10px] text-emerald-400 font-mono">
+                                ${d.coreActive}
+                            </span>
+                            <span class="px-2.5 py-0.5 bg-slate-900 border border-slate-800 rounded-md text-[10px] text-indigo-400 font-mono">
+                                ${d.timeLabel} 0.38s
+                            </span>
+                            <span class="px-2.5 py-0.5 bg-slate-900 border border-slate-800 rounded-md text-[10px] text-amber-400 font-mono">
+                                ${d.nodesLabel} ${themes[domain].count}
+                            </span>
+                        </div>
+                    </div>
+                `;
+
+                setupCanvas(domain, themes[domain].count);
+            }, 800);
+        }
+
+        function downloadReport() {
+            const prompt = document.getElementById('nebulaPrompt').value;
+            const domain = document.getElementById('nebulaDomain').value;
+            if(!prompt) return;
+
+            const text = `Dhruv Academy - Nebula Visual Hub Report\n\nDomain: ${domain}\nPrompt: ${prompt}\nStatus: Active & Verified\nDate: ${new Date().toLocaleString()}`;
+            const blob = new Blob([text], {type: 'text/plain'});
+            const anchor = document.createElement('a');
+            anchor.download = `Nebula_Report_${Date.now()}.txt`;
+            anchor.href = window.URL.createObjectURL(blob);
+            anchor.click();
+        }
+
+        window.addEventListener('resize', () => {
+            const domain = document.getElementById('nebulaDomain').value;
+            const outputBox = document.getElementById('nebulaOutputBox');
+            if (!outputBox.classList.contains('hidden') && canvas) {
+                setupCanvas(domain, themes[domain].count);
+            }
+        });
+
+        window.addEventListener('DOMContentLoaded', () => {
+            const savedLang = localStorage.getItem('user_lang') || 'hi';
+            switchLanguage(savedLang);
+        });
+    </script>
+</body>
+</html>
