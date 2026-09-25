@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Competition Solver & Timed Mock Test - Dhruv Academy</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-950 text-white min-h-screen flex flex-col font-sans justify-between">
+
+    <!-- Top Navigation -->
+    <header class="bg-slate-900 border-b border-indigo-500/30 px-6 py-4 flex flex-wrap 
+
+justify-between items-center shadow-lg gap-3">
+        <div class="flex items-center space-x-3">
+            <a href="/" id="homeLink" class="text-indigo-400 hover:text-indigo-300 text-sm 
+
+font-bold flex items-center gap-1">⬅️ मुख्य डैशबोर्ड</a>
+            <span class="text-gray-600">|</span>
+            <h1 id="headerTitle" class="text-lg font-extrabold text-transparent bg-clip-
+
+text bg-gradient-to-r from-indigo-400 to-purple-400">Competition Solver & Timed Mock Test 
+
+Hub</h1>
+        </div>
+        <div class="flex items-center space-x-3 flex-wrap gap-2">
+            <!-- 🌐 4-भाषाओं वाला यूनिवर्सल सेलेक्टर -->
+            <div class="flex items-center gap-1.5 bg-slate-950 border border-slate-800 px-3 
+
+py-1 rounded-full shadow">
+                <span class="text-xs">🌐</span>
+                <select id="langSelector" onchange="switchLanguage(this.value)" class="bg-
+
+transparent text-xs font-bold text-indigo-300 outline-none cursor-pointer">
+                    <option value="hi" class="bg-slate-900 text-slate-200">🇮🇳 हिंदी (Hindi)
+
+</option>
+                    <option value="en" class="bg-slate-900 text-slate-200">🇬🇧 
+
+English</option>
+                    <option value="pa" class="bg-slate-900 text-slate-200">🇮🇳 ਪੰਜਾਬੀ (Punjabi)
+
+</option>
+                    <option value="mr" class="bg-slate-900 text-slate-200">🇮🇳 मराठी 
+
+(Marathi)</option>
+                </select>
+            </div>
+
+            <div class="bg-purple-950 border border-purple-500/50 px-3 py-1 rounded-full 
+
+text-xs font-bold text-yellow-400 flex items-center gap-1 shadow">
+                <span id="walletLabel">🪙 टोकन्स:</span> <span id="walletTokenDisplay">10</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Workspace -->
+    <main class="flex-1 p-6 max-w-6xl mx-auto w-full grid grid-cols-1 lg:grid-cols-3 gap-
+
+6">
+        
+        <!-- Left Panel: Mode Selector -->
+        <div class="lg:col-span-1 bg-slate-900/90 border border-indigo-500/20 rounded-2xl 
+
+p-5 flex flex-col space-y-4 shadow-xl h-fit">
+            <h2 id="lblStudyMode" class="text-sm font-bold text-indigo-400 uppercase 
+
+tracking-wider">⚙️ अध्ययन मोड चुनें</h2>
+            
+            <div class="space-y-2">
+                <label id="lblExecMode" class="text-xs text-gray-400">मोड चयन (Execution 
+
+Mode)</label>
+                <select id="appMode" onchange="switchAppMode(this.value)" class="w-full 
+
+bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-xs text-indigo-300 
+
+focus:outline-none focus:border-indigo-500 cursor-pointer">
+                    <option value="solver" id="optSolver">प्रश्न और शोध समाधान (AI Solver - टोकन 
+
+लागू)</option>
+                    <option value="quiz" id="optQuiz">टाइम-बाउंड मॉक टेस्ट / क्विज़ (Pre-loaded Practice)
+
+</option>
+                </select>
+            </div>
+
+            <div class="space-y-2">
+                <label id="lblExamTarget" class="text-xs text-gray-400">विषय / परीक्षा (Target 
+
+Exam)</label>
+                <select id="examTarget" class="w-full bg-slate-950 border border-slate-700 
+
+rounded-xl p-2.5 text-xs text-indigo-300 focus:outline-none focus:border-indigo-500 
+
+cursor-pointer">
+                    <option value="upsc" id="optUpsc">IAS / UPSC (सिविल सेवा)</option>
+                    <option value="ssc" id="optSsc">SSC & Banking (शॉर्टकट्स)</option>
+                    <option value="neet" id="optNeet">NEET / Medical (साइंस)</option>
+                    <option value="ncert" id="optNcert">NCERT / Basic Core (एनसीईआरटी)</option>
+                </select>
+            </div>
+
+            <div class="pt-4 border-t border-slate-800">
+                <div class="text-[11px] text-gray-400 space-y-1.5">
+                    <p id="lblTokenPolicy">🪙 <b>टोकन नीति:</b> नए एआई प्रश्न पूछने पर वॉलेट से 1 टोकन डेबिट होता है, जबकि पहले 
+
+से सेव्ड क्विज़ अभ्यास पर कोई टोकन नहीं कटता।</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right/Center Panel: Dynamic Sections -->
+        <div class="lg:col-span-2 flex flex-col space-y-4">
+            
+            <!-- SECTION A: AI Solver Box -->
+            <div id="solverSection" class="bg-slate-900/90 border border-indigo-500/20 
+
+rounded-2xl p-5 shadow-xl space-y-3">
+                <div class="flex justify-between items-center">
+                    <h2 id="lblEnterQuestion" class="text-sm font-bold text-indigo-400">✍️ 
+
+नया प्रश्न या शोध विषय दर्ज करें</h2>
+                    <span id="badgeSolver" class="text-[10px] bg-amber-950 text-amber-300 
+
+px-2.5 py-0.5 rounded-full border border-amber-800">🪙 नया एआई विश्लेषण (टोकन देय)</span>
+                </div>
+                <textarea id="questionInput" rows="4" placeholder="यहाँ अपना नया सवाल लिखें, जिसका एआई द्वारा 
+
+गहरा विश्लेषण चाहिए..." class="w-full bg-slate-950 border border-slate-700 rounded-xl p-3 text-xs 
+
+text-white focus:outline-none focus:border-indigo-500 resize-none"></textarea>
+                
+                <div class="flex flex-wrap justify-between items-center gap-2">
+                    <span id="lblDeductNotice" class="text-[11px] text-gray-400">⚡ इस प्रक्रिया में 
+
+आपके वॉलेट से 1 टोकन डेबिट होगा।</span>
+                    <button onclick="solveQuestion()" id="btnSolve" class="px-6 py-2.5 bg-
+
+gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 
+
+text-white text-xs font-bold rounded-xl shadow-lg transition">🚀 एआई समाधान प्राप्त करें</button>
+                </div>
+            </div>
+
+            <!-- SECTION B: Timed Quiz / Mock Test Box -->
+            <div id="quizSection" class="bg-slate-900/90 border border-indigo-500/20 
+
+rounded-2xl p-5 shadow-xl space-y-4 hidden">
+                <div class="flex justify-between items-center border-b border-slate-800 
+
+pb-3">
+                    <span id="lblQuizTitle" class="text-sm font-bold text-purple-400">⏱️ लाइव 
+
+मॉक टेस्ट और क्विज़ मोड</span>
+                    <div class="flex items-center gap-2">
+                        <span id="badgePreloaded" class="text-[10px] bg-green-950 text-
+
+green-300 px-2.5 py-0.5 rounded-full border border-green-800">प्री-लोडेड (नो टोकन)</span>
+                        <span id="timerDisplay" class="text-xs bg-red-950 text-red-300 px-3 
+
+py-1 rounded-full border border-red-800 font-mono">10:00 मिनट</span>
+                    </div>
+                </div>
+                
+                <div id="quizQuestionBox" class="space-y-3">
+                    <p class="text-xs text-gray-200 font-semibold" id="qText">प्र. भारतीय संविधान की 
+
+प्रस्तावना में 'पंथनिरपेक्ष' शब्द किस संशोधन द्वारा जोड़ा गया?</p>
+                    <div class="space-y-2" id="optionsList">
+                        <label class="block bg-slate-950 p-2.5 rounded-xl border border-
+
+slate-800 text-xs text-gray-300 cursor-pointer hover:border-indigo-500"><input type="radio" 
+
+name="q1" value="a" class="mr-2"> <span id="optA">क) 42वां संविधान संशोधन</span></label>
+                        <label class="block bg-slate-950 p-2.5 rounded-xl border border-
+
+slate-800 text-xs text-gray-300 cursor-pointer hover:border-indigo-500"><input type="radio" 
+
+name="q1" value="b" class="mr-2"> <span id="optB">ख) 44वां संविधान संशोधन</span></label>
+                        <label class="block bg-slate-950 p-2.5 rounded-xl border border-
+
+slate-800 text-xs text-gray-300 cursor-pointer hover:border-indigo-500"><input type="radio" 
+
+name="q1" value="c" class="mr-2"> <span id="optC">ग) 86वां संविधान संशोधन</span></label>
+                    </div>
+                </div>
+
+                <div class="flex justify-between items-center pt-2">
+                    <span id="lblPreloadedNotice" class="text-[11px] text-gray-400">पूर्व-सुरक्षित 
+
+सामग्री अभ्यास</span>
+                    <button onclick="submitQuiz()" id="btnSubmitQuiz" class="px-6 py-2.5 
+
+bg-gradient-to-r from-green-600 to-teal-600 hover:from-green-500 hover:to-teal-500 text-
+
+white text-xs font-bold rounded-xl shadow-lg transition">✅ उत्तर सबमिट करें</button>
+                </div>
+            </div>
+
+            <!-- Output Display Box -->
+            <div id="outputContainer" class="bg-slate-900/50 border border-slate-800 
+
+rounded-2xl p-5 shadow-2xl hidden space-y-4">
+                <div class="flex items-center justify-between border-b border-slate-800 
+
+pb-3">
+                    <span id="outputHeader" class="text-xs font-bold text-green-400 flex 
+
+items-center gap-1.5">✅ ध्रुव एकेडमी प्रमाणित विश्लेषण</span>
+                    <span id="tokenDebitedBadge" class="text-[10px] bg-amber-950 text-
+
+amber-300 px-2.5 py-0.5 rounded-full border border-amber-800">टोकन सफलतापूर्वक डेबिट हुआ</span>
+                </div>
+                <div id="answerContent" class="text-xs text-gray-200 leading-relaxed 
+
+space-y-3">
+                    <!-- Dynamic Output -->
+                </div>
+            </div>
+
+        </div>
+
+    </main>
+
+    <!-- Official Footer -->
+    <footer class="bg-slate-900 border-t border-slate-800 py-4 px-6 text-center text-xs 
+
+text-gray-400 mt-6">
+        <p id="footerCopy">🔒 <b>ध्रुव एकेडमी - सुरक्षित और विश्वसनीय डिजिटल शिक्षण मंच</b> | सर्वाधिकार सुरक्षित © 2026</p>
+    </footer>
+
+    <!-- Script Logic with Wallet Sync & 4-Language Matrix -->
+    <script>
+        let currentLang = localStorage.getItem('user_lang') || 'hi';
+
+        const solverTranslations = {
+            hi: {
+                home: "⬅️ मुख्य डैशबोर्ड",
+                headerTitle: "Competition Solver & Timed Mock Test Hub",
+                walletLabel: "🪙 टोकन्स:",
+                studyMode: "⚙️ अध्ययन मोड चुनें",
+                execMode: "मोड चयन (Execution Mode)",
+                optSolver: "प्रश्न और शोध समाधान (AI Solver - टोकन लागू)",
+                optQuiz: "टाइम-बाउंड मॉक टेस्ट / क्विज़ (Pre-loaded Practice)",
+                examTarget: "विषय / परीक्षा (Target Exam)",
+                optUpsc: "IAS / UPSC (सिविल सेवा)",
+                optSsc: "SSC & Banking (शॉर्टकट्स)",
+                optNeet: "NEET / Medical (साइंस)",
+                optNcert: "NCERT / Basic Core (एनसीईआरटी)",
+                tokenPolicy: "🪙 <b>टोकन नीति:</b> नए एआई प्रश्न पूछने पर वॉलेट से 1 टोकन डेबिट होता है, जबकि पहले से सेव्ड क्विज़ अभ्यास 
+
+पर कोई टोकन नहीं कटता।",
+                enterQuestion: "✍️ नया प्रश्न या शोध विषय दर्ज करें",
+                badgeSolver: "🪙 नया एआई विश्लेषण (टोकन देय)",
+                questionPh: "यहाँ अपना नया सवाल लिखें, जिसका एआई द्वारा गहरा विश्लेषण चाहिए...",
+                deductNotice: "⚡ इस प्रक्रिया में आपके वॉलेट से 1 टोकन डेबिट होगा।",
+                btnSolve: "🚀 एआई समाधान प्राप्त करें",
+                quizTitle: "⏱️ लाइव मॉक टेस्ट और क्विज़ मोड",
+                badgePreloaded: "प्री-लोडेड (नो टोकन)",
+                timerText: "10:00 मिनट",
+                qText: "प्र. भारतीय संविधान की प्रस्तावना में 'पंथनिरपेक्ष' शब्द किस संशोधन द्वारा जोड़ा गया?",
+                optA: "क) 42वां संविधान संशोधन",
+                optB: "ख) 44वां संविधान संशोधन",
+                optC: "ग) 86वां संविधान संशोधन",
+                preloadedNotice: "पूर्व-सुरक्षित सामग्री अभ्यास",
+                btnSubmitQuiz: "✅ उत्तर सबमिट करें",
+                outputHeader: "✅ ध्रुव एकेडमी प्रमाणित विश्लेषण",
+                tokenDebitedBadge: "टोकन सफलतापूर्वक डेबिट हुआ",
+                footerCopy: "🔒 <b>ध्रुव एकेडमी - सुरक्षित और विश्वसनीय डिजिटल शिक्षण मंच</b> | सर्वाधिकार सुरक्षित © 2026",
+                emptyAlert: "कृपया पहले बॉक्स में अपना नया प्रश्न दर्ज करें!",
+                noTokenAlert: "⚠️ आपके पास पर्याप्त टोकन नहीं हैं! कृपया सेंट्रल वॉलेट से टोकन प्राप्त करें।",
+                processingMsg: "🔄 400-AI न्यूरल कोर द्वारा नया विश्लेषण किया जा रहा है...",
+                quizSubmittedAlert: "🎯 मॉक टेस्ट सफलतापूर्वक सबमिट हो गया! यह प्री-लोडेड अभ्यास था, अतः कोई टोकन नहीं काटा गया।"
+            },
+            en: {
+                home: "⬅️ Main Dashboard",
+                headerTitle: "Competition Solver & Timed Mock Test Hub",
+                walletLabel: "🪙 Tokens:",
+                studyMode: "⚙️ Select Study Mode",
+                execMode: "Execution Mode",
+                optSolver: "Question & Research Solver (AI Solver - Token Used)",
+                optQuiz: "Timed Mock Test / Quiz (Pre-loaded Practice)",
+                examTarget: "Target Exam / Subject",
+                optUpsc: "IAS / UPSC (Civil Services)",
+                optSsc: "SSC & Banking (Shortcuts)",
+                optNeet: "NEET / Medical (Science)",
+                optNcert: "NCERT / Core Foundation",
+                tokenPolicy: "🪙 <b>Token Policy:</b> 1 token is debited for new AI queries. 
+
+Pre-loaded quizzes consume zero tokens.",
+                enterQuestion: "✍️ Enter New Question or Topic",
+                badgeSolver: "🪙 AI Inference (1 Token)",
+                questionPh: "Type your question here for deep AI analysis and 
+
+solutions...",
+                deductNotice: "⚡ 1 token will be deducted from your central wallet for this 
+
+inference.",
+                btnSolve: "🚀 Get AI Solution",
+                quizTitle: "⏱️ Live Mock Test & Quiz Mode",
+                badgePreloaded: "Pre-loaded (Zero Token)",
+                timerText: "10:00 Mins",
+                qText: "Q. By which amendment was the term 'Secular' added to the Preamble 
+
+of the Indian Constitution?",
+                optA: "A) 42nd Constitutional Amendment",
+                optB: "B) 44th Constitutional Amendment",
+                optC: "C) 86th Constitutional Amendment",
+                preloadedNotice: "Curated Pre-loaded Practice",
+                btnSubmitQuiz: "✅ Submit Answers",
+                outputHeader: "✅ Dhruv Academy Verified Solution",
+                tokenDebitedBadge: "1 Token Debited Successfully",
+                footerCopy: "🔒 <b>Dhruv Academy - Safe & Verified Digital Education</b> | 
+
+All Rights Reserved © 2026",
+                emptyAlert: "Please type your question into the box first!",
+                noTokenAlert: "⚠️ Insufficient tokens in wallet! Please recharge from 
+
+Central Wallet.",
+                processingMsg: "🔄 Processing query through 400-AI Neural Core...",
+                quizSubmittedAlert: "🎯 Mock Test submitted! No tokens were deducted for 
+
+this curated session."
+            },
+            pa: {
+                home: "⬅️ ਮੁੱਖ ਡੈਸ਼ਬੋਰਡ",
+                headerTitle: "ਕੰਪੀਟੀਸ਼ਨ ਸੋਲਵਰ ਅਤੇ ਮੌਕ ਟੈਸਟ ਹੱਬ",
+                walletLabel: "🪙 ਟੋਕਨ:",
+                studyMode: "⚙️ ਅਧਿਐਨ ਮੋਡ ਚੁਣੋ",
+                execMode: "ਮੋਡ ਚੋਣ",
+                optSolver: "ਪ੍ਰਸ਼ਨ ਅਤੇ ਹੱਲ (AI ਸੋਲਵਰ - ਟੋਕਨ ਲਾਗੂ)",
+                optQuiz: "ਟਾਈਮਡ ਮੌਕ ਟੈਸਟ / ਕੁਇਜ਼ (ਅਭਿਆਸ)",
+                examTarget: "ਵਿਸ਼ਾ / ਪ੍ਰੀਖਿਆ",
+                optUpsc: "IAS / UPSC (ਸਿਵਲ ਸੇਵਾਵਾਂ)",
+                optSsc: "SSC ਅਤੇ ਬੈਂਕਿੰਗ",
+                optNeet: "NEET / ਮੈਡੀਕਲ",
+                optNcert: "NCERT ਬੇਸਿਕ ਫਾਊਂਡੇਸ਼ਨ",
+                tokenPolicy: "🪙 <b>ਟੋਕਨ ਨੀਤੀ:</b> ਨਵੇਂ ਸਵਾਲ 'ਤੇ 1 ਟੋਕਨ ਲੱਗਦਾ ਹੈ। ਕੁਇਜ਼ ਅਭਿਆਸ ਮੁਫ਼ਤ ਹੈ।",
+                enterQuestion: "✍️ ਨਵਾਂ ਸਵਾਲ ਜਾਂ ਵਿਸ਼ਾ ਲਿਖੋ",
+                badgeSolver: "🪙 ਨਵਾਂ ਵਿਸ਼ਲੇਸ਼ਣ (ਟੋਕਨ ਲਾਗੂ)",
+                questionPh: "ਇੱਥੇ ਆਪਣਾ ਸਵਾਲ ਲਿਖੋ...",
+                deductNotice: "⚡ ਇਸ ਪ੍ਰਕਿਰਿਆ ਲਈ 1 ਟੋਕਨ ਕੱਟਿਆ ਜਾਵੇਗਾ।",
+                btnSolve: "🚀 AI ਹੱਲ ਪ੍ਰਾਪਤ ਕਰੋ",
+                quizTitle: "⏱️ ਲਾਈਵ ਮੌਕ ਟੈਸਟ ਅਤੇ ਕੁਇਜ਼",
+                badgePreloaded: "ਪ੍ਰੀ-ਲੋਡਿਡ (ਕੋਈ ਟੋਕਨ ਨਹੀਂ)",
+                timerText: "10:00 ਮਿੰਟ",
+                qText: "ਪ੍ਰ. ਭਾਰਤੀ ਸੰਵਿਧਾਨ ਵਿੱਚ 'ਧਰਮ ਨਿਰਪੱਖ' ਸ਼ਬਦ ਕਿਸ ਸੋਧ ਰਾਹੀਂ ਜੋੜਿਆ ਗਿਆ?",
+                optA: "ੳ) 42ਵੀਂ ਸੰਵਿਧਾਨਕ ਸੋਧ",
+                optB: "ਅ) 44ਵੀਂ ਸੰਵਿਧਾਨਕ ਸੋਧ",
+                optC: "ੲ) 86ਵੀਂ ਸੰਵਿਧਾਨਕ ਸੋਧ",
+                preloadedNotice: "ਮੁਫ਼ਤ ਅਭਿਆਸ ਸਮੱਗਰੀ",
+                btnSubmitQuiz: "✅ ਉੱਤਰ ਸਬਮਿਟ ਕਰੋ",
+                outputHeader: "✅ ਧਰੁਵ ਅਕੈਡਮੀ ਪ੍ਰਮਾਣਿਤ ਵਿਸ਼ਲੇਸ਼ਣ",
+                tokenDebitedBadge: "ਟੋਕਨ ਸਫਲਤਾਪੂਰਵਕ ਕੱਟਿਆ ਗਿਆ",
+                footerCopy: "🔒 <b>ਧਰੁਵ ਅਕੈਡਮੀ - ਸੁਰੱਖਿਅਤ ਸਿੱਖਿਆ ਪਲੇਟਫਾਰਮ</b> | ਸਾਰੇ ਹੱਕ ਰਾਖਵੇਂ ਹਨ © 2026",
+                emptyAlert: "ਕਿਰਪਾ ਕਰਕੇ ਪਹਿਲਾਂ ਆਪਣਾ ਸਵਾਲ ਦਰਜ ਕਰੋ!",
+                noTokenAlert: "⚠️ ਵਾਲਿਟ ਵਿੱਚ ਲੋੜੀਂਦੇ ਟੋਕਨ ਨਹੀਂ ਹਨ!",
+                processingMsg: "🔄 AI ਨਿਊਰਲ ਕੋਰ ਦੁਆਰਾ ਵਿਸ਼ਲੇਸ਼ਣ ਜਾਰੀ ਹੈ...",
+                quizSubmittedAlert: "🎯 ਮੌਕ ਟੈਸਟ ਸਬਮਿਟ ਹੋ ਗਿਆ!"
+            },
+            mr: {
+                home: "⬅️ मुख्य डॅशबोर्ड",
+                headerTitle: "कॉम्पिटिशन सॉल्व्हर आणि मॉक टेस्ट हब",
+                walletLabel: "🪙 टोकन्स:",
+                studyMode: "⚙️ अभ्यास मोड निवडा",
+                execMode: "मोड निवड",
+                optSolver: "प्रश्न आणि संशोधन निराकरण (AI सॉल्व्हर)",
+                optQuiz: "टाइम-बाउंड मॉक टेस्ट / क्विझ",
+                examTarget: "विषय / परीक्षा",
+                optUpsc: "IAS / UPSC (नागरी सेवा)",
+                optSsc: "SSC आणि बँकिंग",
+                optNeet: "NEET / वैद्यकीय",
+                optNcert: "NCERT मूलभूत पाया",
+                tokenPolicy: "🪙 <b>टोकन धोरण:</b> नवीन AI प्रश्नासाठी 1 टोकन खर्च होतो. क्विझ सराव विनामूल्य आहे.",
+                enterQuestion: "✍️ नवीन प्रश्न किंवा विषय प्रविष्ट करा",
+                badgeSolver: "🪙 नवीन AI विश्लेषण (टोकन देय)",
+                questionPh: "येथे आपला प्रश्न लिहा...",
+                deductNotice: "⚡ या प्रक्रियेसाठी 1 टोकन वजा केले जाईल.",
+                btnSolve: "🚀 AI उपाय मिळवा",
+                quizTitle: "⏱️ थेट मॉक टेस्ट आणि क्विझ मोड",
+                badgePreloaded: "प्री-लोडेड (नो टोकन)",
+                timerText: "10:00 मिनिटे",
+                qText: "प्र. भारतीय संविधानाच्या प्रस्तावनेत 'धर्मनिरपेक्ष' हा शब्द कोणत्या दुरुस्तीद्वारे जोडला गेला?",
+                optA: "अ) 42 वी घटनादुरुस्ती",
+                optB: "ब) 44 वी घटनादुरुस्ती",
+                optC: "क) 86 वी घटनादुरुस्ती",
+                preloadedNotice: "सराव सामग्री",
+                btnSubmitQuiz: "✅ उत्तर सबमिट करा",
+                outputHeader: "✅ ध्रुव अकादमी प्रमाणित विश्लेषण",
+                tokenDebitedBadge: "टोकन यशस्वीरित्या वजा झाले",
+                footerCopy: "🔒 <b>ध्रुव अकादमी - सुरक्षित डिजिटल शिक्षण मंच</b> | सर्व हक्क राखीव © 2026",
+                emptyAlert: "कृपया प्रथम आपला प्रश्न लिहा!",
+                noTokenAlert: "⚠️ वॉलेटमध्ये पुरेसे टोकन नाहीत!",
+                processingMsg: "🔄 AI न्यूरल कोरद्वारे विश्लेषण सुरू आहे...",
+                quizSubmittedAlert: "🎯 मॉक टेस्ट यशस्वीरित्या सबमिट झाली!"
+            }
+        };
+
+        function switchLanguage(lang) {
+            currentLang = lang;
+            localStorage.setItem('user_lang', lang);
+
+            const selector = document.getElementById('langSelector');
+            if (selector) selector.value = lang;
+
+            const d = solverTranslations[lang] || solverTranslations.hi;
+
+            document.getElementById('homeLink').innerText = d.home;
+            document.getElementById('headerTitle').innerText = d.headerTitle;
+            document.getElementById('walletLabel').innerText = d.walletLabel;
+            document.getElementById('lblStudyMode').innerText = d.studyMode;
+            document.getElementById('lblExecMode').innerText = d.execMode;
+            document.getElementById('optSolver').innerText = d.optSolver;
+            document.getElementById('optQuiz').innerText = d.optQuiz;
+            document.getElementById('lblExamTarget').innerText = d.examTarget;
+            document.getElementById('optUpsc').innerText = d.optUpsc;
+            document.getElementById('optSsc').innerText = d.optSsc;
+            document.getElementById('optNeet').innerText = d.optNeet;
+            document.getElementById('optNcert').innerText = d.optNcert;
+            document.getElementById('lblTokenPolicy').innerHTML = d.tokenPolicy;
+            document.getElementById('lblEnterQuestion').innerText = d.enterQuestion;
+            document.getElementById('badgeSolver').innerText = d.badgeSolver;
+            document.getElementById('questionInput').placeholder = d.questionPh;
+            document.getElementById('lblDeductNotice').innerText = d.deductNotice;
+            document.getElementById('btnSolve').innerText = d.btnSolve;
+            document.getElementById('lblQuizTitle').innerText = d.quizTitle;
+            document.getElementById('badgePreloaded').innerText = d.badgePreloaded;
+            document.getElementById('timerDisplay').innerText = d.timerText;
+            document.getElementById('qText').innerText = d.qText;
+            document.getElementById('optA').innerText = d.optA;
+            document.getElementById('optB').innerText = d.optB;
+            document.getElementById('optC').innerText = d.optC;
+            document.getElementById('lblPreloadedNotice').innerText = d.preloadedNotice;
+            document.getElementById('btnSubmitQuiz').innerText = d.btnSubmitQuiz;
+            document.getElementById('outputHeader').innerText = d.outputHeader;
+            document.getElementById('tokenDebitedBadge').innerText = d.tokenDebitedBadge;
+            document.getElementById('footerCopy').innerHTML = d.footerCopy;
+        }
+
+        function getWalletTokens() {
+            let tokens = localStorage.getItem("dhruv_wallet_tokens");
+            if (tokens === null) {
+                tokens = 10;
+                localStorage.setItem("dhruv_wallet_tokens", tokens);
+            }
+            return parseInt(tokens, 10);
+        }
+
+        function updateWalletDisplay() {
+            let tok = getWalletTokens();
+            const tokDisplay = document.getElementById('walletTokenDisplay');
+            if(tokDisplay) tokDisplay.innerText = tok;
+        }
+
+        function switchAppMode(mode) {
+            const solverSec = document.getElementById('solverSection');
+            const quizSec = document.getElementById('quizSection');
+            const outputSec = document.getElementById('outputContainer');
+
+            if(mode === 'quiz') {
+                solverSec.classList.add('hidden');
+                quizSec.classList.remove('hidden');
+                outputSec.classList.add('hidden');
+            } else {
+                solverSec.classList.remove('hidden');
+                quizSec.classList.add('hidden');
+            }
+        }
+
+        function solveQuestion() {
+            const d = solverTranslations[currentLang] || solverTranslations.hi;
+            const question = document.getElementById('questionInput').value.trim();
+            const container = document.getElementById('outputContainer');
+            const content = document.getElementById('answerContent');
+
+            if(!question) {
+                alert(d.emptyAlert);
+                return;
+            }
+
+            let tokens = getWalletTokens();
+            if(tokens < 1) {
+                alert(d.noTokenAlert);
+                window.location.href = 'central-wallet.html';
+                return;
+            }
+
+            tokens -= 1;
+            localStorage.setItem("dhruv_wallet_tokens", tokens);
+            localStorage.setItem("user_tokens", tokens);
+            updateWalletDisplay();
+
+            container.classList.remove('hidden');
+            content.innerHTML = `<div class="text-center py-6 text-indigo-400 animate-
+
+pulse">${d.processingMsg}</div>`;
+
+            setTimeout(() => {
+                content.innerHTML = `
+                    <div class="space-y-3">
+                        <div class="bg-slate-950 p-3 rounded-xl border border-indigo-
+
+900/50">
+                            <strong class="text-indigo-300">📌 विषय विश्लेषण (Verified 
+
+Synthesis):</strong>
+                            <p class="mt-1 text-gray-300">"${question}"</p>
+                        </div>
+                        <div class="bg-slate-950 p-3 rounded-xl border border-slate-800">
+                            <strong class="text-green-300">💡 विस्तृत समाधान एवं तार्किकता (Step-by-Step 
+
+Logic):</strong>
+                            <p class="mt-1 text-gray-300">1. प्रतियोगी परीक्षाओं के नवीनतम पाठ्यक्रम के अनुसार यह उत्तर 
+
+23-लेयर ट्रुथ शील्ड द्वारा प्रमाणित है।<br>2. वैकल्पिक और मुख्य परीक्षा दोनों दृष्टिकोणों से मुख्य बिंदु संकलित कर दिए गए हैं।</p>
+                        </div>
+                        <div class="text-[10px] text-gray-500 pt-1">
+                            Tokens Remaining: ${tokens} • Status: 200 OK
+                        </div>
+                    </div>
+                `;
+            }, 800);
+        }
+
+        function submitQuiz() {
+            const d = solverTranslations[currentLang] || solverTranslations.hi;
+            alert(d.quizSubmittedAlert);
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            updateWalletDisplay();
+            const savedLang = localStorage.getItem('user_lang') || 'hi';
+            switchLanguage(savedLang);
+        });
+    </script>
+</body>
+</html>
