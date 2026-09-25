@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="hi" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Master Coaching Hub & Next-Gen Virtual Academy | Dhruv Academy</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Yantramanav:wght@500;700&display=swap');
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Poppins', 'Yantramanav', sans-serif;
+            background-color: #020617;
+            color: #f8fafc;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px;
+        }
+        .main-wrapper {
+            width: 100%;
+            max-width: 1280px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        .hub-card {
+            background: rgba(15, 23, 42, 0.95);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            backdrop-filter: blur(18px);
+            transition: all 0.25s ease;
+        }
+        .hub-card:hover {
+            border-color: rgba(16, 185, 129, 0.7);
+            box-shadow: 0 20px 35px -8px rgba(16, 185, 129, 0.25);
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #10b981;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="main-wrapper">
+        <!-- टॉप नेविगेशन, 4-भाषा सेलेक्टर और सेंट्रल वॉलेट सिंक्रोनाइज्ड डिस्प्ले -->
+        <div class="flex flex-wrap justify-between items-center pb-3 border-b border-gray-800 w-full gap-3">
+            <a href="/" id="homeBtn" class="px-4 py-2 bg-gradient-to-r from-emerald-700 to-teal-600 hover:from-emerald-600 text-white rounded-2xl text-xs font-bold transition flex items-center gap-1.5 shadow-lg">
+                ← <span>मुख्य मास्टर पोर्टल (Home)</span>
+            </a>
+            
+            <div class="flex flex-wrap items-center gap-3">
+                <!-- 🌐 4-भाषाओं वाला यूनिवर्सल सेलेक्टर -->
+                <div class="flex items-center gap-1.5 bg-slate-900 border border-slate-700 px-3 py-1.5 rounded-full shadow">
+                    <span class="text-xs">🌐</span>
+                    <select id="langSelector" onchange="switchLanguage(this.value)" class="bg-transparent text-xs font-bold text-emerald-300 outline-none cursor-pointer">
+                        <option value="hi" class="bg-slate-900 text-slate-200">🇮🇳 हिंदी (Hindi)</option>
+                        <option value="en" class="bg-slate-900 text-slate-200">🇬🇧 English</option>
+                        <option value="pa" class="bg-slate-900 text-slate-200">🇮🇳 ਪੰਜਾਬੀ (Punjabi)</option>
+                        <option value="mr" class="bg-slate-900 text-slate-200">🇮🇳 मराठी (Marathi)</option>
+                    </select>
+                </div>
+
+                <div class="px-3.5 py-1.5 bg-slate-900 border border-slate-700 rounded-full text-xs font-bold flex items-center gap-2 shadow">
+                    <span id="walletLabel" class="text-gray-400">💰 सेंट्रल वॉलेट:</span>
+                    <span id="walletBalanceDisplay" class="text-emerald-400 font-extrabold">₹150.00</span>
+                </div>
+                <div class="px-3.5 py-1.5 bg-purple-950 border border-purple-500/50 rounded-full text-xs font-bold flex items-center gap-2 shadow">
+                    <span id="tokensLabel" class="text-purple-300">⚡ AI टोकन्स:</span>
+                    <span id="tokenBalanceDisplay" class="text-purple-200 font-extrabold">45</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- हीरो बैनर -->
+        <div class="p-6 sm:p-10 rounded-3xl bg-gradient-to-r from-emerald-950 via-slate-900 to-teal-950 border border-emerald-500/40 shadow-2xl text-center space-y-4">
+            <h1 id="heroTitle" class="text-2xl sm:text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 via-teal-200 to-cyan-300">🏛️ Master Coaching Hub & AI Virtual Academy</h1>
+            <p id="heroSubtitle" class="text-xs sm:text-sm text-gray-300 max-w-3xl mx-auto">ट्यूटर्स, कोचिंग संस्थानों, स्कूलों और डिग्री कॉलेजों के लिए लाइव ब्रॉडकास्टिंग, फेस-स्वैप अवतार, एआई नोट्स ट्रांसक्रिप्शन और स्मार्ट टीवी कास्टिंग का संपूर्ण मंच।</p>
+        </div>
+
+        <!-- मुख्य कार्यक्षेत्र ग्रिड -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            
+            <!-- लेफ्ट पैनल: क्लासरूम सेटअप और लाइव ब्रॉडकास्ट कंट्रोल -->
+            <div class="hub-card p-6 rounded-3xl space-y-4 flex flex-col justify-between">
+                <div class="space-y-4">
+                    <h2 id="setupHeader" class="text-sm font-bold text-emerald-400 flex items-center gap-2">
+                        <span>📡</span> <span>लाइव क्लासरूम और एआई ब्रॉडकास्ट सेटअप</span>
+                    </h2>
+
+                    <div>
+                        <label id="lblTutorName" class="block text-xs font-semibold text-gray-300 mb-1.5">संस्थान / शिक्षक का नाम (Institution / Tutor Name):</label>
+                        <input type="text" id="tutorNameInput" value="Dhruv Academy Master Faculty" class="w-full p-3 bg-slate-950 border border-slate-700 rounded-xl text-xs text-white focus:outline-none focus:border-emerald-500">
+                    </div>
+
+                    <div>
+                        <label id="lblBatch" class="block text-xs font-semibold text-gray-300 mb-1.5">कक्षा या पाठ्यक्रम (Class / Batch Board):</label>
+                        <select id="batchSelect" class="w-full p-3 bg-slate-950 border border-slate-700 rounded-xl text-xs text-white focus:outline-none focus:border-emerald-500">
+                            <option value="CBSE / ICSE Board (Class 9-12)">CBSE / ICSE Board (Class 9-12)</option>
+                            <option value="State Board & Competitive Exams (NEET/JEE/UPSC)">State Board & Competitive Exams (NEET/JEE/UPSC)</option>
+                            <option value="Degree College & Professional (BSc/BTech/CA)">Degree College & Professional (BSc/BTech/CA)</option>
+                            <option value="NC-5 Foundation Kids Tier">NC-5 Foundation Kids Tier</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label id="lblTopic" class="block text-xs font-semibold text-gray-300 mb-1.5">आज का लाइव लेक्चर विषय (Topic / Description):</label>
+                        <textarea id="liveTopicInput" rows="2" class="w-full p-3 bg-slate-950 border border-slate-700 rounded-xl text-xs text-white focus:outline-none focus:border-emerald-500" placeholder="यहाँ आज के लाइव लेक्चर का मुख्य टॉपिक लिखें..."></textarea>
+                    </div>
+
+                    <!-- एडवांस्ड एआई मॉड्यूल्स चेकबॉक्स -->
+                    <div class="grid grid-cols-2 gap-2 pt-2">
+                        <label class="flex items-center gap-2 text-xs text-gray-300 cursor-pointer bg-slate-950 p-2.5 rounded-xl border border-slate-800">
+                            <input type="checkbox" id="aiNotesToggle" checked class="accent-emerald-500"> <span id="lblAiNotes">🤖 AI नोट्स जनरेटर</span>
+                        </label>
+                        <label class="flex items-center gap-2 text-xs text-gray-300 cursor-pointer bg-slate-950 p-2.5 rounded-xl border border-slate-800">
+                            <input type="checkbox" id="aiDoubtToggle" checked class="accent-emerald-500"> <span id="lblAiDoubt">💬 AI डाउट सॉल्वर</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="space-y-3 pt-3 border-t border-slate-800">
+                    <button onclick="startLiveBroadcast()" id="btnStartStream" class="w-full py-3.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 text-white rounded-2xl text-xs font-bold transition shadow-lg shadow-emerald-950/50">
+                        🔴 लाइव क्लास ब्रॉडकास्ट शुरू करें (Start Live Stream)
+                    </button>
+                    <button onclick="copyTutorShareLink()" id="btnShareLink" class="w-full py-2.5 bg-slate-800 hover:bg-slate-700 text-emerald-300 rounded-xl text-xs font-bold transition border border-slate-700">
+                        🔗 ट्यूटर यूनिक शेयर लिंक कॉपी करें (Share Link)
+                    </button>
+                </div>
+            </div>
+
+            <!-- राइट पैनल: लाइव मॉनिटर और स्मार्ट टीवी कास्ट स्टेटस -->
+            <div class="hub-card p-6 rounded-3xl space-y-4 flex flex-col justify-between">
+                <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+                    <span id="monitorHeader" class="text-xs font-bold text-emerald-300 flex items-center gap-2">
+                        <span>📺</span> <span>लाइव क्लासरूम स्टेटस और एआई रिपोर्ट</span>
+                    </span>
+                    <span class="px-2.5 py-0.5 rounded-full bg-emerald-950 text-emerald-400 border border-emerald-500/40 text-[10px] font-bold" id="streamStatusBadge">Offline / Standby</span>
+                </div>
+
+                <div id="liveOutputDisplay" class="custom-scrollbar min-h-[220px] max-h-[300px] overflow-y-auto text-xs sm:text-sm text-gray-200 leading-relaxed space-y-3 bg-slate-950 p-4 rounded-2xl border border-slate-800">
+                    <p id="placeholderOutput" class="text-gray-400 italic">"कोचिंग हब का लाइव ब्रॉडकास्ट, एआई नोट्स ट्रांसक्रिप्शन और छात्रों की अटेंडेंस रिपोर्ट यहाँ प्रदर्शित होगी। बाएं पैनल से क्लास शुरू करें..."</p>
+                </div>
+
+                <div class="flex gap-2 pt-3 border-t border-slate-800">
+                    <button onclick="castToSmartTV()" id="btnTvCast" class="w-1/3 py-2.5 bg-slate-800 hover:bg-slate-700 text-cyan-300 rounded-xl text-xs font-bold transition border border-slate-700">📺 स्मार्ट टीवी कास्ट</button>
+                    <button onclick="downloadAiNotes()" id="btnAiNotesPdf" class="w-1/3 py-2.5 bg-purple-900 hover:bg-purple-800 text-purple-200 rounded-xl text-xs font-bold transition border border-purple-700">📥 एआई नोट्स PDF</button>
+                    <button onclick="shareHubWhatsApp()" id="btnHubWa" class="w-1/3 py-2.5 bg-emerald-700 hover:bg-emerald-600 text-white rounded-xl text-xs font-bold transition">💬 WhatsApp शेयर</button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <footer class="w-full text-center py-4 text-xs text-gray-500 border-t border-gray-900 mt-6">
+        <p id="footerCopy">© 2026 Dhruv Academy Master Ecosystem. सर्वाधिकार सुरक्षित।</p>
+    </footer>
+
+    <!-- मास्टर जावास्क्रिप्ट, सेंट्रल वॉलेट एवं 4-भाषा ट्रांसलेशन सिंक -->
+    <script>
+        let currentLang = localStorage.getItem('user_lang') || 'hi';
+
+        const coachingTranslations = {
+            hi: {
+                home: "← मुख्य मास्टर पोर्टल (Home)",
+                walletLabel: "💰 सेंट्रल वॉलेट:",
+                tokensLabel: "⚡ AI टोकन्स:",
+                heroTitle: "🏛️ Master Coaching Hub & AI Virtual Academy",
+                heroSubtitle: "ट्यूटर्स, कोचिंग संस्थानों, स्कूलों और डिग्री कॉलेजों के लिए लाइव ब्रॉडकास्टिंग, फेस-स्वैप अवतार, एआई नोट्स ट्रांसक्रिप्शन और स्मार्ट टीवी कास्टिंग का संपूर्ण मंच।",
+                setupHeader: "लाइव क्लासरूम और एआई ब्रॉडकास्ट सेटअप",
+                lblTutorName: "संस्थान / शिक्षक का नाम (Institution / Tutor Name):",
+                lblBatch: "कक्षा या पाठ्यक्रम (Class / Batch Board):",
+                lblTopic: "आज का लाइव लेक्चर विषय (Topic / Description):",
+                topicPh: "यहाँ आज के लाइव लेक्चर का मुख्य टॉपिक लिखें...",
+                lblAiNotes: "🤖 AI नोट्स जनरेटर",
+                lblAiDoubt: "💬 AI डाउट सॉल्वर",
+                btnStartStream: "🔴 लाइव क्लास ब्रॉडकास्ट शुरू करें (Start Live Stream)",
+                btnShareLink: "🔗 ट्यूटर यूनिक शेयर लिंक कॉपी करें (Share Link)",
+                monitorHeader: "लाइव क्लासरूम स्टेटस और एआई रिपोर्ट",
+                statusOffline: "Offline / Standby",
+                statusOnline: "🔴 LIVE STREAMING ACTIVE",
+                placeholderOutput: '"कोचिंग हब का लाइव ब्रॉडकास्ट, एआई नोट्स ट्रांसक्रिप्शन और छात्रों की अटेंडेंस रिपोर्ट यहाँ प्रदर्शित होगी। बाएं पैनल से क्लास शुरू करें..."',
+                btnTvCast: "📺 स्मार्ट टीवी कास्ट",
+                btnAiNotesPdf: "📥 एआई नोट्स PDF",
+                btnHubWa: "💬 WhatsApp शेयर",
+                footerCopy: "© 2026 Dhruv Academy Master Ecosystem. सर्वाधिकार सुरक्षित।",
+                alertTopic: "कृपया लाइव लेक्चर का टॉपिक दर्ज करें!",
+                alertNoTokens: "⚠️ लाइव स्ट्रीमिंग के लिए पर्याप्त टोकन नहीं हैं!",
+                alertCopied: "ट्यूटर का यूनिक एक्सेस लिंक कॉपी हो गया है!",
+                alertTv: "📺 स्मार्ट टीवी कास्टिंग (Chromecast / Web Browser API) कनेक्ट हो रही है। कृपया सुनिश्चित करें कि टीवी और डिवाइस एक ही नेटवर्क पर हैं।",
+                alertPdf: "📥 एआई ऑटो-ट्रांसक्रिप्टेड नोट्स तैयार हो रहे हैं। यह फाइल जल्द ही आपके डाउनलोड फोल्डर में आ जाएगी।"
+            },
+            en: {
+                home: "← Main Master Portal (Home)",
+                walletLabel: "💰 Central Wallet:",
+                tokensLabel: "⚡ AI Tokens:",
+                heroTitle: "🏛️ Master Coaching Hub & AI Virtual Academy",
+                heroSubtitle: "Comprehensive ecosystem for tutors, institutes, schools, and colleges offering live broadcasting, face-swap avatar, AI transcriptions, and Smart TV casting.",
+                setupHeader: "Live Classroom & AI Broadcast Setup",
+                lblTutorName: "Institution / Tutor Name:",
+                lblBatch: "Class / Curriculum Board:",
+                lblTopic: "Today's Live Lecture Topic / Description:",
+                topicPh: "Enter the topic for today's live lecture...",
+                lblAiNotes: "🤖 AI Notes Generator",
+                lblAiDoubt: "💬 AI Doubt Solver",
+                btnStartStream: "🔴 Start Live Stream Broadcast",
+                btnShareLink: "🔗 Copy Unique Tutor Share Link",
+                monitorHeader: "Live Classroom Status & AI Monitor",
+                statusOffline: "Offline / Standby",
+                statusOnline: "🔴 LIVE STREAMING ACTIVE",
+                placeholderOutput: '"Live broadcast stream, AI transcription notes, and attendance monitor will appear here. Launch class from the left panel..."',
+                btnTvCast: "📺 Smart TV Cast",
+                btnAiNotesPdf: "📥 AI Notes PDF",
+                btnHubWa: "💬 WhatsApp Share",
+                footerCopy: "© 2026 Dhruv Academy Master Ecosystem. All Rights Reserved.",
+                alertTopic: "Please enter the lecture topic!",
+                alertNoTokens: "⚠️ Insufficient AI Tokens for live streaming!",
+                alertCopied: "Unique tutor access link copied to clipboard!",
+                alertTv: "📺 Connecting Smart TV Cast (Chromecast / Web Cast API). Ensure TV and device share the same Wi-Fi.",
+                alertPdf: "📥 AI auto-transcribed lecture notes PDF is compiling for download."
+            },
+            pa: {
+                home: "← ਮੁੱਖ ਪੋਰਟਲ (Home)",
+                walletLabel: "💰 ਸੈਂਟਰਲ ਵਾਲਿਟ:",
+                tokensLabel: "⚡ AI ਟੋਕਨ:",
+                heroTitle: "🏛️ Master Coaching Hub & AI Virtual Academy",
+                heroSubtitle: "ਟਿਊਟਰਾਂ, ਸਕੂਲਾਂ ਅਤੇ ਕੋਚਿੰਗ ਸੰਸਥਾਵਾਂ ਲਈ ਲਾਈਵ ਪ੍ਰਸਾਰਣ, AI ਨੋਟਸ ਅਤੇ ਸਮਾਰਟ ਟੀਵੀ ਕਾਸਟਿੰਗ ਪਲੇਟਫਾਰਮ।",
+                setupHeader: "ਲਾਈਵ ਕਲਾਸਰੂਮ ਅਤੇ AI ਪ੍ਰਸਾਰਣ ਸੈੱਟਅੱਪ",
+                lblTutorName: "ਸੰਸਥਾ / ਅਧਿਆਪਕ ਦਾ ਨਾਮ:",
+                lblBatch: "ਜਮਾਤ / ਕੋਰਸ ਬੋਰਡ:",
+                lblTopic: "ਅੱਜ ਦੇ ਲੈਕਚਰ ਦਾ ਵਿਸ਼ਾ:",
+                topicPh: "ਲੈਕਚਰ ਦਾ ਵਿਸ਼ਾ ਇੱਥੇ ਲਿਖੋ...",
+                lblAiNotes: "🤖 AI ਨੋਟਸ ਜਨਰੇਟਰ",
+                lblAiDoubt: "💬 AI ਡਾਊਟ ਸੋਲਵਰ",
+                btnStartStream: "🔴 ਲਾਈਵ ਕਲਾਸ ਸ਼ੁਰੂ ਕਰੋ (Start Live)",
+                btnShareLink: "🔗 ਟਿਊਟਰ ਲਿੰਕ ਕਾਪੀ ਕਰੋ",
+                monitorHeader: "ਲਾਈਵ ਕਲਾਸ ਸਥਿਤੀ ਅਤੇ AI ਰਿਪੋਰਟ",
+                statusOffline: "Offline / Standby",
+                statusOnline: "🔴 ਲਾਈਵ ਪ੍ਰਸਾਰਣ ਜਾਰੀ",
+                placeholderOutput: '"ਲਾਈਵ ਕਲਾਸ, AI ਨੋਟਸ ਅਤੇ ਹਾਜ਼ਰੀ ਰਿਪੋਰਟ ਇੱਥੇ ਦਿਖਾਈ ਦੇਵੇਗੀ..."',
+                btnTvCast: "📺 ਸਮਾਰਟ ਟੀਵੀ ਕਾਸਟ",
+                btnAiNotesPdf: "📥 AI ਨੋਟਸ PDF",
+                btnHubWa: "💬 WhatsApp ਸ਼ੇਅਰ",
+                footerCopy: "© 2026 Dhruv Academy Master Ecosystem. ਸਾਰੇ ਹੱਕ ਰਾਖਵੇਂ ਹਨ।",
+                alertTopic: "ਕਿਰਪਾ ਕਰਕੇ ਲੈਕਚਰ ਦਾ ਵਿਸ਼ਾ ਦਰਜ ਕਰੋ!",
+                alertNoTokens: "⚠️ ਲਾਈਵ ਸਟ੍ਰੀਮਿੰਗ ਲਈ ਲੋੜੀਂਦੇ ਟੋਕਨ ਨਹੀਂ ਹਨ!",
+                alertCopied: "ਟਿਊਟਰ ਲਿੰਕ ਕਲਿੱਪਬੋਰਡ 'ਤੇ ਕਾਪੀ ਹੋ ਗਿਆ ਹੈ!",
+                alertTv: "📺 ਸਮਾਰਟ ਟੀਵੀ ਨਾਲ ਕਨੈਕਟ ਕੀਤਾ ਜਾ ਰਿਹਾ ਹੈ...",
+                alertPdf: "📥 AI ਨੋਟਸ ਡਾਊਨਲੋਡ ਲਈ ਤਿਆਰ ਹੋ ਰਹੇ ਹਨ।"
+            },
+            mr: {
+                home: "← मुख्य पोर्टल (Home)",
+                walletLabel: "💰 सेंट्रल वॉलेट:",
+                tokensLabel: "⚡ AI टोकन्स:",
+                heroTitle: "🏛️ Master Coaching Hub & AI Virtual Academy",
+                heroSubtitle: "शिक्षकांसाठी, संस्थांसाठी थेट प्रक्षेपण, AI नोट्स आणि स्मार्ट टीव्ही कास्टिंगचे परिपूर्ण व्यासपीठ.",
+                setupHeader: "थेट वर्ग आणि AI ब्रॉडकास्ट सेटअप",
+                lblTutorName: "संस्था / शिक्षकाचे नाव:",
+                lblBatch: "इयत्ता / अभ्यासक्रम बोर्ड:",
+                lblTopic: "आजच्या थेट व्याख्यानाचा विषय:",
+                topicPh: "व्याख्यानाचा मुख्य विषय येथे लिहा...",
+                lblAiNotes: "🤖 AI नोट्स जनरेटर",
+                lblAiDoubt: "💬 AI शंका समाधान",
+                btnStartStream: "🔴 थेट वर्ग सुरू करा (Start Live)",
+                btnShareLink: "🔗 शेअर लिंक कॉपी करा",
+                monitorHeader: "थेट वर्ग स्थिती आणि AI अहवाल",
+                statusOffline: "Offline / Standby",
+                statusOnline: "🔴 थेट प्रक्षेपण सुरू",
+                placeholderOutput: '"थेट प्रक्षेपण, AI नोट्स आणि उपस्थिती अहवाल येथे दिसेल..."',
+                btnTvCast: "📺 स्मार्ट टीव्ही कास्ट",
+                btnAiNotesPdf: "📥 AI नोट्स PDF",
+                btnHubWa: "💬 WhatsApp शेअर",
+                footerCopy: "© 2026 Dhruv Academy Master Ecosystem. सर्व हक्क राखीव.",
+                alertTopic: "कृपया व्याख्यानाचा विषय लिहा!",
+                alertNoTokens: "⚠️ थेट प्रक्षेपणासाठी पुरेसे टोकन नाहीत!",
+                alertCopied: "लिंक क्लिपबोर्डवर कॉपी झाली आहे!",
+                alertTv: "📺 स्मार्ट टीव्ही कास्टिंग कनेक्ट होत आहे...",
+                alertPdf: "📥 AI नोट्स तयार होत आहेत."
+            }
+        };
+
+        function switchLanguage(lang) {
+            currentLang = lang;
+            localStorage.setItem('user_lang', lang);
+
+            const selector = document.getElementById('langSelector');
+            if (selector) selector.value = lang;
+
+            const d = coachingTranslations[lang] || coachingTranslations.hi;
+
+            document.getElementById('homeBtn').innerHTML = `← <span>${d.home}</span>`;
+            document.getElementById('walletLabel').innerText = d.walletLabel;
+            document.getElementById('tokensLabel').innerText = d.tokensLabel;
+            document.getElementById('heroTitle').innerText = d.heroTitle;
+            document.getElementById('heroSubtitle').innerText = d.heroSubtitle;
+            document.getElementById('setupHeader').innerHTML = `<span>📡</span> <span>${d.setupHeader}</span>`;
+            document.getElementById('lblTutorName').innerText = d.lblTutorName;
+            document.getElementById('lblBatch').innerText = d.lblBatch;
+            document.getElementById('lblTopic').innerText = d.lblTopic;
+            document.getElementById('liveTopicInput').placeholder = d.topicPh;
+            document.getElementById('lblAiNotes').innerText = d.lblAiNotes;
+            document.getElementById('lblAiDoubt').innerText = d.lblAiDoubt;
+            document.getElementById('btnStartStream').innerText = d.btnStartStream;
+            document.getElementById('btnShareLink').innerText = d.btnShareLink;
+            document.getElementById('monitorHeader').innerHTML = `<span>📺</span> <span>${d.monitorHeader}</span>`;
+            
+            const badge = document.getElementById('streamStatusBadge');
+            if (badge.innerText.includes('Offline') || badge.innerText.includes('Standby')) {
+                badge.innerText = d.statusOffline;
+            }
+
+            const pOutput = document.getElementById('placeholderOutput');
+            if (pOutput) {
+                pOutput.innerText = d.placeholderOutput;
+            }
+
+            document.getElementById('btnTvCast').innerText = d.btnTvCast;
+            document.getElementById('btnAiNotesPdf').innerText = d.btnAiNotesPdf;
+            document.getElementById('btnHubWa').innerText = d.btnHubWa;
+            document.getElementById('footerCopy').innerText = d.footerCopy;
+        }
+
+        function getWalletBalance() {
+            let balance = localStorage.getItem("dhruv_wallet_balance");
+            return balance !== null ? parseFloat(balance) : 150.00;
+        }
+
+        function getWalletTokens() {
+            let tokens = localStorage.getItem("dhruv_wallet_tokens");
+            return tokens !== null ? parseInt(tokens, 10) : 45;
+        }
+
+        function updateWalletDisplay() {
+            let bal = getWalletBalance();
+            let tok = getWalletTokens();
+            
+            const balDisplay = document.getElementById('walletBalanceDisplay');
+            if(balDisplay) balDisplay.innerText = "₹" + bal.toFixed(2);
+            
+            const tokDisplay = document.getElementById('tokenBalanceDisplay');
+            if(tokDisplay) tokDisplay.innerText = tok;
+        }
+
+        function startLiveBroadcast() {
+            const d = coachingTranslations[currentLang] || coachingTranslations.hi;
+            let tutor = document.getElementById('tutorNameInput').value.trim();
+            let batch = document.getElementById('batchSelect').value;
+            let topic = document.getElementById('liveTopicInput').value.trim();
+            let aiNotesActive = document.getElementById('aiNotesToggle').checked;
+            let aiDoubtActive = document.getElementById('aiDoubtToggle').checked;
+
+            if(!topic) {
+                alert(d.alertTopic);
+                return;
+            }
+
+            let tokens = getWalletTokens();
+            if (tokens < 1) {
+                alert(d.alertNoTokens);
+                return;
+            }
+
+            tokens -= 1;
+            localStorage.setItem("dhruv_wallet_tokens", tokens);
+            localStorage.setItem("user_tokens", tokens);
+            updateWalletDisplay();
+
+            const badge = document.getElementById('streamStatusBadge');
+            badge.innerText = d.statusOnline;
+            badge.className = "px-2.5 py-0.5 rounded-full bg-red-950 text-red-400 border border-red-500/40 text-[10px] font-bold animate-pulse";
+
+            let out = document.getElementById('liveOutputDisplay');
+            out.innerHTML = `
+                <div class="space-y-2 text-emerald-300">
+                    <p class="font-bold">🚀 ब्रॉडकास्ट सफलतापूर्वक लाइव हो गया है! (Broadcast Live)</p>
+                    <p class="text-white"><b>ट्यूटर/संस्थान:</b> ${tutor}</p>
+                    <p class="text-cyan-300"><b>बैच/बोर्ड:</b> ${batch}</p>
+                    <p class="text-yellow-300"><b>विषय:</b> ${topic}</p>
+                    <p class="text-gray-300 text-xs">✨ <b>एआई स्टेटस:</b> ${aiNotesActive ? 'AI नोट्स जनरेशन सक्रिय ✅' : ''} | ${aiDoubtActive ? 'AI डाउट सॉल्वर सक्रिय ✅' : ''}</p>
+                    <p class="text-purple-300 text-xs font-semibold">📡 फेस-स्वैप अवतार और 2D/3D नेबुला ब्लैकबोर्ड स्ट्रीमिंग मोड में हैं (-1 टोकन). शेष टोकन्स: ${tokens}</p>
+                </div>
+            `;
+        }
+
+        function copyTutorShareLink() {
+            const d = coachingTranslations[currentLang] || coachingTranslations.hi;
+            let link = window.location.origin + "/coaching-hub?tutor=" + encodeURIComponent(document.getElementById('tutorNameInput').value);
+            navigator.clipboard.writeText(link).then(() => {
+                alert(d.alertCopied);
+            });
+        }
+
+        function castToSmartTV() {
+            const d = coachingTranslations[currentLang] || coachingTranslations.hi;
+            alert(d.alertTv);
+        }
+
+        function downloadAiNotes() {
+            const d = coachingTranslations[currentLang] || coachingTranslations.hi;
+            alert(d.alertPdf);
+        }
+
+        function shareHubWhatsApp() {
+            let topic = document.getElementById('liveTopicInput').value.trim() || "लाइव वर्चुअल क्लास";
+            let text = `🏛️ *ध्रुव एकेडमी मास्टर कोचिंग हब*\n\nलाइव क्लास शुरू हो चुकी है!\nविषय: ${topic}\n\nजल्द जुड़ें और शिक्षा को अनवरत रखें!\n${window.location.origin}/coaching-hub`;
+            window.open("https://wa.me/?text=" + encodeURIComponent(text), '_blank');
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            updateWalletDisplay();
+            const savedLang = localStorage.getItem('user_lang') || 'hi';
+            switchLanguage(savedLang);
+        });
+    </script>
+</body>
+</html>
