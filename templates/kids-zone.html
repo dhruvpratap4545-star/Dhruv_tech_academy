@@ -1,0 +1,1256 @@
+<!DOCTYPE html>
+<html lang="hi" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Virtual Classroom & Nebula Blackboard - Dhruv Academy</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Yantramanav:wght@500;700&display=swap');
+        
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { 
+            font-family: 'Poppins', 'Yantramanav', sans-serif;
+            background-color: #020617;
+            color: #f8fafc;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px;
+        }
+
+        .main-wrapper {
+            width: 100%;
+            max-width: 768px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .chalk-font { 
+            font-family: 'Poppins', 'Yantramanav', sans-serif; 
+            letter-spacing: 0.02em;
+        }
+
+        .nebula-board {
+            background: radial-gradient(circle at top left, #0d1b2a 0%, #050b14 100%);
+            border: 6px solid #334155;
+            border-radius: 20px;
+            box-shadow: inset 0 0 25px rgba(0, 0, 0, 0.8), 0 10px 30px rgba(2, 132, 199, 0.25);
+            position: relative;
+            padding: 16px;
+        }
+        .board-frame {
+            border: 2px dashed rgba(56, 189, 248, 0.3);
+        }
+
+        .avatar-glow {
+            box-shadow: 0 0 25px rgba(56, 189, 248, 0.6), inset 0 0 15px rgba(255, 255, 255, 0.4);
+            animation: floatGlow 3s ease-in-out infinite;
+        }
+        @keyframes floatGlow {
+            0%, 100% { transform: translateY(0px) scale(1); }
+            50% { transform: translateY(-6px) scale(1.03); }
+        }
+
+        .avatar-talking {
+            animation: talkPulse 0.4s infinite alternate ease-in-out;
+        }
+        @keyframes talkPulse {
+            0% { transform: scale(1); border-color: #38bdf8; }
+            100% { transform: scale(1.08); border-color: #facc15; box-shadow: 0 0 30px #facc15; }
+        }
+
+        .hidden { display: none !important; }
+
+        .card {
+            background: #0f172a;
+            border: 1px solid #1e293b;
+            border-radius: 24px;
+            padding: 20px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+        .grid-2 {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 10px;
+        }
+        .btn-action {
+            background: #1e293b;
+            color: #7dd3fc;
+            border: 1px solid #334155;
+            padding: 12px 16px;
+            border-radius: 14px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            text-align: left;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .btn-action:hover { background: #334155; }
+        .text-input {
+            width: 100%;
+            background: #020617;
+            border: 1px solid #334155;
+            color: #fff;
+            padding: 12px 16px;
+            border-radius: 12px;
+            font-size: 13px;
+            outline: none;
+        }
+        .text-input:focus { border-color: #38bdf8; }
+        .btn-submit {
+            background: #059669;
+            color: #fff;
+            border: none;
+            padding: 14px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            width: 100%;
+            transition: background 0.2s;
+        }
+        .btn-submit:hover { background: #10b981; }
+        .btn-scanner {
+            background: #4f46e5;
+            color: #fff;
+            padding: 14px;
+            border-radius: 12px;
+            text-align: center;
+            font-size: 13px;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: background 0.2s;
+        }
+        .btn-scanner:hover { background: #6366f1; }
+        .btn-solution {
+            background: #9333ea;
+            color: #fff;
+            border: none;
+            padding: 14px;
+            border-radius: 12px;
+            font-size: 13px;
+            font-weight: bold;
+            cursor: pointer;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: background 0.2s;
+        }
+        .btn-solution:hover { background: #a855f7; }
+    </style>
+</head>
+<body>
+
+    <div class="main-wrapper">
+        <!-- हेडर व 4-भाषाओं वाला यूनिवर्सल सेलेक्टर -->
+        <div style="display:flex; justify-content:space-between; align-items:center; width:100%; padding:0 4px;">
+            <a href="/" style="background:#dc2626; color:#fff; padding:6px 14px; border-radius:10px; text-decoration:none; font-size:12px; font-weight:bold; display:flex; align-items:center; gap:6px;">
+                ← <span id="portalText">मुख्य पोर्टल</span>
+            </a>
+
+            <div style="display:flex; align-items:center; gap:8px;">
+                <span style="font-size:12px; font-weight:bold; color:#94a3b8;">🌐 Lang:</span>
+                <select id="langSelector" onchange="switchLanguage(this.value)" style="background:#0f172a; border:1.5px solid #0284c7; color:#38bdf8; font-size:12px; font-weight:700; padding:6px 12px; border-radius:12px; outline:none; cursor:pointer;">
+                    <option value="hi">🇮🇳 हिंदी (Hindi)</option>
+                    <option value="en">🇬🇧 English</option>
+                    <option value="pa">🇮🇳 ਪੰਜਾਬੀ (Punjabi)</option>
+                    <option value="mr">🇮🇳 मराठी (Marathi)</option>
+                </select>
+            </div>
+        </div>
+
+        <div style="text-align:center;">
+            <h1 id="mainTitle" style="font-size:24px; font-weight:800; color:#38bdf8; margin-bottom:4px;">
+                नेबुला एआई वर्चुअल क्लासरूम
+            </h1>
+            <p id="subTitle" style="font-size:12px; color:#94a3b8;">ध्रुव एकेडमी 100% प्रामाणिक व सत्य शिक्षण प्रणाली | लाइव 3D ब्लैकबोर्ड</p>
+        </div>
+
+        <div class="card">
+
+            <div style="display:flex; flex-wrap:wrap; justify-content:space-between; align-items:center; gap:12px; background:#020617; padding:14px; border-radius:18px; border:1px solid rgba(56,189,248,0.3);">
+                <div style="display:flex; align-items:center; gap:12px;">
+                    <div id="teacherAvatar" onclick="speakGreeting()" class="avatar-glow" style="width:60px; height:60px; background:linear-gradient(135deg, #0284c7, #4f46e5); border:3px solid #38bdf8; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:30px; cursor:pointer; position:relative;" title="मुझसे बात करने के लिए क्लिक करें!">
+                        👩‍🏫
+                        <span style="position:absolute; bottom:0; right:0; width:14px; height:14px; background:#10b981; border:2px solid #020617; border-radius:50%;"></span>
+                    </div>
+                    <div>
+                        <div style="display:flex; align-items:center; gap:6px;">
+                            <span id="teacherName" style="font-size:14px; font-weight:bold; color:#38bdf8;">नेबुला एआई टीचर</span>
+                            <span style="font-size:10px; background:#082f49; border:1px solid #0284c7; color:#38bdf8; padding:2px 6px; border-radius:10px; font-weight:600;">100% Verified</span>
+                        </div>
+                        <span id="teacherStatus" style="font-size:11px; color:#34d399; display:block; margin-top:2px;">तैयार हूँ! सटीक व स्पष्ट उत्तर के लिए सवाल चुनें...</span>
+                        <p id="teacherAvatarTip" style="font-size:11px; color:#64748b; margin-top:2px;">अवतार पर टैप करके मीठी आवाज़ में उत्तर सुनें</p>
+                    </div>
+                </div>
+
+                <div style="background:#0b1329; border:1px solid rgba(56,189,248,0.4); padding:8px 16px; border-radius:14px; text-align:right;">
+                    <div style="display:flex; align-items:center; justify-content:flex-end; gap:8px;">
+                        <span id="scoreLabel" style="font-size:10px; color:#38bdf8; font-weight:bold; text-transform:uppercase;">जीनियस स्कोर</span>
+                        <button onclick="resetScoreProgress()" id="resetScoreBtn" type="button" style="color:#f43f5e; text-decoration:underline; font-weight:bold; font-size:10px; background:transparent; border:none; cursor:pointer;" title="स्कोर रीसेट करें">रीसेट ✕</button>
+                    </div>
+                    <span id="scoreDisplay" style="font-size:20px; font-weight:800; color:#facc15;">⭐ 0 / 100</span>
+                </div>
+            </div>
+
+            <div id="nebulaBlackboardSection" class="nebula-board board-frame">
+                <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid rgba(51,65,85,0.6); padding-bottom:6px; margin-bottom:8px; font-size:12px; color:#94a3b8;">
+                    <span style="display:flex; align-items:center; gap:6px; font-weight:bold; color:#38bdf8;">
+                        <span>📋</span> <span id="boardHeader">नेबुला डिजिटल ब्लैकबोर्ड (Live Chalkboard)</span>
+                    </span>
+                    <span style="font-size:11px; color:#34d399; font-weight:600; display:flex; align-items:center; gap:4px;">
+                        <span style="width:8px; height:8px; border-radius:50%; background:#34d399; display:inline-block;"></span> AI Active
+                    </span>
+                </div>
+
+                <div id="aiText" class="chalk-font" style="color:#e0f2fe; font-size:14px; min-height:140px; max-height:380px; overflow-y:auto; display:flex; flex-direction:column; align-items:flex-start; justify-content:flex-start; text-align:left; padding:6px; line-height:1.7; width:100%;">
+                    नमस्ते प्यारे बच्चों! 🌟 नीचे दिए गए 5 विषयों में से कोई भी विषय चुनें या अपनी किताब की फोटो खींचें!
+                </div>
+
+                <div id="imagePreviewContainer" class="hidden" style="width:100%; margin-top:10px; padding:10px; background:rgba(2,6,23,0.8); border-radius:12px; border:1px solid rgba(56,189,248,0.4); text-align:center;">
+                    <p id="scannedBookPageText" style="font-size:12px; color:#38bdf8; margin-bottom:6px; font-weight:bold;">📷 स्कैन किया गया किताब का पन्ना:</p>
+                    <img id="uploadedImagePreview" src="" alt="Book Preview" style="max-height:180px; margin:0 auto; border-radius:8px; border:1px solid #334155; object-fit:contain; box-shadow:0 4px 6px rgba(0,0,0,0.3);">
+                </div>
+            </div>
+
+            <div class="grid-2">
+                <button onclick="handleChallengeClick('math')" class="btn-action" style="color:#67e8f9;">
+                    <span>➕</span> <span id="btnMath">गणित चैलेंज (+20)</span>
+                </button>
+                <button onclick="handleChallengeClick('puzzle')" class="btn-action" style="color:#f472b6;">
+                    <span>🤔</span> <span id="btnPuzzle">सुपर पहेली (+20)</span>
+                </button>
+                <button onclick="handleChallengeClick('gk')" class="btn-action" style="color:#38bdf8;">
+                    <span>🌍</span> <span id="btnGk">सामान्य ज्ञान / GK (+20)</span>
+                </button>
+                <button onclick="handleChallengeClick('evs')" class="btn-action" style="color:#34d399;">
+                    <span>🌿</span> <span id="btnEvs">विज्ञान / EVS (+20)</span>
+                </button>
+                <button onclick="handleChallengeClick('poem')" class="btn-action" style="color:#facc15; grid-column:1/-1; justify-content:center;">
+                    <span>🎵</span> <span id="btnPoem">कविता: मछली जल की रानी (+20)</span>
+                </button>
+            </div>
+
+            <div style="display:flex; justify-content:flex-end;">
+                <button onclick="giveHint()" style="background:#d97706; color:#fff; padding:6px 14px; border-radius:8px; font-size:11px; font-weight:bold; border:none; cursor:pointer; display:flex; align-items:center; gap:6px;">
+                    💡 <span id="hintBtnText">नेबुला टीचर से संकेत (Hint) लें</span>
+                </button>
+            </div>
+
+            <div style="display:flex; flex-direction:column; gap:8px;">
+                <div style="display:flex; gap:8px;">
+                    <input type="text" id="userInput" placeholder="यहाँ उत्तर लिखें या माइक से बोलें..." class="text-input">
+                    <button onclick="startVoiceInput()" style="background:#2563eb; color:#fff; border:none; padding:10px 16px; border-radius:12px; font-weight:bold; cursor:pointer; font-size:12px; display:flex; align-items:center; gap:4px; white-space:nowrap;" title="बोलकर उत्तर दें">
+                        🎤 <span id="micText">बोलें</span>
+                    </button>
+                </div>
+                <button onclick="verifyAnswer()" class="btn-submit">
+                    <span id="btnSubmit">उत्तर की पुष्टि करें (Check Answer) 🚀</span>
+                </button>
+            </div>
+
+            <div style="text-align:center;">
+                <button onclick="sendWhatsAppReport()" style="background:#16a34a; color:#fff; border:none; padding:10px 18px; border-radius:12px; font-size:12px; font-weight:bold; cursor:pointer; display:inline-flex; align-items:center; gap:6px;">
+                    💬 <span id="liveReportBtnText">WhatsApp पर लाइव रिपोर्ट भेजें</span>
+                </button>
+            </div>
+
+            <div style="background:#020617; padding:16px; border-radius:18px; border:1px solid rgba(56,189,248,0.4); display:flex; flex-direction:column; gap:10px;">
+                <h3 id="visionTitle" style="color:#38bdf8; font-weight:bold; font-size:14px; text-align:center;">📸 एआई बुक व होमवर्क स्कैनर</h3>
+                <p id="visionDesc" style="color:#94a3b8; font-size:11px; text-align:center;">कक्षा 1 से 5 तक के किसी भी प्रश्न का फोटो खींचें, नेबुला टीचर बिना किसी फालतू परिचय के सीधे पॉइंट-वाइज पूरा हल बताएगी!</p>
+                
+                <label class="btn-scanner">
+                    📷 <span id="uploadBtnText">कैमरे से किताब की फोटो खींचें / अपलोड करें</span>
+                    <input type="file" id="bookImageInput" accept="image/*" capture="environment" class="hidden" onchange="handleCrashProofUpload(event)">
+                </label>
+
+                <div id="scannerActionButtons" class="grid-2 hidden">
+                    <button id="explainVisionBtn" onclick="explainBookPage(event)" type="button" class="btn-solution">
+                        ✨ <span id="viewSolutionBtnText">पूरा सॉल्यूशन देखें 🚀</span>
+                    </button>
+                    <button id="generateQuizBtn" onclick="generateSmartQuiz(event)" type="button" style="background:linear-gradient(135deg, #d97706, #ea580c); color:#fff; border:none; padding:14px; border-radius:12px; font-size:13px; font-weight:bold; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px;">
+                        🎯 <span id="autoQuizBtnText">ऑटो-क्विज़ बनाएं (5 MCQs)</span>
+                    </button>
+                </div>
+            </div>
+
+            <div id="smartQuizModule" class="hidden" style="background:#020617; padding:16px; border-radius:18px; border:1px solid rgba(245,158,11,0.5); display:flex; flex-direction:column; gap:12px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #1e293b; padding-bottom:8px;">
+                    <div>
+                        <h3 id="quizTitleText" style="color:#fbbf24; font-weight:800; font-size:13px; display:flex; align-items:center; gap:6px;">
+                            <span>🛡️</span> <span>ध्रुव एकेडमी सिक्योर क्विज़ (Anti-Cheat Kiosk)</span>
+                        </h3>
+                        <p id="quizFocusModeText" style="font-size:10px; color:#94a3b8; margin-top:2px;">फोकस मोड ऑन: ऐप या टैब बदलने पर क्विज़ स्वतः लॉक हो जाएगा!</p>
+                    </div>
+                    <span id="cheatWarningBadge" style="font-size:10px; background:#4c0519; border:1px solid #f43f5e; color:#fda4af; padding:4px 8px; border-radius:12px; font-weight:bold;">
+                        चेतावनी: 0 / 2
+                    </span>
+                </div>
+
+                <div id="quizContainerArea" style="display:flex; flex-direction:column; gap:10px; font-size:13px;"></div>
+
+                <div style="display:flex; flex-wrap:wrap; justify-content:space-between; align-items:center; padding-top:10px; border-top:1px solid #1e293b; gap:8px;">
+                    <button onclick="submitQuizAnswers()" type="button" id="submitQuizBtnText" style="background:#059669; color:#fff; padding:10px 16px; border-radius:10px; font-size:12px; font-weight:bold; border:none; cursor:pointer;">
+                        ✅ क्विज़ सबमिट करें (Submit Quiz)
+                    </button>
+                    <button onclick="shareQuizToWhatsApp()" type="button" id="shareQuizBtnText" style="background:#16a34a; color:#fff; padding:10px 16px; border-radius:10px; font-size:12px; font-weight:bold; border:none; cursor:pointer; display:flex; align-items:center; gap:6px;">
+                        📱 <span>WhatsApp Class Groups पर शेयर करें</span>
+                    </button>
+                </div>
+            </div>
+
+            <div style="background:#020617; padding:16px; border-radius:18px; border:1px solid rgba(56,189,248,0.4); display:flex; flex-direction:column; gap:10px;">
+                <h3 id="homeworkTitle" style="color:#38bdf8; font-weight:bold; font-size:13px; text-align:center;">🏫 स्कूल / ट्यूटर व्हाट्सएप होमवर्क पोर्टल</h3>
+                <div class="grid-2">
+                    <select id="selectClass" style="background:#0f172a; border:1px solid #334155; color:#fff; padding:8px; border-radius:10px; font-size:12px; outline:none;">
+                        <option value="Class 5">कक्षा 5 (Class 5)</option>
+                        <option value="Class 4">कक्षा 4 (Class 4)</option>
+                        <option value="Class 3">कक्षा 3 (Class 3)</option>
+                        <option value="Middle School">जूनियर (Middle School)</option>
+                    </select>
+                    <select id="selectMedium" style="background:#0f172a; border:1px solid #334155; color:#fff; padding:8px; border-radius:10px; font-size:12px; outline:none;">
+                        <option value="हिंदी मीडियम (Hindi Medium)">हिंदी मीडियम (Hindi Medium)</option>
+                        <option value="इंग्लिश मीडियम (English Medium)">इंग्लिश मीडियम (English Medium)</option>
+                    </select>
+                </div>
+                <div style="display:flex; flex-direction:column; gap:8px;">
+                    <input type="text" id="schoolNameInput" placeholder="संस्थान/ट्यूटर का नाम" class="text-input" style="padding:8px 12px; font-size:12px;">
+                    <input type="text" id="homeworkDescInput" placeholder="आज का होमवर्क विवरण" class="text-input" style="padding:8px 12px; font-size:12px;">
+                </div>
+                <button onclick="sendSchoolHomework()" type="button" style="background:#0284c7; color:#fff; border:none; padding:10px; border-radius:10px; font-size:12px; font-weight:bold; cursor:pointer;">
+                    📤 <span id="hwBtnText">व्हाट्सएप पर होमवर्क भेजें</span>
+                </button>
+            </div>
+
+            <div style="background:#020617; padding:16px; border-radius:18px; border:1px solid rgba(52,211,153,0.4); display:flex; flex-direction:column; gap:10px;">
+                <h3 id="submitTitle" style="color:#34d399; font-weight:bold; font-size:13px; text-align:center;">📝 छात्र होमवर्क सबमिशन (होमवर्क वापस भेजें)</h3>
+                <div style="display:flex; flex-direction:column; gap:8px;">
+                    <input type="text" id="studentNameInput" placeholder="छात्र का नाम (Student Name)" class="text-input" style="padding:8px 12px; font-size:12px;">
+                    <input type="text" id="studentClassInput" placeholder="कक्षा (Class, e.g. Class 5)" class="text-input" style="padding:8px 12px; font-size:12px;">
+                    <input type="text" id="studentAnswerInput" placeholder="हल किया गया काम / उत्तर" class="text-input" style="padding:8px 12px; font-size:12px;">
+                </div>
+                <button onclick="submitStudentWork()" type="button" style="background:#059669; color:#fff; border:none; padding:10px; border-radius:10px; font-size:12px; font-weight:bold; cursor:pointer;">
+                    ✅ <span id="submitHwBtnText">शिक्षक को व्हाट्सएप पर होमवर्क जमा करें</span>
+                </button>
+                <button onclick="shareToWhatsApp()" type="button" style="background:#16a34a; color:#fff; border:none; padding:10px; border-radius:10px; font-size:12px; font-weight:bold; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px;">
+                    📱 <span id="whatsappBtnText">छात्र अपना स्कोर दोस्तों को शेयर करें</span>
+                </button>
+            </div>
+
+        </div>
+
+        <div id="paymentGatewayModal" class="hidden" style="position:fixed; inset:0; background:rgba(0,0,0,0.85); display:flex; align-items:center; justify-content:center; padding:16px; z-index:9999; backdrop-filter:blur(8px);">
+            <div style="background:#0f172a; border:2px solid #10b981; border-radius:24px; padding:24px; max-width:400px; width:100%; text-align:center; box-shadow:0 20px 25px rgba(0,0,0,0.5);">
+                <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #334155; padding-bottom:12px; margin-bottom:16px;">
+                    <h2 id="payModalHeading" style="font-size:18px; font-weight:bold; color:#34d399;">🔒 प्रीमियम फीचर अनलॉक करें</h2>
+                    <button onclick="closePaymentGatewayModal()" style="background:transparent; border:none; color:#fff; font-size:20px; cursor:pointer; font-weight:bold;">✕</button>
+                </div>
+                <div style="background:#020617; padding:16px; border-radius:16px; border:1px solid #334155; margin-bottom:16px;">
+                    <p id="chosenToolText" style="font-size:12px; color:#94a3b8;">चुना गया टूल:</p>
+                    <h3 id="payModalFeatureName" style="font-size:15px; font-weight:bold; color:#facc15; margin-top:4px;">Feature Name</h3>
+                    <p style="font-size:22px; font-weight:800; color:#34d399; margin-top:8px;">₹29 / माह</p>
+                </div>
+                <input type="text" id="upiInputPlaceholder" placeholder="UPI ID / मोबाइल नंबर दर्ज करें" class="text-input" style="margin-bottom:12px;">
+                <button onclick="processKidsPayment()" id="payModalBtn" class="btn-submit" style="background:#059669;">
+                    💳 भुगतान करें व तुरंत अनलॉक करें 🚀
+                </button>
+            </div>
+        </div>
+
+        <footer style="text-align:center; padding:16px 0; font-size:11px; color:#64748b; border-top:1px solid #0f172a; width:100%;">
+            <p id="footerCopy">© 2026 Dhruv Academy Master Ecosystem. सर्वाधिकार सुरक्षित।
+                <a href="/secret-admin-login-dhruv" style="color:#0f172a; text-decoration:none; margin-left:4px;" title="सिस्टम गेटवे">•</a>
+            </p>
+        </footer>
+    </div>
+
+    <!-- 🌐 मास्टर 4-भाषा डेटाबेस एवं इंटरएक्टिव स्क्रिप्ट्स -->
+    <script>
+        let studentScore = parseInt(localStorage.getItem('dhruv_student_score') || '0', 10);
+        if (isNaN(studentScore)) studentScore = 0;
+
+        let currentLang = localStorage.getItem('user_lang') || 'hi';
+        let currentCorrectAnswer = "";
+        let currentActiveCategory = "";
+        let currentQuestionText = "";
+        let solvedQuestions = JSON.parse(localStorage.getItem('dhruv_solved_questions') || '{}');
+        let uploadedImageBlob = null;
+        let retryIntervalTimer = null;
+
+        let activeQuizList = [];
+        let isQuizActive = false;
+        let cheatWarnings = 0;
+
+        // 4-भाषाओं का पूर्ण शब्दकोष (Hindi, English, Punjabi, Marathi)
+        const siteData = {
+            hi: {
+                portal: "मुख्य पोर्टल",
+                mainTitle: "नेबुला एआई वर्चुअल क्लासरूम",
+                subTitle: "ध्रुव एकेडमी 100% प्रामाणिक व सत्य शिक्षण प्रणाली | लाइव 3D ब्लैकबोर्ड",
+                teacher: "नेबुला एआई टीचर",
+                statusText: "तैयार हूँ! सटीक व स्पष्ट उत्तर के लिए सवाल चुनें...",
+                avatarTip: "अवतार पर टैप करके मीठी आवाज़ में उत्तर सुनें",
+                scoreLabel: "जीनियस स्कोर",
+                resetScore: "रीसेट ✕",
+                boardHeader: "नेबुला डिजिटल ब्लैकबोर्ड (Live Chalkboard)",
+                welcome: "नमस्ते प्यारे बच्चों! 🌟 नीचे दिए गए 5 विषयों में से कोई भी विषय चुनें या अपनी किताब की फोटो खींचें!",
+                mText: "गणित चैलेंज (+20)",
+                pText: "सुपर पहेली (+20)",
+                gText: "सामान्य ज्ञान / GK (+20)",
+                eText: "विज्ञान / EVS (+20)",
+                poemText: "कविता: मछली जल की रानी (+20)",
+                hintBtnText: "नेबुला टीचर से संकेत (Hint) लें",
+                inputPh: "यहाँ उत्तर लिखें या माइक से बोलें...",
+                micBtn: "बोलें",
+                submitBtn: "उत्तर की पुष्टि करें (Check Answer) 🚀",
+                liveReport: "WhatsApp पर लाइव रिपोर्ट भेजें",
+                visionTitle: "📸 एआई बुक व होमवर्क स्कैनर",
+                visionDesc: "कक्षा 1 से 5 तक के किसी भी प्रश्न का फोटो खींचें, नेबुला टीचर बिना किसी फालतू परिचय के सीधे पॉइंट-वाइज पूरा हल बताएगी!",
+                uploadBtnText: "कैमरे से किताब की फोटो खींचें / अपलोड करें",
+                viewSolution: "पूरा सॉल्यूशन देखें 🚀",
+                autoQuiz: "ऑटो-क्विज़ बनाएं (5 MCQs)",
+                quizTitle: "ध्रुव एकेडमी सिक्योर क्विज़ (Anti-Cheat Kiosk)",
+                quizFocus: "फोकस मोड ऑन: ऐप या टैब बदलने पर क्विज़ स्वतः लॉक हो जाएगा!",
+                submitQuiz: "✅ क्विज़ सबमिट करें (Submit Quiz)",
+                shareQuiz: "WhatsApp Class Groups पर शेयर करें",
+                hwTitle: "🏫 स्कूल / ट्यूटर व्हाट्सएप होमवर्क पोर्टल",
+                schoolNamePh: "संस्थान/ट्यूटर का नाम",
+                hwDescPh: "आज का होमवर्क विवरण",
+                hwBtn: "व्हाट्सएप पर होमवर्क भेजें",
+                subTitleText: "📝 छात्र होमवर्क सबमिशन (होमवर्क वापस भेजें)",
+                studentNamePh: "छात्र का नाम (Student Name)",
+                studentClassPh: "कक्षा (Class, e.g. Class 5)",
+                studentAnsPh: "हल किया गया काम / उत्तर",
+                subHwBtn: "शिक्षक को व्हाट्सएप पर होमवर्क जमा करें",
+                waBtn: "छात्र अपना स्कोर दोस्तों को शेयर करें",
+                scannedText: "📷 स्कैन किया गया किताब का पन्ना:",
+                correctMsg: "वाह! बिल्कुल सही जवाब! ब्लैकबोर्ड पर +20 अंक जोड़ दिए गए हैं! 🎉",
+                alreadySolvedMsg: "⚠️ यह प्रश्न आप पहले हल कर चुके हैं! नया स्कोर पाने के लिए दूसरा विषय चुनें!",
+                footerText: "© 2026 Dhruv Academy Master Ecosystem. सर्वाधिकार सुरक्षित।"
+            },
+            en: {
+                portal: "Main Portal",
+                mainTitle: "Nebula AI Virtual Classroom",
+                subTitle: "Dhruv Academy 100% Fact-Checked Education System | Live 3D Blackboard",
+                teacher: "Nebula AI Teacher",
+                statusText: "Ready! Select a question for an accurate solution...",
+                avatarTip: "Tap avatar to hear explanations in sweet voice",
+                scoreLabel: "Genius Score",
+                resetScore: "Reset ✕",
+                boardHeader: "Nebula Digital Blackboard (Live Chalkboard)",
+                welcome: "Hello smart kids! 🌟 Choose any subject below or snap your book photo to start learning!",
+                mText: "Math Challenge (+20)",
+                pText: "Super Puzzle (+20)",
+                gText: "General Knowledge / GK (+20)",
+                eText: "Science / EVS (+20)",
+                poemText: "Poem: Twinkle Twinkle (+20)",
+                hintBtnText: "Get Hint from Nebula Teacher",
+                inputPh: "Type answer or use mic...",
+                micBtn: "Speak",
+                submitBtn: "Verify Answer 🚀",
+                liveReport: "Send Live Report on WhatsApp",
+                visionTitle: "📸 AI Book & Homework Scanner",
+                visionDesc: "Snap any textbook page, Nebula Teacher will explain the complete point-to-point solution directly!",
+                uploadBtnText: "Snap Book Photo with Camera / Upload",
+                viewSolution: "View Solution 🚀",
+                autoQuiz: "Generate Quiz (5 MCQs)",
+                quizTitle: "Dhruv Academy Secure Quiz (Anti-Cheat Kiosk)",
+                quizFocus: "Focus Mode Active: Switching tabs will lock the quiz!",
+                submitQuiz: "✅ Submit Quiz",
+                shareQuiz: "Share on WhatsApp Class Groups",
+                hwTitle: "🏫 School / Tutor Homework Portal",
+                schoolNamePh: "Institute / Tutor Name",
+                hwDescPh: "Today's Homework Details",
+                hwBtn: "Send Homework on WhatsApp",
+                subTitleText: "📝 Student Homework Submission",
+                studentNamePh: "Student Name",
+                studentClassPh: "Class (e.g. Class 5)",
+                studentAnsPh: "Completed Work / Answer",
+                subHwBtn: "Submit Homework to Teacher on WhatsApp",
+                waBtn: "Share Score with Friends",
+                scannedText: "📷 Scanned Book Page:",
+                correctMsg: "Awesome! Correct answer! +20 points added to the blackboard! 🎉",
+                alreadySolvedMsg: "⚠️ You have already solved this! Choose another subject for points!",
+                footerText: "© 2026 Dhruv Academy Master Ecosystem. All Rights Reserved."
+            },
+            pa: {
+                portal: "ਮੁੱਖ ਪੋਰਟਲ",
+                mainTitle: "ਨੇਬੁਲਾ AI ਵਰਚੁਅਲ ਕਲਾਸਰੂਮ",
+                subTitle: "ਧਰੁਵ ਅਕੈਡਮੀ 100% ਪ੍ਰਮਾਣਿਕ ਸਿੱਖਿਆ ਪ੍ਰਣਾਲੀ | ਲਾਈਵ 3D ਬਲੈਕਬੋਰਡ",
+                teacher: "ਨੇਬੁਲਾ AI ਅਧਿਆਪਕ",
+                statusText: "ਤਿਆਰ ਹਾਂ! ਸਹੀ ਉੱਤਰ ਲਈ ਕੋਈ ਸਵਾਲ ਚੁਣੋ...",
+                avatarTip: "ਅਵਤਾਰ 'ਤੇ ਟੈਪ ਕਰਕੇ ਮਿੱਠੀ ਆਵਾਜ਼ ਵਿੱਚ ਉੱਤਰ ਸੁਣੋ",
+                scoreLabel: "ਜੀਨੀਅਸ ਸਕੋਰ",
+                resetScore: "ਰੀਸੈੱਟ ✕",
+                boardHeader: "ਨੇਬੁਲਾ ਡਿਜੀਟਲ ਬਲੈਕਬੋਰਡ (Live)",
+                welcome: "ਸਤਿ ਸ੍ਰੀ ਅਕਾਲ ਪਿਆਰੇ ਬੱਚਿਓ! 🌟 ਹੇਠਾਂ ਦਿੱਤੇ ਵਿਸ਼ਿਆਂ ਵਿੱਚੋਂ ਕੋਈ ਚੁਣੋ ਜਾਂ ਕਿਤਾਬ ਦੀ ਫੋਟੋ ਲਓ!",
+                mText: "ਗਣਿਤ ਚੁਣੌਤੀ (+20)",
+                pText: "ਸੁਪਰ ਬੁਝਾਰਤ (+20)",
+                gText: "ਆਮ ਗਿਆਨ / GK (+20)",
+                eText: "ਵਿਗਿਆਨ / EVS (+20)",
+                poemText: "ਕਵਿਤਾ: ਮੱਛੀ ਜਲ ਦੀ ਰਾਣੀ (+20)",
+                hintBtnText: "ਨੇਬੁਲਾ ਅਧਿਆਪਕ ਤੋਂ ਸੰਕੇਤ ਲਓ",
+                inputPh: "ਇੱਥੇ ਉੱਤਰ ਲਿਖੋ ਜਾਂ ਮਾਈਕ ਵਿੱਚ ਬੋਲੋ...",
+                micBtn: "ਬੋਲੋ",
+                submitBtn: "ਉੱਤਰ ਦੀ ਪੁਸ਼ਟੀ ਕਰੋ 🚀",
+                liveReport: "WhatsApp 'ਤੇ ਲਾਈਵ ਰਿਪੋਰਟ ਭੇਜੋ",
+                visionTitle: "📸 AI ਕਿਤਾਬ ਅਤੇ ਹੋਮਵਰਕ ਸਕੈਨਰ",
+                visionDesc: "ਜਮਾਤ 1 ਤੋਂ 5 ਦੇ ਕਿਸੇ ਵੀ ਪ੍ਰਸ਼ਨ ਦੀ ਫੋਟੋ ਲਓ, ਨੇਬੁਲਾ ਅਧਿਆਪਕ ਤੁਰੰਤ ਹੱਲ ਦੱਸੇਗਾ!",
+                uploadBtnText: "ਕੈਮਰੇ ਤੋਂ ਫੋਟੋ ਲਓ / ਅੱਪਲੋਡ ਕਰੋ",
+                viewSolution: "ਪੂਰਾ ਹੱਲ ਦੇਖੋ 🚀",
+                autoQuiz: "ਆਟੋ-ਕੁਇਜ਼ ਬਣਾਓ (5 MCQs)",
+                quizTitle: "ਧਰੁਵ ਅਕੈਡਮੀ ਸੁਰੱਖਿਅਤ ਕੁਇਜ਼ (Anti-Cheat Kiosk)",
+                quizFocus: "ਫੋਕਸ ਮੋਡ ਚਾਲੂ: ਟੈਬ ਬਦਲਣ 'ਤੇ ਕੁਇਜ਼ ਲਾਕ ਹੋ ਜਾਵੇਗੀ!",
+                submitQuiz: "✅ ਕੁਇਜ਼ ਸਬਮਿਟ ਕਰੋ (Submit)",
+                shareQuiz: "WhatsApp ਗਰੁੱਪਾਂ 'ਤੇ ਸ਼ੇਅਰ ਕਰੋ",
+                hwTitle: "🏫 ਸਕੂਲ / ਟਿਊਟਰ WhatsApp ਹੋਮਵਰਕ ਪੋਰਟਲ",
+                schoolNamePh: "ਸੰਸਥਾ / ਟਿਊਟਰ ਦਾ ਨਾਮ",
+                hwDescPh: "ਅੱਜ ਦੇ ਹੋਮਵਰਕ ਦਾ ਵੇਰਵਾ",
+                hwBtn: "WhatsApp 'ਤੇ ਹੋਮਵਰਕ ਭੇਜੋ",
+                subTitleText: "📝 ਵਿਦਿਆਰਥੀ ਹੋਮਵਰਕ ਸਬਮਿਸ਼ਨ",
+                studentNamePh: "ਵਿਦਿਆਰਥੀ ਦਾ ਨਾਮ",
+                studentClassPh: "ਜਮਾਤ (e.g. Class 5)",
+                studentAnsPh: "ਹੱਲ ਕੀਤਾ ਕੰਮ / ਉੱਤਰ",
+                subHwBtn: "ਅਧਿਆਪਕ ਨੂੰ WhatsApp 'ਤੇ ਹੋਮਵਰਕ ਭੇਜੋ",
+                waBtn: "ਸਕੋਰ ਦੋਸਤਾਂ ਨਾਲ ਸਾਂਝਾ ਕਰੋ",
+                scannedText: "📷 ਸਕੈਨ ਕੀਤਾ ਗਿਆ ਕਿਤਾਬ ਦਾ ਪੰਨਾ:",
+                correctMsg: "ਵਾਹ! ਬਿਲਕੁਲ ਸਹੀ ਜਵਾਬ! ਬਲੈਕਬੋਰਡ 'ਤੇ +20 ਅੰਕ ਜੋੜੇ ਗਏ ਹਨ! 🎉",
+                alreadySolvedMsg: "⚠️ ਤੁਸੀਂ ਇਹ ਸਵਾਲ ਪਹਿਲਾਂ ਹੱਲ ਕਰ ਲਿਆ ਹੈ!",
+                footerText: "© 2026 Dhruv Academy Master Ecosystem. ਸਾਰੇ ਹੱਕ ਰਾਖਵੇਂ ਹਨ।"
+            },
+            mr: {
+                portal: "मुख्य पोर्टल",
+                mainTitle: "नेबुला एआय व्हर्च्युअल क्लासरूम",
+                subTitle: "ध्रुव अकादमी 100% प्रामाणिक शिक्षण प्रणाली | थेट 3D ब्लॅकबोर्ड",
+                teacher: "नेबुला एआय शिक्षक",
+                statusText: "तयार आहे! अचूक उत्तरासाठी प्रश्न निवडा...",
+                avatarTip: "गोड आवाजात स्पष्टीकरण ऐकण्यासाठी अवतारावर टॅप करा",
+                scoreLabel: "जीनियस स्कोर",
+                resetScore: "रीसेट ✕",
+                boardHeader: "नेबुला डिजिटल ब्लॅकबोर्ड (Live)",
+                welcome: "नमस्ते मित्रांनो! 🌟 खालीलपैकी कोणताही विषय निवडा किंवा पुस्तकाचा फोटो काढा!",
+                mText: "गणित आव्हान (+20)",
+                pText: "सुपर कोडे (+20)",
+                gText: "सामान्य ज्ञान / GK (+20)",
+                eText: "विज्ञान / EVS (+20)",
+                poemText: "कविता: मासोळी जल की रानी (+20)",
+                hintBtnText: "नेबुला शिक्षकाकडून संकेत घ्या",
+                inputPh: "येथे उत्तर लिहा किंवा माइकवर बोला...",
+                micBtn: "बोला",
+                submitBtn: "उत्तराची खात्री करा 🚀",
+                liveReport: "WhatsApp वर लाइव्ह रिपोर्ट पाठवा",
+                visionTitle: "📸 एआय पुस्तक आणि गृहपाठ स्कॅनर",
+                visionDesc: "इयत्ता 1 ते 5 च्या कोणत्याही प्रश्नाचा फोटो काढा, नेबुला शिक्षक थेट संपूर्ण उपाय सांगेल!",
+                uploadBtnText: "कॅमेऱ्याने पुस्तकाचा फोटो काढा / अपलोड करा",
+                viewSolution: "संपूर्ण उपाय पहा 🚀",
+                autoQuiz: "ऑटो-क्विझ बनवा (5 MCQs)",
+                quizTitle: "ध्रुव अकादमी सुरक्षित क्विझ (Anti-Cheat Kiosk)",
+                quizFocus: "फोकस मोड सुरू: टॅब बदलल्यास क्विझ लॉक होईल!",
+                submitQuiz: "✅ क्विझ सबमिट करा (Submit)",
+                shareQuiz: "WhatsApp ग्रुपवर शेअर करा",
+                hwTitle: "🏫 शाळा / शिक्षक WhatsApp गृहपाठ पोर्टल",
+                schoolNamePh: "संस्था / शिक्षकाचे नाव",
+                hwDescPh: "आजच्या गृहपाठाचा तपशील",
+                hwBtn: "WhatsApp वर गृहपाठ पाठवा",
+                subTitleText: "📝 विद्यार्थी गृहपाठ सबमिशन",
+                studentNamePh: "विद्यार्थ्याचे नाव",
+                studentClassPh: "इयत्ता (e.g. Class 5)",
+                studentAnsPh: "पूर्ण केलेले काम / उत्तर",
+                subHwBtn: "शिक्षकांना WhatsApp वर गृहपाठ पाठवा",
+                waBtn: "मित्रांसह स्कोअर शेअर करा",
+                scannedText: "📷 स्कॅन केलेले पुस्तकाचे पान:",
+                correctMsg: "छान! अगदी बरोबर उत्तर! ब्लॅकबोर्डवर +20 गुण जोडले गेले आहेत! 🎉",
+                alreadySolvedMsg: "⚠️ हा प्रश्न तुम्ही आधीच सोडवला आहे!",
+                footerText: "© 2026 Dhruv Academy Master Ecosystem. सर्व हक्क राखीव."
+            }
+        };
+
+        const puzzleBank = {
+            hi: [
+                {q: "ऐसी कौन सी चीज़ है जो लिखने के काम आती है पर पेन नहीं?", a: "पेंसिल"},
+                {q: "काला कुत्ता, कमरे में खूंटा? (बताओ क्या)", a: "छाता"},
+                {q: "एक पैर है, पर चल नहीं सकता?", a: "मेज"},
+                {q: "ऐसी कौन सी चीज है जो हमेशा बढ़ती है, कभी कम नहीं होती?", a: "उम्र"},
+                {q: "कटोरे में कटोरा, बेटा बाप से भी गोरा। बताओ क्या?", a: "नारियल"}
+            ],
+            en: [
+                {q: "What is used to write with, but is not a pen?", a: "pencil"},
+                {q: "What has a head and a tail, but no body?", a: "coin"},
+                {q: "What gets wetter as it dries?", a: "towel"},
+                {q: "What has legs, but doesn't walk?", a: "table"}
+            ],
+            pa: [
+                {q: "ਲਿਖਣ ਦੇ ਕੰਮ ਆਉਂਦੀ ਹੈ ਪਰ ਪੈੱਨ ਨਹੀਂ?", a: "ਪੈਨਸਿਲ"},
+                {q: "ਕਿਹੜੀ ਚੀਜ਼ ਹਮੇਸ਼ਾ ਵਧਦੀ ਹੈ, ਘਟਦੀ ਨਹੀਂ?", a: "ਉਮਰ"}
+            ],
+            mr: [
+                {q: "लिहायला उपयोगी पडते पण पेन नाही?", a: "पेन्सिल"},
+                {q: "अशी कोणती गोष्ट आहे जी नेहमी वाढते, कधी कमी होत नाही?", a: "वय"}
+            ]
+        };
+
+        const gkBank = {
+            hi: [
+                {q: "हमारे देश भारत की राजधानी क्या है?", a: "दिल्ली"},
+                {q: "ताजमहल किस शहर में स्थित है?", a: "आगरा"},
+                {q: "हफ्ते में कुल कितने दिन होते हैं?", a: "7"},
+                {q: "भारत का राष्ट्रीय पशु कौन सा है?", a: "बाघ"}
+            ],
+            en: [
+                {q: "What is the capital city of India?", a: "delhi"},
+                {q: "How many days are there in a week?", a: "7"},
+                {q: "What is the national animal of India?", a: "tiger"}
+            ],
+            pa: [
+                {q: "ਭਾਰਤ ਦੀ ਰਾਜਧਾਨੀ ਕਿਹੜੀ ਹੈ?", a: "ਦਿੱਲੀ"},
+                {q: "ਹਫ਼ਤੇ ਵਿੱਚ ਕਿੰਨੇ ਦਿਨ ਹੁੰਦੇ ਹਨ?", a: "7"}
+            ],
+            mr: [
+                {q: "भारताची राजधानी कोणती आहे?", a: "दिल्ली"},
+                {q: "आठवड्यात किती दिवस असतात?", a: "7"}
+            ]
+        };
+
+        const evsBank = {
+            hi: [
+                {q: "पेड़-पौधे हमें सांस लेने के लिए कौन सी गैस देते हैं?", a: "ऑक्सीजन"},
+                {q: "सूरज किस दिशा से निकलता है?", a: "पूर्व"},
+                {q: "हमारा राष्ट्रीय पक्षी कौन है?", a: "मोर"}
+            ],
+            en: [
+                {q: "Which gas do trees give us to breathe?", a: "oxygen"},
+                {q: "From which direction does the Sun rise?", a: "east"}
+            ],
+            pa: [
+                {q: "ਰੁੱਖ ਸਾਨੂੰ ਸਾਹ ਲੈਣ ਲਈ ਕਿਹੜੀ ਗੈਸ ਦਿੰਦੇ ਹਨ?", a: "ਆਕਸੀਜਨ"},
+                {q: "ਸੂਰਜ ਕਿਸ ਦਿਸ਼ਾ ਤੋਂ ਚੜ੍ਹਦਾ ਹੈ?", a: "ਪੂਰਬ"}
+            ],
+            mr: [
+                {q: "झाडे आपल्याला श्वास घेण्यासाठी कोणता वायू देतात?", a: "ऑक्सिजन"},
+                {q: "सूर्य कोणत्या दिशेला उगवतो?", a: "पूर्व"}
+            ]
+        };
+
+        const poemBank = {
+            hi: [{q: "🎵 कविता: 'मछली जल की रानी है, जीवन उसका पानी है...' ('हाँ' लिखें)", a: "हाँ"}],
+            en: [{q: "🎵 Poem: 'Twinkle, twinkle, little star...' (Type 'Yes')", a: "yes"}],
+            pa: [{q: "🎵 ਕਵਿਤਾ: 'ਮੱਛੀ ਜਲ ਦੀ ਰਾਣੀ ਹੈ...' ('ਹਾਂ' ਲਿਖੋ)", a: "ਹਾਂ"}],
+            mr: [{q: "🎵 कविता: 'मासोळी जल की रानी आहे...' ('होय' लिहा)", a: "होय"}]
+        };
+
+        function formatBlackboardText(text) {
+            if (!text) return "";
+            return text
+                .replace(/#{1,6}\s?/g, '')
+                .replace(/\*\*(.*?)\*\*/g, '<strong style="color:#facc15; font-weight:bold;">$1</strong>')
+                .replace(/\*(.*?)\*/g, '<span style="color:#67e8f9; font-weight:500;">$1</span>')
+                .replace(/👉/g, '<span style="color:#fbbf24; margin-right:4px;">👉</span>')
+                .replace(/\n\n/g, '<br><br>')
+                .replace(/\n/g, '<br>');
+        }
+
+        function scrollToBlackboard() {
+            setTimeout(() => {
+                const board = document.getElementById('nebulaBlackboardSection');
+                if (board) {
+                    const yOffset = -40; 
+                    const y = board.getBoundingClientRect().top + window.pageYOffset + yOffset;
+                    window.scrollTo({ top: y, behavior: 'smooth' });
+                }
+            }, 60);
+        }
+
+        function updateScoreDisplay() {
+            const scoreDisplay = document.getElementById('scoreDisplay');
+            if (scoreDisplay) {
+                scoreDisplay.innerText = `⭐ ${studentScore} / 100`;
+            }
+        }
+
+        function resetScoreProgress() {
+            let confirmMsg = {
+                hi: "क्या आप अपना स्कोर रीसेट करके 0 करना चाहते हैं?",
+                en: "Do you want to reset your score to 0?",
+                pa: "ਕੀ ਤੁਸੀਂ ਆਪਣਾ ਸਕੋਰ ਰੀਸੈੱਟ ਕਰਨਾ ਚਾਹੁੰਦੇ ਹੋ?",
+                mr: "तुम्हाला तुमचा स्कोअर रीसेट करायचा आहे का?"
+            };
+            if (confirm(confirmMsg[currentLang] || confirmMsg.hi)) {
+                studentScore = 0;
+                solvedQuestions = {};
+                localStorage.setItem('dhruv_student_score', '0');
+                localStorage.setItem('dhruv_solved_questions', JSON.stringify({}));
+                updateScoreDisplay();
+                let msg = {
+                    hi: "स्कोर रीसेट हो गया है! नया सवाल हल करके अंक बनाएं ⭐",
+                    en: "Score reset to 0! Solve a question to earn points ⭐",
+                    pa: "ਸਕੋਰ ਰੀਸੈੱਟ ਹੋ ਗਿਆ ਹੈ! ਨਵਾਂ ਸਵਾਲ ਹੱਲ ਕਰੋ ⭐",
+                    mr: "स्कोअर रीसेट झाला आहे! नवीन प्रश्न सोडवून गुण मिळवा ⭐"
+                };
+                updateBlackboard(msg[currentLang] || msg.hi);
+            }
+        }
+
+        // 🌐 भाषा बदलने का सम्पूर्ण मास्टर इंजन (4 भाषाएँ)
+        function switchLanguage(lang) {
+            currentLang = lang;
+            localStorage.setItem('user_lang', lang);
+            
+            const selector = document.getElementById('langSelector');
+            if (selector) selector.value = lang;
+
+            let d = siteData[lang] || siteData.hi;
+
+            document.getElementById('portalText').innerText = d.portal;
+            document.getElementById('mainTitle').innerText = d.mainTitle;
+            document.getElementById('subTitle').innerText = d.subTitle;
+            document.getElementById('teacherName').innerText = d.teacher;
+            document.getElementById('teacherStatus').innerText = d.statusText;
+            document.getElementById('teacherAvatarTip').innerText = d.avatarTip;
+            document.getElementById('scoreLabel').innerText = d.scoreLabel;
+            document.getElementById('resetScoreBtn').innerText = d.resetScore;
+            document.getElementById('boardHeader').innerText = d.boardHeader;
+            document.getElementById('aiText').innerHTML = d.welcome;
+            document.getElementById('btnMath').innerText = d.mText;
+            document.getElementById('btnPuzzle').innerText = d.pText;
+            document.getElementById('btnGk').innerText = d.gText;
+            document.getElementById('btnEvs').innerText = d.eText;
+            document.getElementById('btnPoem').innerText = d.poemText;
+            document.getElementById('hintBtnText').innerText = d.hintBtnText;
+            document.getElementById('userInput').placeholder = d.inputPh;
+            document.getElementById('micText').innerText = d.micBtn;
+            document.getElementById('btnSubmit').innerText = d.submitBtn;
+            document.getElementById('liveReportBtnText').innerText = d.liveReport;
+            document.getElementById('visionTitle').innerText = d.visionTitle;
+            document.getElementById('visionDesc').innerText = d.visionDesc;
+            document.getElementById('uploadBtnText').innerText = d.uploadBtnText;
+            document.getElementById('viewSolutionBtnText').innerText = d.viewSolution;
+            document.getElementById('autoQuizBtnText').innerText = d.autoQuiz;
+            document.getElementById('quizTitleText').innerHTML = `<span>🛡️</span> <span>${d.quizTitle}</span>`;
+            document.getElementById('quizFocusModeText').innerText = d.quizFocus;
+            document.getElementById('submitQuizBtnText').innerText = d.submitQuiz;
+            document.getElementById('shareQuizBtnText').innerHTML = `📱 <span>${d.shareQuiz}</span>`;
+            document.getElementById('homeworkTitle').innerText = d.hwTitle;
+            document.getElementById('schoolNameInput').placeholder = d.schoolNamePh;
+            document.getElementById('homeworkDescInput').placeholder = d.hwDescPh;
+            document.getElementById('hwBtnText').innerText = d.hwBtn;
+            document.getElementById('submitTitle').innerText = d.subTitleText;
+            document.getElementById('studentNameInput').placeholder = d.studentNamePh;
+            document.getElementById('studentClassInput').placeholder = d.studentClassPh;
+            document.getElementById('studentAnswerInput').placeholder = d.studentAnsPh;
+            document.getElementById('submitHwBtnText').innerText = d.subHwBtn;
+            document.getElementById('whatsappBtnText').innerText = d.waBtn;
+            document.getElementById('scannedBookPageText').innerText = d.scannedText;
+            document.getElementById('footerCopy').innerHTML = `${d.footerText} <a href="/secret-admin-login-dhruv" style="color:#0f172a; text-decoration:none; margin-left:4px;" title="सिस्टम गेटवे">•</a>`;
+
+            speakText(d.welcome);
+            scrollToBlackboard();
+        }
+
+        function speakText(text) {
+            try {
+                if ('speechSynthesis' in window) {
+                    window.speechSynthesis.cancel();
+                    
+                    let cleanText = text
+                        .replace(/[*_#~🎵🤔🌍🌿📸💡⭐🏆❌⚠️👉]/g, '')
+                        .replace(/\s+/g, ' ')
+                        .trim();
+
+                    let utterance = new SpeechSynthesisUtterance(cleanText);
+                    
+                    if (currentLang === 'en') utterance.lang = 'en-US';
+                    else if (currentLang === 'pa') utterance.lang = 'pa-IN';
+                    else if (currentLang === 'mr') utterance.lang = 'mr-IN';
+                    else utterance.lang = 'hi-IN';
+
+                    utterance.rate = 0.85;
+                    utterance.pitch = 1.05;
+
+                    let avatar = document.getElementById('teacherAvatar');
+                    let status = document.getElementById('teacherStatus');
+
+                    utterance.onstart = function() {
+                        if (avatar) avatar.classList.add('avatar-talking');
+                        if (status) status.innerText = (currentLang === 'en') ? "Nebula explaining on blackboard..." : "नेबुला ब्लैकबोर्ड पर समझा रही हैं...";
+                    };
+
+                    utterance.onend = function() {
+                        if (avatar) avatar.classList.remove('avatar-talking');
+                        if (status) status.innerText = (currentLang === 'en') ? "Answer or pick a subject" : "उत्तर दें या नया विषय चुनें";
+                    };
+
+                    utterance.onerror = function() {
+                        if (avatar) avatar.classList.remove('avatar-talking');
+                    };
+
+                    window.speechSynthesis.speak(utterance);
+                }
+            } catch (e) {
+                console.log("Speech synthesis error: ", e);
+            }
+        }
+
+        function speakGreeting() {
+            let d = siteData[currentLang] || siteData.hi;
+            updateBlackboard(d.welcome);
+        }
+
+        function updateBlackboard(contentHtml) {
+            let board = document.getElementById('aiText');
+            board.innerHTML = formatBlackboardText(contentHtml);
+            speakText(board.innerText);
+            scrollToBlackboard();
+        }
+
+        function getRandomQuestion(arr) {
+            if (!arr || arr.length === 0) return {q: "प्रश्न उपलब्ध नहीं", a: ""};
+            return arr[Math.floor(Math.random() * arr.length)];
+        }
+
+        function handleChallengeClick(category) {
+            loadChallenge(category);
+        }
+
+        function loadChallenge(category) {
+            currentActiveCategory = category;
+            let textToShow = "";
+
+            if (category === 'math') {
+                let num1 = Math.floor(Math.random() * 20) + 5;
+                let num2 = Math.floor(Math.random() * 9) + 1;
+                let isAddition = Math.random() > 0.5;
+
+                if (isAddition) {
+                    currentCorrectAnswer = (num1 + num2).toString();
+                    textToShow = (currentLang === 'en')
+                        ? `Math Challenge:\n${num1} + ${num2} = ?\n(Type the sum)`
+                        : `गणित चैलेंज:\n${num1} + ${num2} = ?\n(उत्तर बॉक्स में लिखें)`;
+                } else {
+                    if (num1 < num2) { let t = num1; num1 = num2; num2 = t; }
+                    currentCorrectAnswer = (num1 - num2).toString();
+                    textToShow = (currentLang === 'en')
+                        ? `Math Challenge:\n${num1} - ${num2} = ?\n(Type the difference)`
+                        : `गणित चैलेंज:\n${num1} - ${num2} = ?\n(उत्तर बॉक्स में लिखें)`;
+                }
+            } 
+            else if (category === 'puzzle') {
+                let pList = puzzleBank[currentLang] || puzzleBank.hi;
+                let p = getRandomQuestion(pList);
+                textToShow = p.q; 
+                currentCorrectAnswer = p.a;
+            }
+            else if (category === 'gk') {
+                let gList = gkBank[currentLang] || gkBank.hi;
+                let g = getRandomQuestion(gList);
+                textToShow = g.q; 
+                currentCorrectAnswer = g.a;
+            }
+            else if (category === 'evs') {
+                let eList = evsBank[currentLang] || evsBank.hi;
+                let e = getRandomQuestion(eList);
+                textToShow = e.q; 
+                currentCorrectAnswer = e.a;
+            }
+            else if (category === 'poem') {
+                let poList = poemBank[currentLang] || poemBank.hi;
+                let po = getRandomQuestion(poList);
+                textToShow = po.q; 
+                currentCorrectAnswer = po.a;
+            }
+
+            currentQuestionText = textToShow;
+            updateBlackboard(`<span style="color:#fef08a;">${textToShow.replace(/\n/g, '<br>')}</span>`);
+        }
+
+        function giveHint() {
+            if (!currentActiveCategory || !currentQuestionText) {
+                alert(currentLang === 'en' ? "⚠️ Choose a subject first!" : "⚠️ पहले कोई विषय और सवाल चुनें!");
+                return;
+            }
+
+            let hintText = (currentLang === 'en')
+                ? "💡 Hint: Think carefully, the answer is simple!"
+                : "💡 संकेत: सवाल को एक बार फिर ध्यान से पढ़ें, जवाब आसान है!";
+
+            updateBlackboard(`<span style="color:#fcd34d; font-weight:bold;">${hintText}</span>`);
+        }
+
+        function verifyAnswer() {
+            let d = siteData[currentLang] || siteData.hi;
+            let userField = document.getElementById('userInput');
+            let userVal = userField.value.trim().toLowerCase();
+
+            if (userVal === "") {
+                alert(currentLang === 'en' ? "Please write your answer!" : "कृपया अपना उत्तर लिखें!");
+                return;
+            }
+            if (!currentActiveCategory) {
+                alert(currentLang === 'en' ? "Please choose a subject first!" : "कृपया पहले ऊपर से कोई विषय चुनें!");
+                return;
+            }
+
+            let uniqueKey = currentActiveCategory + "_" + currentQuestionText;
+
+            if (studentScore >= 100) {
+                if (userVal.includes(currentCorrectAnswer.toLowerCase())) {
+                    let alreadyWonMsg = (currentLang === 'en') 
+                        ? "🎉 You have already won 100 points! You are a Genius Champion!" 
+                        : "🎉 आप पहले ही 100 अंक जीत चुके हैं! आप जीनियस चैंपियन हैं!";
+                    updateBlackboard(`<span style="color:#facc15; font-weight:bold; font-size:18px;">${alreadyWonMsg}</span>`);
+                } else {
+                    let tokenMsg = (currentLang === 'en')
+                        ? `⚠️ Incorrect! The right answer was: '${currentCorrectAnswer}'. Try to focus!`
+                        : `⚠️ गलत उत्तर! सही उत्तर था: '${currentCorrectAnswer}'। ध्यान देकर हल करें!`;
+                    updateBlackboard(`<span style="color:#fb7185; font-weight:bold; font-size:18px;">${tokenMsg}</span>`);
+                }
+                userField.value = "";
+                return;
+            }
+
+            if (userVal.includes(currentCorrectAnswer.toLowerCase())) {
+                if (solvedQuestions[uniqueKey]) {
+                    updateBlackboard(`<span style="color:#fbbf24;">${d.alreadySolvedMsg}</span>`);
+                    userField.value = "";
+                    return;
+                }
+
+                studentScore = Math.min(100, studentScore + 20);
+                solvedQuestions[uniqueKey] = true;
+                
+                localStorage.setItem('dhruv_student_score', studentScore.toString());
+                localStorage.setItem('dhruv_solved_questions', JSON.stringify(solvedQuestions));
+                updateScoreDisplay();
+
+                if (studentScore >= 100) {
+                    triggerCelebration();
+                } else {
+                    updateBlackboard(`<span style="color:#6ee7b7; font-weight:bold; font-size:20px;">${d.correctMsg}</span><br><span style="font-size:13px; color:#cbd5e1; margin-top:6px; display:block;">सही उत्तर: ${currentCorrectAnswer}</span>`);
+                }
+            } else {
+                let warnFeedback = (currentLang === 'en')
+                    ? `❌ Wrong answer! '${userVal}' is incorrect. Correct is '${currentCorrectAnswer}'.`
+                    : `❌ गलत जवाब! '${userVal}' सही नहीं है। सही उत्तर '${currentCorrectAnswer}' है।`;
+                updateBlackboard(`<span style="color:#fb7185; font-weight:bold; font-size:18px;">${warnFeedback}</span><br><span style="font-size:12px; color:#cbd5e1; margin-top:6px; display:block;">अगले प्रश्न में सही उत्तर देने का प्रयास करें!</span>`);
+            }
+            userField.value = "";
+        }
+
+        function triggerCelebration() {
+            let congratsText = (currentLang === 'en')
+                ? "Amazing! You scored 100 out of 100! You are a true Genius Champion!" 
+                : "अद्भुत! आपने 100 में से 100 अंक प्राप्त कर लिए हैं! आप सचमुच एक जीनियस चैंपियन हैं!";
+            
+            let html = `
+                <div style="color:#facc15; font-weight:800; font-size:22px; margin-bottom:8px;">🏆 100 / 100 - GENIUS CHAMPION! 🏆</div>
+                <div style="color:#67e8f9; font-size:16px; font-weight:600;">${congratsText}</div>
+            `;
+            updateBlackboard(html);
+        }
+
+        function startVoiceInput() {
+            try {
+                const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+                if (!SpeechRecognition) {
+                    alert("Speech recognition not supported in this browser.");
+                    return;
+                }
+                const recognition = new SpeechRecognition();
+                if (currentLang === 'en') recognition.lang = 'en-US';
+                else if (currentLang === 'pa') recognition.lang = 'pa-IN';
+                else if (currentLang === 'mr') recognition.lang = 'mr-IN';
+                else recognition.lang = 'hi-IN';
+
+                recognition.start();
+
+                recognition.onresult = function(event) {
+                    let spokenText = event.results[0][0].transcript;
+                    document.getElementById('userInput').value = spokenText;
+                    verifyAnswer();
+                };
+            } catch (e) {
+                console.log("Mic error: ", e);
+            }
+        }
+
+        function compressCrashProof(file, callback) {
+            const img = new Image();
+            const objectUrl = URL.createObjectURL(file);
+            
+            img.onload = function() {
+                URL.revokeObjectURL(objectUrl);
+                let w = img.width;
+                let h = img.height;
+                const maxDim = 750;
+                
+                if (w > maxDim || h > maxDim) {
+                    if (w > h) { h = Math.round((h * maxDim) / w); w = maxDim; }
+                    else { w = Math.round((w * maxDim) / h); h = maxDim; }
+                }
+
+                const canvas = document.createElement('canvas');
+                canvas.width = w;
+                canvas.height = h;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, w, h);
+                
+                canvas.toBlob(function(blob) {
+                    const reader = new FileReader();
+                    reader.onloadend = function() {
+                        callback(blob, reader.result);
+                    };
+                    reader.readAsDataURL(blob);
+                }, 'image/jpeg', 0.65);
+            };
+            
+            img.onerror = function() {
+                URL.revokeObjectURL(objectUrl);
+                alert("फोटो लोड करने में त्रुटि हुई।");
+            };
+            
+            img.src = objectUrl;
+        }
+
+        function handleCrashProofUpload(e) {
+            if (e) e.preventDefault();
+            const file = e.target.files[0];
+            if (!file) return;
+
+            updateBlackboard("📸 फोटो तैयार की जा रही है... कृपया प्रतीक्षा करें!");
+
+            compressCrashProof(file, function(blob, dataUrl) {
+                uploadedImageBlob = blob;
+                document.getElementById('uploadedImagePreview').src = dataUrl;
+                document.getElementById('imagePreviewContainer').classList.remove('hidden');
+                document.getElementById('scannerActionButtons').classList.remove('hidden');
+                
+                let readyMsg = (currentLang === 'en')
+                    ? "📸 Photo ready! Click 'View Solution' or 'Generate Quiz' button below."
+                    : "📸 फोटो तैयार है! अब नीचे 'पूरा सॉल्यूशन देखें' या 'ऑटो-क्विज़ बनाएं' बटन दबाएं।";
+                updateBlackboard(readyMsg);
+            });
+        }
+
+        async function explainBookPage(e) {
+            if (e) e.preventDefault();
+            
+            if (!uploadedImageBlob) {
+                alert(currentLang === 'en' ? "Please take a photo first!" : "कृपया पहले फोटो खींचें या अपलोड करें!");
+                return;
+            }
+
+            let scanMsg = (currentLang === 'en')
+                ? "🔄 Nebula AI is analyzing the entire page on the server..."
+                : "🔄 नेबुला एआई सर्वर पर किताब का पूरा सॉल्यूशन प्रोसेस कर रही है...";
+            updateBlackboard(scanMsg);
+
+            let formData = new FormData();
+            formData.append("file", uploadedImageBlob, "homework.jpg");
+            formData.append("query", "Explain this book page solution.");
+            formData.append("mode", "standard");
+            formData.append("lang", currentLang);
+
+            try {
+                let response = await fetch("/api/ai-core-solve", {
+                    method: "POST",
+                    body: formData
+                });
+
+                let result = await response.json();
+
+                if (result.success && result.solution) {
+                    let solText = result.solution;
+                    if (studentScore < 100) {
+                        studentScore = Math.min(100, studentScore + 20);
+                        localStorage.setItem('dhruv_student_score', studentScore.toString());
+                        updateScoreDisplay();
+                    }
+                    updateBlackboard(solText);
+                } else {
+                    updateBlackboard(result.solution || "त्रुटि: विश्लेषण पूरा नहीं हो सका।");
+                }
+            } catch (err) {
+                updateBlackboard("त्रुटि: सर्वर से कनेक्ट नहीं हो सका।");
+            }
+        }
+
+        async function generateSmartQuiz(e) {
+            if (e) e.preventDefault();
+            if (!uploadedImageBlob) {
+                alert(currentLang === 'en' ? "Please upload a photo first!" : "कृपया पहले किताब की फोटो खींचें!");
+                return;
+            }
+
+            updateBlackboard("🎯 इस पन्ने से 5 स्मार्ट MCQs तैयार किए जा रहे हैं...");
+
+            let formData = new FormData();
+            formData.append("file", uploadedImageBlob, "quiz_source.jpg");
+            formData.append("lang", currentLang);
+
+            try {
+                let response = await fetch("/generate-quiz", {
+                    method: "POST",
+                    body: formData
+                });
+
+                let res = await response.json();
+
+                if (res.success && res.quiz && res.quiz.length > 0) {
+                    activeQuizList = res.quiz;
+                    renderQuizModule();
+                }
+            } catch (err) {
+                alert("नेटवर्क त्रुटि! क्विज़ लोड नहीं हो सका।");
+            }
+        }
+
+        function renderQuizModule() {
+            let container = document.getElementById('quizContainerArea');
+            container.innerHTML = "";
+
+            activeQuizList.forEach((item, qIdx) => {
+                let optsHtml = item.options.map((opt) => `
+                    <label style="display:flex; align-items:center; gap:8px; padding:8px 12px; background:#0f172a; border:1px solid #334155; border-radius:10px; cursor:pointer;">
+                        <input type="radio" name="quiz_q_${qIdx}" value="${opt}" style="accent-color:#f59e0b;">
+                        <span style="color:#f8fafc;">${opt}</span>
+                    </label>
+                `).join("");
+
+                let qCard = `
+                    <div style="padding:12px; background:rgba(15,23,42,0.8); border:1px solid #1e293b; border-radius:14px; display:flex; flex-direction:column; gap:8px;">
+                        <p style="font-weight:bold; color:#fbbf24;">प्रश्न ${qIdx + 1}: ${item.q}</p>
+                        <div class="grid-2">${optsHtml}</div>
+                        <div id="quiz_explain_${qIdx}" class="hidden" style="font-size:11px; color:#34d399; font-weight:600; padding-top:4px;"></div>
+                    </div>
+                `;
+                container.innerHTML += qCard;
+            });
+
+            document.getElementById('smartQuizModule').classList.remove('hidden');
+            isQuizActive = true;
+            cheatWarnings = 0;
+            updateBlackboard("🛡️ क्विज़ तैयार है! फोकस बनाए रखें!");
+        }
+
+        function submitQuizAnswers() {
+            if (!isQuizActive) return;
+
+            let score = 0;
+            activeQuizList.forEach((item, qIdx) => {
+                let selected = document.querySelector(`input[name="quiz_q_${qIdx}"]:checked`);
+                let expBox = document.getElementById(`quiz_explain_${qIdx}`);
+                expBox.classList.remove('hidden');
+
+                if (selected && selected.value.trim().toLowerCase().startsWith(item.answer.trim().toLowerCase())) {
+                    score++;
+                    expBox.innerHTML = `✅ सही! (${item.explain || 'सटीक उत्तर'})`;
+                    expBox.style.color = "#34d399";
+                } else {
+                    expBox.innerHTML = `❌ सही उत्तर: <b>${item.answer}</b> (${item.explain || ''})`;
+                    expBox.style.color = "#fb7185";
+                }
+            });
+
+            isQuizActive = false;
+            let finalMsg = `🎯 क्विज़ परिणाम: आपने 5 में से ${score} अंक प्राप्त किए! 🌟`;
+            updateBlackboard(finalMsg);
+        }
+
+        function shareQuizToWhatsApp() {
+            if (activeQuizList.length === 0) {
+                alert("पहले क्विज़ जनरेट करें!");
+                return;
+            }
+
+            let quizText = "📚 *ध्रुव एकेडमी - स्मार्ट क्लासरूम क्विज़* 📚\n\n";
+            activeQuizList.forEach((q, i) => {
+                quizText += `*Q${i+1}:* ${q.q}\nविकल्प: ${q.options.join(", ")}\n\n`;
+            });
+            quizText += "हल करने के लिए पोर्टल खोलें: https://dhruv-tech-academy.onrender.com/kids-zone";
+
+            window.open("https://wa.me/?text=" + encodeURIComponent(quizText), '_blank');
+        }
+
+        function sendSchoolHomework() {
+            let schoolName = document.getElementById('schoolNameInput').value.trim();
+            let homeworkDesc = document.getElementById('homeworkDescInput').value.trim();
+            let selectedClass = document.getElementById('selectClass').value;
+            let selectedMedium = document.getElementById('selectMedium').value;
+
+            if (schoolName === "" || homeworkDesc === "") {
+                alert("कृपया संस्थान का नाम और होमवर्क दोनों भरें!");
+                return;
+            }
+            let message = `🏫 *डिजिटल होमवर्क - ध्रुव एकेडमी मास्टर इकोसिस्टम* 🏫\n\n*संस्थान:* ${schoolName}\n*कक्षा:* ${selectedClass} (${selectedMedium})\n*होमवर्क:* ${homeworkDesc}\n\nhttps://dhruv-tech-academy.onrender.com/`;
+            window.open("https://wa.me/?text=" + encodeURIComponent(message), '_blank');
+        }
+
+        function submitStudentWork() {
+            let studentName = document.getElementById('studentNameInput').value.trim();
+            let studentClass = document.getElementById('studentClassInput').value.trim();
+            let studentAnswer = document.getElementById('studentAnswerInput').value.trim();
+
+            if (studentName === "" || studentClass === "" || studentAnswer === "") {
+                alert("कृपया सभी विवरण भरें!");
+                return;
+            }
+            let message = `📝 *होमवर्क सबमिशन - ध्रुव एकेडमी मास्टर इकोसिस्टम* 📝\n\n*छात्र:* ${studentName}\n*कक्षा:* ${studentClass}\n*स्कोर:* ${studentScore} / 100 अंक\n*कार्य:* ${studentAnswer}\n\nमैंने अपना काम पूरा कर लिया है! 🙏`;
+            window.open("https://wa.me/?text=" + encodeURIComponent(message), '_blank');
+        }
+
+        function shareToWhatsApp() {
+            if (studentScore <= 0) {
+                alert("पहले अंक प्राप्त करें!");
+                return;
+            }
+            let message = `🔥 *ध्रुव एकेडमी मास्टर इकोसिस्टम - एआई किड्स ज़ोन* 🔥\nमैंने आज एआई क्लासरूम में ${studentScore} / 100 अंक हासिल किए हैं!\nhttps://dhruv-tech-academy.onrender.com/`;
+            window.open("https://wa.me/?text=" + encodeURIComponent(message), '_blank');
+        }
+
+        function sendWhatsAppReport() {
+            let inputName = document.getElementById('studentNameInput') ? document.getElementById('studentNameInput').value.trim() : "";
+            let studentName = inputName !== "" ? inputName : (currentLang === 'en' ? "Dhruv Student" : "ध्रुव छात्र");
+            let msg = `🌟 *Nebula AI Classroom Report* 🌟\n\n👤 छात्र: ${studentName}\n⭐ कुल अंक: ${studentScore} / 100\n📚 स्थिति: ${studentScore >= 100 ? "🏆 जीनियस चैंपियन!" : "प्रगति पर है 🌱"}\n\nध्रुव एकेडमी मास्टर इकोसिस्टम वर्चुअल क्लासरूम से प्रेषित!\nhttps://dhruv-tech-academy.onrender.com/`;
+            window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(msg)}`, '_blank');
+        }
+
+        function closePaymentGatewayModal() {
+            let modal = document.getElementById('paymentGatewayModal');
+            modal.classList.add('hidden');
+            modal.style.display = 'none';
+        }
+
+        function processKidsPayment() {
+            alert("पेमेंट अनुरोध भेजा गया! सुविधा जल्द अनलॉक होगी।");
+            closePaymentGatewayModal();
+        }
+
+        // पेज लोड होते ही लोकल स्टोरेज की भाषा से लोड करना
+        window.addEventListener('DOMContentLoaded', () => {
+            updateScoreDisplay();
+            const savedLang = localStorage.getItem('user_lang') || 'hi';
+            switchLanguage(savedLang);
+
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.onvoiceschanged = function() {
+                    window.speechSynthesis.getVoices();
+                };
+            }
+        });
+    </script>
+</body>
+</html>
