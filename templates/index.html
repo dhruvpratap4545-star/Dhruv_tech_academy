@@ -60,24 +60,6 @@
                 border-radius: 18px !important;
                 box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6) !important;
             }
-            .module-card div:first-child {
-                font-size: 11px !important;
-                font-weight: 800 !important;
-                margin-top: 4px !important;
-                flex-direction: column !important;
-                align-items: center !important;
-            }
-            .module-card div:first-child span:first-child { text-align: center !important; }
-            .module-card div:first-child span.text-xs {
-                margin-top: 2px !important;
-                font-size: 9px !important;
-            }
-            .module-card div:last-child {
-                font-size: 9px !important;
-                color: #94a3b8 !important;
-                line-height: 1.2 !important;
-                margin-top: 2px !important;
-            }
         }
     </style>
 </head>
@@ -86,7 +68,7 @@
     <!-- मास्टर कंटेनर -->
     <div class="w-full max-w-5xl bg-slate-900/95 border border-purple-800/60 rounded-3xl p-4 md:p-8 shadow-2xl backdrop-blur-xl animate-float">
         
-        <!-- टॉप नेविगेशन बार (सारे हेडर बटन और भाषा/थीम कंट्रोल के साथ) -->
+        <!-- टॉप नेविगेशन बार -->
         <div class="w-full flex flex-wrap items-center justify-between gap-2 p-3 bg-slate-950/90 border border-purple-700/60 rounded-2xl shadow-xl mb-4">
             
             <div onclick="openWalletStore()" class="cursor-pointer flex items-center gap-1.5 bg-purple-950/90 border border-purple-500 px-3 py-2 rounded-xl text-yellow-400 font-extrabold text-xs md:text-sm shadow hover:border-yellow-400 transition" title="Central Wallet Report">
@@ -134,16 +116,16 @@
             </marquee>
         </div>
 
-        <!-- हेडर बैनर और आपका नया ओरिजिनल लोगो (logo.jpg) -->
+        <!-- हेडर बैनर और एकदम गोल (Perfect Circle) लोगो सेक्शन -->
         <div class="text-center mb-6">
             <span class="inline-block bg-purple-950/90 border border-purple-600 text-purple-300 text-xs px-4 py-1.5 rounded-full font-bold mb-2 shadow-md" data-key="bannerTag">
                 🎁 Special Platform for Competitive Exams & Smart Students - 10 Free Tokens!
             </span>
             
-            <!-- ⭐ ऑफिशियल सर्कुलर लोगो इमेज ⭐ -->
+            <!-- ⭐ परफेक्ट गोल (Circular) लोगो इमेज कन्टेनर ⭐ -->
             <div class="flex flex-col items-center justify-center my-4">
-                <div class="relative w-24 h-24 md:w-28 md:h-28 flex items-center justify-center rounded-full bg-slate-950 overflow-hidden border-2 border-cyan-400/80 shadow-[0_0_25px_rgba(34,211,238,0.4)] transition-transform duration-300 hover:scale-105">
-                    <img src="{{ url_for('static', filename='images/logo.jpg') }}?v=3" alt="Dhruv Academy Official Logo" class="w-full h-full object-cover rounded-full">
+                <div class="relative w-28 h-28 md:w-32 md:h-32 aspect-square flex items-center justify-center rounded-full bg-slate-950 overflow-hidden border-2 border-cyan-400/80 shadow-[0_0_30px_rgba(34,211,238,0.5)] transition-transform duration-300 hover:scale-105">
+                    <img src="{{ url_for('static', filename='images/logo.jpg') }}?v=4" alt="Dhruv Academy Official Logo" class="w-full h-full object-contain rounded-full">
                 </div>
             </div>
 
@@ -423,7 +405,7 @@
         </div>
     </footer>
 
-    <!-- जावास्क्रिप्ट संपूर्ण द्विभाषी व मल्टीलिंगुअल इंजन (सारे लैंग्वेजेज और फंक्शन्स के साथ) -->
+    <!-- जावास्क्रिप्ट संपूर्ण द्विभाषी व मल्टीलिंगुअल इंजन -->
     <script>
         let currentLang = localStorage.getItem("dhruv_selected_lang") || 'hi';
         let userTokens = parseInt(localStorage.getItem("dhruv_wallet_tokens")) || parseInt(localStorage.getItem("user_tokens")) || 10;
