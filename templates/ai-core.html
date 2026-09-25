@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="hi" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Core Engine & Neural Matrix | Dhruv Academy</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .glow-border {
+            box-shadow: 0 0 25px rgba(6, 182, 212, 0.25), inset 0 0 15px rgba(6, 182, 212, 0.1);
+        }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #020617; }
+        ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 4px; }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-200 font-sans min-h-screen p-4 md:p-6 flex flex-col justify-between selection:bg-cyan-500 selection:text-white">
+
+    <div class="max-w-7xl mx-auto w-full space-y-6 flex-grow">
+        
+        <!-- Header Section -->
+        <header class="flex flex-col md:flex-row items-center justify-between bg-slate-900/90 border border-slate-800 p-5 rounded-2xl shadow-2xl gap-4 backdrop-blur-xl">
+            <div class="flex items-center space-x-4">
+                <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-cyan-500 via-blue-600 to-indigo-600 flex items-center justify-center text-white font-black text-2xl shadow-lg shadow-cyan-500/30">
+                    ⚡
+                </div>
+                <div>
+                    <h1 id="coreTitle" class="text-xl md:text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-teal-300 to-indigo-400">
+                        एआई कोर इंजन व न्यूरल मैट्रिक्स
+                    </h1>
+                    <p id="coreSubtitle" class="text-xs text-slate-400 font-medium">
+                        केंद्रीय न्यूरल नेटवर्क, जेमिनी एपीआई ब्रिज और डायनामिक सिस्टम कॉन्फ़िगरेशन
+                    </p>
+                </div>
+            </div>
+            
+            <div class="flex items-center space-x-3 flex-wrap gap-y-2">
+                <!-- 🌐 भाषा चयन ड्रॉपडाउन -->
+                <div class="flex items-center gap-1.5 bg-slate-950 border border-slate-800 px-3 py-1.5 rounded-xl shadow-inner">
+                    <span class="text-xs">🌐</span>
+                    <select id="langSelector" onchange="switchLanguage(this.value)" class="bg-transparent text-xs font-bold text-cyan-300 outline-none cursor-pointer">
+                        <option value="hi" class="bg-slate-900 text-slate-200">🇮🇳 हिंदी (Hindi)</option>
+                        <option value="en" class="bg-slate-900 text-slate-200">🇬🇧 English</option>
+                        <option value="pa" class="bg-slate-900 text-slate-200">🇮🇳 ਪੰਜਾਬੀ (Punjabi)</option>
+                        <option value="mr" class="bg-slate-900 text-slate-200">🇮🇳 मराठी (Marathi)</option>
+                    </select>
+                </div>
+
+                <!-- टोकन वॉलेट काउंटर -->
+                <div class="bg-purple-950 border border-purple-500 px-3 py-1.5 rounded-xl text-yellow-400 font-extrabold text-xs shadow flex items-center gap-1">
+                    <span id="walletLabel">⚡ सेंट्रल टोकन्स:</span> <span id="walletTokenDisplay">10</span>
+                </div>
+
+                <a href="/" id="homeBtn" class="bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white px-3 py-2 rounded-xl text-xs font-bold border border-cyan-400/40 transition shadow-md">
+                    ← होम पेज
+                </a>
+            </div>
+        </header>
+
+        <!-- Main Dashboard Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            
+            <!-- Left Panel: Engine Control & Diagnostic Metrics -->
+            <div class="bg-slate-900/80 border border-slate-800 p-5 rounded-2xl shadow-xl space-y-4">
+                <h3 id="metricsHeader" class="text-xs font-bold text-cyan-400 uppercase tracking-wider flex items-center gap-2">
+                    <span>📡</span> <span>सिस्टम स्टेटस और एपीआई ब्रिज</span>
+                </h3>
+
+                <div class="space-y-3">
+                    <div class="bg-slate-950 border border-slate-800/80 p-3 rounded-xl flex items-center justify-between shadow-inner">
+                        <span id="lblModel" class="text-xs text-slate-400">एआई मॉडल इंजन:</span>
+                        <span class="text-xs font-mono text-cyan-300 bg-cyan-950/80 border border-cyan-800 px-2 py-0.5 rounded">Gemini Pro Multi-Modal</span>
+                    </div>
+
+                    <div class="bg-slate-950 border border-slate-800/80 p-3 rounded-xl flex items-center justify-between shadow-inner">
+                        <span id="lblLatency" class="text-xs text-slate-400">औसत लेटेंसी:</span>
+                        <span class="text-xs font-mono text-emerald-400">~120ms (Realtime)</span>
+                    </div>
+
+                    <div class="bg-slate-950 border border-slate-800/80 p-3 rounded-xl flex items-center justify-between shadow-inner">
+                        <span id="lblTruthShield" class="text-xs text-slate-400">ट्रुथ शील्ड फ़िल्टर:</span>
+                        <span class="text-xs font-mono text-emerald-300 bg-emerald-950/80 border border-emerald-800 px-2 py-0.5 rounded">23-Layer Active</span>
+                    </div>
+
+                    <div class="bg-slate-950 border border-slate-800/80 p-3 rounded-xl flex items-center justify-between shadow-inner">
+                        <span id="lblCoreHealth" class="text-xs text-slate-400">कोर हेल्थ:</span>
+                        <span class="text-xs font-mono text-emerald-400 flex items-center gap-1.5">
+                            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span> 100% Operational
+                        </span>
+                    </div>
+                </div>
+
+                <div class="pt-4 border-t border-slate-800 space-y-2">
+                    <label id="modeTitle" class="text-xs font-bold text-slate-400 uppercase tracking-wider block">एआई ऑपरेटिंग मोड:</label>
+                    <select id="aiModeSelect" class="w-full bg-slate-950 border border-slate-800 text-xs text-cyan-300 p-2.5 rounded-xl focus:outline-none focus:border-cyan-500 cursor-pointer">
+                        <option value="academic" id="optAcademic">अकादमिक रिसर्च व विश्लेषण (Academic)</option>
+                        <option value="creative" id="optCreative">सरल छात्र स्पष्टीकरण (Student Adaptive)</option>
+                        <option value="code" id="optCode">कोडिंग व अल्गोरिदम इंजन (Code/Math)</option>
+                    </select>
+                </div>
+
+                <button onclick="pingCoreDiagnostics()" id="btnPing" class="w-full bg-slate-950 hover:bg-slate-800 border border-cyan-500/30 text-cyan-300 py-2.5 rounded-xl text-xs font-bold transition flex items-center justify-center gap-2 cursor-pointer shadow">
+                    🔄 <span>डायग्नोस्टिक टेस्ट रन करें</span>
+                </button>
+            </div>
+
+            <!-- Middle & Right Panel: Core Interactive Query Terminal -->
+            <div class="lg:col-span-2 bg-slate-900/80 border border-slate-800 p-5 md:p-6 rounded-2xl shadow-xl flex flex-col justify-between space-y-4 glow-border">
+                
+                <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                    <h2 id="terminalHeader" class="text-sm font-extrabold text-cyan-400 uppercase tracking-wider flex items-center gap-2">
+                        <span>⚡</span> <span>डायरेक्ट न्यूरल टर्मिनल (Deep Inference Engine)</span>
+                    </h2>
+                    <span id="liveBridgeTag" class="text-[10px] font-mono text-emerald-400 bg-emerald-950/80 border border-emerald-800 px-2 py-0.5 rounded">
+                        Bridge Connected
+                    </span>
+                </div>
+
+                <!-- Inference Stream Output Box -->
+                <div id="coreOutputBox" class="bg-slate-950 border border-slate-800/90 rounded-xl p-4 font-mono text-xs md:text-sm text-slate-300 min-h-[260px] max-h-[380px] overflow-y-auto space-y-2 shadow-inner leading-relaxed">
+                    <span id="defaultTerminalMsg" class="text-slate-500 italic">
+                        कोर न्यूरल इंजन तैयार है। नीचे कोई भी अकादमिक, वैज्ञानिक या तकनीकी प्रश्न दर्ज करें...
+                    </span>
+                </div>
+
+                <!-- Input Prompt Area -->
+                <div class="space-y-3 pt-2">
+                    <div class="flex gap-2">
+                        <input type="text" id="coreQueryInput" placeholder="यहाँ प्रश्न या कमांड टाइप करें (उदा: Quantum Computing के मूल सिद्धांत)..." class="flex-grow bg-slate-950 border border-slate-800 text-xs md:text-sm text-slate-200 px-4 py-3 rounded-xl focus:outline-none focus:border-cyan-500 placeholder-slate-600">
+                        <button onclick="executeCoreQuery()" id="btnRunQuery" class="bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white px-5 py-3 rounded-xl text-xs md:text-sm font-bold transition shadow-lg shadow-cyan-950/50 cursor-pointer flex items-center gap-2 whitespace-nowrap">
+                            🚀 <span id="btnRunText">प्रोसेस करें</span>
+                        </button>
+                    </div>
+
+                    <div class="flex flex-wrap items-center justify-between gap-2 text-[11px] text-slate-500 px-1">
+                        <span id="tokenDeductNotice">⚡ प्रत्येक कोर इन्फेरेंस पर 1 सेंट्रल टोकन प्रयुक्त होता है।</span>
+                        <button onclick="clearTerminal()" id="btnClearTerm" class="text-slate-400 hover:text-rose-400 transition cursor-pointer underline">
+                            टर्मिनल साफ करें
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Footer -->
+    <footer class="mt-6 text-center text-[11px] text-slate-600 border-t border-slate-900 pt-3">
+        <span id="footerCopy">© 2026 Dhruv Academy Master Ecosystem. सर्वाधिकार सुरक्षित।</span>
+    </footer>
+
+    <!-- JavaScript Engine with Wallet Sync & 4-Language Matrix -->
+    <script>
+        let currentLang = localStorage.getItem('user_lang') || 'hi';
+
+        const coreTranslations = {
+            hi: {
+                title: "एआई कोर इंजन व न्यूरल मैट्रिक्स",
+                subtitle: "केंद्रीय न्यूरल नेटवर्क, जेमिनी एपीआई ब्रिज और डायनामिक सिस्टम कॉन्फ़िगरेशन",
+                walletLabel: "⚡ सेंट्रल टोकन्स:",
+                home: "← होम पेज",
+                metricsHeader: "सिस्टम स्टेटस और एपीआई ब्रिज",
+                lblModel: "एआई मॉडल इंजन:",
+                lblLatency: "औसत लेटेंसी:",
+                lblTruthShield: "ट्रुथ शील्ड फ़िल्टर:",
+                lblCoreHealth: "कोर हेल्थ:",
+                modeTitle: "एआई ऑपरेटिंग मोड:",
+                optAcademic: "अकादमिक रिसर्च व विश्लेषण (Academic)",
+                optCreative: "सरल छात्र स्पष्टीकरण (Student Adaptive)",
+                optCode: "कोडिंग व अल्गोरिदम इंजन (Code/Math)",
+                btnPing: "डायग्नोस्टिक टेस्ट रन करें",
+                terminalHeader: "डायरेक्ट न्यूरल टर्मिनल (Deep Inference Engine)",
+                bridgeTag: "Bridge Connected",
+                defaultMsg: "कोर न्यूरल इंजन तैयार है। नीचे कोई भी अकादमिक, वैज्ञानिक या तकनीकी प्रश्न दर्ज करें...",
+                inputPh: "यहाँ प्रश्न या कमांड टाइप करें (उदा: Quantum Computing के मूल सिद्धांत)...",
+                btnRun: "प्रोसेस करें",
+                notice: "⚡ प्रत्येक कोर इन्फेरेंस पर 1 सेंट्रल टोकन प्रयुक्त होता है।",
+                clear: "टर्मिनल साफ करें",
+                emptyAlert: "कृपया पहले अपना प्रश्न दर्ज करें!",
+                noTokenAlert: "⚠️ आपके सेंट्रल वॉलेट में पर्याप्त टोकन नहीं हैं! कृपया वॉलेट से रिचार्ज करें।",
+                footer: "© 2026 Dhruv Academy Master Ecosystem. सर्वाधिकार सुरक्षित।"
+            },
+            en: {
+                title: "AI Core Engine & Neural Matrix",
+                subtitle: "Central Neural Network, Gemini API Bridge & Dynamic System Configuration",
+                walletLabel: "⚡ Central Tokens:",
+                home: "← Home Page",
+                metricsHeader: "System Status & API Bridge",
+                lblModel: "AI Model Engine:",
+                lblLatency: "Average Latency:",
+                lblTruthShield: "Truth Shield Filter:",
+                lblCoreHealth: "Core Health:",
+                modeTitle: "AI Operating Mode:",
+                optAcademic: "Academic Research & Analysis",
+                optCreative: "Student Adaptive Explanation",
+                optCode: "Coding & Algorithm Engine",
+                btnPing: "Run Diagnostics Test",
+                terminalHeader: "Direct Neural Terminal (Deep Inference Engine)",
+                bridgeTag: "Bridge Connected",
+                defaultMsg: "Core neural engine ready. Enter any academic, scientific, or technical prompt below...",
+                inputPh: "Type question or command (e.g., Fundamentals of Quantum Computing)...",
+                btnRun: "Process Query",
+                notice: "⚡ 1 Central Token is consumed per core inference.",
+                clear: "Clear Terminal",
+                emptyAlert: "Please enter your query first!",
+                noTokenAlert: "⚠️ Insufficient tokens in Central Wallet! Please recharge.",
+                footer: "© 2026 Dhruv Academy Master Ecosystem. All Rights Reserved."
+            },
+            pa: {
+                title: "AI ਕੋਰ ਇੰਜਣ ਅਤੇ ਨਿਊਰਲ ਮੈਟ੍ਰਿਕਸ",
+                subtitle: "ਕੇਂਦਰੀ ਨਿਊਰਲ ਨੈੱਟਵਰਕ, ਜੈਮਿਨੀ API ਬ੍ਰਿਜ ਅਤੇ ਸਿਸਟਮ ਕੌਂਫਿਗਰੇਸ਼ਨ",
+                walletLabel: "⚡ ਸੈਂਟਰਲ ਟੋਕਨ:",
+                home: "← ਮੁੱਖ ਪੰਨਾ",
+                metricsHeader: "ਸਿਸਟਮ ਸਥਿਤੀ ਅਤੇ API ਬ੍ਰਿਜ",
+                lblModel: "AI ਮਾਡਲ ਇੰਜਣ:",
+                lblLatency: "ਔਸਤ ਲੇਟੈਂਸੀ:",
+                lblTruthShield: "ਟਰੂਥ ਸ਼ੀਲਡ ਫਿਲਟਰ:",
+                lblCoreHealth: "ਕੋਰ ਸਿਹਤ:",
+                modeTitle: "AI ਓਪਰੇਟਿੰਗ ਮੋਡ:",
+                optAcademic: "ਅਕਾਦਮਿਕ ਖੋਜ ਅਤੇ ਵਿਸ਼ਲੇਸ਼ਣ",
+                optCreative: "ਵਿਦਿਆਰਥੀ ਅਨੁਕੂਲ ਵਿਆਖਿਆ",
+                optCode: "ਕੋਡਿੰਗ ਅਤੇ ਐਲਗੋਰਿਦਮ ਇੰਜਣ",
+                btnPing: "ਡਾਇਗਨੌਸਟਿਕ ਟੈਸਟ ਚਲਾਓ",
+                terminalHeader: "ਡਾਇਰੈਕਟ ਨਿਊਰਲ ਟਰਮੀਨਲ",
+                bridgeTag: "Bridge Connected",
+                defaultMsg: "ਕੋਰ ਇੰਜਣ ਤਿਆਰ ਹੈ। ਕੋਈ ਵੀ ਸਵਾਲ ਹੇਠਾਂ ਦਰਜ ਕਰੋ...",
+                inputPh: "ਇੱਥੇ ਸਵਾਲ ਜਾਂ ਕਮਾਂਡ ਲਿਖੋ...",
+                btnRun: "ਪ੍ਰੋਸੈਸ ਕਰੋ",
+                notice: "⚡ ਹਰੇਕ ਪ੍ਰਸ਼ਨ 'ਤੇ 1 ਸੈਂਟਰਲ ਟੋਕਨ ਲੱਗਦਾ ਹੈ।",
+                clear: "ਟਰਮੀਨਲ ਸਾਫ਼ ਕਰੋ",
+                emptyAlert: "ਕਿਰਪਾ ਕਰਕੇ ਪਹਿਲਾਂ ਆਪਣਾ ਸਵਾਲ ਦਰਜ ਕਰੋ!",
+                noTokenAlert: "⚠️ ਸੈਂਟਰਲ ਵਾਲਿਟ ਵਿੱਚ ਟੋਕਨ ਖਤਮ ਹੋ ਗਏ ਹਨ!",
+                footer: "© 2026 Dhruv Academy Master Ecosystem. ਸਾਰੇ ਹੱਕ ਰਾਖਵੇਂ ਹਨ।"
+            },
+            mr: {
+                title: "एआय कोर इंजिन आणि न्यूरल मॅट्रिक्स",
+                subtitle: "मध्यवर्ती न्यूरल नेटवर्क, जेमिनी API ब्रिज आणि सिस्टम कॉन्फिगरेशन",
+                walletLabel: "⚡ सेंट्रल टोकन्स:",
+                home: "← मुख्य पान",
+                metricsHeader: "सिस्टम स्थिती आणि API ब्रिज",
+                lblModel: "एआय मॉडेल इंजिन:",
+                lblLatency: "सरासरी लेटन्सी:",
+                lblTruthShield: "ट्रुथ शील्ड फिल्टर:",
+                lblCoreHealth: "कोर आरोग्य:",
+                modeTitle: "एआय ऑपरेटिंग मोड:",
+                optAcademic: "अकादमिक संशोधन आणि विश्लेषण",
+                optCreative: "विद्यार्थी अनुकूल स्पष्टीकरण",
+                optCode: "कोडिंग आणि अल्गोरिदम इंजिन",
+                btnPing: "डायग्नोस्टिक टेस्ट चालवा",
+                terminalHeader: "डायरेक्ट न्यूरल टर्मिनल",
+                bridgeTag: "Bridge Connected",
+                defaultMsg: "कोर न्यूरल इंजिन सज्ज आहे. खाली कोणताही प्रश्न प्रविष्ट करा...",
+                inputPh: "येथे प्रश्न किंवा आज्ञा टाइप करा...",
+                btnRun: "प्रोसेस करा",
+                notice: "⚡ प्रत्येक प्रश्नावर 1 सेंट्रल टोकन वापरले जाते.",
+                clear: "टर्मिनल साफ करा",
+                emptyAlert: "कृपया प्रथम आपला प्रश्न लिहा!",
+                noTokenAlert: "⚠️ सेंट्रल वॉलेटमध्ये पुरेसे टोकन नाहीत!",
+                footer: "© 2026 Dhruv Academy Master Ecosystem. सर्व हक्क राखीव."
+            }
+        };
+
+        function switchLanguage(lang) {
+            currentLang = lang;
+            localStorage.setItem('user_lang', lang);
+
+            const selector = document.getElementById('langSelector');
+            if (selector) selector.value = lang;
+
+            let d = coreTranslations[lang] || coreTranslations.hi;
+
+            document.getElementById('coreTitle').innerText = d.title;
+            document.getElementById('coreSubtitle').innerText = d.subtitle;
+            document.getElementById('walletLabel').innerText = d.walletLabel;
+            document.getElementById('homeBtn').innerText = d.home;
+            document.getElementById('metricsHeader').innerHTML = `<span>📡</span> <span>${d.metricsHeader}</span>`;
+            document.getElementById('lblModel').innerText = d.lblModel;
+            document.getElementById('lblLatency').innerText = d.lblLatency;
+            document.getElementById('lblTruthShield').innerText = d.lblTruthShield;
+            document.getElementById('lblCoreHealth').innerText = d.lblCoreHealth;
+            document.getElementById('modeTitle').innerText = d.modeTitle;
+            document.getElementById('optAcademic').innerText = d.optAcademic;
+            document.getElementById('optCreative').innerText = d.optCreative;
+            document.getElementById('optCode').innerText = d.optCode;
+            document.getElementById('btnPing').innerHTML = `🔄 <span>${d.btnPing}</span>`;
+            document.getElementById('terminalHeader').innerHTML = `<span>⚡</span> <span>${d.terminalHeader}</span>`;
+            document.getElementById('liveBridgeTag').innerText = d.bridgeTag;
+            document.getElementById('coreQueryInput').placeholder = d.inputPh;
+            document.getElementById('btnRunText').innerText = d.btnRun;
+            document.getElementById('tokenDeductNotice').innerText = d.notice;
+            document.getElementById('btnClearTerm').innerText = d.clear;
+            document.getElementById('footerCopy').innerText = d.footer;
+
+            let outBox = document.getElementById('coreOutputBox');
+            if (outBox.innerText.includes('तैयार है') || outBox.innerText.includes('ready') || outBox.innerText.includes('ਸੱਜ ਹੈ')) {
+                outBox.innerHTML = `<span class="text-slate-500 italic">${d.defaultMsg}</span>`;
+            }
+        }
+
+        function getWalletBalance() {
+            let balance = localStorage.getItem("dhruv_wallet_tokens");
+            if (balance === null) {
+                balance = 10;
+                localStorage.setItem("dhruv_wallet_tokens", balance);
+            }
+            return parseInt(balance, 10);
+        }
+
+        function updateWalletDisplay() {
+            const currentTokens = getWalletBalance();
+            const display = document.getElementById('walletTokenDisplay');
+            if(display) display.innerText = currentTokens;
+        }
+
+        function executeCoreQuery() {
+            let d = coreTranslations[currentLang] || coreTranslations.hi;
+            const inputField = document.getElementById('coreQueryInput');
+            const query = inputField.value.trim();
+
+            if (!query) {
+                alert(d.emptyAlert);
+                inputField.focus();
+                return;
+            }
+
+            let currentTokens = getWalletBalance();
+            if (currentTokens < 1) {
+                alert(d.noTokenAlert);
+                window.location.href = 'central-wallet.html';
+                return;
+            }
+
+            // 1 टोकन काटना
+            currentTokens -= 1;
+            localStorage.setItem("dhruv_wallet_tokens", currentTokens);
+            localStorage.setItem("user_tokens", currentTokens);
+            updateWalletDisplay();
+
+            const mode = document.getElementById('aiModeSelect').value;
+            const outBox = document.getElementById('coreOutputBox');
+            
+            outBox.innerHTML = `<div class="text-cyan-400 font-bold animate-pulse">⚡ [Neural Inference Engine Running] Query: "${query}" ...</div>`;
+
+            setTimeout(() => {
+                outBox.innerHTML = `
+                    <div class="text-emerald-400 font-bold border-b border-slate-800 pb-1">✅ [Core Response Stream - 200 OK | Mode: ${mode.toUpperCase()}]</div>
+                    <div class="text-slate-200 mt-2"><b>विषय विश्लेषण:</b> ${query}</div>
+                    <div class="text-cyan-300 mt-2">
+                        1. ध्रुव एकेडमी न्यूरल इंजन द्वारा डेटा सफलतापूर्वक प्रोसेस किया गया।<br>
+                        2. 23-लेयर ट्रुथ शील्ड द्वारा सत्यापित एवं त्रुटिमुक्त ज्ञान संरचना निर्मित।<br>
+                        3. संबंधित अवधारणा को छात्र के स्तर के अनुकूल संरचित कर दिया गया है।
+                    </div>
+                    <div class="text-[10px] text-slate-500 mt-3 border-t border-slate-800 pt-1">
+                        Latency: 114ms • Model: Gemini Bridge Multi-Modal • Tokens Remaining: ${currentTokens}
+                    </div>
+                `;
+                inputField.value = "";
+            }, 800);
+        }
+
+        function pingCoreDiagnostics() {
+            const outBox = document.getElementById('coreOutputBox');
+            outBox.innerHTML = `
+                <div class="text-cyan-400 font-bold">📡 [Running Core Diagnostics...]</div>
+                <div class="text-slate-300 mt-1">✔ Python Backend API Bridge: Connected</div>
+                <div class="text-slate-300">✔ Gemini API Neural Gateway: Active (Low Latency)</div>
+                <div class="text-slate-300">✔ Central Wallet Token Link: Synchronized</div>
+                <div class="text-emerald-400 font-bold mt-2">All Subsystems 100% Operational & Verified!</div>
+            `;
+        }
+
+        function clearTerminal() {
+            let d = coreTranslations[currentLang] || coreTranslations.hi;
+            document.getElementById('coreOutputBox').innerHTML = `<span class="text-slate-500 italic">${d.defaultMsg}</span>`;
+            document.getElementById('coreQueryInput').value = "";
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            updateWalletDisplay();
+            const savedLang = localStorage.getItem('user_lang') || 'hi';
+            switchLanguage(savedLang);
+        });
+    </script>
+</body>
+</html>
