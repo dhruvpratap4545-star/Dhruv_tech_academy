@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="hi" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ultimate Global AI Digital Library & Token Hub | Dhruv Academy</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Yantramanav:wght@500;700&display=swap');
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Poppins', 'Yantramanav', sans-serif;
+            background-color: #020617;
+            color: #f8fafc;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px;
+        }
+        .main-wrapper {
+            width: 100%;
+            max-width: 1240px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        .library-card {
+            background: rgba(15, 23, 42, 0.95);
+            border: 1px solid rgba(56, 189, 248, 0.3);
+            backdrop-filter: blur(18px);
+            transition: all 0.25s ease;
+        }
+        .library-card:hover {
+            transform: translateY(-3px);
+            border-color: rgba(56, 189, 248, 0.7);
+            box-shadow: 0 15px 30px -6px rgba(14, 165, 233, 0.35);
+        }
+        .cat-btn {
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+        .cat-btn.active {
+            background: linear-gradient(135deg, #0284c7, #0369a1);
+            color: #ffffff;
+            box-shadow: 0 4px 12px rgba(14, 165, 233, 0.4);
+        }
+    </style>
+</head>
+<body>
+    <div class="main-wrapper">
+        <!-- टॉप नेविगेशन, 4-भाषा सेलेक्टर, एआई टोकन बैलेंस व वॉलेट -->
+        <div class="flex flex-wrap justify-between items-center pb-3 border-b border-gray-800 w-full gap-3">
+            <a href="/" id="homeBtn" class="px-4 py-2 bg-gradient-to-r from-cyan-700 to-blue-600 hover:from-cyan-600 text-white rounded-2xl text-xs font-bold transition flex items-center gap-1.5 shadow-lg">
+                ← <span>मुख्य मास्टर पोर्टल</span>
+            </a>
+
+            <div class="flex flex-wrap items-center gap-2">
+                <!-- 🌐 4-भाषाओं वाला यूनिवर्सल सेलेक्टर -->
+                <div class="flex items-center gap-1.5 bg-slate-900 border border-slate-700 px-3 py-1.5 rounded-full shadow">
+                    <span class="text-xs">🌐</span>
+                    <select id="langSelector" onchange="switchLanguage(this.value)" class="bg-transparent text-xs font-bold text-cyan-300 outline-none cursor-pointer">
+                        <option value="hi" class="bg-slate-900 text-slate-200">🇮🇳 हिंदी (Hindi)</option>
+                        <option value="en" class="bg-slate-900 text-slate-200">🇬🇧 English</option>
+                        <option value="pa" class="bg-slate-900 text-slate-200">🇮🇳 ਪੰਜਾਬੀ (Punjabi)</option>
+                        <option value="mr" class="bg-slate-900 text-slate-200">🇮🇳 मराठी (Marathi)</option>
+                    </select>
+                </div>
+
+                <!-- AI Token Balance -->
+                <div class="px-3.5 py-1.5 bg-purple-950 border border-purple-500/50 rounded-full text-xs font-bold flex items-center gap-2 shadow">
+                    <span id="lblAiTokens" class="text-purple-300">⚡ AI टोकन्स:</span>
+                    <span id="aiTokenCount" class="text-purple-200 font-extrabold">45</span>
+                    <button onclick="openTokenRefillModal()" id="btnRecharge" class="text-[10px] bg-purple-600 hover:bg-purple-500 text-white px-2 py-0.5 rounded-md">रिचार्ज+</button>
+                </div>
+
+                <!-- डिजिटल वॉलेट बैलेंस -->
+                <div class="px-3.5 py-1.5 bg-slate-900 border border-slate-700 rounded-full text-xs font-bold flex items-center gap-2 shadow">
+                    <span id="lblWallet" class="text-gray-400">💰 वॉलेट:</span>
+                    <span id="walletBalance" class="text-emerald-400 font-extrabold">₹150.00</span>
+                    <button onclick="topUpWallet()" class="text-[10px] bg-cyan-600 hover:bg-cyan-500 text-white px-2 py-0.5 rounded-md">+</button>
+                </div>
+
+                <button onclick="openTopperDonateModal()" id="btnDonateNotes" class="px-4 py-1.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 text-white rounded-full text-xs font-bold shadow-lg transition">
+                    🎁 नोट्स डोनेट करें
+                </button>
+            </div>
+        </div>
+
+        <!-- हीरो बैनर व ग्लोबल पास ऑफर -->
+        <div class="p-6 sm:p-10 rounded-3xl bg-gradient-to-r from-cyan-950 via-slate-900 to-indigo-950 border border-cyan-500/40 shadow-2xl text-center space-y-4">
+            <h1 id="heroTitle" class="text-2xl sm:text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-sky-200 to-purple-300">🌐 Global AI Digital Library & Socratic Tutor Hub</h1>
+            <p id="heroSubtitle" class="text-xs sm:text-sm text-gray-300 max-w-3xl mx-auto">विश्व स्तरीय एआई टोकन इकॉनमी, सोक्रेटिक डाउट सॉल्वर और यूपीएससी/पीसीएस मेन्स आंसर इवैल्यूएशन का सबसे उन्नत मंच।</p>
+            
+            <div class="max-w-2xl mx-auto pt-2 flex gap-2">
+                <input type="text" id="librarySearchInput" placeholder="विषय, परीक्षा या एआई प्रॉम्प्ट खोजें..." class="w-full p-3.5 bg-slate-900 border border-slate-700 rounded-xl text-xs text-white focus:outline-none focus:border-cyan-400 shadow-inner">
+                <button onclick="executeSearch()" id="btnSearch" class="px-6 py-3.5 bg-cyan-600 hover:bg-cyan-500 text-white rounded-xl text-xs font-bold transition shadow-lg whitespace-nowrap">खोजें 🔍</button>
+            </div>
+        </div>
+
+        <!-- कैटेगरी फ़िल्टर टैब्स -->
+        <div class="flex flex-wrap gap-2 justify-center pb-2">
+            <button onclick="filterCategory('all')" id="catAll" class="cat-btn active px-4 py-2 rounded-xl text-xs font-bold bg-slate-900 border border-slate-700 text-gray-300">सभी सामग्रियां (All)</button>
+            <button onclick="filterCategory('donated')" id="catDonated" class="cat-btn px-4 py-2 rounded-xl text-xs font-bold bg-slate-900 border border-slate-700 text-gray-300">🎁 डोनेट किए गए नोट्स (Free)</button>
+            <button onclick="filterCategory('ai_tools')" id="catAiTools" class="cat-btn px-4 py-2 rounded-xl text-xs font-bold bg-slate-900 border border-slate-700 text-gray-300">🤖 AI सोक्रेटिक ट्यूटर & क्विज़</button>
+            <button onclick="filterCategory('paid')" id="catPaid" class="cat-btn px-4 py-2 rounded-xl text-xs font-bold bg-slate-900 border border-slate-700 text-gray-300">💎 प्रीमियम पैकेजेस (Paid)</button>
+        </div>
+
+        <!-- मुख्य ग्रिड -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6" id="libraryMainGrid">
+            
+            <!-- कार्ड 1: डोनेटेड नोट्स -->
+            <div class="library-card p-5 rounded-3xl space-y-3" data-category="donated">
+                <div class="flex justify-between items-center">
+                    <span id="badgeCard1" class="px-2.5 py-1 bg-emerald-950 text-emerald-300 rounded-lg text-[10px] font-bold">100% Free (Donated)</span>
+                    <span class="text-xs text-gray-400">UPSC / IAS Tier</span>
+                </div>
+                <h3 id="titleCard1" class="font-bold text-sm text-cyan-300">UPSC IAS Master Handwritten Notes (Donated)</h3>
+                <p id="descCard1" class="text-xs text-gray-300">सफल अधिकारियों द्वारा देश के छात्रों के लिए निःशुल्क दान किए गए हस्तलिखित नोट्स।</p>
+                <div class="flex gap-2 pt-2">
+                    <button onclick="openSecureReader('UPSC IAS Donated Notes', false, 'Free')" id="btnRead1" class="w-1/2 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold transition shadow">पढ़ें 📖</button>
+                    <button onclick="consumeTokenAndRun('AI Quiz', 2)" id="btnQuiz1" class="w-1/2 py-2 bg-purple-600 hover:bg-purple-500 text-white rounded-xl text-xs font-bold transition shadow">⚡ AI क्विज़ (2 टोकन) 🎯</button>
+                </div>
+            </div>
+
+            <!-- कार्ड 2: AI Socratic Tutor -->
+            <div class="library-card p-5 rounded-3xl space-y-3" data-category="ai_tools">
+                <div class="flex justify-between items-center">
+                    <span id="badgeCard2" class="px-2.5 py-1 bg-purple-950 text-purple-300 rounded-lg text-[10px] font-bold">Global AI Feature</span>
+                    <span class="text-xs text-gray-400">24/7 Virtual Mentor</span>
+                </div>
+                <h3 id="titleCard2" class="font-bold text-sm text-cyan-300">AI Socratic Doubt Solver & Concept Weaver</h3>
+                <p id="descCard2" class="text-xs text-gray-300">सीधे उत्तर देने के बजाय काउंटर-सवाल पूछकर आपकी सोचने की क्षमता और कॉन्सेप्ट को मजबूत करता है।</p>
+                <button onclick="openSocraticTutorModal()" id="btnSocraticAsk" class="w-full py-2.5 bg-purple-600 hover:bg-purple-500 text-white rounded-xl text-xs font-bold transition shadow">एआई ट्यूटर से पूछें 🤖 (1 टोकन)</button>
+            </div>
+
+            <!-- कार्ड 3: प्रीमियम पास -->
+            <div class="library-card p-5 rounded-3xl space-y-3" data-category="paid">
+                <div class="flex justify-between items-center">
+                    <span id="badgeCard3" class="px-2.5 py-1 bg-amber-950 text-amber-300 rounded-lg text-[10px] font-bold">Pro Elite Pass (₹199)</span>
+                    <span class="text-xs text-gray-400">Unlimited AI</span>
+                </div>
+                <h3 id="titleCard3" class="font-bold text-sm text-cyan-300">UPSC & Banking Unlimited AI Token Pass</h3>
+                <p id="descCard3" class="text-xs text-gray-300">महीने भर के लिए अनलिमिटेड एआई टोकन्स, मेन्स आंसर इवैल्यूएशन और मॉक टेस्ट सीरीज।</p>
+                <button onclick="purchaseAndUnlock('UPSC Elite Pass', 199)" id="btnBuyPass" class="w-full py-2.5 bg-amber-600 hover:bg-amber-500 text-white rounded-xl text-xs font-bold transition shadow">₹199 में पास लें 🔓</button>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- AI Socratic Tutor Modal -->
+    <div id="socraticModal" class="hidden fixed inset-0 bg-black/85 flex items-center justify-center p-4 z-50 backdrop-blur-md">
+        <div class="bg-slate-900 border-2 border-purple-500 rounded-3xl p-6 max-w-lg w-full space-y-4 shadow-2xl">
+            <div class="flex justify-between items-center border-b border-slate-700 pb-3">
+                <h2 id="modalSocraticTitle" class="text-sm font-bold text-purple-400">🤖 AI Socratic Virtual Tutor</h2>
+                <button onclick="closeSocraticModal()" class="text-gray-400 hover:text-white font-bold text-lg cursor-pointer">✕</button>
+            </div>
+            <div class="space-y-3 text-xs text-left">
+                <p id="lblSocraticPrompt" class="text-gray-300">अपना कठिन सवाल या टॉपिक दर्ज करें (जैसे: जूलॉजी फर्टिलाइजेशन या अनुच्छेद 21):</p>
+                <input type="text" id="socraticQuery" placeholder="यहाँ अपना प्रश्न लिखें..." class="w-full p-3 bg-slate-950 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-purple-500">
+                <div id="socraticResponse" class="hidden p-3 bg-slate-950 rounded-xl border border-purple-500/50 text-cyan-300">
+                    💡 <b>AI ट्यूटर:</b> "अच्छा, आपने इस अवधारणा के बारे में पूछा। क्या आप इसके प्राथमिक कारण की व्याख्या कर सकते हैं?"
+                </div>
+                <button onclick="askSocraticAI()" id="btnSocraticDiscuss" class="w-full py-3 bg-purple-600 hover:bg-purple-500 text-white rounded-xl font-bold transition shadow-lg">ट्यूटर से चर्चा करें (कटेगा 1 टोकन) 🚀</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- AI Token Refill Modal -->
+    <div id="tokenModal" class="hidden fixed inset-0 bg-black/85 flex items-center justify-center p-4 z-50 backdrop-blur-md">
+        <div class="bg-slate-900 border-2 border-purple-500 rounded-3xl p-6 max-w-md w-full space-y-4 shadow-2xl text-center">
+            <h2 id="modalTokenTitle" class="text-sm font-bold text-purple-400">⚡ AI Token Refill Center</h2>
+            <p id="lblTokenRefillDesc" class="text-xs text-gray-300">एआई सर्वर और टोकन की लागत को प्रबंधित करने के लिए अपना क्रेडिट पैक चुनें:</p>
+            <div class="space-y-2 text-xs">
+                <div class="p-3 bg-slate-950 border border-slate-800 rounded-xl flex justify-between items-center">
+                    <span>📦 500 AI Tokens Pack</span>
+                    <button onclick="buyTokens(49, 500)" class="px-3 py-1 bg-purple-600 hover:bg-purple-500 text-white rounded-lg font-bold">₹49 में लें</button>
+                </div>
+                <div class="p-3 bg-slate-950 border border-slate-800 rounded-xl flex justify-between items-center">
+                    <span>🚀 2000 AI Tokens Pack</span>
+                    <button onclick="buyTokens(149, 2000)" class="px-3 py-1 bg-purple-600 hover:bg-purple-500 text-white rounded-lg font-bold">₹149 में लें</button>
+                </div>
+            </div>
+            <button onclick="closeTokenModal()" id="btnCloseTokenModal" class="px-4 py-2 bg-slate-800 text-white rounded-xl text-xs cursor-pointer">बंद करें</button>
+        </div>
+    </div>
+
+    <!-- नोट्स डोनेशन मोडल (Free) -->
+    <div id="topperDonateModal" class="hidden fixed inset-0 bg-black/85 flex items-center justify-center p-4 z-50 backdrop-blur-md">
+        <div class="bg-slate-900 border-2 border-emerald-500 rounded-3xl p-6 max-w-lg w-full space-y-4 shadow-2xl">
+            <div class="flex justify-between items-center border-b border-slate-700 pb-3">
+                <h2 id="modalDonateTitle" class="text-sm font-bold text-emerald-400">🎁 नोट्स डोनेट करें (Free Contribution)</h2>
+                <button onclick="closeTopperModal()" class="text-gray-400 hover:text-white font-bold text-lg cursor-pointer">✕</button>
+            </div>
+            <div class="space-y-3 text-xs">
+                <input type="text" id="donorName" placeholder="आपका नाम / रैंक" class="w-full p-2.5 bg-slate-950 border border-slate-700 rounded-xl text-white">
+                <input type="text" id="examName" placeholder="विषय या परीक्षा का नाम" class="w-full p-2.5 bg-slate-950 border border-slate-700 rounded-xl text-white">
+                <input type="file" class="w-full p-2 bg-slate-950 border border-slate-700 rounded-xl text-gray-400">
+                <button onclick="submitDonatedNotes()" id="btnSubmitDonate" class="w-full py-3 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-bold transition shadow-lg">सफलतापूर्वक डोनेट करें 🚀</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- सुरक्षित रीडर मोडल -->
+    <div id="secureReaderModal" class="hidden fixed inset-0 bg-black/85 flex items-center justify-center p-4 z-50 backdrop-blur-md">
+        <div class="bg-slate-900 border-2 border-cyan-500 rounded-3xl p-6 max-w-xl w-full space-y-4 shadow-2xl">
+            <div class="flex justify-between items-center border-b border-slate-700 pb-3">
+                <h2 id="readerTitle" class="text-sm font-bold text-cyan-300">Secure DRM Reader</h2>
+                <button onclick="closeSecureReader()" class="text-gray-400 hover:text-white font-bold text-lg cursor-pointer">✕</button>
+            </div>
+            <div class="p-4 bg-slate-950 rounded-2xl border border-slate-800 text-xs text-gray-300 space-y-3">
+                <p id="lblDrmNotice" class="text-emerald-300 font-semibold">🔒 DRM एंटी-पाइरेसी और डायनामिक वॉटरमार्क सक्रिय।</p>
+                <div id="readerContentBox" class="p-6 bg-slate-900 rounded-xl text-center font-semibold text-gray-200">
+                    📄 [दस्तावेज़ सुरक्षित रूप से लोड हो गया है।]
+                </div>
+            </div>
+            <button onclick="closeSecureReader()" id="btnCloseReader" class="w-full py-2.5 bg-slate-700 hover:bg-slate-600 text-white rounded-xl text-xs font-bold transition cursor-pointer">बंद करें</button>
+        </div>
+    </div>
+
+    <footer class="w-full text-center py-4 text-xs text-gray-500 border-t border-gray-900 mt-6">
+        <p id="footerCopy">© 2026 Dhruv Academy Master Ecosystem. सर्वाधिकार सुरक्षित।</p>
+    </footer>
+
+    <!-- मास्टर जावास्क्रिप्ट, सेंट्रल वॉलेट एवं 4-भाषा ट्रांसलेशन सिंक -->
+    <script>
+        let currentLang = localStorage.getItem('user_lang') || 'hi';
+        let currentWallet = 150.00;
+        let aiTokens = 45;
+
+        const libraryTranslations = {
+            hi: {
+                home: "← मुख्य मास्टर पोर्टल",
+                lblAiTokens: "⚡ AI टोकन्स:",
+                btnRecharge: "रिचार्ज+",
+                lblWallet: "💰 वॉलेट:",
+                btnDonateNotes: "🎁 नोट्स डोनेट करें",
+                heroTitle: "🌐 Global AI Digital Library & Socratic Tutor Hub",
+                heroSubtitle: "विश्व स्तरीय एआई टोकन इकॉनमी, सोक्रेटिक डाउट सॉल्वर और यूपीएससी/पीसीएस मेन्स आंसर इवैल्यूएशन का सबसे उन्नत मंच।",
+                searchPh: "विषय, परीक्षा या एआई प्रॉम्प्ट खोजें...",
+                btnSearch: "खोजें 🔍",
+                catAll: "सभी सामग्रियां (All)",
+                catDonated: "🎁 डोनेट किए गए नोट्स (Free)",
+                catAiTools: "🤖 AI सोक्रेटिक ट्यूटर & क्विज़",
+                catPaid: "💎 प्रीमियम पैकेजेस (Paid)",
+                badgeCard1: "100% Free (Donated)",
+                titleCard1: "UPSC IAS Master Handwritten Notes (Donated)",
+                descCard1: "सफल अधिकारियों द्वारा देश के छात्रों के लिए निःशुल्क दान किए गए हस्तलिखित नोट्स।",
+                btnRead1: "पढ़ें 📖",
+                btnQuiz1: "⚡ AI क्विज़ (2 टोकन) 🎯",
+                badgeCard2: "Global AI Feature",
+                titleCard2: "AI Socratic Doubt Solver & Concept Weaver",
+                descCard2: "सीधे उत्तर देने के बजाय काउंटर-सवाल पूछकर आपकी सोचने की क्षमता और कॉन्सेप्ट को मजबूत करता है।",
+                btnSocraticAsk: "एआई ट्यूटर से पूछें 🤖 (1 टोकन)",
+                badgeCard3: "Pro Elite Pass (₹199)",
+                titleCard3: "UPSC & Banking Unlimited AI Token Pass",
+                descCard3: "महीने भर के लिए अनलिमिटेड एआई टोकन्स, मेन्स आंसर इवैल्यूएशन और मॉक टेस्ट सीरीज।",
+                btnBuyPass: "₹199 में पास लें 🔓",
+                modalSocraticTitle: "🤖 AI Socratic Virtual Tutor",
+                lblSocraticPrompt: "अपना कठिन सवाल या टॉपिक दर्ज करें (जैसे: जूलॉजी फर्टिलाइजेशन या अनुच्छेद 21):",
+                socraticPh: "यहाँ अपना प्रश्न लिखें...",
+                btnSocraticDiscuss: "ट्यूटर से चर्चा करें (कटेगा 1 टोकन) 🚀",
+                modalTokenTitle: "⚡ AI Token Refill Center",
+                lblTokenRefillDesc: "एआई सर्वर और टोकन की लागत को प्रबंधित करने के लिए अपना क्रेडिट पैक चुनें:",
+                btnClose: "बंद करें",
+                modalDonateTitle: "🎁 नोट्स डोनेट करें (Free Contribution)",
+                donorNamePh: "आपका नाम / रैंक",
+                examNamePh: "विषय या परीक्षा का नाम",
+                btnSubmitDonate: "सफलतापूर्वक डोनेट करें 🚀",
+                lblDrmNotice: "🔒 DRM एंटी-पाइरेसी और डायनामिक वॉटरमार्क सक्रिय।",
+                readerContent: "📄 [दस्तावेज़ सुरक्षित रूप से लोड हो गया है।]",
+                footerCopy: "© 2026 Dhruv Academy Master Ecosystem. सर्वाधिकार सुरक्षित।",
+                alertTopupPrompt: "वॉलेट में जोड़ने के लिए राशि दर्ज करें (₹):",
+                alertTopupSuccess: "🎉 वॉलेट सफलतापूर्वक टॉप-अप हो गया!",
+                alertNoWalletBal: "❌ वॉलेट में पर्याप्त बैलेंस नहीं है!",
+                alertTokenBought: "🎉 बधाई हो! टोकन्स आपके खाते में जोड़ दिए गए हैं।",
+                alertNoTokens: "❌ आपके AI टोकन्स समाप्त हो गए हैं! कृपया 'रिचार्ज+' से टोकन पैक खरीदें।",
+                alertTokenUsed: "⚡ फीचर चलाया गया। शेष टोकन: ",
+                alertEmptySearch: "कृपया खोज के लिए कुछ लिखें!",
+                alertSearchRunning: "🔍 AI RAG इंजन द्वारा परिणाम खोजे जा रहे हैं..."
+            },
+            en: {
+                home: "← Main Master Portal",
+                lblAiTokens: "⚡ AI Tokens:",
+                btnRecharge: "Refill+",
+                lblWallet: "💰 Wallet:",
+                btnDonateNotes: "🎁 Donate Notes",
+                heroTitle: "🌐 Global AI Digital Library & Socratic Tutor Hub",
+                heroSubtitle: "World-class AI token economy, Socratic doubt solver, and UPSC/PCS Mains answer evaluation platform.",
+                searchPh: "Search subjects, exams, or AI prompts...",
+                btnSearch: "Search 🔍",
+                catAll: "All Materials",
+                catDonated: "🎁 Donated Notes (Free)",
+                catAiTools: "🤖 AI Socratic Tutor & Quiz",
+                catPaid: "💎 Premium Packages (Paid)",
+                badgeCard1: "100% Free (Donated)",
+                titleCard1: "UPSC IAS Master Handwritten Notes (Donated)",
+                descCard1: "Authentic handwritten notes donated by successful officers for all students free of cost.",
+                btnRead1: "Read 📖",
+                btnQuiz1: "⚡ AI Quiz (2 Tokens) 🎯",
+                badgeCard2: "Global AI Feature",
+                titleCard2: "AI Socratic Doubt Solver & Concept Weaver",
+                descCard2: "Strengthens conceptual clarity by prompting guided questions instead of just spoon-feeding answers.",
+                btnSocraticAsk: "Ask AI Tutor 🤖 (1 Token)",
+                badgeCard3: "Pro Elite Pass (₹199)",
+                titleCard3: "UPSC & Banking Unlimited AI Token Pass",
+                descCard3: "Unlimited AI tokens, Mains evaluation engine, and timed mock test series for 30 days.",
+                btnBuyPass: "Unlock Pass for ₹199 🔓",
+                modalSocraticTitle: "🤖 AI Socratic Virtual Tutor",
+                lblSocraticPrompt: "Enter your complex topic or doubt (e.g. Zoology Fertilization or Article 21):",
+                socraticPh: "Type your query here...",
+                btnSocraticDiscuss: "Discuss with Tutor (Consumes 1 Token) 🚀",
+                modalTokenTitle: "⚡ AI Token Refill Center",
+                lblTokenRefillDesc: "Choose your credit package to manage AI compute and token quotas:",
+                btnClose: "Close",
+                modalDonateTitle: "🎁 Donate Notes (Free Contribution)",
+                donorNamePh: "Your Name / Rank",
+                examNamePh: "Subject or Exam Name",
+                btnSubmitDonate: "Submit Donation 🚀",
+                lblDrmNotice: "🔒 DRM Anti-Piracy and Dynamic Watermarking Active.",
+                readerContent: "📄 [Document securely rendered inside encrypted viewport.]",
+                footerCopy: "© 2026 Dhruv Academy Master Ecosystem. All Rights Reserved.",
+                alertTopupPrompt: "Enter amount to add to wallet (₹):",
+                alertTopupSuccess: "🎉 Wallet topped up successfully!",
+                alertNoWalletBal: "❌ Insufficient wallet balance!",
+                alertTokenBought: "🎉 Congratulations! Tokens have been credited to your balance.",
+                alertNoTokens: "❌ You have run out of AI tokens! Please refill from the Token Center.",
+                alertTokenUsed: "⚡ Feature activated. Remaining tokens: ",
+                alertEmptySearch: "Please enter a search query!",
+                alertSearchRunning: "🔍 AI RAG engine is retrieving knowledge chunks for: "
+            },
+            pa: {
+                home: "← ਮੁੱਖ ਪੋਰਟਲ",
+                lblAiTokens: "⚡ AI ਟੋਕਨ:",
+                btnRecharge: "ਰੀਚਾਰਜ+",
+                lblWallet: "💰 ਵਾਲਿਟ:",
+                btnDonateNotes: "🎁 ਨੋਟਸ ਦਾਨ ਕਰੋ",
+                heroTitle: "🌐 Global AI Digital Library & Socratic Tutor Hub",
+                heroSubtitle: "ਵਿਸ਼ਵ ਪੱਧਰੀ AI ਟੋਕਨ ਪ੍ਰਣਾਲੀ, ਸੁਕਰਾਤੀ ਡਾਊਟ ਸੋਲਵਰ ਅਤੇ ਮੁਕਾਬਲਾ ਪ੍ਰੀਖਿਆਵਾਂ ਦੀ ਤਿਆਰੀ ਪਲੇਟਫਾਰਮ।",
+                searchPh: "ਵਿਸ਼ਾ ਜਾਂ ਪ੍ਰੀਖਿਆ ਖੋਜੋ...",
+                btnSearch: "ਖੋਜੋ 🔍",
+                catAll: "ਸਾਰੀਆਂ ਸਮੱਗਰੀਆਂ (All)",
+                catDonated: "🎁 ਦਾਨ ਕੀਤੇ ਨੋਟਸ (Free)",
+                catAiTools: "🤖 AI ਸੁਕਰਾਤੀ ਟਿਊਟਰ ਅਤੇ ਕੁਇਜ਼",
+                catPaid: "💎 ਪ੍ਰੀਮੀਅਮ ਪੈਕੇਜ (Paid)",
+                badgeCard1: "100% ਮੁਫ਼ਤ (ਦਾਨ ਕੀਤਾ ਗਿਆ)",
+                titleCard1: "UPSC IAS ਪ੍ਰਮਾਣਿਤ ਹੱਥ ਲਿਖਤ ਨੋਟਸ",
+                descCard1: "ਸਫਲ ਅਧਿਕਾਰੀਆਂ ਦੁਆਰਾ ਵਿਦਿਆਰਥੀਆਂ ਲਈ ਦਾਨ ਕੀਤੇ ਗਏ ਨੋਟਸ।",
+                btnRead1: "ਪੜ੍ਹੋ 📖",
+                btnQuiz1: "⚡ AI ਕੁਇਜ਼ (2 ਟੋਕਨ)",
+                badgeCard2: "ਗਲੋਬਲ AI ਫੀਚਰ",
+                titleCard2: "AI ਸੁਕਰਾਤੀ ਡਾਊਟ ਸੋਲਵਰ",
+                descCard2: "ਸਿੱਧੇ ਉੱਤਰ ਦੀ ਬਜਾਏ ਸਵਾਲ ਪੁੱਛ ਕੇ ਤੁਹਾਡੀ ਸਮਝ ਨੂੰ ਮਜ਼ਬੂਤ ਕਰਦਾ ਹੈ।",
+                btnSocraticAsk: "AI ਟਿਊਟਰ ਤੋਂ ਪੁੱਛੋ (1 ਟੋਕਨ)",
+                badgeCard3: "ਪ੍ਰੋ ਏਲੀਟ ਪਾਸ (₹199)",
+                titleCard3: "UPSC ਅਨਲਿਮਿਟੇਡ AI ਟੋਕਨ ਪਾਸ",
+                descCard3: "ਮਹੀਨੇ ਲਈ ਅਨਲਿਮਿਟੇਡ AI ਟੋਕਨ ਅਤੇ ਮੌਕ ਟੈਸਟ ਸੀਰੀਜ਼।",
+                btnBuyPass: "₹199 ਵਿੱਚ ਪਾਸ ਲਓ 🔓",
+                modalSocraticTitle: "🤖 AI ਸੁਕਰਾਤੀ ਟਿਊਟਰ",
+                lblSocraticPrompt: "ਆਪਣਾ ਸਵਾਲ ਜਾਂ ਵਿਸ਼ਾ ਦਰਜ ਕਰੋ:",
+                socraticPh: "ਇੱਥੇ ਆਪਣਾ ਸਵਾਲ ਲਿਖੋ...",
+                btnSocraticDiscuss: "ਟਿਊਟਰ ਨਾਲ ਚਰਚਾ ਕਰੋ (1 ਟੋਕਨ) 🚀",
+                modalTokenTitle: "⚡ AI ਟੋਕਨ ਰੀਫਿਲ ਸੈਂਟਰ",
+                lblTokenRefillDesc: "ਟੋਕਨ ਪੈਕ ਚੁਣੋ:",
+                btnClose: "ਬੰਦ ਕਰੋ",
+                modalDonateTitle: "🎁 ਨੋਟਸ ਦਾਨ ਕਰੋ",
+                donorNamePh: "ਤੁਹਾਡਾ ਨਾਮ / ਰੈਂਕ",
+                examNamePh: "ਵਿਸ਼ੇ ਦਾ ਨਾਮ",
+                btnSubmitDonate: "ਦਾਨ ਸਬਮਿਟ ਕਰੋ 🚀",
+                lblDrmNotice: "🔒 DRM ਸੁਰੱਖਿਆ ਸਰਗਰਮ ਹੈ।",
+                readerContent: "📄 [ਦਸਤਾਵੇਜ਼ ਸੁਰੱਖਿਅਤ ਢੰਗ ਨਾਲ ਲੋਡ ਹੋ ਗਿਆ ਹੈ।]",
+                footerCopy: "© 2026 Dhruv Academy Master Ecosystem. ਸਾਰੇ ਹੱਕ ਰਾਖਵੇਂ ਹਨ।",
+                alertTopupPrompt: "ਵਾਲਿਟ ਵਿੱਚ ਜੋੜਨ ਲਈ ਰਕਮ ਦਰਜ ਕਰੋ (₹):",
+                alertTopupSuccess: "🎉 ਵਾਲਿਟ ਸਫਲਤਾਪੂਰਵਕ ਰੀਚਾਰਜ ਹੋ ਗਿਆ!",
+                alertNoWalletBal: "❌ ਵਾਲਿਟ ਵਿੱਚ ਲੋੜੀਂਦਾ ਬੈਲੇਂਸ ਨਹੀਂ ਹੈ!",
+                alertTokenBought: "🎉 ਟੋਕਨ ਖਾਤੇ ਵਿੱਚ ਜੋੜ ਦਿੱਤੇ ਗਏ ਹਨ।",
+                alertNoTokens: "❌ AI ਟੋਕਨ ਖਤਮ ਹੋ ਗਏ ਹਨ!",
+                alertTokenUsed: "⚡ ਟੋਕਨ ਕੱਟੇ ਗਏ। ਬਾਕੀ ਟੋਕਨ: ",
+                alertEmptySearch: "ਕਿਰਪਾ ਕਰਕੇ ਖੋਜ ਲਈ ਕੁਝ ਲਿਖੋ!",
+                alertSearchRunning: "🔍 ਖੋਜ ਜਾਰੀ ਹੈ..."
+            },
+            mr: {
+                home: "← मुख्य मास्टर पोर्टल",
+                lblAiTokens: "⚡ AI टोकन्स:",
+                btnRecharge: "रिचार्ज+",
+                lblWallet: "💰 वॉलेट:",
+                btnDonateNotes: "🎁 नोट्स दान करा",
+                heroTitle: "🌐 Global AI Digital Library & Socratic Tutor Hub",
+                heroSubtitle: "जागतिक दर्जाची AI टोकन अर्थव्यवस्था, सॉक्रेटिक शंका निवारण आणि स्पर्धा परीक्षा मंच.",
+                searchPh: "विषय, परीक्षा किंवा AI प्रॉम्प्ट शोधा...",
+                btnSearch: "शोधा 🔍",
+                catAll: "सर्व साहित्य (All)",
+                catDonated: "🎁 दान केलेल्या नोट्स (Free)",
+                catAiTools: "🤖 AI सॉक्रेटिक शिक्षक आणि क्विझ",
+                catPaid: "💎 प्रीमियम पॅकेजेस (Paid)",
+                badgeCard1: "100% मोफत (दान केलेले)",
+                titleCard1: "UPSC IAS प्रमाणित हस्तलिखित नोट्स",
+                descCard1: "यशस्वी अधिकाऱ्यांनी विद्यार्थ्यांसाठी विनामूल्य दान केलेल्या नोट्स.",
+                btnRead1: "वाचा 📖",
+                btnQuiz1: "⚡ AI क्विझ (2 टोकन्स)",
+                badgeCard2: "ग्लोबल AI वैशिष्ट्य",
+                titleCard2: "AI सॉक्रेटिक शंका निवारक",
+                descCard2: "थेट उत्तरांऐवजी प्रश्न विचारून तुमची विचार करण्याची क्षमता वाढवते.",
+                btnSocraticAsk: "AI शिक्षकांना विचारा (1 टोकन)",
+                badgeCard3: "प्रो एलिट पास (₹199)",
+                titleCard3: "UPSC अमर्यादित AI टोकन पास",
+                descCard3: "महिन्याभरासाठी अमर्यादित AI टोकन्स आणि सराव चाचणी मालिका.",
+                btnBuyPass: "₹199 मध्ये पास मिळवा 🔓",
+                modalSocraticTitle: "🤖 AI सॉक्रेटिक शिक्षक",
+                lblSocraticPrompt: "आपला प्रश्न किंवा विषय लिहा:",
+                socraticPh: "येथे आपला प्रश्न लिहा...",
+                btnSocraticDiscuss: "चर्चा करा (1 टोकन लागेल) 🚀",
+                modalTokenTitle: "⚡ AI टोकन रिफिल केंद्र",
+                lblTokenRefillDesc: "टोकन पॅक निवडा:",
+                btnClose: "बंद करा",
+                modalDonateTitle: "🎁 नोट्स दान करा",
+                donorNamePh: "आपले नाव / रँक",
+                examNamePh: "विषय किंवा परीक्षेचे नाव",
+                btnSubmitDonate: "यशस्वीरित्या दान करा 🚀",
+                lblDrmNotice: "🔒 DRM सुरक्षा सक्रिय आहे.",
+                readerContent: "📄 [दस्तऐवज सुरक्षितपणे लोड झाला आहे.]",
+                footerCopy: "© 2026 Dhruv Academy Master Ecosystem. सर्व हक्क राखीव.",
+                alertTopupPrompt: "वॉलेटमध्ये जोडण्यासाठी रक्कम टाका (₹):",
+                alertTopupSuccess: "🎉 वॉलेट यशस्वीरित्या टॉप-अप झाले!",
+                alertNoWalletBal: "❌ वॉलेटमध्ये पुरेसे पैसे नाहीत!",
+                alertTokenBought: "🎉 टोकन्स खात्यात जमा झाले आहेत.",
+                alertNoTokens: "❌ AI टोकन्स संपले आहेत!",
+                alertTokenUsed: "⚡ टोकन वजा झाले. उर्वरित टोकन्स: ",
+                alertEmptySearch: "कृपया शोधासाठी काहीतरी लिहा!",
+                alertSearchRunning: "🔍 शोध सुरू आहे..."
+            }
+        };
+
+        function switchLanguage(lang) {
+            currentLang = lang;
+            localStorage.setItem('user_lang', lang);
+
+            const selector = document.getElementById('langSelector');
+            if (selector) selector.value = lang;
+
+            const d = libraryTranslations[lang] || libraryTranslations.hi;
+
+            document.getElementById('homeBtn').innerHTML = `← <span>${d.home}</span>`;
+            document.getElementById('lblAiTokens').innerText = d.lblAiTokens;
+            document.getElementById('btnRecharge').innerText = d.btnRecharge;
+            document.getElementById('lblWallet').innerText = d.lblWallet;
+            document.getElementById('btnDonateNotes').innerText = d.btnDonateNotes;
+            document.getElementById('heroTitle').innerText = d.heroTitle;
+            document.getElementById('heroSubtitle').innerText = d.heroSubtitle;
+            document.getElementById('librarySearchInput').placeholder = d.searchPh;
+            document.getElementById('btnSearch').innerText = d.btnSearch;
+            document.getElementById('catAll').innerText = d.catAll;
+            document.getElementById('catDonated').innerText = d.catDonated;
+            document.getElementById('catAiTools').innerText = d.catAiTools;
+            document.getElementById('catPaid').innerText = d.catPaid;
+            document.getElementById('badgeCard1').innerText = d.badgeCard1;
+            document.getElementById('titleCard1').innerText = d.titleCard1;
+            document.getElementById('descCard1').innerText = d.descCard1;
+            document.getElementById('btnRead1').innerText = d.btnRead1;
+            document.getElementById('btnQuiz1').innerText = d.btnQuiz1;
+            document.getElementById('badgeCard2').innerText = d.badgeCard2;
+            document.getElementById('titleCard2').innerText = d.titleCard2;
+            document.getElementById('descCard2').innerText = d.descCard2;
+            document.getElementById('btnSocraticAsk').innerText = d.btnSocraticAsk;
+            document.getElementById('badgeCard3').innerText = d.badgeCard3;
+            document.getElementById('titleCard3').innerText = d.titleCard3;
+            document.getElementById('descCard3').innerText = d.descCard3;
+            document.getElementById('btnBuyPass').innerText = d.btnBuyPass;
+            document.getElementById('modalSocraticTitle').innerText = d.modalSocraticTitle;
+            document.getElementById('lblSocraticPrompt').innerText = d.lblSocraticPrompt;
+            document.getElementById('socraticQuery').placeholder = d.socraticPh;
+            document.getElementById('btnSocraticDiscuss').innerText = d.btnSocraticDiscuss;
+            document.getElementById('modalTokenTitle').innerText = d.modalTokenTitle;
+            document.getElementById('lblTokenRefillDesc').innerText = d.lblTokenRefillDesc;
+            document.getElementById('btnCloseTokenModal').innerText = d.btnClose;
+            document.getElementById('modalDonateTitle').innerText = d.modalDonateTitle;
+            document.getElementById('donorName').placeholder = d.donorNamePh;
+            document.getElementById('examName').placeholder = d.examNamePh;
+            document.getElementById('btnSubmitDonate').innerText = d.btnSubmitDonate;
+            document.getElementById('lblDrmNotice').innerText = d.lblDrmNotice;
+            document.getElementById('readerContentBox').innerText = d.readerContent;
+            document.getElementById('btnCloseReader').innerText = d.btnClose;
+            document.getElementById('footerCopy').innerText = d.footerCopy;
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            let savedWallet = localStorage.getItem('dhruv_wallet_balance');
+            if (savedWallet !== null) currentWallet = parseFloat(savedWallet);
+            else localStorage.setItem('dhruv_wallet_balance', currentWallet);
+
+            let savedTokens = localStorage.getItem('dhruv_wallet_tokens');
+            if (savedTokens !== null) aiTokens = parseInt(savedTokens, 10);
+            else localStorage.setItem('dhruv_wallet_tokens', aiTokens);
+
+            updateAllDisplays();
+
+            const savedLang = localStorage.getItem('user_lang') || 'hi';
+            switchLanguage(savedLang);
+        });
+
+        function updateAllDisplays() {
+            const walletEl = document.getElementById('walletBalance');
+            if (walletEl) walletEl.innerText = "₹" + currentWallet.toFixed(2);
+
+            const tokenEl = document.getElementById('aiTokenCount');
+            if (tokenEl) tokenEl.innerText = aiTokens;
+
+            localStorage.setItem('dhruv_wallet_balance', currentWallet);
+            localStorage.setItem('dhruv_wallet_tokens', aiTokens);
+            localStorage.setItem('user_tokens', aiTokens);
+        }
+
+        function topUpWallet() {
+            const d = libraryTranslations[currentLang] || libraryTranslations.hi;
+            let add = prompt(d.alertTopupPrompt, "100");
+            if(add && !isNaN(add)) {
+                currentWallet += parseFloat(add);
+                updateAllDisplays();
+                alert(d.alertTopupSuccess);
+            }
+        }
+
+        function openTokenRefillModal() {
+            document.getElementById('tokenModal').classList.remove('hidden');
+        }
+        function closeTokenModal() {
+            document.getElementById('tokenModal').classList.add('hidden');
+        }
+
+        function buyTokens(price, tokens) {
+            const d = libraryTranslations[currentLang] || libraryTranslations.hi;
+            if(currentWallet < price) {
+                alert(d.alertNoWalletBal);
+                return;
+            }
+            currentWallet -= price;
+            aiTokens += tokens;
+            updateAllDisplays();
+            alert(d.alertTokenBought);
+            closeTokenModal();
+        }
+
+        function consumeTokenAndRun(featureName, cost) {
+            const d = libraryTranslations[currentLang] || libraryTranslations.hi;
+            if(aiTokens < cost) {
+                alert(d.alertNoTokens);
+                openTokenRefillModal();
+                return;
+            }
+            aiTokens -= cost;
+            updateAllDisplays();
+            alert(d.alertTokenUsed + aiTokens);
+        }
+
+        function openSocraticTutorModal() {
+            document.getElementById('socraticResponse').classList.add('hidden');
+            document.getElementById('socraticModal').classList.remove('hidden');
+        }
+        function closeSocraticModal() {
+            document.getElementById('socraticModal').classList.add('hidden');
+        }
+
+        function askSocraticAI() {
+            const d = libraryTranslations[currentLang] || libraryTranslations.hi;
+            if(aiTokens < 1) {
+                alert(d.alertNoTokens);
+                openTokenRefillModal();
+                return;
+            }
+            aiTokens -= 1;
+            updateAllDisplays();
+            document.getElementById('socraticResponse').classList.remove('hidden');
+        }
+
+        function openTopperDonateModal() {
+            document.getElementById('topperDonateModal').classList.remove('hidden');
+        }
+        function closeTopperModal() {
+            document.getElementById('topperDonateModal').classList.add('hidden');
+        }
+
+        function openSecureReader(title, isPaid, type) {
+            document.getElementById('readerTitle').innerText = title;
+            document.getElementById('secureReaderModal').classList.remove('hidden');
+        }
+        function closeSecureReader() {
+            document.getElementById('secureReaderModal').classList.add('hidden');
+        }
+
+        function purchaseAndUnlock(title, price) {
+            const d = libraryTranslations[currentLang] || libraryTranslations.hi;
+            if(currentWallet < price) {
+                alert(d.alertNoWalletBal);
+                return;
+            }
+            if(confirm("Confirm purchase of " + title + " for ₹" + price + "?")) {
+                currentWallet -= price;
+                aiTokens += 500;
+                updateAllDisplays();
+                alert(d.alertTopupSuccess);
+            }
+        }
+
+        function submitDonatedNotes() {
+            let donor = document.getElementById('donorName').value.trim();
+            let exam = document.getElementById('examName').value.trim();
+            if(!donor || !exam) {
+                alert("Please fill details!");
+                return;
+            }
+            alert("Notes submitted successfully! Thank you for donating.");
+            closeTopperModal();
+        }
+
+        function filterCategory(cat) {
+            document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+            if(cat === 'all') document.getElementById('catAll').classList.add('active');
+            if(cat === 'donated') document.getElementById('catDonated').classList.add('active');
+            if(cat === 'ai_tools') document.getElementById('catAiTools').classList.add('active');
+            if(cat === 'paid') document.getElementById('catPaid').classList.add('active');
+
+            let cards = document.querySelectorAll('#libraryMainGrid > div');
+            cards.forEach(c => {
+                let cCat = c.getAttribute('data-category');
+                if(cat === 'all' || cCat === cat) {
+                    c.style.display = 'block';
+                } else {
+                    c.style.display = 'none';
+                }
+            });
+        }
+
+        function executeSearch() {
+            const d = libraryTranslations[currentLang] || libraryTranslations.hi;
+            let q = document.getElementById('librarySearchInput').value.trim();
+            if(!q) { alert(d.alertEmptySearch); return; }
+            alert(d.alertSearchRunning + q);
+        }
+    </script>
+</body>
+</html>
