@@ -9,6 +9,7 @@ def home():
     return render_template('index.html')
 
 @app.route('/voice-webhook', methods=['GET', 'POST'])
+@app.route('/voice', methods=['GET', 'POST'])
 def voice_webhook():
     try:
         response = VoiceResponse()
