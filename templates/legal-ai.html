@@ -1,0 +1,868 @@
+<!DOCTYPE html>
+<html lang="hi" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Legal AI Master Hub - BNS, RTI & Corporate Law | Dhruv Academy</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Yantramanav:wght@500;700&display=swap');
+        
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Poppins', 'Yantramanav', sans-serif;
+            background-color: #020617;
+            color: #f8fafc;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px;
+            overflow-x: hidden;
+        }
+
+        @media (min-width: 640px) {
+            body {
+                padding: 20px;
+            }
+        }
+
+        .main-wrapper {
+            width: 100%;
+            max-width: 1120px;
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+        }
+
+        .stage-box {
+            background: radial-gradient(circle at center, #0f172a 0%, #030712 100%);
+            border: 2px solid rgba(244, 63, 94, 0.4);
+            border-radius: 28px;
+            box-shadow: 0 10px 40px rgba(244, 63, 94, 0.15), inset 0 0 30px rgba(0, 0, 0, 0.9);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stage-grid {
+            background-image: linear-gradient(rgba(244, 63, 94, 0.06) 1px, transparent 1px),
+                              linear-gradient(90deg, rgba(244, 63, 94, 0.06) 1px, transparent 1px);
+            background-size: 26px 26px;
+        }
+
+        .avatar-glow {
+            box-shadow: 0 0 35px rgba(244, 63, 94, 0.7), inset 0 0 20px rgba(255, 255, 255, 0.3);
+            animation: legalFloat 4s ease-in-out infinite;
+        }
+        @keyframes legalFloat {
+            0%, 100% { transform: translateY(0px) scale(1); }
+            50% { transform: translateY(-5px) scale(1.02); }
+        }
+
+        .talking-pulse {
+            animation: legalTalkGlow 0.35s infinite alternate ease-in-out;
+            border-color: #facc15 !important;
+            box-shadow: 0 0 40px #facc15, inset 0 0 20px rgba(250, 204, 21, 0.6) !important;
+        }
+        @keyframes legalTalkGlow {
+            0% { transform: scale(1); }
+            100% { transform: scale(1.05); }
+        }
+
+        .custom-scrollbar::-webkit-scrollbar { width: 5px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #020617; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #334155; border-radius: 6px; }
+    </style>
+</head>
+<body>
+
+    <div class="main-wrapper">
+        
+        <!-- टॉप बार, 4-भाषा सेलेक्टर और सेंट्रल वॉलेट सिंक -->
+        <div class="flex flex-wrap justify-between items-center pb-2 border-b border-gray-800 w-full gap-3">
+            <a href="/" id="homeBtn" class="px-4 py-2 bg-gradient-to-r from-red-700 to-rose-600 hover:from-red-600 hover:to-rose-500 text-white rounded-2xl text-xs font-bold transition flex items-center gap-1.5 shadow-lg">
+                ← <span>मुख्य पोर्टल</span>
+            </a>
+            
+            <div class="flex items-center gap-2 flex-wrap">
+                <!-- 🌐 4-भाषाओं वाला यूनिवर्सल सेलेक्टर -->
+                <div class="flex items-center gap-1.5 bg-slate-900 border border-slate-700 px-3 py-1.5 rounded-full shadow">
+                    <span class="text-xs">🌐</span>
+                    <select id="langSelector" onchange="switchLanguage(this.value)" class="bg-transparent text-xs font-bold text-rose-300 outline-none cursor-pointer">
+                        <option value="hi" class="bg-slate-900 text-slate-200">🇮🇳 हिंदी (Hindi)</option>
+                        <option value="en" class="bg-slate-900 text-slate-200">🇬🇧 English</option>
+                        <option value="pa" class="bg-slate-900 text-slate-200">🇮🇳 ਪੰਜਾਬੀ (Punjabi)</option>
+                        <option value="mr" class="bg-slate-900 text-slate-200">🇮🇳 मराठी (Marathi)</option>
+                    </select>
+                </div>
+
+                <!-- सेंट्रल वॉलेट बैलेंस -->
+                <div class="px-3.5 py-1.5 bg-slate-900 border border-slate-700 rounded-full text-xs font-bold flex items-center gap-2 shadow">
+                    <span id="lblWallet" class="text-gray-400">💰 वॉलेट:</span>
+                    <span id="walletBalanceDisplay" class="text-emerald-400 font-extrabold">₹0.00</span>
+                </div>
+                <!-- एआई टोकन्स -->
+                <div class="px-3.5 py-1.5 bg-purple-950 border border-purple-500/50 rounded-full text-xs font-bold flex items-center gap-2 shadow">
+                    <span id="lblTokens" class="text-purple-300">⚡ टोकन्स:</span>
+                    <span id="tokenBalanceDisplay" class="text-purple-200 font-extrabold">0</span>
+                </div>
+                
+                <span class="px-3.5 py-1.5 bg-rose-950 border border-rose-500/50 text-rose-300 rounded-full text-xs font-bold flex items-center gap-1.5 shadow hidden sm:flex">
+                    <span class="w-2.5 h-2.5 rounded-full bg-rose-500 animate-pulse"></span>
+                    <span id="lblActiveBadge">BNS & Corporate Law Active</span>
+                </span>
+            </div>
+        </div>
+
+        <!-- महत्वपूर्ण वैधानिक व प्रक्रियात्मक चेतावनी बैनर -->
+        <div class="p-3.5 bg-rose-950/80 border border-rose-500/60 rounded-2xl text-xs space-y-1 shadow-lg">
+            <p id="lblCautionTitle" class="font-extrabold text-rose-300 flex items-center gap-1.5">
+                <span>⚠️</span> <span>वैधानिक चेतावनी एवं प्रक्रियात्मक अनुपालन (Legal Caution & Statutory Guardrail):</span>
+            </p>
+            <p id="lblCautionDesc" class="text-gray-300 leading-relaxed">
+                • <b>दुर्भावनापूर्ण / झूठी FIR निषेध:</b> कंपनी अथवा सिविल विवादों को बिना ठोस साक्ष्य आपराधिक रंग देने पर शिकायतकर्ता स्वयं <b>कंपनी अधिनियम की धारा 447 (धोखाधड़ी), धारा 448 (झूठे कथन)</b> और <b>BNS की धारा 217/229</b> के तहत आपराधिक अभियोजन का पात्र होगा।<br>
+                • <b>अनिवार्य कॉर्पोरेट जांच:</b> कंपनी मामलों में विवेचना अधिकारी के लिए धारा 88 (सदस्य रजिस्टर), 118 (कार्यवृत्त), 128 (लेखा पुस्तकें), 206 (निरीक्षण/जांच) और 210/212 का पूर्व-परीक्षण अनिवार्य है।
+            </p>
+        </div>
+
+        <!-- लीगल एडवाइज़र 4D स्टेज -->
+        <div class="stage-box stage-grid p-4 sm:p-7 flex flex-col lg:flex-row items-center justify-between gap-6">
+            
+            <!-- AI अधिवक्ता अवतार -->
+            <div class="flex flex-col items-center gap-3 text-center">
+                <div class="relative flex items-center justify-center">
+                    <div class="absolute -bottom-3 w-40 h-8 bg-rose-500/25 rounded-full blur-xl animate-pulse"></div>
+                    
+                    <div id="legalAvatarFrame" onclick="playLegalGreeting()" class="avatar-glow w-36 h-36 sm:w-44 sm:h-44 rounded-full bg-slate-900 border-4 border-rose-500 overflow-hidden relative cursor-pointer shadow-2xl transition flex items-center justify-center" title="कानूनी सलाह के लिए टैप करें!">
+                        <canvas id="legalHumanCanvas" width="200" height="200" class="w-full h-full object-cover"></canvas>
+                        <span class="absolute bottom-1 right-3 px-2 py-0.5 bg-rose-600 border border-slate-900 rounded-full text-[9px] font-extrabold text-white shadow">ADVOCATE AI</span>
+                    </div>
+                </div>
+
+                <div>
+                    <h2 id="advocateName" class="text-base sm:text-lg font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-rose-400 via-amber-200 to-orange-400">एडवोकेट न्याय मित्र (Legal AI Mentor)</h2>
+                    <p id="advocateSpecialization" class="text-xs text-rose-300 font-semibold mt-0.5">🟢 BNS, BNSS, BSA व कंपनी लॉ विशेषज्ञ</p>
+                    <p id="advocateHint" class="text-[10px] text-gray-400 mt-0.5">अवतार पर टैप करके कानूनी सारांश सुनें</p>
+                </div>
+
+                <div class="flex gap-2 p-2 bg-slate-900/90 border border-slate-800 rounded-2xl text-xs">
+                    <span class="px-2 py-0.5 rounded bg-slate-800 text-cyan-300 font-bold">BNS 2023</span>
+                    <span class="px-2 py-0.5 rounded bg-slate-800 text-amber-300 font-bold">BNSS 2023</span>
+                    <span class="px-2 py-0.5 rounded bg-slate-800 text-emerald-300 font-bold">Co. Act 2013</span>
+                </div>
+            </div>
+
+            <!-- लाइव कानूनी विश्लेषण बोर्ड -->
+            <div class="w-full lg:w-3/5 bg-slate-950/95 border border-slate-800/90 rounded-3xl p-4 sm:p-5 space-y-3 shadow-2xl flex flex-col justify-between">
+                <div class="flex justify-between items-center border-b border-slate-800 pb-2">
+                    <span id="boardHeader" class="text-xs font-bold text-rose-400 flex items-center gap-1.5">
+                        <span>⚖️</span> <span>Legal Intelligence & Case Analysis Board</span>
+                    </span>
+                    <button onclick="clearLegalBoard()" id="btnClearBoard" class="text-[11px] text-gray-400 hover:text-white px-2.5 py-1 rounded-xl bg-slate-900 border border-slate-800 shadow">सफ़ाई 🧹</button>
+                </div>
+
+                <div id="legalOutputBoard" class="min-h-[200px] max-h-[260px] overflow-y-auto custom-scrollbar text-xs sm:text-sm space-y-3">
+                    <p id="welcomeGreeting" class="text-rose-200 font-medium">👋 "नमस्ते! मैं आपका एआई कानूनी सलाहकार हूँ। आप नए आपराधिक कानून (BNS/BNSS), आरटीआई आवेदन, लीगल नोटिस या कंपनी कानून (Companies Act 2013) से संबंधित किसी भी विवाद का सटीक विधिक समाधान प्राप्त कर सकते हैं।"</p>
+                    
+                    <div class="p-2.5 bg-slate-900/80 rounded-2xl border border-slate-800 text-[11px] text-gray-300 space-y-1">
+                        <p id="lblGuideRules" class="font-bold text-amber-300">📌 मार्गदर्शन नियम:</p>
+                        <p id="lblRtiRule">• <b>RTI नियम:</b> आरटीआई में केवल रिकॉर्ड माँगें, "क्यों/कैसे" जैसे प्रश्न विधि अनुसार वर्जित हैं।</p>
+                        <p id="lblDraftingRule">• <b>1-क्लिक ड्राफ्टिंग:</b> नीचे दिए गए बटनों से लीगल नोटिस, वैध आरटीआई या FIR प्रारूप तैयार करें।</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- नया कानून कन्वर्टर कियोस्क (BNS vs IPC & BNSS vs CrPC) -->
+        <div class="bg-slate-900 p-4 sm:p-5 rounded-3xl border border-rose-500/30 space-y-3 shadow-xl">
+            <div class="flex justify-between items-center">
+                <h3 id="lblSectionConverterHeader" class="text-xs sm:text-sm font-bold text-rose-300 flex items-center gap-1.5">
+                    <span>🔄</span> <span>न्यू क्रिमिनल लॉज़ कन्वर्टर (BNS ↔ IPC, BNSS ↔ CrPC, BSA ↔ IEA)</span>
+                </h3>
+                <span id="lblSectionFinderBadge" class="text-[10px] text-amber-400 font-semibold">1-क्लिक सेक्शन फाइंडर</span>
+            </div>
+            
+            <div class="flex flex-col sm:flex-row gap-2">
+                <input type="text" id="sectionSearchInput" placeholder="पुरानी धारा या अपराध का नाम लिखें (जैसे: 'IPC 420' या 'IPC 302' या 'धोखाधड़ी')..." class="w-full p-3 rounded-2xl bg-slate-950 border border-slate-700 text-white text-xs focus:outline-none focus:border-rose-500">
+                <button onclick="convertLawSection()" id="btnFindSection" class="px-6 py-3 bg-gradient-to-r from-rose-600 to-amber-600 hover:from-rose-500 rounded-2xl text-xs font-bold text-white transition whitespace-nowrap shadow-lg">
+                    धारा खोजें व विश्लेषण करें ⚖️
+                </button>
+            </div>
+            
+            <div id="sectionResultBox" class="hidden p-3.5 bg-slate-950 rounded-2xl border border-slate-800 text-xs space-y-2.5"></div>
+        </div>
+
+        <!-- 1-क्लिक लीगल ड्राफ्टिंग कियोस्क -->
+        <div class="bg-slate-900 p-4 sm:p-5 rounded-3xl border border-slate-800 space-y-3 shadow-xl">
+            <div class="flex justify-between items-center">
+                <h3 id="lblDraftingKioskHeader" class="text-xs sm:text-sm font-bold text-amber-300 flex items-center gap-1.5">
+                    <span>📑</span> <span>1-क्लिक लीगल ड्राफ्टिंग कियोस्क (विधि-सम्मत ड्राफ्ट्स)</span>
+                </h3>
+                <span id="lblPdfExportBadge" class="text-[10px] text-gray-400">PDF एक्सपोर्ट योग्य</span>
+            </div>
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
+                <button onclick="triggerDrafting('notice')" class="p-3 rounded-2xl bg-slate-950 border border-slate-800 hover:border-rose-400 text-left transition space-y-1 cursor-pointer">
+                    <p id="lblDraftNoticeTitle" class="font-bold text-rose-300">📜 लीगल नोटिस</p>
+                    <p id="lblDraftNoticeSub" class="text-[10px] text-gray-400">बकाया वसूली / क्षतिपूर्ति</p>
+                </button>
+                <button onclick="triggerDrafting('rti')" class="p-3 rounded-2xl bg-slate-950 border border-slate-800 hover:border-cyan-400 text-left transition space-y-1 cursor-pointer">
+                    <p id="lblDraftRtiTitle" class="font-bold text-cyan-300">🏛️ वैध RTI आवेदन</p>
+                    <p id="lblDraftRtiSub" class="text-[10px] text-gray-400">Sec 2(f) सम्मत अभिलेख</p>
+                </button>
+                <button onclick="triggerDrafting('consumer')" class="p-3 rounded-2xl bg-slate-950 border border-slate-800 hover:border-emerald-400 text-left transition space-y-1 cursor-pointer">
+                    <p id="lblDraftConsumerTitle" class="font-bold text-emerald-300">🛡️ उपभोक्ता शिकायत</p>
+                    <p id="lblDraftConsumerSub" class="text-[10px] text-gray-400">दोषपूर्ण उत्पाद / सेवा</p>
+                </button>
+                <button onclick="triggerDrafting('fir')" class="p-3 rounded-2xl bg-slate-950 border border-slate-800 hover:border-amber-400 text-left transition space-y-1 cursor-pointer">
+                    <p id="lblDraftFirTitle" class="font-bold text-amber-300">🚔 पुलिस शिकायत / FIR</p>
+                    <p id="lblDraftFirSub" class="text-[10px] text-gray-400">सत्य तथ्यों पर आधारित प्रारूप</p>
+                </button>
+            </div>
+        </div>
+
+        <!-- कानूनी प्रश्न पूछने का इनपुट व लाइव वॉयस -->
+        <div class="bg-slate-900 p-4 sm:p-5 rounded-3xl border border-gray-800 space-y-3 shadow-xl">
+            <div class="flex flex-col sm:flex-row gap-2">
+                <input type="text" id="legalQueryInput" placeholder="कोई भी कानूनी प्रश्न पूछें (उदा: 'कंपनी में शेयरहोल्डर के अधिकार और धारा 206 जांच क्या है?')..." class="w-full p-3 rounded-2xl bg-slate-950 border border-slate-700 text-white text-xs focus:outline-none focus:border-rose-500">
+                <div class="flex gap-2">
+                    <button onclick="submitLegalQuestion()" id="btnGetAdvice" class="px-6 py-3 bg-gradient-to-r from-rose-600 to-red-600 hover:from-rose-500 rounded-2xl text-xs font-bold text-white transition whitespace-nowrap shadow-lg">
+                        सलाह लें 🔍
+                    </button>
+                    <button id="legalMicBtn" onclick="toggleLegalVoice()" class="px-5 py-3 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-2xl text-xs font-bold text-rose-400 transition flex items-center justify-center gap-1 shadow">
+                        🎤
+                    </button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- ड्राफ्टिंग प्रीव्यू व PDF मोडल -->
+    <div id="legalDraftModal" class="hidden fixed inset-0 bg-black/85 flex items-center justify-center p-4 z-50 backdrop-blur-md">
+        <div class="bg-slate-900 border-2 border-rose-500 rounded-3xl p-6 max-w-2xl w-full space-y-4 shadow-2xl">
+            <div class="flex justify-between items-center border-b border-slate-700 pb-3">
+                <h2 id="draftModalHeader" class="text-base font-bold text-rose-400">📑 लीगल ड्राफ्ट प्रीव्यू</h2>
+                <button onclick="closeDraftModal()" class="text-gray-400 hover:text-white font-bold text-lg cursor-pointer">✕</button>
+            </div>
+            
+            <div id="draftContentArea" class="p-4 bg-slate-950 rounded-2xl border border-slate-800 max-h-[350px] overflow-y-auto custom-scrollbar text-xs text-gray-200 whitespace-pre-wrap font-sans leading-relaxed">
+            </div>
+
+            <div class="flex justify-end gap-2 pt-2 border-t border-slate-800">
+                <button onclick="downloadDraftPDF()" id="btnDownloadPdf" class="px-5 py-2.5 bg-red-600 hover:bg-red-500 rounded-xl font-bold text-white text-xs transition shadow cursor-pointer">
+                    📄 PDF डाउनलोड करें
+                </button>
+                <button onclick="closeDraftModal()" id="btnCloseDraftModal" class="px-5 py-2.5 bg-slate-800 hover:bg-slate-700 rounded-xl font-bold text-gray-300 text-xs transition cursor-pointer">
+                    बंद करें
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <footer class="w-full text-center py-4 text-xs text-gray-500 border-t border-gray-900 mt-6">
+        <p id="footerCopy">© 2026 Dhruv Academy Master Ecosystem. सर्वाधिकार सुरक्षित। (सूचनात्मक कानूनी सहायता प्रणाली)</p>
+    </footer>
+
+    <script>
+        let currentLang = localStorage.getItem('user_lang') || 'hi';
+
+        const legalTranslations = {
+            hi: {
+                home: "← मुख्य पोर्टल",
+                lblWallet: "💰 वॉलेट:",
+                lblTokens: "⚡ टोकन्स:",
+                activeBadge: "BNS & Corporate Law Active",
+                cautionTitle: "⚠️ वैधानिक चेतावनी एवं प्रक्रियात्मक अनुपालन (Legal Caution & Statutory Guardrail):",
+                cautionDesc: "• <b>दुर्भावनापूर्ण / झूठी FIR निषेध:</b> कंपनी अथवा सिविल विवादों को बिना ठोस साक्ष्य आपराधिक रंग देने पर शिकायतकर्ता स्वयं <b>कंपनी अधिनियम की धारा 447 (धोखाधड़ी), धारा 448 (झूठे कथन)</b> और <b>BNS की धारा 217/229</b> के तहत आपराधिक अभियोजन का पात्र होगा।<br>• <b>अनिवार्य कॉर्पोरेट जांच:</b> कंपनी मामलों में विवेचना अधिकारी के लिए धारा 88 (सदस्य रजिस्टर), 118 (कार्यवृत्त), 128 (लेखा पुस्तकें), 206 (निरीक्षण/जांच) और 210/212 का पूर्व-परीक्षण अनिवार्य है।",
+                advocateName: "एडवोकेट न्याय मित्र (Legal AI Mentor)",
+                advocateSpec: "🟢 BNS, BNSS, BSA व कंपनी लॉ विशेषज्ञ",
+                advocateHint: "अवतार पर टैप करके कानूनी सारांश सुनें",
+                boardHeader: "Legal Intelligence & Case Analysis Board",
+                btnClearBoard: "सफ़ाई 🧹",
+                welcomeGreeting: "👋 \"नमस्ते! मैं आपका एआई कानूनी सलाहकार हूँ। आप नए आपराधिक कानून (BNS/BNSS), आरटीआई आवेदन, लीगल नोटिस या कंपनी कानून (Companies Act 2013) से संबंधित किसी भी विवाद का सटीक विधिक समाधान प्राप्त कर सकते हैं।\"",
+                guideRules: "📌 मार्गदर्शन नियम:",
+                rtiRule: "• <b>RTI नियम:</b> आरटीआई में केवल रिकॉर्ड माँगें, \"क्यों/कैसे\" जैसे प्रश्न विधि अनुसार वर्जित हैं।",
+                draftingRule: "• <b>1-क्लिक ड्राफ्टिंग:</b> नीचे दिए गए बटनों से लीगल नोटिस, वैध आरटीआई या FIR प्रारूप तैयार करें।",
+                converterHeader: "न्यू क्रिमिनल लॉज़ कन्वर्टर (BNS ↔ IPC, BNSS ↔ CrPC, BSA ↔ IEA)",
+                sectionFinderBadge: "1-क्लिक सेक्शन फाइंडर",
+                searchPh: "पुरानी धारा या अपराध का नाम लिखें (जैसे: 'IPC 420' या 'IPC 302' या 'धोखाधड़ी')...",
+                btnFindSection: "धारा खोजें व विश्लेषण करें ⚖️",
+                kioskHeader: "1-क्लिक लीगल ड्राफ्टिंग कियोस्क (विधि-सम्मत ड्राफ्ट्स)",
+                pdfBadge: "PDF एक्सपोर्ट योग्य",
+                draftNoticeTitle: "📜 लीगल नोटिस",
+                draftNoticeSub: "बकाया वसूली / क्षतिपूर्ति",
+                draftRtiTitle: "🏛️ वैध RTI आवेदन",
+                draftRtiSub: "Sec 2(f) सम्मत अभिलेख",
+                draftConsumerTitle: "🛡️ उपभोक्ता शिकायत",
+                draftConsumerSub: "दोषपूर्ण उत्पाद / सेवा",
+                draftFirTitle: "🚔 पुलिस शिकायत / FIR",
+                draftFirSub: "सत्य तथ्यों पर आधारित प्रारूप",
+                queryPh: "कोई भी कानूनी प्रश्न पूछें (उदा: 'कंपनी में शेयरहोल्डर के अधिकार और धारा 206 जांच क्या है?')...",
+                btnGetAdvice: "सलाह लें 🔍",
+                draftModalHeader: "📑 लीगल ड्राफ्ट प्रीव्यू",
+                btnDownloadPdf: "📄 PDF डाउनलोड करें",
+                btnClose: "बंद करें",
+                footerCopy: "© 2026 Dhruv Academy Master Ecosystem. सर्वाधिकार सुरक्षित। (सूचनात्मक कानूनी सहायता प्रणाली)",
+                alertEmptySection: "कृपया कोई धारा या अपराध का नाम दर्ज करें!",
+                alertEmptyQuery: "कृपया कोई प्रश्न दर्ज करें!",
+                alertNoTokens: "⚠️ आपके सेंट्रल वॉलेट में पर्याप्त टोकन नहीं हैं! कृपया मुख्य पोर्टल से रिचार्ज करें।"
+            },
+            en: {
+                home: "← Main Portal",
+                lblWallet: "💰 Wallet:",
+                lblTokens: "⚡ Tokens:",
+                activeBadge: "BNS & Corporate Law Active",
+                cautionTitle: "⚠️ Legal Caution & Statutory Guardrail:",
+                cautionDesc: "• <b>Prohibition on Malicious / Frivolous FIR:</b> Converting civil or corporate shareholder disputes into criminal complaints without empirical evidentiary foundation makes the complainant personally liable for criminal prosecution under <b>Section 447 (Fraud), Section 448 (False Statement) of Companies Act, 2013</b> and <b>Sections 217/229 of BNS, 2023</b>.<br>• <b>Mandatory Corporate Preliminary Inquiry:</b> Investigating officers must examine statutory corporate registers under Sections 88, 118, 128, 206, and 210/212 before entertaining criminal color in corporate governance.",
+                advocateName: "Advocate Nyaya Mitra (Legal AI Mentor)",
+                advocateSpec: "🟢 Expert in BNS, BNSS, BSA & Companies Act, 2013",
+                advocateHint: "Tap avatar to listen to statutory legal summaries",
+                boardHeader: "Legal Intelligence & Case Analysis Board",
+                btnClearBoard: "Clear 🧹",
+                welcomeGreeting: "👋 \"Greetings! I am your AI Legal Mentor. Get accurate legal guidance regarding the new criminal codes (BNS/BNSS), RTI drafting under Section 2(f), legal demand notices, and Indian corporate statutory governance.\"",
+                guideRules: "📌 Guiding Principles:",
+                rtiRule: "• <b>RTI Mandate:</b> Seek only existing material records under Section 2(f); queries like 'why/how' are legally invalid.",
+                draftingRule: "• <b>1-Click Drafting:</b> Generate verified drafts for Legal Notices, compliant RTI petitions, or police representations.",
+                converterHeader: "New Criminal Laws Converter (BNS ↔ IPC, BNSS ↔ CrPC, BSA ↔ IEA)",
+                sectionFinderBadge: "1-Click Section Finder",
+                searchPh: "Enter legacy section or offense (e.g. 'IPC 420' or 'Cheating')...",
+                btnFindSection: "Find & Analyze Section ⚖️",
+                kioskHeader: "1-Click Legal Drafting Kiosk (Statutory Templates)",
+                pdfBadge: "PDF Export Ready",
+                draftNoticeTitle: "📜 Legal Demand Notice",
+                draftNoticeSub: "Recovery / Contract Breach",
+                draftRtiTitle: "🏛️ Statutory RTI Application",
+                draftRtiSub: "Section 2(f) Certified Records",
+                draftConsumerTitle: "🛡️ Consumer Forum Complaint",
+                draftConsumerSub: "Deficient Goods / Services",
+                draftFirTitle: "🚔 Formal Police Complaint",
+                draftFirSub: "Evidence-Based Written Petition",
+                queryPh: "Ask any legal question (e.g. 'Shareholder inspection rights under Section 206 of Companies Act')...",
+                btnGetAdvice: "Get Legal Opinion 🔍",
+                draftModalHeader: "📑 Legal Draft Preview",
+                btnDownloadPdf: "📄 Download PDF",
+                btnClose: "Close",
+                footerCopy: "© 2026 Dhruv Academy Master Ecosystem. All Rights Reserved. (Informational Legal Intelligence System)",
+                alertEmptySection: "Please enter a section or offense name!",
+                alertEmptyQuery: "Please enter your legal query!",
+                alertNoTokens: "⚠️ Insufficient AI Tokens in Central Wallet! Please recharge from the main portal."
+            },
+            pa: {
+                home: "← ਮੁੱਖ ਪੋਰਟਲ",
+                lblWallet: "💰 ਵਾਲਿਟ:",
+                lblTokens: "⚡ ਟੋਕਨ:",
+                activeBadge: "BNS & ਕਾਰਪੋਰੇਟ ਕਾਨੂੰਨ ਐਕਟਿਵ",
+                cautionTitle: "⚠️ ਕਾਨੂੰਨੀ ਚੇਤਾਵਨੀ ਅਤੇ ਨਿਯਮ:",
+                cautionDesc: "• <b>ਝੂਠੀ FIR ਦੀ ਮਨਾਹੀ:</b> ਕੰਪਨੀ ਵਿਵਾਦਾਂ ਨੂੰ ਝੂਠਾ ਅਪਰਾਧਿਕ ਰੂਪ ਦੇਣ 'ਤੇ ਧੋਖਾਧੜੀ ਧਾਰਾ 447/448 ਕੰਪਨੀ ਐਕਟ ਅਤੇ BNS 217/229 ਤਹਿਤ ਕਾਰਵਾਈ ਹੋਵੇਗੀ।",
+                advocateName: "ਐਡਵੋਕੇਟ ਨਿਆਂ ਮਿੱਤਰ (Legal AI)",
+                advocateSpec: "🟢 BNS, BNSS ਅਤੇ ਕੰਪਨੀ ਕਾਨੂੰਨ ਮਾਹਿਰ",
+                advocateHint: "ਕਾਨੂੰਨੀ ਸਲਾਹ ਸੁਣਨ ਲਈ ਅਵਤਾਰ 'ਤੇ ਟੈਪ ਕਰੋ",
+                boardHeader: "ਲੀਗਲ ਇੰਟੈਲੀਜੈਂਸ ਬੋਰਡ",
+                btnClearBoard: "ਸਾਫ਼ ਕਰੋ 🧹",
+                welcomeGreeting: "👋 \"ਸਤਿ ਸ੍ਰੀ ਅਕਾਲ! ਮੈਂ ਤੁਹਾਡਾ ਕਾਨੂੰਨੀ ਸਲਾਹਕਾਰ ਹਾਂ। ਨਵੇਂ ਅਪਰਾਧਿਕ ਕਾਨੂੰਨਾਂ (BNS) ਅਤੇ ਕੰਪਨੀ ਐਕਟ ਬਾਰੇ ਸਲਾਹ ਲਓ।\"",
+                guideRules: "📌 ਮਾਰਗਦਰਸ਼ਨ ਨਿਯਮ:",
+                rtiRule: "• <b>RTI ਨਿਯਮ:</b> ਸਿਰਫ਼ ਰਿਕਾਰਡ ਮੰਗੋ।",
+                draftingRule: "• <b>1-ਕਲਿੱਕ ਡਰਾਫਟਿੰਗ:</b> ਲੀਗਲ ਨੋਟਿਸ ਜਾਂ RTI ਤਿਆਰ ਕਰੋ।",
+                converterHeader: "ਨਵਾਂ ਕਾਨੂੰਨ ਕਨਵਰਟਰ (BNS ↔ IPC)",
+                sectionFinderBadge: "ਧਾਰਾ ਖੋਜਕ",
+                searchPh: "ਪੁਰਾਣੀ ਧਾਰਾ ਜਾਂ ਅਪਰਾਧ ਲਿਖੋ (ਜਿਵੇਂ 'IPC 420')...",
+                btnFindSection: "ਧਾਰਾ ਖੋਜੋ ⚖️",
+                kioskHeader: "1-ਕਲਿੱਕ ਲੀਗਲ ਡਰਾਫਟਿੰਗ",
+                pdfBadge: "PDF ਐਕਸਪੋਰਟ",
+                draftNoticeTitle: "📜 ਲੀਗਲ ਨੋਟਿਸ",
+                draftNoticeSub: "ਵਸੂਲੀ / ਨੋਟਿਸ",
+                draftRtiTitle: "🏛️ RTI ਅਰਜ਼ੀ",
+                draftRtiSub: "ਸੂਚਨਾ ਦਾ ਅਧਿਕਾਰ",
+                draftConsumerTitle: "🛡️ ਖਪਤਕਾਰ ਸ਼ਿਕਾਇਤ",
+                draftConsumerSub: "ਸੇਵਾ ਵਿੱਚ ਕਮੀ",
+                draftFirTitle: "🚔 ਪੁਲਿਸ ਸ਼ਿਕਾਇਤ",
+                draftFirSub: "ਲਿਖਤੀ ਸ਼ਿਕਾਇਤ ਪੱਤਰ",
+                queryPh: "ਕੋਈ ਵੀ ਕਾਨੂੰਨੀ ਸਵਾਲ ਪੁੱਛੋ...",
+                btnGetAdvice: "ਸਲਾਹ ਲਓ 🔍",
+                draftModalHeader: "📑 ਡਰਾਫਟ ਪ੍ਰੀਵਿਊ",
+                btnDownloadPdf: "📄 PDF ਡਾਊਨਲੋਡ ਕਰੋ",
+                btnClose: "ਬੰਦ ਕਰੋ",
+                footerCopy: "© 2026 Dhruv Academy Master Ecosystem. ਸਾਰੇ ਹੱਕ ਰਾਖਵੇਂ ਹਨ।",
+                alertEmptySection: "ਕਿਰਪਾ ਕਰਕੇ ਕੋਈ ਧਾਰਾ ਦਰਜ ਕਰੋ!",
+                alertEmptyQuery: "ਕਿਰਪਾ ਕਰਕੇ ਸਵਾਲ ਦਰਜ ਕਰੋ!",
+                alertNoTokens: "⚠️ ਸੈਂਟਰਲ ਵਾਲਿਟ ਵਿੱਚ ਲੋੜੀਂਦੇ ਟੋਕਨ ਨਹੀਂ ਹਨ!"
+            },
+            mr: {
+                home: "← मुख्य पोर्टल",
+                lblWallet: "💰 वॉलेट:",
+                lblTokens: "⚡ टोकन्स:",
+                activeBadge: "BNS & कॉर्पोरेट कायदे सक्रिय",
+                cautionTitle: "⚠️ कायदेशीर इशारा आणि वैधानिक नियम:",
+                cautionDesc: "• <b>खोटी FIR बंदी:</b> कंपनी विवादांना खोटे गुन्हेगारी स्वरूप दिल्यास तक्रारदारावर कंपनी कायदा कलम 447/448 आणि BNS 217/229 अंतर्गत कारवाई होईल.",
+                advocateName: "ॲडव्होकेट न्याय मित्र (Legal AI)",
+                advocateSpec: "🟢 BNS, BNSS आणि कंपनी कायदा तज्ञ",
+                advocateHint: "कायदेशीर सारांश ऐकण्यासाठी अवतारावर टॅप करा",
+                boardHeader: "लीगल इंटेलिजन्स बोर्ड",
+                btnClearBoard: "साफ करा 🧹",
+                welcomeGreeting: "👋 \"नमस्ते! मी तुमचा एआय कायदेशीर सल्लागार आहे. नवीन गुन्हेगारी कायदे (BNS/BNSS), आरटीआय किंवा कंपनी कायद्याबाबत अचूक सल्ला मिळवा.\"",
+                guideRules: "📌 मार्गदर्शन नियम:",
+                rtiRule: "• <b>RTI नियम:</b> फक्त प्रमाणित दस्तऐवज मागा.",
+                draftingRule: "• <b>1-क्लिक मसुदा:</b> कायदेशीर नोटीस किंवा RTI तयार करा.",
+                converterHeader: "नवीन कायदे कन्व्हर्टर (BNS ↔ IPC)",
+                sectionFinderBadge: "कलम शोधक",
+                searchPh: "जुने कलम किंवा गुन्ह्याचे नाव लिहा...",
+                btnFindSection: "कलम शोधा ⚖️",
+                kioskHeader: "1-क्लिक कायदेशीर मसुदा कक्ष",
+                pdfBadge: "PDF एक्सपोर्ट",
+                draftNoticeTitle: "📜 कायदेशीर नोटीस",
+                draftNoticeSub: "वसुली / नुकसान भरपाई",
+                draftRtiTitle: "🏛️ वैध RTI अर्ज",
+                draftRtiSub: "माहिती अधिकार अर्ज",
+                draftConsumerTitle: "🛡️ ग्राहक तक्रार",
+                draftConsumerSub: "दोषपूर्ण सेवा / उत्पादन",
+                draftFirTitle: "🚔 पोलीस तक्रार / FIR",
+                draftFirSub: "लेखी तक्रार पत्र",
+                queryPh: "कोणताही कायदेशीर प्रश्न विचारा...",
+                btnGetAdvice: "सल्ला घ्या 🔍",
+                draftModalHeader: "📑 मसुदा पूर्वावलोकन",
+                btnDownloadPdf: "📄 PDF डाउनलोड करा",
+                btnClose: "बंद करा",
+                footerCopy: "© 2026 Dhruv Academy Master Ecosystem. सर्व हक्क राखीव.",
+                alertEmptySection: "कृपया कोणतेही कलम प्रविष्ट करा!",
+                alertEmptyQuery: "कृपया प्रश्न प्रविष्ट करा!",
+                alertNoTokens: "⚠️ सेंट्रल वॉलेटमध्ये पुरेसे टोकन नाहीत!"
+            }
+        };
+
+        function switchLanguage(lang) {
+            currentLang = lang;
+            localStorage.setItem('user_lang', lang);
+
+            const selector = document.getElementById('langSelector');
+            if (selector) selector.value = lang;
+
+            const d = legalTranslations[lang] || legalTranslations.hi;
+
+            document.getElementById('homeBtn').innerHTML = `← <span>${d.home}</span>`;
+            document.getElementById('lblWallet').innerText = d.lblWallet;
+            document.getElementById('lblTokens').innerText = d.lblTokens;
+            document.getElementById('lblActiveBadge').innerText = d.activeBadge;
+            document.getElementById('lblCautionTitle').innerHTML = `<span>⚠️</span> <span>${d.cautionTitle}</span>`;
+            document.getElementById('lblCautionDesc').innerHTML = d.cautionDesc;
+            document.getElementById('advocateName').innerText = d.advocateName;
+            document.getElementById('advocateSpecialization').innerText = d.advocateSpec;
+            document.getElementById('advocateHint').innerText = d.advocateHint;
+            document.getElementById('boardHeader').innerHTML = `<span>⚖️</span> <span>${d.boardHeader}</span>`;
+            document.getElementById('btnClearBoard').innerText = d.btnClearBoard;
+            document.getElementById('welcomeGreeting').innerText = d.welcomeGreeting;
+            document.getElementById('lblGuideRules').innerText = d.guideRules;
+            document.getElementById('lblRtiRule').innerHTML = d.rtiRule;
+            document.getElementById('lblDraftingRule').innerHTML = d.draftingRule;
+            document.getElementById('lblSectionConverterHeader').innerHTML = `<span>🔄</span> <span>${d.converterHeader}</span>`;
+            document.getElementById('lblSectionFinderBadge').innerText = d.sectionFinderBadge;
+            document.getElementById('sectionSearchInput').placeholder = d.searchPh;
+            document.getElementById('btnFindSection').innerText = d.btnFindSection;
+            document.getElementById('lblDraftingKioskHeader').innerHTML = `<span>📑</span> <span>${d.kioskHeader}</span>`;
+            document.getElementById('lblPdfExportBadge').innerText = d.pdfBadge;
+            document.getElementById('lblDraftNoticeTitle').innerText = d.draftNoticeTitle;
+            document.getElementById('lblDraftNoticeSub').innerText = d.draftNoticeSub;
+            document.getElementById('lblDraftRtiTitle').innerText = d.draftRtiTitle;
+            document.getElementById('lblDraftRtiSub').innerText = d.draftRtiSub;
+            document.getElementById('lblDraftConsumerTitle').innerText = d.draftConsumerTitle;
+            document.getElementById('lblDraftConsumerSub').innerText = d.draftConsumerSub;
+            document.getElementById('lblDraftFirTitle').innerText = d.draftFirTitle;
+            document.getElementById('lblDraftFirSub').innerText = d.draftFirSub;
+            document.getElementById('legalQueryInput').placeholder = d.queryPh;
+            document.getElementById('btnGetAdvice').innerText = d.btnGetAdvice;
+            document.getElementById('draftModalHeader').innerText = d.draftModalHeader;
+            document.getElementById('btnDownloadPdf').innerText = d.btnDownloadPdf;
+            document.getElementById('btnCloseDraftModal').innerText = d.btnClose;
+            document.getElementById('footerCopy').innerText = d.footerCopy;
+        }
+
+        // =======================================================
+        // मास्टर सिंक व एक्टिविटी लेजर (Central Wallet Integration)
+        // =======================================================
+        function getWalletBalance() {
+            let balance = localStorage.getItem("dhruv_wallet_balance");
+            return balance !== null ? parseFloat(balance) : 150.00;
+        }
+
+        function getWalletTokens() {
+            let tokens = localStorage.getItem("dhruv_wallet_tokens");
+            return tokens !== null ? parseInt(tokens, 10) : 45;
+        }
+
+        function updateWalletDisplay() {
+            let bal = getWalletBalance();
+            let tok = getWalletTokens();
+            
+            const balDisplay = document.getElementById('walletBalanceDisplay');
+            if(balDisplay) balDisplay.innerText = "₹" + bal.toFixed(2);
+            
+            const tokDisplay = document.getElementById('tokenBalanceDisplay');
+            if(tokDisplay) tokDisplay.innerText = tok;
+        }
+
+        function logUserActivity(moduleName) {
+            let history = JSON.parse(localStorage.getItem("user_activity_log")) || [];
+            let timestamp = new Date().toLocaleString();
+            history.unshift({ module: moduleName, time: timestamp });
+            if(history.length > 15) history.pop();
+            localStorage.setItem("user_activity_log", JSON.stringify(history));
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            updateWalletDisplay();
+            const savedLang = localStorage.getItem('user_lang') || 'hi';
+            switchLanguage(savedLang);
+            logUserActivity('Legal AI Hub Loaded');
+        });
+
+        function consumeLegalToken(featureName) {
+            const d = legalTranslations[currentLang] || legalTranslations.hi;
+            let tokens = getWalletTokens();
+            if (tokens < 1) {
+                alert(d.alertNoTokens);
+                window.location.href = '/'; 
+                return false;
+            }
+            tokens -= 1;
+            localStorage.setItem("dhruv_wallet_tokens", tokens);
+            localStorage.setItem("user_tokens", tokens);
+            updateWalletDisplay();
+            logUserActivity('Legal Hub - Used ' + featureName + ' (-1 Token)');
+            return true;
+        }
+
+        // =======================================================
+        // 4D Live Advocate AI Canvas Avatar
+        // =======================================================
+        let isLegalTalking = false;
+        let legalRecognizer = null;
+        let isLegalRecording = false;
+
+        const canvas = document.getElementById('legalHumanCanvas');
+        const ctx = canvas.getContext('2d');
+        let mouthOpenness = 0;
+        let eyeBlinkState = 0;
+        let headSway = 0;
+
+        function renderAdvocate() {
+            ctx.clearRect(0, 0, 200, 200);
+
+            let bgGrad = ctx.createRadialGradient(100, 100, 20, 100, 100, 100);
+            bgGrad.addColorStop(0, '#1e1b4b');
+            bgGrad.addColorStop(1, '#020617');
+            ctx.fillStyle = bgGrad;
+            ctx.fillRect(0, 0, 200, 200);
+
+            let headX = 100 + Math.sin(headSway) * 2.2;
+
+            ctx.fillStyle = '#0f172a';
+            ctx.beginPath();
+            ctx.arc(headX, 90, 54, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.fillStyle = '#fbd5b5';
+            ctx.beginPath();
+            ctx.ellipse(headX, 105, 40, 48, 0, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.fillStyle = '#0f172a';
+            if (eyeBlinkState > 0.8) {
+                ctx.fillRect(headX - 24, 100, 14, 3);
+                ctx.fillRect(headX + 10, 100, 14, 3);
+            } else {
+                ctx.beginPath();
+                ctx.arc(headX - 16, 101, 4.5, 0, Math.PI * 2);
+                ctx.arc(headX + 16, 101, 4.5, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            ctx.fillStyle = '#be123c';
+            ctx.beginPath();
+            let mouthHeight = isLegalTalking ? 3.5 + mouthOpenness * 11 : 3;
+            ctx.ellipse(headX, 132, 13, mouthHeight, 0, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.fillStyle = '#020617';
+            ctx.beginPath();
+            ctx.moveTo(50, 195);
+            ctx.quadraticCurveTo(headX, 155, 150, 195);
+            ctx.lineTo(150, 200);
+            ctx.lineTo(50, 200);
+            ctx.fill();
+
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(headX - 4, 160, 4, 16);
+            ctx.fillRect(headX + 2, 160, 4, 16);
+
+            headSway += 0.03;
+            requestAnimationFrame(renderAdvocate);
+        }
+
+        setInterval(() => {
+            eyeBlinkState = 1;
+            setTimeout(() => { eyeBlinkState = 0; }, 180);
+        }, 3400);
+
+        setInterval(() => {
+            if (isLegalTalking) {
+                mouthOpenness = Math.random();
+            } else {
+                mouthOpenness = 0;
+            }
+        }, 115);
+
+        renderAdvocate();
+
+        function playLegalGreeting() {
+            const d = legalTranslations[currentLang] || legalTranslations.hi;
+            speakLegalVoice(d.welcomeGreeting);
+        }
+
+        function speakLegalVoice(text) {
+            try {
+                if ('speechSynthesis' in window) {
+                    window.speechSynthesis.cancel();
+                    let clean = text.replace(/[*_#~⚖️📜🏛️🛡️🚔⚠️]/g, '').trim();
+                    let utterance = new SpeechSynthesisUtterance(clean);
+                    
+                    if (currentLang === 'en') utterance.lang = 'en-US';
+                    else if (currentLang === 'pa') utterance.lang = 'pa-IN';
+                    else if (currentLang === 'mr') utterance.lang = 'mr-IN';
+                    else utterance.lang = 'hi-IN';
+
+                    utterance.rate = 0.88;
+                    utterance.pitch = 1.0;
+
+                    let avatar = document.getElementById('legalAvatarFrame');
+                    utterance.onstart = () => {
+                        isLegalTalking = true;
+                        if (avatar) avatar.classList.add('talking-pulse');
+                    };
+                    utterance.onend = () => {
+                        isLegalTalking = false;
+                        if (avatar) avatar.classList.remove('talking-pulse');
+                    };
+                    utterance.onerror = () => {
+                        isLegalTalking = false;
+                        if (avatar) avatar.classList.remove('talking-pulse');
+                    };
+
+                    window.speechSynthesis.speak(utterance);
+                }
+            } catch (e) {}
+        }
+
+        async function convertLawSection() {
+            const d = legalTranslations[currentLang] || legalTranslations.hi;
+            let query = document.getElementById('sectionSearchInput').value.trim();
+            if (!query) {
+                alert(d.alertEmptySection);
+                return;
+            }
+
+            if (!consumeLegalToken('BNS Law Converter')) return;
+
+            let resBox = document.getElementById('sectionResultBox');
+            resBox.classList.remove('hidden');
+            resBox.innerHTML = `<div class="text-rose-400 font-bold animate-pulse">⚖️ BNS / BNSS Database Analyzing...</div>`;
+
+            try {
+                let formData = new FormData();
+                formData.append("query", query);
+                formData.append("lang", currentLang);
+
+                let res = await fetch("/api/legal-convert-section", {
+                    method: "POST",
+                    body: formData
+                });
+                let data = await res.json();
+
+                if (data.success) {
+                    resBox.innerHTML = `
+                        <div class="space-y-2">
+                            <div class="flex justify-between items-center border-b border-gray-800 pb-1.5">
+                                <span class="font-extrabold text-rose-300 text-sm">📌 Legacy Law: ${data.old_section}</span>
+                                <span class="px-2.5 py-0.5 rounded-full bg-emerald-950 text-emerald-300 border border-emerald-500/40 font-bold text-[11px]">New Law: ${data.new_section}</span>
+                            </div>
+                            <p class="text-gray-200"><b>विवरण:</b> ${data.description}</p>
+                            <p class="text-amber-300"><b>सज़ा / Punishment:</b> ${data.punishment}</p>
+                            <p class="text-cyan-300"><b>मुख्य बदलाव / Key Changes:</b> ${data.key_changes}</p>
+                        </div>
+                    `;
+                    speakLegalVoice(data.description);
+                } else {
+                    resBox.innerHTML = `<span class="text-red-400">⚠️ विवरण प्राप्त नहीं हो सका। कृपया पुनः प्रयास करें।</span>`;
+                }
+            } catch (e) {
+                resBox.innerHTML = `<span class="text-red-400">⚠️ नेटवर्क त्रुटि!</span>`;
+            }
+        }
+
+        async function triggerDrafting(type) {
+            const d = legalTranslations[currentLang] || legalTranslations.hi;
+            let headerTitle = "लीगल ड्राफ्ट";
+            let defaultPrompt = "";
+
+            if (type === 'notice') {
+                headerTitle = d.draftNoticeTitle;
+                defaultPrompt = "बकाया राशि वसूली अथवा संविदा उल्लंघन हेतु आधिकारिक लीगल नोटिस";
+            } else if (type === 'rti') {
+                headerTitle = d.draftRtiTitle;
+                defaultPrompt = "सूचना का अधिकार अधिनियम 2005 की धारा 6(1) के तहत उपलब्ध प्रमाणित दस्तावेजों/अभिलेखों की प्रति प्राप्त करने हेतु आवेदन";
+            } else if (type === 'consumer') {
+                headerTitle = d.draftConsumerTitle;
+                defaultPrompt = "दोषपूर्ण उत्पाद / सेवा में कमी हेतु उपभोक्ता संरक्षण अधिनियम के तहत शिकायत";
+            } else if (type === 'fir') {
+                headerTitle = d.draftFirTitle;
+                defaultPrompt = "थाना प्रभारी को वास्तविक व प्रमाणित साक्ष्यों पर आधारित लिखित शिकायत पत्र";
+            }
+
+            if (!consumeLegalToken('Drafting: ' + type)) return;
+
+            document.getElementById('draftModalHeader').innerText = headerTitle;
+            let contentArea = document.getElementById('draftContentArea');
+            contentArea.innerHTML = `<div class="text-rose-400 font-bold animate-pulse">📑 Generating Statutory Draft...</div>`;
+            document.getElementById('legalDraftModal').classList.remove('hidden');
+
+            try {
+                let formData = new FormData();
+                formData.append("draft_type", type);
+                formData.append("details", defaultPrompt);
+                formData.append("lang", currentLang);
+
+                let res = await fetch("/api/legal-generate-draft", {
+                    method: "POST",
+                    body: formData
+                });
+                let data = await res.json();
+
+                if (data.success && data.draft_text) {
+                    contentArea.innerText = data.draft_text;
+                } else {
+                    contentArea.innerText = "ड्राफ्ट तैयार करने में त्रुटि आई। कृपया पुनः प्रयास करें।";
+                }
+            } catch (e) {
+                contentArea.innerText = "नेटवर्क त्रुटि! कृपया सर्वर कनेक्शन जांचें।";
+            }
+        }
+
+        function closeDraftModal() {
+            document.getElementById('legalDraftModal').classList.add('hidden');
+        }
+
+        function downloadDraftPDF() {
+            let el = document.getElementById('draftContentArea');
+            let opt = {
+                margin: 0.5,
+                filename: 'Legal_Draft_Document.pdf',
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2 },
+                jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
+            };
+            html2pdf().set(opt).from(el).save();
+            logUserActivity('Legal Hub - Downloaded PDF Draft');
+        }
+
+        async function submitLegalQuestion() {
+            const d = legalTranslations[currentLang] || legalTranslations.hi;
+            let q = document.getElementById('legalQueryInput').value.trim();
+            if (!q) {
+                alert(d.alertEmptyQuery);
+                return;
+            }
+
+            if (!consumeLegalToken('Legal Consultation')) return;
+
+            let out = document.getElementById('legalOutputBoard');
+            out.innerHTML += `<div class="p-2.5 bg-slate-900 rounded-xl border border-slate-800 text-rose-300 font-semibold">👤 प्रश्न: "${q}"</div>`;
+            out.scrollTop = out.scrollHeight;
+
+            let loadingId = "loader_" + Date.now();
+            out.innerHTML += `<div id="${loadingId}" class="text-rose-400 font-medium animate-pulse">⚖️ Adv. Nyaya Mitra analyzing query...</div>`;
+            out.scrollTop = out.scrollHeight;
+
+            try {
+                let formData = new FormData();
+                formData.append("query", q);
+                formData.append("lang", currentLang);
+
+                let res = await fetch("/api/legal-advice-solve", {
+                    method: "POST",
+                    body: formData
+                });
+                let data = await res.json();
+
+                let loadElem = document.getElementById(loadingId);
+                if (loadElem) loadElem.remove();
+
+                if (data.success && data.advice) {
+                    out.innerHTML += `<div class="p-3.5 bg-rose-950/40 rounded-2xl border border-rose-500/40 text-slate-100 space-y-1.5 shadow">
+                        <p class="font-bold text-rose-300">⚖️ कानूनी राय व विश्लेषण (Legal Opinion):</p>
+                        <p class="text-xs sm:text-sm leading-relaxed whitespace-pre-line">${data.advice}</p>
+                    </div>`;
+                    out.scrollTop = out.scrollHeight;
+                    speakLegalVoice(data.summary || data.advice.slice(0, 120));
+                } else {
+                    out.innerHTML += `<div class="text-red-400 font-bold">⚠️ सर्वर व्यस्त है। कृपया पुनः प्रयास करें।</div>`;
+                }
+            } catch (err) {
+                let loadElem = document.getElementById(loadingId);
+                if (loadElem) loadElem.remove();
+                out.innerHTML += `<div class="text-red-400 font-bold">⚠️ नेटवर्क त्रुटि!</div>`;
+            }
+        }
+
+        function toggleLegalVoice() {
+            const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (!SpeechRec) {
+                alert("कृपया Chrome या संगत ब्राउज़र का उपयोग करें।");
+                return;
+            }
+
+            if (isLegalRecording) {
+                if (legalRecognizer) legalRecognizer.stop();
+                isLegalRecording = false;
+                document.getElementById('legalMicBtn').className = "px-5 py-3 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-2xl text-xs font-bold text-rose-400 transition flex items-center justify-center gap-1 shadow";
+                return;
+            }
+
+            legalRecognizer = new SpeechRec();
+            if (currentLang === 'en') legalRecognizer.lang = 'en-US';
+            else if (currentLang === 'pa') legalRecognizer.lang = 'pa-IN';
+            else if (currentLang === 'mr') legalRecognizer.lang = 'mr-IN';
+            else legalRecognizer.lang = 'hi-IN';
+
+            legalRecognizer.continuous = false;
+            legalRecognizer.interimResults = false;
+
+            legalRecognizer.onstart = () => {
+                isLegalRecording = true;
+                document.getElementById('legalMicBtn').className = "px-5 py-3 bg-rose-600 hover:bg-rose-500 rounded-2xl text-xs font-bold text-white transition flex items-center justify-center gap-1 shadow animate-pulse";
+            };
+
+            legalRecognizer.onresult = (e) => {
+                let spoken = e.results[0][0].transcript;
+                document.getElementById('legalQueryInput').value = spoken;
+                submitLegalQuestion();
+            };
+
+            legalRecognizer.onerror = () => {
+                isLegalRecording = false;
+                document.getElementById('legalMicBtn').className = "px-5 py-3 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-2xl text-xs font-bold text-rose-400 transition flex items-center justify-center gap-1 shadow";
+            };
+
+            legalRecognizer.onend = () => {
+                isLegalRecording = false;
+                document.getElementById('legalMicBtn').className = "px-5 py-3 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-2xl text-xs font-bold text-rose-400 transition flex items-center justify-center gap-1 shadow";
+            };
+
+            legalRecognizer.start();
+        }
+
+        function clearLegalBoard() {
+            document.getElementById('legalOutputBoard').innerHTML = `<p class="text-gray-400 text-xs">बोर्ड साफ कर दिया गया है। कोई भी कानूनी प्रश्न पूछें या धारा खोजें!</p>`;
+        }
+    </script>
+</body>
+</html>
