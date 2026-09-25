@@ -1,0 +1,2014 @@
+<!DOCTYPE html>
+<html lang="hi" id="htmlRoot" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <!-- 🚀 सोशल मीडिया ओपन ग्राफ व मेटा टैग्स -->
+    <title id="metaTitle">Dhruv Academy | India's First 4D AI Virtual Learning Ecosystem</title>
+    <meta name="description" id="metaDesc" content="Dhruv Academy: Next-gen 4D AI mentors, Nebula digital blackboard, 26-Layer Interactive Pedagogy Engine and smart quiz engine. Join today and claim 50 free tokens!">
+    <meta name="keywords" content="Dhruv Academy, AI Education, Virtual Classroom, Aditi Maam English, BNS Legal Hub, 4D Learning">
+    <meta name="author" content="Dhruv Academy Master Ecosystem">
+
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://dhruv-tech-academy.onrender.com/launch">
+    <meta property="og:title" id="ogTitle" content="⚡ Dhruv Academy - Next-Gen 4D AI Virtual Learning Ecosystem">
+    <meta property="og:description" id="ogDesc" content="4D Live AI Mentors, Nebula Blackboard, BNS Legal Adviser & Spoken English Studio. Claim 50 tokens now!">
+    <meta property="og:image" content="https://images.unsplash.com/photo-1516321318423-f06f85e504b3?q=80&w=1200&auto=format&fit=crop">
+
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" id="twTitle" content="⚡ Dhruv Academy Master AI Ecosystem">
+    <meta name="twitter:description" id="twDesc" content="Next-Gen 4D Learning, Live AI Classrooms, and Verified Education Engine. Join Now!">
+    <meta name="twitter:image" content="https://images.unsplash.com/photo-1516321318423-f06f85e504b3?q=80&w=1200&auto=format&fit=crop">
+
+    <!-- आवश्यक लाइब्रेरीज़ -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vanilla-tilt/1.8.0/vanilla-tilt.min.js"></script>
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&family=Yantramanav:wght@500;700;900&display=swap');
+        
+        * { box-sizing: border-box; }
+        body {
+            font-family: 'Plus Jakarta Sans', 'Yantramanav', sans-serif;
+            background-color: #020617;
+            color: #f8fafc;
+            overflow-x: hidden;
+            margin: 0;
+            padding: 0;
+        }
+
+        .ambient-glow {
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            pointer-events: none;
+            z-index: 0;
+            background: 
+                radial-gradient(circle at 15% 20%, rgba(6, 182, 212, 0.16) 0%, transparent 40%),
+                radial-gradient(circle at 85% 30%, rgba(147, 51, 234, 0.16) 0%, transparent 45%),
+                radial-gradient(circle at 50% 85%, rgba(244, 63, 94, 0.12) 0%, transparent 50%);
+        }
+
+        .glass-panel {
+            background: rgba(15, 23, 42, 0.85);
+            border: 1px solid rgba(56, 189, 248, 0.22);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+            transform-style: preserve-3d;
+        }
+        .glass-panel:hover {
+            border-color: rgba(56, 189, 248, 0.6);
+            box-shadow: 0 20px 45px -10px rgba(6, 182, 212, 0.35);
+        }
+
+        .glow-btn {
+            background: linear-gradient(135deg, #06b6d4, #3b82f6, #8b5cf6);
+            background-size: 200% 200%;
+            animation: gradientMove 4s ease infinite;
+            box-shadow: 0 0 25px rgba(6, 182, 212, 0.45);
+        }
+        @keyframes gradientMove {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .pulse-ring {
+            box-shadow: 0 0 0 0 rgba(6, 182, 212, 0.6);
+            animation: pulseWave 2s infinite;
+        }
+        @keyframes pulseWave {
+            0% { box-shadow: 0 0 0 0 rgba(6, 182, 212, 0.6); }
+            70% { box-shadow: 0 0 0 15px rgba(6, 182, 212, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(6, 182, 212, 0); }
+        }
+
+        .student-id-card {
+            background: linear-gradient(135deg, #090d16 0%, #1e1b4b 50%, #0369a1 100%);
+            border: 2px solid rgba(56, 189, 248, 0.6);
+            box-shadow: 0 20px 40px rgba(6, 182, 212, 0.35);
+        }
+
+        .pledge-card {
+            background: linear-gradient(135deg, #042f2e 0%, #0f172a 50%, #1e1b4b 100%);
+            border: 2px solid rgba(16, 185, 129, 0.5);
+            box-shadow: 0 20px 40px rgba(16, 185, 129, 0.25);
+        }
+
+        .jump-dock {
+            background: rgba(15, 23, 42, 0.92);
+            border: 1px solid rgba(56, 189, 248, 0.35);
+            backdrop-filter: blur(16px);
+        }
+
+        /* 🌌 वास्तविक नेबुला गैलेक्सी 4D ब्लैकबोर्ड */
+        .nebula-board-bg {
+            background: #020108;
+            background-image: 
+                radial-gradient(ellipse at 20% 30%, rgba(112, 0, 255, 0.28) 0%, transparent 55%),
+                radial-gradient(ellipse at 80% 70%, rgba(0, 243, 255, 0.22) 0%, transparent 50%),
+                radial-gradient(circle at 50% 50%, rgba(255, 0, 128, 0.12) 0%, transparent 65%);
+            border: 2px solid rgba(0, 243, 255, 0.35);
+            box-shadow: 0 0 45px rgba(112, 0, 255, 0.3), inset 0 0 50px rgba(0, 243, 255, 0.1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .cosmic-dust-glow {
+            position: absolute;
+            width: 280px;
+            height: 280px;
+            background: radial-gradient(circle, rgba(157, 78, 221, 0.35) 0%, rgba(0, 243, 255, 0) 70%);
+            filter: blur(45px);
+            pointer-events: none;
+            animation: cosmicDrift 14s infinite alternate ease-in-out;
+        }
+        @keyframes cosmicDrift {
+            0% { transform: translate(-80px, -60px) scale(0.9); }
+            100% { transform: translate(90px, 70px) scale(1.2); }
+        }
+
+        /* 🪐 4D सौरमंडल सिमुलेटर स्टाइल्स (Lightweight CSS3 Orbit Engine) */
+        .solar-system-box {
+            position: relative;
+            width: 100%;
+            height: 280px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+        .sun-core {
+            position: absolute;
+            width: 38px;
+            height: 38px;
+            background: radial-gradient(circle, #fff700, #ff5400);
+            border-radius: 50%;
+            box-shadow: 0 0 25px #ff7b00, 0 0 50px #ff3c00;
+            z-index: 10;
+        }
+        .orbit-ring {
+            position: absolute;
+            border: 1px dashed rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            top: 50%;
+            left: 50%;
+        }
+        .orbit-mercury { width: 70px; height: 70px; animation: orbitRotate 4s linear infinite; }
+        .orbit-venus { width: 110px; height: 110px; animation: orbitRotate 7.5s linear infinite; }
+        .orbit-earth { width: 170px; height: 170px; animation: orbitRotate 12s linear infinite; }
+        .orbit-mars { width: 230px; height: 230px; animation: orbitRotate 22s linear infinite; }
+
+        .planet-dot {
+            position: absolute;
+            border-radius: 50%;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+        .dot-mercury { width: 6px; height: 6px; background: #c2c2c2; right: -3px; }
+        .dot-venus { width: 10px; height: 10px; background: #e0a96d; right: -5px; }
+        .dot-earth { width: 12px; height: 12px; background: #00a8ff; right: -6px; box-shadow: 0 0 8px #00f3ff; }
+        .dot-mars { width: 9px; height: 9px; background: #ff4757; right: -4.5px; }
+
+        @keyframes orbitRotate {
+            100% { transform: translate(-50%, -50%) rotate(360deg); }
+        }
+
+        /* भौतिकी लाइव प्रमेय रेखाएं */
+        .step-proof-line {
+            opacity: 0;
+            transform: translateY(4px);
+            transition: all 0.4s ease;
+            margin: 3px 0;
+        }
+        .step-proof-line.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    </style>
+</head>
+<body class="selection:bg-cyan-500 selection:text-white relative bg-[#020617]">
+
+    <div class="ambient-glow"></div>
+
+    <!-- 🌟 संपूर्ण कैप्चर एरिया -->
+    <div id="mainCaptureArea" class="relative z-10 w-full bg-[#020617]">
+
+        <!-- ⚡ काउंटडाउन टाइमर बार -->
+        <div class="bg-gradient-to-r from-amber-600 via-rose-600 to-purple-600 text-white text-[11px] sm:text-xs py-2 px-4 text-center font-bold flex items-center justify-center gap-2 shadow-md">
+            <span>⏰</span>
+            <span id="topUrgencyText">दैनिक छात्र अध्ययन प्रोत्साहन: पंजीकरण पर 50 टोकन + सहपाठियों से साझा करने पर दैनिक 250 टोकन तक अनुदान!</span>
+            <span id="countdownTimer" class="font-mono bg-black/40 px-2 py-0.5 rounded border border-white/30 text-amber-200">01:59:45</span>
+        </div>
+
+        <!-- टॉप नेविगेशन बार -->
+        <nav class="sticky top-0 z-40 bg-slate-950/90 backdrop-blur-xl border-b border-slate-800/80 px-4 md:px-8 py-3.5">
+            <div class="max-w-7xl mx-auto flex justify-between items-center relative z-10">
+                
+                <a href="/" class="flex items-center gap-3 group">
+                    <div class="w-11 h-11 rounded-2xl bg-gradient-to-tr from-cyan-500 via-sky-500 to-indigo-600 flex items-center justify-center text-white font-black text-2xl shadow-lg shadow-cyan-500/40 group-hover:rotate-6 transition duration-300">
+                        ⚡
+                    </div>
+                    <div>
+                        <h1 id="brandName" class="text-lg md:text-xl font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-sky-200 to-indigo-400">
+                            ध्रुव एकेडमी (Dhruv Academy)
+                        </h1>
+                        <p id="brandTagline" class="text-[10px] text-cyan-300 font-mono tracking-widest flex items-center gap-1.5">
+                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span> 4D VIRTUAL ACADEMY ECOSYSTEM
+                        </p>
+                    </div>
+                </a>
+
+                <!-- 4-भाषा सेलेक्टर व त्वरित बटन -->
+                <div class="flex items-center gap-2 sm:gap-3">
+                    <div class="flex items-center gap-1.5 bg-slate-900/90 border border-cyan-500/30 px-3 py-1.5 rounded-full shadow-inner">
+                        <span class="text-xs">🌐</span>
+                        <select id="langSelector" onchange="switchLanguage(this.value)" class="bg-transparent text-xs font-bold text-cyan-300 outline-none cursor-pointer">
+                            <option value="hi" class="bg-slate-900 text-white">🇮🇳 हिंदी (Hindi)</option>
+                            <option value="en" class="bg-slate-900 text-white">🇬🇧 English</option>
+                            <option value="pa" class="bg-slate-900 text-white">🇮🇳 ਪੰਜਾਬੀ (Punjabi)</option>
+                            <option value="mr" class="bg-slate-900 text-white">🇮🇳 मराठी (Marathi)</option>
+                        </select>
+                    </div>
+
+                    <a href="#registerSection" class="hidden sm:inline-flex items-center gap-2 px-5 py-2.5 glow-btn text-white text-xs font-extrabold rounded-full shadow-lg transition hover:scale-105 cursor-pointer">
+                        <span>🚀</span> <span id="navRegisterBtn">फ्री रजिस्ट्रेशन (Get Access)</span>
+                    </a>
+                </div>
+
+            </div>
+        </nav>
+
+        <!-- हीरो सेक्शन -->
+        <header class="relative px-4 pt-10 pb-10 max-w-7xl mx-auto text-center space-y-6">
+            
+            <div class="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full bg-cyan-950/80 border border-cyan-400/40 text-xs font-bold text-cyan-300 shadow-lg pulse-ring">
+                <span class="text-sm">🌟</span>
+                <span id="heroBadge">भारत की पहली 100% प्रामाणिक व 26-लेयर सर्टिफाइड 4D AI शिक्षण प्रणाली</span>
+            </div>
+
+            <h2 id="heroHeading" class="text-3xl sm:text-5xl md:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 via-sky-100 to-indigo-300 tracking-tight leading-tight max-w-5xl mx-auto">
+                किताबी रटंत प्रणाली छोड़िए, सीधे जुड़िए 4D AI सजीव क्लासरूम से!
+            </h2>
+
+            <p id="heroSubheading" class="text-sm sm:text-base md:text-lg text-slate-300 max-w-3xl mx-auto leading-relaxed font-normal">
+                अदिति मैम से बोलकर अंग्रेजी सीखें, नेबुला 3D ब्लैकबोर्ड पर कठिन गणित-विज्ञान सुलझाएं, और बीएनएस (BNS) लीगल एडवाइज़र से प्रमाणित कानूनी समाधान प्राप्त करें। भविष्य की शिक्षा अब आपकी हथेली पर!
+            </p>
+
+            <!-- एक्शन बटन्स व लाइव वॉयस टीज़र + 1-क्लिक फुल पेज शेयर -->
+            <div class="flex flex-wrap justify-center items-center gap-3 pt-2">
+                <a href="#registerSection" class="px-7 py-3.5 glow-btn text-white font-extrabold text-xs sm:text-sm rounded-2xl shadow-2xl transition transform hover:-translate-y-1 flex items-center gap-2">
+                    <span>✨</span> <span id="heroCtaRegister">तुरंत निःशुल्क खाता बनाएं (Claim 50 Tokens)</span>
+                </a>
+                <button onclick="playAditiTeaserVoice()" class="px-5 py-3.5 bg-gradient-to-r from-purple-700 to-pink-600 hover:from-purple-600 text-white font-bold text-xs sm:text-sm rounded-2xl shadow-xl transition flex items-center gap-2 hover:scale-105">
+                    <i class="fa-solid fa-volume-high text-base animate-pulse"></i> <span id="heroAditiVoiceBtn">अदिति मैम की आवाज़ सुनें 👩‍🏫</span>
+                </button>
+                <button onclick="captureAndShareFullPage()" id="fullShareBtn" class="px-5 py-3.5 bg-emerald-600 hover:bg-emerald-500 border border-emerald-400/40 text-white font-bold text-xs sm:text-sm rounded-2xl shadow-xl transition flex items-center gap-2 hover:scale-105 cursor-pointer">
+                    <i class="fa-brands fa-whatsapp text-lg"></i> <span id="btnFullShareText">पूरा पेज WhatsApp पर भेजें</span>
+                </button>
+            </div>
+
+            <!-- लाइव स्टैट्स काउंटर बार -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-4xl mx-auto pt-2">
+                <div class="glass-panel p-4 rounded-2xl text-center" data-tilt data-tilt-max="12">
+                    <span class="text-2xl sm:text-3xl font-black text-cyan-400">100%</span>
+                    <p id="stat1" class="text-[11px] text-slate-400 font-semibold uppercase tracking-wider mt-1">प्रामाणिक व सुरक्षित</p>
+                </div>
+                <div class="glass-panel p-4 rounded-2xl text-center" data-tilt data-tilt-max="12">
+                    <span class="text-2xl sm:text-3xl font-black text-sky-400">4D Live</span>
+                    <p id="stat2" class="text-[11px] text-slate-400 font-semibold uppercase tracking-wider mt-1">सजीव मानवीय मेंटर</p>
+                </div>
+                <div class="glass-panel p-4 rounded-2xl text-center" data-tilt data-tilt-max="12">
+                    <span class="text-2xl sm:text-3xl font-black text-indigo-400">26-Layer</span>
+                    <p id="stat3" class="text-[11px] text-slate-400 font-semibold uppercase tracking-wider mt-1">Interactive Pedagogy</p>
+                </div>
+                <div class="glass-panel p-4 rounded-2xl text-center" data-tilt data-tilt-max="12">
+                    <span class="text-2xl sm:text-3xl font-black text-emerald-400">12-in-1</span>
+                    <p id="stat4" class="text-[11px] text-slate-400 font-semibold uppercase tracking-wider mt-1">एआई मास्टर मॉड्यूल्स</p>
+                </div>
+            </div>
+
+        </header>
+
+        <!-- 🎙️ अदिति मैम 4D लाइव वॉयस एनालाइज़र सैंडबॉक्स -->
+        <section id="sectionVoiceLab" class="max-w-4xl mx-auto px-4 py-6 scroll-mt-20">
+            <div class="glass-panel p-6 rounded-3xl border border-cyan-500/40 text-center space-y-4 shadow-2xl">
+                <div class="inline-flex items-center gap-1.5 px-3 py-1 bg-cyan-950 text-cyan-300 text-xs font-bold rounded-full border border-cyan-500/30">
+                    <span>🎙️</span> <span id="sandboxBadge">लाइव 4D वॉयस लैब: बिना रजिस्ट्रेशन के बोलकर टेस्ट करें!</span>
+                </div>
+                <h3 id="sandboxTitle" class="text-base sm:text-lg font-black text-white">
+                    माइक ऑन करें और अंग्रेजी में बोलें: <span class="text-cyan-300 font-mono">"Hello Aditi Ma'am, I am ready to learn"</span>
+                </h3>
+                
+                <div class="flex justify-center items-center gap-4">
+                    <button onclick="testSandboxVoice()" id="sandboxMicBtn" class="px-6 py-3 bg-gradient-to-r from-rose-600 to-pink-600 hover:from-rose-500 text-white rounded-2xl font-bold text-xs sm:text-sm shadow-xl flex items-center gap-2 cursor-pointer transition">
+                        <i class="fa-solid fa-microphone text-base" id="sandboxMicIcon"></i> <span id="sandboxBtnText">माइक ऑन करें व बोलें</span>
+                    </button>
+                </div>
+
+                <div id="sandboxResultBox" class="hidden p-4 bg-slate-950/80 rounded-2xl border border-cyan-500/30 max-w-lg mx-auto text-xs space-y-2">
+                    <div class="flex justify-between items-center border-b border-slate-800 pb-1.5">
+                        <span class="text-slate-400"><span id="lblYouSaid">आपने बोला:</span> <b id="sandboxSpokenText" class="text-cyan-300">"..."</b></span>
+                        <span id="sandboxScoreBadge" class="px-2 py-0.5 bg-emerald-950 text-emerald-400 rounded-full font-bold">96% Pronunciation</span>
+                    </div>
+                    <p id="sandboxFeedback" class="text-emerald-300 font-medium text-left">
+                        ✨ अदिति मैम: "बहुत बढ़िया उच्चारण! पूर्ण 4D वॉयस और फोनेटिक गाइड के लिए नीचे तुरंत निःशुल्क रजिस्टर करें।"
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- 🌌 वास्तविक 'नेबुला गैलेक्सी' 4D डिजिटल ब्लैकबोर्ड एवं लाइव सिमुलेटर -->
+        <section id="sectionBlackboard" class="max-w-5xl mx-auto px-4 py-6 scroll-mt-20">
+            <div class="nebula-board-bg p-6 sm:p-7 rounded-3xl text-center space-y-4 shadow-2xl">
+                <div class="cosmic-dust-glow"></div>
+                
+                <!-- HUD लाइव टेलीमेट्री बार -->
+                <div class="flex justify-between items-center flex-wrap gap-2 border-b border-cyan-500/20 pb-3 relative z-10 text-xs font-mono">
+                    <div class="flex items-center gap-2">
+                        <span class="text-lg">🌌</span>
+                        <h3 id="boardSimTitle" class="text-sm sm:text-base font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 to-purple-300">
+                            नेबुला गैलेक्सी 4D ब्लैकबोर्ड (Cosmic Nebula Board)
+                        </h3>
+                    </div>
+                    <div class="text-cyan-300 text-[11px]">
+                        <span class="w-2 h-2 rounded-full bg-emerald-400 inline-block mr-1 animate-pulse"></span>
+                        <span id="boardHudStatus">NEBULA OS v4.2 • 60 FPS STABLE</span>
+                    </div>
+                </div>
+
+                <!-- विषय टॉगल बटन्स -->
+                <div class="flex flex-wrap justify-center sm:justify-start gap-1.5 sm:gap-2 relative z-10">
+                    <button onclick="runBoardSimulation('physics')" id="btnSimPhysics" class="px-3.5 py-1.5 bg-purple-900/90 hover:bg-purple-800 border border-purple-500/50 rounded-lg text-xs font-bold text-amber-300 shadow">⚛️ भौतिकी (E=mc²)</button>
+                    <button onclick="runBoardSimulation('solar')" id="btnSimSolar" class="px-3.5 py-1.5 bg-slate-900 hover:bg-slate-800 border border-slate-700 rounded-lg text-xs font-bold text-cyan-300">🪐 सौरमंडल (भूगोल)</button>
+                    <button onclick="runBoardSimulation('legal')" id="btnSimLegal" class="px-3.5 py-1.5 bg-slate-900 hover:bg-slate-800 border border-slate-700 rounded-lg text-xs font-bold text-rose-300">⚖️ BNS 2023 (कानूनी धाराएं)</button>
+                    <button onclick="runBoardSimulation('math')" id="btnSimMath" class="px-3.5 py-1.5 bg-slate-900 hover:bg-slate-800 border border-slate-700 rounded-lg text-xs font-semibold text-sky-300">📐 गणित</button>
+                    <button onclick="runBoardSimulation('science')" id="btnSimSci" class="px-3.5 py-1.5 bg-slate-900 hover:bg-slate-800 border border-slate-700 rounded-lg text-xs font-semibold text-emerald-300">🌿 विज्ञान</button>
+                    <button onclick="runBoardSimulation('code')" id="btnSimCode" class="px-3.5 py-1.5 bg-slate-900 hover:bg-slate-800 border border-slate-700 rounded-lg text-xs font-semibold text-amber-300">💻 कोडिंग</button>
+                </div>
+                
+                <!-- ब्लैकबोर्ड डायनामिक रेंडरिंग एरिया -->
+                <div class="bg-slate-950/90 p-5 rounded-2xl border border-cyan-500/30 font-mono text-left text-xs min-h-[220px] flex items-center text-cyan-200 relative z-10 shadow-inner" id="boardSimulationContent">
+                    <!-- डिफ़ॉल्ट रूप से भौतिकी प्रमेय लोड होगी -->
+                </div>
+            </div>
+        </section>
+
+        <!-- ⚡ लाइव 30-सेकंड मिनी क्विज़ चैलेंज -->
+        <section id="sectionQuiz" class="max-w-3xl mx-auto px-4 py-6 scroll-mt-20">
+            <div class="glass-panel p-6 rounded-3xl border-2 border-cyan-500/40 text-center space-y-4 shadow-xl">
+                <div class="inline-flex items-center gap-1.5 px-3 py-1 bg-cyan-950 text-cyan-300 text-xs font-bold rounded-full">
+                    <span>🎯</span> <span id="quizBadge">30-सेकंड लाइव चैलेंज: उत्तर दें और 20 अतिरिक्त टोकन जीतें!</span>
+                </div>
+                <h4 id="quizQuestion" class="text-sm sm:text-base font-bold text-white">
+                    "पाइथन में मेमोरी एड्रेस देखने के लिए किस फ़ंक्शन का उपयोग किया जाता है?"
+                </h4>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-md mx-auto">
+                    <button onclick="handleLiveQuiz(true)" id="quizOpt1" class="py-2.5 px-4 bg-slate-900 hover:bg-slate-800 border border-slate-700 rounded-xl text-xs font-bold text-cyan-300 transition">
+                        A) id() फंक्शन
+                    </button>
+                    <button onclick="handleLiveQuiz(false)" id="quizOpt2" class="py-2.5 px-4 bg-slate-900 hover:bg-slate-800 border border-slate-700 rounded-xl text-xs font-bold text-slate-300 transition">
+                        B) memory() फंक्शन
+                    </button>
+                </div>
+                <p id="quizFeedback" class="text-xs font-bold hidden"></p>
+            </div>
+        </section>
+
+        <!-- मुख्य विशेषताएं (Features Matrix Grid with 3D Tilt) -->
+        <section id="sectionFeatures" class="max-w-7xl mx-auto px-4 py-8 scroll-mt-20">
+            <div class="text-center mb-8 space-y-2">
+                <h3 id="featuresTitle" class="text-2xl sm:text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-indigo-300">
+                    ध्रुव एकेडमी की 6 अजेय और अत्याधुनिक शक्तियाँ
+                </h3>
+                <p id="featuresSub" class="text-xs sm:text-sm text-slate-400">स्कूली बच्चों से लेकर यूपीएससी, नीट व प्रतियोगी परीक्षाओं के छात्रों तक के लिए वरदान</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                
+                <div class="glass-panel p-6 sm:p-7 rounded-3xl space-y-3.5 group cursor-pointer" data-tilt data-tilt-max="14" data-tilt-glare data-tilt-max-glare="0.2">
+                    <div class="w-14 h-14 rounded-2xl bg-cyan-950/80 border border-cyan-500/40 flex items-center justify-center text-3xl group-hover:scale-110 transition shadow-inner">
+                        👩‍🏫
+                    </div>
+                    <h4 id="feat1Title" class="text-base sm:text-lg font-black text-cyan-300">अदिति मैम - 4D लाइव AI इंग्लिश मेंटर</h4>
+                    <p id="feat1Desc" class="text-xs text-slate-300 leading-relaxed">
+                        हैंड्स-फ्री नेचुरल वॉयस, 3D माउथ व टंग एनाटॉमी गाइड और रियल-टाइम फोनेटिक कलर कोडिंग के साथ फर्राटेदार अंग्रेजी सीखें।
+                    </p>
+                </div>
+
+                <div class="glass-panel p-6 sm:p-7 rounded-3xl space-y-3.5 group cursor-pointer" data-tilt data-tilt-max="14" data-tilt-glare data-tilt-max-glare="0.2">
+                    <div class="w-14 h-14 rounded-2xl bg-indigo-950/80 border border-indigo-500/40 flex items-center justify-center text-3xl group-hover:scale-110 transition shadow-inner">
+                        📺
+                    </div>
+                    <h4 id="feat2Title" class="text-base sm:text-lg font-black text-indigo-300">नेबुला एआई वर्चुअल क्लासरूम व ब्लैकबोर्ड</h4>
+                    <p id="feat2Desc" class="text-xs text-slate-300 leading-relaxed">
+                        लाइव डिजिटल चॉकबोर्ड, कैमरा बुक स्कैनर और बिना किसी रुकावट के पॉइंट-वाइज समाधान। पहली कक्षा से डिग्री कॉलेज तक उपयोगी।
+                    </p>
+                </div>
+
+                <div class="glass-panel p-6 sm:p-7 rounded-3xl space-y-3.5 group cursor-pointer" data-tilt data-tilt-max="14" data-tilt-glare data-tilt-max-glare="0.2">
+                    <div class="w-14 h-14 rounded-2xl bg-rose-950/80 border border-rose-500/40 flex items-center justify-center text-3xl group-hover:scale-110 transition shadow-inner">
+                        ⚖️
+                    </div>
+                    <h4 id="feat3Title" class="text-base sm:text-lg font-black text-rose-300">लीगल एआई मास्टर हब (BNS & RTI विशेषज्ञ)</h4>
+                    <p id="feat3Desc" class="text-xs text-slate-300 leading-relaxed">
+                        भारतीय न्याय संहिता (BNS), आरटीआई आवेदन, कॉर्पोरेट कम्प्लायंस (कंपनी अधिनियम 2013) और 1-क्लिक लीगल नोटिस ड्राफ्टिंग।
+                    </p>
+                </div>
+
+                <div class="glass-panel p-6 sm:p-7 rounded-3xl space-y-3.5 group cursor-pointer" data-tilt data-tilt-max="14" data-tilt-glare data-tilt-max-glare="0.2">
+                    <div class="w-14 h-14 rounded-2xl bg-emerald-950/80 border border-emerald-500/40 flex items-center justify-center text-3xl group-hover:scale-110 transition shadow-inner">
+                        🛡️
+                    </div>
+                    <h4 id="feat4Title" class="text-base sm:text-lg font-black text-emerald-300">26-लेयर प्रमाणित डिफेंस मैट्रिक्स</h4>
+                    <p id="feat4Desc" class="text-xs text-slate-300 leading-relaxed">
+                        एंटी-पाइरेसी, डीआरएम प्रोटेक्शन, मिलिट्री-ग्रेड सेशन बाइंडिंग और सुरक्षित डेटा स्टोरेज जो डेटा लीक से 100% सुरक्षा दे।
+                    </p>
+                </div>
+
+                <div class="glass-panel p-6 sm:p-7 rounded-3xl space-y-3.5 group cursor-pointer" data-tilt data-tilt-max="14" data-tilt-glare data-tilt-max-glare="0.2">
+                    <div class="w-14 h-14 rounded-2xl bg-amber-950/80 border border-amber-500/40 flex items-center justify-center text-3xl group-hover:scale-110 transition shadow-inner">
+                        🎯
+                    </div>
+                    <h4 id="feat5Title" class="text-base sm:text-lg font-black text-amber-300">400-AI स्मार्ट नोट्स वैलिडेटर व क्विज़</h4>
+                    <p id="feat5Desc" class="text-xs text-slate-300 leading-relaxed">
+                        कठिन और पुराने नोट्स को आम बोलचाल व छात्र-अनुकूल सरल नोट्स में बदलें और एंटी-चीट कियोस्क क्विज़ से स्वयं का परीक्षण करें।
+                    </p>
+                </div>
+
+                <div class="glass-panel p-6 sm:p-7 rounded-3xl space-y-3.5 group cursor-pointer" data-tilt data-tilt-max="14" data-tilt-glare data-tilt-max-glare="0.2">
+                    <div class="w-14 h-14 rounded-2xl bg-purple-950/80 border border-purple-500/40 flex items-center justify-center text-3xl group-hover:scale-110 transition shadow-inner">
+                        💰
+                    </div>
+                    <h4 id="feat6Title" class="text-base sm:text-lg font-black text-purple-300">सेंट्रल वॉलेट व टोकन इकोसिस्टम</h4>
+                    <p id="feat6Desc" class="text-xs text-slate-300 leading-relaxed">
+                        एक ही सेंट्रल वॉलेट से पूरे पोर्टल के सभी 12 मॉड्यूल्स को सहजता से चलाएं। हर सही उत्तर पर टोकन्स कमाएं और रिवॉर्ड पाएं।
+                    </p>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- 📜 राष्ट्रीय डिजिटल शिक्षा प्रतिज्ञा पत्र जनरेटर -->
+        <section id="sectionPledge" class="max-w-4xl mx-auto px-4 py-6 scroll-mt-20">
+            <div class="glass-panel p-6 sm:p-8 rounded-3xl border border-emerald-500/40 text-center space-y-4 shadow-2xl">
+                <div class="inline-flex items-center gap-2 px-3 py-1 bg-emerald-950 text-emerald-300 text-xs font-bold rounded-full border border-emerald-500/30">
+                    <span>🇮🇳</span> <span id="pledgeBadge">राष्ट्रीय डिजिटल शिक्षा संकल्प 2026</span>
+                </div>
+                <h3 id="pledgeTitle" class="text-lg sm:text-xl font-black text-white">"हर हाथ में आधुनिक 4D AI शिक्षा" - संकल्प पत्र प्राप्त करें</h3>
+                <p id="pledgeDesc" class="text-xs text-slate-300 max-w-xl mx-auto">
+                    ध्रुव एकेडमी के साथ जुड़कर आधुनिक, पारदर्शी और तकनीक-सक्षम शिक्षा का हिस्सा बनें और अपना आधिकारिक डिजिटल प्रतिज्ञा पत्र डाउनलोड करें।
+                </p>
+
+                <div class="flex flex-col sm:flex-row justify-center items-center gap-3 pt-2">
+                    <input type="text" id="pledgeNameInput" readonly placeholder="🔒 पहले नीचे पंजीकरण (Registration) करें..." class="p-3 bg-slate-950/90 border border-slate-700 rounded-xl text-xs text-cyan-300 focus:outline-none focus:border-emerald-400 w-full sm:w-64 cursor-not-allowed">
+                    <button onclick="generateEducationPledge()" id="btnGeneratePledge" class="px-6 py-3 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold transition flex items-center gap-2 cursor-pointer shadow-lg w-full sm:w-auto justify-center">
+                        <span>📜</span> <span id="btnPledgeText">प्रतिज्ञा पत्र बनाएं व देखें</span>
+                    </button>
+                </div>
+
+                <!-- प्रतिज्ञा पत्र रेंडर बॉक्स -->
+                <div id="pledgeCardRender"
+                     class="max-w-xl mx-auto pledge-card p-6 rounded-2xl text-left relative overflow-hidden"
+                     style="background-image: url('/static/images/certificate_template.jpg'); background-size: cover; background-position: center;">
+                    <div class="flex justify-between items-center border-b border-emerald-500/30 pb-2">
+                        <span class="text-xs font-black text-emerald-300">🇮🇳 DHRUV ACADEMY NATIONAL PLEDGE</span>
+                        <span id="badgeCertPledge" class="text-[10px] bg-emerald-500 text-slate-950 font-bold px-2.5 py-0.5 rounded-full">CERTIFIED PLEDGE</span>
+                    </div>
+                    
+                    <div class="space-y-1 text-center py-6">
+                        <h4 id="pledgeRecipientName" class="text-xl font-black text-slate-900 bg-white/70 backdrop-blur-xs py-1 px-3 rounded-lg inline-block shadow-xs">ध्रुव प्रताप सिंह</h4>
+                        <p id="pledgeCertificateText" class="text-xs font-semibold text-slate-800 bg-white/60 py-1 px-2 rounded">ने 'हर हाथ में डिजिटल और 4D AI शिक्षा' का गौरवशाली संकल्प लिया है।</p>
+                    </div>
+                    
+                    <div class="flex justify-between items-center text-[10px] text-slate-800 pt-2 border-t border-emerald-500/20 font-mono font-bold">
+                        <span>PLEDGE ID: #PLEDGE-2026</span>
+                        <span>DHRUV ACADEMY CORE</span>
+                    </div>
+                </div>
+                
+                <div class="pt-3">
+                    <button onclick="downloadPledgeCard()" id="btnDownloadPledgePng" class="px-5 py-2.5 bg-gradient-to-r from-emerald-600 to-teal-700 hover:from-emerald-500 hover:to-teal-600 text-white border border-emerald-400/40 rounded-xl text-xs font-bold transition cursor-pointer shadow-lg">
+                        📥 सत्यापित संकल्प पत्र डाउनलोड करें (JPG)
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- रजिस्ट्रेशन व 10-सहपाठी शेयर कोटा सेक्शन -->
+        <section id="registerSection" class="max-w-4xl mx-auto px-4 py-10 scroll-mt-20">
+            <div class="glass-panel p-6 sm:p-12 rounded-3xl shadow-2xl relative overflow-hidden">
+                
+                <div class="flex justify-center mb-6">
+                    <div class="bg-slate-950 p-1.5 rounded-2xl border border-slate-800 flex gap-1">
+                        <button type="button" onclick="setRegistrationType('student')" id="tabStudent" class="px-5 py-2 rounded-xl text-xs font-extrabold bg-cyan-600 text-white shadow">
+                            👨‍🎓 विद्यार्थी / परीक्षार्थी
+                        </button>
+                        <button type="button" onclick="setRegistrationType('school')" id="tabSchool" class="px-5 py-2 rounded-xl text-xs font-bold text-slate-400 hover:text-white">
+                            🏫 स्कूल / कोचिंग संस्थान
+                        </button>
+                    </div>
+                </div>
+
+                <div class="text-center space-y-2 mb-8">
+                    <span id="passBadge" class="px-3.5 py-1 bg-cyan-950 border border-cyan-400/50 text-cyan-300 rounded-full text-xs font-bold uppercase tracking-wider">
+                        ⚡ Instant Student Pass & Grant
+                    </span>
+                    <h3 id="formHeading" class="text-2xl sm:text-4xl font-black text-white">
+                        ध्रुव एकेडमी छात्र पंजीकरण (Registration)
+                    </h3>
+                    <p id="formSubheading" class="text-xs sm:text-sm text-slate-300 max-w-xl mx-auto">
+                        पंजीकरण पर तुरंत <b>50 AI टोकन</b> प्राप्त करें। अपने सहपाठियों से साझा करने पर प्रतिदिन अधिकतम <b>10 इनवाइट्स पर 250 टोकन्स</b> तक अतिरिक्त अर्जित करें!
+                    </p>
+                </div>
+
+                <form id="promoRegisterForm" onsubmit="handleRegistration(event)" class="space-y-4">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label id="lblName" class="block text-xs font-semibold text-slate-300 mb-1.5">पूरा नाम (Full Name):</label>
+                            <input type="text" id="regName" required placeholder="अपना शुभ नाम दर्ज करें..." class="w-full p-3.5 bg-slate-950/80 border border-slate-700 rounded-xl text-xs text-white focus:outline-none focus:border-cyan-400 shadow-inner">
+                        </div>
+                        <div>
+                            <label id="lblMobile" class="block text-xs font-semibold text-slate-300 mb-1.5">व्हाट्सएप / मोबाइल नंबर:</label>
+                            <input type="tel" id="regMobile" required maxlength="10" placeholder="10 अंकों का मोबाइल नंबर..." class="w-full p-3.5 bg-slate-950/80 border border-slate-700 rounded-xl text-xs text-white focus:outline-none focus:border-cyan-400 shadow-inner">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label id="lblRole" class="block text-xs font-semibold text-slate-300 mb-1.5">आप किस रूप में जुड़ना चाहते हैं?</label>
+                            <select id="regRole" class="w-full p-3.5 bg-slate-950/80 border border-slate-700 rounded-xl text-xs text-cyan-300 focus:outline-none focus:border-cyan-400 cursor-pointer shadow-inner">
+                                <option value="student" id="optRoleStudent">विद्यार्थी (Student / Learner)</option>
+                                <option value="aspirant" id="optRoleAspirant">प्रतियोगी परीक्षा परीक्षार्थी (UPSC/SSC/NEET)</option>
+                                <option value="tutor" id="optRoleTutor">शिक्षक / संस्थान (Teacher / Coaching Tutor)</option>
+                                <option value="parent" id="optRoleParent">अभिभावक (Parent)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label id="lblState" class="block text-xs font-semibold text-slate-300 mb-1.5">राज्य / शहर (Location):</label>
+                            <input type="text" id="regLocation" placeholder="उदा: उत्तर प्रदेश / बदायूँ" class="w-full p-3.5 bg-slate-950/80 border border-slate-700 rounded-xl text-xs text-white focus:outline-none focus:border-cyan-400 shadow-inner">
+                        </div>
+                    </div>
+
+                    <button type="submit" id="btnSubmitForm" class="w-full py-4 glow-btn text-white font-extrabold text-sm sm:text-base rounded-2xl shadow-2xl transition transform hover:scale-[1.01] cursor-pointer mt-2">
+                        🚀 पंजीकरण पूरा करें व 50 बोनस टोकन पाएं (Claim 50 Bonus Tokens)
+                    </button>
+                </form>
+
+                <!-- पोस्ट-रजिस्ट्रेशन हब: VIP कार्ड + कोटा मीटर -->
+                <div id="viralShareHub" class="hidden mt-8 pt-8 border-t border-slate-800 space-y-6 text-center">
+                    
+                    <div id="regSuccessBanner" class="p-4 bg-emerald-950/90 border border-emerald-500/60 rounded-2xl text-xs sm:text-sm font-bold text-emerald-300 flex items-center justify-center gap-2 shadow-lg">
+                        <span>🎉</span> <span>बधाई हो! आपका पंजीकरण सफल रहा। 50 बोनस AI टोकन आपके वॉलेट में सक्रिय हो चुके हैं!</span>
+                    </div>
+
+                    <!-- 🪪 डाउनलोड करने योग्य VIP स्टूडेंट कार्ड -->
+                    <div id="idCardRenderElement" class="max-w-md mx-auto student-id-card p-6 rounded-2xl text-left space-y-3 relative overflow-hidden shadow-2xl">
+                        <div class="flex justify-between items-center border-b border-cyan-500/30 pb-2">
+                            <span class="text-xs font-black text-cyan-300">⚡ DHRUV ACADEMY VIP PASS</span>
+                            <span id="cardBadgeActive" class="text-[10px] bg-emerald-500 text-slate-950 font-bold px-2.5 py-0.5 rounded-full">VERIFIED VIP</span>
+                        </div>
+                        <div class="flex items-center gap-4">
+                            <div class="w-16 h-16 bg-slate-900 border-2 border-cyan-400 rounded-full flex items-center justify-center text-3xl shadow">
+                                🎓
+                            </div>
+                            <div>
+                                <h4 id="cardUserName" class="text-lg font-black text-white">ध्रुव प्रताप सिंह</h4>
+                                <p id="cardUserRole" class="text-xs text-cyan-200">सत्यापित 4D AI शिक्षार्थी</p>
+                                <p id="cardUserLoc" class="text-[10px] text-gray-400">स्थान: उत्तर प्रदेश</p>
+                            </div>
+                        </div>
+                        <div class="flex justify-between items-center text-[11px] text-slate-300 pt-2 border-t border-cyan-500/20">
+                            <span><span id="lblCardTokens">टोकन बैलेंस:</span> <b id="cardTokens" class="text-amber-300 font-bold">50 Tokens</b></span>
+                            <span class="text-cyan-300 font-mono text-[10px]">AUTH ID: #DA-2026</span>
+                        </div>
+                    </div>
+
+                    <div class="flex justify-center">
+                        <button onclick="downloadStudentCard()" id="btnDownloadCardPng" class="px-5 py-2.5 bg-slate-800 hover:bg-slate-700 text-cyan-300 border border-cyan-500/40 rounded-xl text-xs font-bold transition flex items-center gap-2 cursor-pointer shadow">
+                            <i class="fa-solid fa-download"></i> <span id="lblDownloadCardText">अपना VIP कार्ड डाउनलोड करें (PNG)</span>
+                        </button>
+                    </div>
+
+                    <!-- ⚡ दैनिक 10-सहपाठी शेयर कोटा मीटर -->
+                    <div class="p-5 bg-slate-950 rounded-2xl border border-slate-800 space-y-3 max-w-lg mx-auto">
+                        <div class="flex justify-between items-center text-xs">
+                            <span class="font-bold text-slate-300 flex items-center gap-1.5">
+                                <span>🎁</span> <span id="lblDailyQuotaTitle">दैनिक सहपाठी शेयर कोटा (Daily Cap):</span>
+                            </span>
+                            <span id="quotaDisplay" class="font-mono font-bold text-amber-300 bg-amber-950/60 px-2 py-0.5 rounded border border-amber-500/40">
+                                0 / 10 उपयोग किया गया
+                            </span>
+                        </div>
+
+                        <div class="w-full bg-slate-900 rounded-full h-2.5 border border-slate-800 overflow-hidden">
+                            <div id="quotaProgressBar" class="bg-gradient-to-r from-cyan-500 to-emerald-500 h-full w-0 transition-all duration-300"></div>
+                        </div>
+
+                        <p id="lblQuotaRuleDesc" class="text-[11px] text-slate-400 text-left leading-relaxed">
+                            • प्रत्येक शेयर पर <b class="text-cyan-300">25 अतिरिक्त AI टोकन्स</b> तुरंत जुड़ते हैं (अधिकतम 10 मित्रों तक = 250 टोकन्स/दिन)।<br>
+                            • 10 का कोटा पूरा होने के बाद यह दैनिक सुरक्षा नियमों के तहत स्वतः लॉक हो जाएगा।
+                        </p>
+                    </div>
+
+                    <!-- 1-क्लिक शेयरिंग बटन्स -->
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-1">
+                        <button onclick="recordAndShare('whatsapp')" class="p-3.5 bg-[#25D366]/20 hover:bg-[#25D366]/40 border border-[#25D366]/60 text-white rounded-2xl text-xs font-bold transition flex items-center justify-center gap-2 hover:scale-105 cursor-pointer">
+                            <i class="fa-brands fa-whatsapp text-lg text-[#25D366]"></i> WhatsApp
+                        </button>
+                        <button onclick="recordAndShare('facebook')" class="p-3.5 bg-[#1877F2]/20 hover:bg-[#1877F2]/40 border border-[#1877F2]/60 text-white rounded-2xl text-xs font-bold transition flex items-center justify-center gap-2 hover:scale-105 cursor-pointer">
+                            <i class="fa-brands fa-facebook text-lg text-[#1877F2]"></i> Facebook
+                        </button>
+                        <button onclick="recordAndShare('twitter')" class="p-3.5 bg-slate-800 hover:bg-slate-700 border border-slate-600 text-white rounded-2xl text-xs font-bold transition flex items-center justify-center gap-2 hover:scale-105 cursor-pointer">
+                            <i class="fa-brands fa-x-twitter text-lg"></i> X (Twitter)
+                        </button>
+                        <button onclick="recordAndShare('linkedin')" class="p-3.5 bg-[#0A66C2]/20 hover:bg-[#0A66C2]/40 border border-[#0A66C2]/60 text-white rounded-2xl text-xs font-bold transition flex items-center justify-center gap-2 hover:scale-105 cursor-pointer">
+                            <i class="fa-brands fa-linkedin text-lg text-[#0A66C2]"></i> LinkedIn
+                        </button>
+                    </div>
+
+                    <!-- डायरेक्ट लिंक कॉपी बॉक्स -->
+                    <div class="flex items-center gap-2 bg-slate-950 p-2.5 rounded-2xl border border-slate-800 text-xs shadow-inner">
+                        <input type="text" id="shareUrlBox" readonly value="https://dhruv-tech-academy.onrender.com/launch" class="w-full bg-transparent text-slate-300 outline-none px-2 font-mono">
+                        <button onclick="copyShareUrl()" id="btnCopyLink" class="px-5 py-2 bg-cyan-600 hover:bg-cyan-500 text-white rounded-xl font-bold whitespace-nowrap shadow cursor-pointer">
+                            📋 लिंक कॉपी करें
+                        </button>
+                    </div>
+
+                    <!-- 🏫 ट्यूटर/स्कूलों के लिए 1-क्लिक व्हाट्सएप सर्कुलर -->
+                    <div class="p-4 bg-slate-900 rounded-2xl border border-indigo-500/30 text-left space-y-2">
+                        <span id="lblCircularHeader" class="text-xs font-bold text-indigo-300">📢 कोचिंग / स्कूल व्हाट्सएप ग्रुप सर्कुलर:</span>
+                        <p id="lblCircularDesc" class="text-[11px] text-slate-400">ट्यूटर या स्कूल संचालक सीधे नीचे दिए बटन से अपने क्लास ग्रुप में नोटिस भेज सकते हैं:</p>
+                        <button onclick="shareSchoolCircular()" id="btnSendCircular" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-bold transition flex items-center gap-2 cursor-pointer shadow">
+                            <i class="fa-brands fa-whatsapp"></i> <span id="lblSendCircularText">क्लास ग्रुप में सर्कुलर भेजें</span>
+                        </button>
+                    </div>
+
+                </div>
+
+            </div>
+        </section>
+
+        <!-- आधुनिक फूटर -->
+        <footer class="border-t border-slate-900 bg-slate-950/95 py-8 px-4 text-center text-xs text-slate-500 space-y-3">
+            <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
+                <div class="flex items-center gap-2">
+                    <span class="w-2.5 h-2.5 rounded-full bg-cyan-400"></span>
+                    <span id="footerBrand" class="font-bold text-slate-300">ध्रुव एकेडमी मास्टर इकोसिस्टम</span>
+                </div>
+                <p id="footerText1">© 2026 Dhruv Academy Master Ecosystem. सर्वाधिकार सुरक्षित।</p>
+                <p class="text-[11px] text-slate-600 font-mono">
+                    Certified 26-Layer Interactive Pedagogy Engine • BNS Legal Tech • Spoken English 4D Mentor Engine
+                </p>
+            </div>
+        </footer>
+
+    </div>
+    <!-- 🌟 मुख्य कैप्चर एरिया समाप्त -->
+
+    <!-- 📢 10 सोशल शेयर वेरिफिकेशन पॉपअप (Modal) -->
+    <div id="shareGateModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-md p-4">
+        <div class="bg-slate-900 border border-cyan-500/50 rounded-3xl max-w-lg w-full p-6 sm:p-8 text-center shadow-2xl relative space-y-4">
+            
+            <div class="w-16 h-16 mx-auto bg-cyan-950 border border-cyan-400/40 rounded-full flex items-center justify-center text-3xl shadow-inner">
+                📢
+            </div>
+            
+            <div>
+                <h3 class="text-lg sm:text-xl font-black text-white">राष्ट्रीय डिजिटल शिक्षा अभियान शेयर करें</h3>
+                <p class="text-xs text-slate-300 mt-1">
+                    अपना आधिकारिक संकल्प पत्र अनलॉक करने के लिए इसे कम से कम <span class="text-cyan-400 font-bold">10 मित्रों या ग्रुप्स</span> में साझा करें।
+                </p>
+            </div>
+
+            <!-- प्रोग्रेस बार और काउंटर -->
+            <div class="bg-slate-950 p-4 rounded-2xl border border-slate-800 space-y-2">
+                <div class="flex justify-between text-xs font-semibold">
+                    <span class="text-slate-400">शेयर प्रगति (Progress):</span>
+                    <span id="shareCountText" class="text-cyan-400 font-bold">0 / 10 पूर्ण</span>
+                </div>
+                <div class="w-full bg-slate-800 rounded-full h-3 overflow-hidden">
+                    <div id="shareProgressBar" class="bg-gradient-to-r from-cyan-400 to-emerald-500 h-full rounded-full transition-all duration-300" style="width: 0%"></div>
+                </div>
+                <p id="shareStatusHint" class="text-[11px] text-amber-400 font-medium">बाकी शेयर: 10</p>
+            </div>
+
+            <!-- 4 सोशल मीडिया शेयर बटन (WhatsApp, Facebook, X/Twitter, LinkedIn) -->
+            <div class="grid grid-cols-2 gap-3">
+                <button onclick="handleSocialShare('whatsapp')" class="flex items-center justify-center gap-2 py-3 px-4 bg-[#25D366]/20 hover:bg-[#25D366]/30 border border-[#25D366]/50 text-white font-bold rounded-xl text-xs transition hover:scale-105 cursor-pointer">
+                    <i class="fa-brands fa-whatsapp text-lg text-[#25D366]"></i> WhatsApp
+                </button>
+                <button onclick="handleSocialShare('facebook')" class="flex items-center justify-center gap-2 py-3 px-4 bg-[#1877F2]/20 hover:bg-[#1877F2]/30 border border-[#1877F2]/50 text-white font-bold rounded-xl text-xs transition hover:scale-105 cursor-pointer">
+                    <i class="fa-brands fa-facebook text-lg text-[#1877F2]"></i> Facebook
+                </button>
+                <button onclick="handleSocialShare('twitter')" class="flex items-center justify-center gap-2 py-3 px-4 bg-slate-800 hover:bg-slate-700 border border-slate-600 text-white font-bold rounded-xl text-xs transition hover:scale-105 cursor-pointer">
+                    <i class="fa-brands fa-x-twitter text-lg"></i> X (Twitter)
+                </button>
+                <button onclick="handleSocialShare('linkedin')" class="flex items-center justify-center gap-2 py-3 px-4 bg-[#0A66C2]/20 hover:bg-[#0A66C2]/30 border border-[#0A66C2]/50 text-white font-bold rounded-xl text-xs transition hover:scale-105 cursor-pointer">
+                    <i class="fa-brands fa-linkedin text-lg text-[#0A66C2]"></i> LinkedIn
+                </button>
+            </div>
+
+            <!-- अनलॉक बटन -->
+            <button id="finalUnlockCertificateBtn" disabled onclick="closeShareModalAndProceed()" 
+                    class="w-full py-3.5 px-4 bg-slate-800 text-slate-500 font-extrabold text-xs sm:text-sm rounded-xl cursor-not-allowed transition duration-300">
+                🔒 10 शेयर पूरे होने पर संकल्प पत्र अनलॉक होगा
+            </button>
+        </div>
+    </div>
+
+    <!-- 📢 प्रोसीजरल सोशल प्रूफ टिकर -->
+    <div id="socialProofPopup" class="fixed bottom-20 left-4 z-40 bg-slate-900/95 border border-cyan-500/50 rounded-2xl p-3 shadow-2xl flex items-center gap-3 transition-all duration-500 transform translate-y-28 opacity-0 pointer-events-none">
+        <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-cyan-500 to-indigo-600 flex items-center justify-center text-white text-base shadow">
+            ⚡
+        </div>
+        <div class="text-left text-xs">
+            <p id="proofTitle" class="font-bold text-white">आर्यन (प्रयागराज)</p>
+            <p id="proofDesc" class="text-[11px] text-cyan-300">ने अभी 50 AI टोकन्स क्लेम किए!</p>
+        </div>
+    </div>
+
+    <!-- 🚀 फ्लोटिंग क्विक-नेविगेशन डॉक -->
+    <aside aria-label="Quick Navigation" class="fixed bottom-3 left-1/2 -translate-x-1/2 z-50 jump-dock px-3 py-2 rounded-full shadow-2xl flex items-center gap-1.5 sm:gap-3">
+        <a href="#sectionVoiceLab" class="px-2.5 sm:px-3 py-1.5 rounded-full hover:bg-slate-800 text-[11px] font-bold text-cyan-300 transition flex items-center gap-1">
+            <span>🎙️</span> <span class="hidden sm:inline" id="dockVoice">वॉयस लैब</span>
+        </a>
+        <a href="#sectionBlackboard" class="px-2.5 sm:px-3 py-1.5 rounded-full hover:bg-slate-800 text-[11px] font-bold text-indigo-300 transition flex items-center gap-1">
+            <span>📺</span> <span class="hidden sm:inline" id="dockBoard">ब्लैकबोर्ड</span>
+        </a>
+        <a href="#sectionQuiz" class="px-2.5 sm:px-3 py-1.5 rounded-full hover:bg-slate-800 text-[11px] font-bold text-amber-300 transition flex items-center gap-1">
+            <span>🎯</span> <span class="hidden sm:inline" id="dockQuiz">क्विज़</span>
+        </a>
+        <a href="#sectionPledge" class="px-2.5 sm:px-3 py-1.5 rounded-full hover:bg-slate-800 text-[11px] font-bold text-emerald-300 transition flex items-center gap-1">
+            <span>📜</span> <span class="hidden sm:inline" id="dockPledge">प्रतिज्ञा</span>
+        </a>
+        <a href="#registerSection" class="px-3.5 py-1.5 rounded-full glow-btn text-white text-[11px] font-extrabold transition flex items-center gap-1 shadow">
+            <span>🚀</span> <span id="dockReg">रजिस्टर</span>
+        </a>
+    </aside>
+
+    <script>
+        let currentLang = localStorage.getItem('user_lang') || 'hi';
+        const APP_URL = window.location.origin + '/launch';
+        let currentRegType = 'student';
+        let physicsStepTimer = null;
+
+        const promoTranslations = {
+            hi: {
+                metaTitle: "Dhruv Academy | भारत का पहला 4D AI वर्चुअल लर्निंग इकोसिस्टम",
+                brandName: "ध्रुव एकेडमी (Dhruv Academy)",
+                brandTagline: "4D VIRTUAL ACADEMY ECOSYSTEM",
+                topUrgencyText: "दैनिक छात्र अध्ययन प्रोत्साहन: पंजीकरण पर 50 टोकन + सहपाठियों से साझा करने पर दैनिक 250 टोकन तक अनुदान!",
+                navRegisterBtn: "फ्री रजिस्ट्रेशन (Get Access)",
+                heroBadge: "भारत की पहली 100% प्रामाणिक व 26-लेयर सर्टिफाइड 4D AI शिक्षण प्रणाली",
+                heroHeading: "किताबी रटंत प्रणाली छोड़िए, सीधे जुड़िए 4D AI सजीव क्लासरूम से!",
+                heroSubheading: "अदिति मैम से बोलकर अंग्रेजी सीखें, नेबुला 3D ब्लैकबोर्ड पर कठिन गणित-विज्ञान सुलझाएं, और बीएनएस (BNS) लीगल एडवाइज़र से प्रमाणित कानूनी समाधान प्राप्त करें। भविष्य की शिक्षा अब आपकी हथेली पर!",
+                heroCtaRegister: "तुरंत निःशुल्क खाता बनाएं (Claim 50 Tokens)",
+                heroAditiVoiceBtn: "अदिति मैम की आवाज़ सुनें 👩‍🏫",
+                btnFullShareText: "पूरा पेज WhatsApp पर भेजें",
+                stat1: "प्रामाणिक व सुरक्षित",
+                stat2: "सजीव मानवीय मेंटर",
+                stat3: "सर्टिफाइड डिफेंस",
+                stat4: "एआई मास्टर मॉड्यूल्स",
+                sandboxBadge: "लाइव 4D वॉयस लैब: बिना रजिस्ट्रेशन के बोलकर टेस्ट करें!",
+                sandboxTitle: 'माइक ऑन करें और अंग्रेजी में बोलें: "Hello Aditi Ma\'am, I am ready to learn"',
+                sandboxBtnText: "माइक ऑन करें व बोलें",
+                lblYouSaid: "आपने बोला:",
+                sandboxFeedback: '✨ अदिति मैम: "बहुत बढ़िया उच्चारण! पूर्ण 4D वॉयस और फोनेटिक गाइड के लिए नीचे तुरंत निःशुल्क रजिस्टर करें।"',
+                boardSimTitle: "नेबुला गैलेक्सी 4D ब्लैकबोर्ड (Cosmic Nebula Board)",
+                btnSimSolar: "🪐 सौरमंडल (भूगोल)",
+                btnSimMath: "📐 गणित",
+                btnSimSci: "🌿 विज्ञान",
+                btnSimCode: "💻 कोडिंग",
+                quizBadge: "30-सेकंड लाइव चैलेंज: उत्तर दें और 20 अतिरिक्त टोकन जीतें!",
+                quizQuestion: '"पाइथन में मेमोरी एड्रेस देखने के लिए किस फ़ंक्शन का उपयोग किया जाता है?"',
+                quizOpt1: "A) id() फंक्शन",
+                quizOpt2: "B) memory() फंक्शन",
+                quizCorrect: "🎉 शानदार! बिल्कुल सही उत्तर। आपके 20 टोकन तैयार हैं—नीचे तुरंत नाम दर्ज करके इन्हें क्लेम करें!",
+                quizWrong: "❌ गलत उत्तर! सही उत्तर 'id()' है। सीखने के लिए नीचे रजिस्टर करें!",
+                featuresTitle: "ध्रुव एकेडमी की 6 अजेय और अत्याधुनिक शक्तियाँ",
+                featuresSub: "स्कूली बच्चों से लेकर यूपीएससी, नीट व प्रतियोगी परीक्षाओं के छात्रों तक के लिए वरदान",
+                feat1Title: "अदिति मैम - 4D लाइव AI इंग्लिश मेंटर",
+                feat1Desc: "हैंड्स-फ्री नेचुरल वॉयस, 3D माउथ व टंग एनाटॉमी गाइड और रियल-टाइम फोनेटिक कलर कोडिंग के साथ फर्राटेदार अंग्रेजी सीखें।",
+                feat2Title: "नेबुला एआई वर्चुअल क्लासरूम व ब्लैकबोर्ड",
+                feat2Desc: "लाइव डिजिटल चॉकबोर्ड, कैमरा बुक स्कैनर और बिना किसी रुकावट के पॉइंट-वाइज समाधान। पहली कक्षा से डिग्री कॉलेज तक उपयोगी।",
+                feat3Title: "लीगल एआई मास्टर हब (BNS & RTI विशेषज्ञ)",
+                feat3Desc: "भारतीय न्याय संहिता (BNS), आरटीआई आवेदन, कॉर्पोरेट कम्प्लायंस (कंपनी अधिनियम 2013) और 1-क्लिक लीगल नोटिस ड्राफ्टिंग।",
+                feat4Title: "26-लेयर प्रमाणित डिफेंस मैट्रिक्स",
+                feat4Desc: "एंटी-पाइरेसी, डीआरएम प्रोटेक्शन, मिलिट्री-ग्रेड सेशन बाइंडिंग और सुरक्षित डेटा स्टोरेज जो डेटा लीक से 100% सुरक्षा दे।",
+                feat5Title: "400-AI स्मार्ट नोट्स वैलिडेटर व क्विज़",
+                feat5Desc: "कठिन और पुराने नोट्स को आम बोलचाल व छात्र-अनुकूल सरल नोट्स में बदलें और एंटी-चीट कियोस्क क्विज़ से स्वयं का परीक्षण करें।",
+                feat6Title: "सेंट्रल वॉलेट व टोकन इकोसिस्टम",
+                feat6Desc: "एक ही सेंट्रल वॉलेट से पूरे पोर्टल के सभी 12 मॉड्यूल्स को सहजता से चलाएं। हर सही उत्तर पर टोकन्स कमाएं और रिवॉर्ड पाएं।",
+                pledgeBadge: "राष्ट्रीय डिजिटल शिक्षा संकल्प 2026",
+                pledgeTitle: '"हर हाथ में आधुनिक 4D AI शिक्षा" - संकल्प पत्र प्राप्त करें',
+                pledgeDesc: "ध्रुव एकेडमी के साथ जुड़कर आधुनिक, पारदर्शी और तकनीक-सक्षम शिक्षा का हिस्सा बनें और अपना आधिकारिक डिजिटल प्रतिज्ञा पत्र डाउनलोड करें।",
+                pledgeNamePh: "🔒 पहले नीचे पंजीकरण (Registration) करें...",
+                btnPledgeText: "प्रतिज्ञा पत्र बनाएं व देखें",
+                badgeCertPledge: "CERTIFIED PLEDGE",
+                pledgeCertificateText: "ने 'हर हाथ में डिजिटल और 4D AI शिक्षा' का गौरवशाली संकल्प लिया है।",
+                btnDownloadPledgePng: "📥 सत्यापित संकल्प पत्र डाउनलोड करें (JPG)",
+                tabStudentText: "👨‍🎓 विद्यार्थी / परीक्षार्थी",
+                tabSchoolText: "🏫 स्कूल / कोचिंग संस्थान",
+                passBadge: "⚡ Instant Student Pass & Grant",
+                formHeading: "ध्रुव एकेडमी छात्र पंजीकरण (Registration)",
+                formSubheading: "पंजीकरण पर तुरंत 50 AI टोकन प्राप्त करें। अपने सहपाठियों से साझा करने पर प्रतिदिन अधिकतम 10 इनवाइट्स पर 250 टोकन्स तक अतिरिक्त अर्जित करें!",
+                lblName: "पूरा नाम (Full Name):",
+                namePh: "अपना शुभ नाम दर्ज करें...",
+                lblMobile: "व्हाट्सएप / मोबाइल नंबर:",
+                mobilePh: "10 अंकों का मोबाइल नंबर...",
+                lblRole: "आप किस रूप में जुड़ना चाहते हैं?",
+                optRoleStudent: "विद्यार्थी (Student / Learner)",
+                optRoleAspirant: "प्रतियोगी परीक्षा परीक्षार्थी (UPSC/SSC/NEET)",
+                optRoleTutor: "शिक्षक / संस्थान (Teacher / Coaching Tutor)",
+                optRoleParent: "अभिभावक (Parent)",
+                lblState: "राज्य / शहर (Location):",
+                locPh: "उदा: उत्तर प्रदेश / बदायूँ",
+                btnSubmitForm: "🚀 पंजीकरण पूरा करें व 50 बोनस टोकन पाएं (Claim 50 Bonus Tokens)",
+                regSuccessBanner: "बधाई हो! आपका पंजीकरण सफल रहा। 50 बोनस AI टोकन आपके वॉलेट में सक्रिय हो चुके हैं!",
+                cardBadgeActive: "VERIFIED VIP",
+                lblCardTokens: "टोकन बैलेंस:",
+                lblDownloadCardText: "अपना VIP कार्ड डाउनलोड करें (PNG)",
+                lblDailyQuotaTitle: "दैनिक सहपाठी शेयर कोटा (Daily Cap):",
+                lblQuotaRuleDesc: "• प्रत्येक शेयर पर 25 अतिरिक्त AI टोकन्स तुरंत जुड़ते हैं (अधिकतम 10 मित्रों तक = 250 टोकन्स/दिन)।<br>• 10 का कोटा पूरा होने के बाद यह दैनिक सुरक्षा नियमों के तहत स्वतः लॉक हो जाएगा।",
+                btnCopyLink: "📋 लिंक कॉपी करें",
+                lblCircularHeader: "📢 कोचिंग / स्कूल व्हाट्सएप ग्रुप सर्कुलर:",
+                lblCircularDesc: "ट्यूटर या स्कूल संचालक सीधे नीचे दिए बटन से अपने क्लास ग्रुप में नोटिस भेज सकते हैं:",
+                lblSendCircularText: "क्लास ग्रुप में सर्कुलर भेजें",
+                dockVoice: "वॉयस लैब",
+                dockBoard: "ब्लैकबोर्ड",
+                dockQuiz: "क्विज़",
+                dockPledge: "प्रतिज्ञा",
+                dockReg: "रजिस्टर",
+                footerBrand: "ध्रुव एकेडमी मास्टर इकोसिस्टम",
+                footerText1: "© 2026 Dhruv Academy Master Ecosystem. सर्वाधिकार सुरक्षित।",
+                aditiVoiceAudioText: "नमस्ते! मैं अदिति मैम हूँ। ध्रुव एकेडमी में आपका हार्दिक स्वागत है। अपना नाम दर्ज करें और मेरे साथ फर्राटेदार अंग्रेजी बोलना शुरू करें!"
+            },
+            en: {
+                metaTitle: "Dhruv Academy | India's First 4D AI Virtual Learning Ecosystem",
+                brandName: "Dhruv Academy",
+                brandTagline: "4D VIRTUAL ACADEMY ECOSYSTEM",
+                topUrgencyText: "Daily Student Study Grant: 50 Tokens on Sign-Up + Up to 250 Tokens/Day on Peer Invites!",
+                navRegisterBtn: "Free Registration (Get Access)",
+                heroBadge: "India's First 100% Authentic & 26-Layer Interactive Pedagogy Engine 4D AI Education Engine",
+                heroHeading: "Step Beyond Conventional Study: Join 4D Live AI Classrooms!",
+                heroSubheading: "Learn spoken English with Aditi Ma'am, solve complex math and science problems on the Nebula 3D blackboard, and access verified statutory legal analysis with our BNS AI mentor. Future education is in your hands!",
+                heroCtaRegister: "Claim Free Student Pass (50 Tokens)",
+                heroAditiVoiceBtn: "Listen to Aditi Ma'am 👩‍🏫",
+                btnFullShareText: "Share Full Page to WhatsApp",
+                stat1: "Authentic & Verified",
+                stat2: "Live Human Mentor",
+                stat3: "Certified Defense",
+                stat4: "Master AI Modules",
+                sandboxBadge: "Live 4D Voice Lab: Speak & Test without Registration!",
+                sandboxTitle: 'Turn on mic and speak in English: "Hello Aditi Ma\'am, I am ready to learn"',
+                sandboxBtnText: "Turn On Mic & Speak",
+                lblYouSaid: "You Spoke:",
+                sandboxFeedback: '✨ Aditi Ma\'am: "Brilliant pronunciation! Register below to unlock complete 4D voice mentorship and phonetic guide."',
+                boardSimTitle: "Nebula Galaxy 4D Blackboard (Cosmic Nebula Board)",
+                btnSimSolar: "🪐 Solar System (Geography)",
+                btnSimMath: "📐 Math",
+                btnSimSci: "🌿 Science",
+                btnSimCode: "💻 Coding",
+                quizBadge: "30-Sec Live Challenge: Answer & Win 20 Extra Tokens!",
+                quizQuestion: '"Which built-in function in Python is used to inspect memory address?"',
+                quizOpt1: "A) id() function",
+                quizOpt2: "B) memory() function",
+                quizCorrect: "🎉 Brilliant! Correct answer. Your 20 tokens are ready—register below to claim them!",
+                quizWrong: "❌ Incorrect! The correct answer is 'id()'. Register below to start learning!",
+                featuresTitle: "6 Supreme Strengths of Dhruv Academy",
+                featuresSub: "Engineered for school kids, college students, and competitive aspirants",
+                feat1Title: "Aditi Ma'am - 4D Live AI English Mentor",
+                feat1Desc: "Hands-free natural voice coaching, 3D mouth and tongue anatomy guidance, and real-time color-coded phonetics.",
+                feat2Title: "Nebula AI Virtual Classroom & Blackboard",
+                feat2Desc: "Interactive live chalkboard, camera textbook scanner, and direct step-by-step solutions from Class 1 to college level.",
+                feat3Title: "Legal AI Master Hub (BNS & Corporate Law)",
+                feat3Desc: "Bhartiya Nyaya Sanhita (BNS) guidance, compliant RTI petitions, corporate compliance, and 1-click legal notice generation.",
+                feat4Title: "26-Layer Interactive Pedagogy Engine",
+                feat4Desc: "Anti-piracy guardrails, DRM watermarking, military-grade session binding, and zero-data compromise.",
+                feat5Title: "400-AI Smart Notes Validator & Quiz",
+                feat5Desc: "Transform raw notes into refined student editions and launch anti-cheat exam kiosks for thorough practice.",
+                feat6Title: "Central Token & Unified Wallet Hub",
+                feat6Desc: "Seamless unified wallet powering all 12 modules with automatic token bonuses for student achievements.",
+                pledgeBadge: "National Digital Education Pledge 2026",
+                pledgeTitle: '"Modern 4D AI Education in Every Hand" - Claim Certificate',
+                pledgeDesc: "Join Dhruv Academy to champion transparent, futuristic, technology-powered education and download your verified certificate.",
+                pledgeNamePh: "🔒 Please register below first...",
+                btnPledgeText: "Generate & View Pledge Card",
+                badgeCertPledge: "CERTIFIED PLEDGE",
+                pledgeCertificateText: "has taken the proud national pledge for 'Digital & 4D AI Education in Every Hand'.",
+                btnDownloadPledgePng: "📥 Download Verified Certificate (JPG)",
+                tabStudentText: "👨‍🎓 Student / Aspirant",
+                tabSchoolText: "🏫 School / Coaching Institute",
+                passBadge: "⚡ Instant Student Pass & Grant",
+                formHeading: "Dhruv Academy Student Registration",
+                formSubheading: "Activate your account instantly to unlock 50 bonus tokens. Share with peers to earn up to 250 extra tokens/day (10 invites max)!",
+                lblName: "Full Name:",
+                namePh: "Enter your official name...",
+                lblMobile: "WhatsApp / Mobile Number:",
+                mobilePh: "10-digit mobile number...",
+                lblRole: "Select Your Goal:",
+                optRoleStudent: "Student / Learner",
+                optRoleAspirant: "Competitive Aspirant (UPSC/SSC/NEET)",
+                optRoleTutor: "Teacher / Coaching Tutor",
+                optRoleParent: "Parent / Guardian",
+                lblState: "State / City (Location):",
+                locPh: "e.g. Uttar Pradesh / Delhi",
+                btnSubmitForm: "🚀 Complete Registration & Claim 50 Bonus Tokens",
+                regSuccessBanner: "Congratulations! Registration successful. 50 bonus AI tokens have been credited to your wallet!",
+                cardBadgeActive: "VERIFIED VIP",
+                lblCardTokens: "Token Balance:",
+                lblDownloadCardText: "Download VIP Privilege Card (PNG)",
+                lblDailyQuotaTitle: "Daily Peer Share Quota (Daily Cap):",
+                lblQuotaRuleDesc: "• Receive 25 additional AI tokens per share (Max 10 peers = 250 tokens/day).<br>• Automatically locks once the daily 10-share limit is reached for security compliance.",
+                btnCopyLink: "📋 Copy Link",
+                lblCircularHeader: "📢 Coaching / School WhatsApp Circular:",
+                lblCircularDesc: "Tutors and school directors can broadcast this verified invite directly to their class groups:",
+                lblSendCircularText: "Send Circular to Class Group",
+                dockVoice: "Voice Lab",
+                dockBoard: "Blackboard",
+                dockQuiz: "Quiz",
+                dockPledge: "Pledge",
+                dockReg: "Register",
+                footerBrand: "Dhruv Academy Master Ecosystem",
+                footerText1: "© 2026 Dhruv Academy Master Ecosystem. All Rights Reserved.",
+                aditiVoiceAudioText: "Hello! I am Aditi Ma'am. Welcome to Dhruv Academy. Enter your name below and let us master spoken English together!"
+            },
+            pa: {
+                metaTitle: "ਧਰੁਵ ਅਕੈਡਮੀ | ਭਾਰਤ ਦਾ ਪਹਿਲਾ 4D AI ਸਿੱਖਿਆ ਪਲੇਟਫਾਰਮ",
+                brandName: "ਧਰੁਵ ਅਕੈਡਮੀ (Dhruv Academy)",
+                brandTagline: "4D VIRTUAL ACADEMY ECOSYSTEM",
+                topUrgencyText: "ਰੋਜ਼ਾਨਾ ਵਿਦਿਆਰਥੀ ਗ੍ਰਾਂਟ: ਰਜਿਸਟ੍ਰੇਸ਼ਨ 'ਤੇ 50 ਟੋਕਨ + ਦੋਸਤਾਂ ਨਾਲ ਸਾਂਝਾ ਕਰਨ 'ਤੇ ਰੋਜ਼ਾਨਾ 250 ਟੋਕਨ ਤੱਕ!",
+                navRegisterBtn: "ਮੁਫ਼ਤ ਰਜਿਸਟ੍ਰੇਸ਼ਨ",
+                heroBadge: "ਭਾਰਤ ਦੀ ਪਹਿਲੀ 26-ਲੇਅਰ ਪ੍ਰਮਾਣਿਤ 4D AI ਸਿੱਖਿਆ ਪ੍ਰਣਾਲੀ",
+                heroHeading: "ਰਵਾਇਤੀ ਪੜ੍ਹਾਈ ਛੱਡੋ, ਸਿੱਧੇ 4D AI ਲਾਈਵ ਕਲਾਸਰੂਮ ਨਾਲ ਜੁੜੋ!",
+                heroSubheading: "ਅਦਿਤੀ ਮੈਮ ਨਾਲ ਅੰਗਰੇਜ਼ੀ ਸਿੱਖੋ, ਨੇਬੁਲਾ 3D ਬਲੈਕਬੋਰਡ 'ਤੇ ਗਣਿਤ-ਵਿਗਿਆਨ ਹੱਲ ਕਰੋ, ਅਤੇ ਨਵੇਂ ਕਾਨੂੰਨਾਂ (BNS) ਦੀ ਸਹੀ ਜਾਣਕਾਰੀ ਪ੍ਰਾਪਤ ਕਰੋ!",
+                heroCtaRegister: "ਮੁਫ਼ਤ ਰਜਿਸਟ੍ਰੇਸ਼ਨ ਕਰੋ (50 ਟੋਕਨ ਲਓ)",
+                heroAditiVoiceBtn: "ਅਦਿਤੀ ਮੈਮ ਦੀ ਆਵਾਜ਼ ਸੁਣੋ 👩‍🏫",
+                btnFullShareText: "ਪੂਰਾ ਪੇਜ ਵਟਸਐਪ 'ਤੇ ਭੇਜੋ",
+                stat1: "ਪ੍ਰਮਾਣਿਤ ਅਤੇ ਸੁਰੱਖਿਅਤ",
+                stat2: "ਲਾਈਵ ਮੈਂਟਰ",
+                stat3: "ਸੁਰੱਖਿਆ ਮੈਟ੍ਰਿਕਸ",
+                stat4: "AI ਮਾਸਟਰ ਮੋਡਿਊਲ",
+                sandboxBadge: "ਲਾਈਵ 4D ਵੌਇਸ ਲੈਬ: ਬਿਨਾਂ ਰਜਿਸਟ੍ਰੇਸ਼ਨ ਦੇ ਬੋਲ ਕੇ ਦੇਖੋ!",
+                sandboxTitle: 'ਮਾਈਕ ਆਨ ਕਰੋ ਅਤੇ ਬੋਲੋ: "Hello Aditi Ma\'am, I am ready to learn"',
+                sandboxBtnText: "ਮਾਈਕ ਆਨ ਕਰੋ ਅਤੇ ਬੋਲੋ",
+                lblYouSaid: "ਤੁਸੀਂ ਬੋਲਿਆ:",
+                sandboxFeedback: '✨ ਅਦਿਤੀ ਮੈਮ: "ਬਹੁਤ ਵਧੀਆ ਉਚਾਰਨ! ਪੂਰੇ ਕੋਰਸ ਲਈ ਹੇਠਾਂ ਰਜਿਸਟਰ ਕਰੋ।"',
+                boardSimTitle: "ਨੇਬੁਲਾ 4D ਡਿਜੀਟਲ ਬਲੈਕਬੋਰਡ",
+                btnSimSolar: "🪐 ਸੌਰ ਮੰਡਲ (ਭੂਗੋਲ)",
+                btnSimMath: "📐 ਗਣਿਤ",
+                btnSimSci: "🌿 ਵਿਗਿਆਨ",
+                btnSimCode: "💻 ਕੋਡਿੰਗ",
+                quizBadge: "30-ਸਕਿੰਟ ਚੁਣੌਤੀ: ਜਵਾਬ ਦਿਓ ਅਤੇ 20 ਟੋਕਨ ਜਿੱਤੋ!",
+                quizQuestion: '"ਪਾਈਥਨ ਵਿੱਚ ਮੈਮੋਰੀ ਐਡਰੈੱਸ ਦੇਖਣ ਲਈ ਕਿਹੜਾ ਫੰਕਸ਼ਨ ਵਰਤਿਆ ਜਾਂਦਾ ਹੈ?"',
+                quizOpt1: "A) id() ਫੰਕਸ਼ਨ",
+                quizOpt2: "B) memory() ਫੰਕਸ਼ਨ",
+                quizCorrect: "🎉 ਬਹੁਤ ਵਧੀਆ! ਬਿਲਕੁਲ ਸਹੀ ਜਵਾਬ। 20 ਟੋਕਨ ਪ੍ਰਾਪਤ ਕਰਨ ਲਈ ਹੇਠਾਂ ਰਜਿਸਟਰ ਕਰੋ!",
+                quizWrong: "❌ ਗਲਤ ਜਵਾਬ! ਸਹੀ ਜਵਾਬ 'id()' ਹੈ।",
+                featuresTitle: "ਧਰੁਵ ਅਕੈਡਮੀ ਦੀਆਂ ਮੁੱਖ ਵਿਸ਼ੇਸ਼ਤਾਵਾਂ",
+                featuresSub: "ਵਿਦਿਆਰਥੀਆਂ ਅਤੇ ਅਧਿਆਪਕਾਂ ਲਈ ਉੱਤਮ ਮੰਚ",
+                feat1Title: "ਅਦਿਤੀ ਮੈਮ - 4D ਅੰਗਰੇਜ਼ੀ ਮੈਂਟਰ",
+                feat1Desc: "ਲਾਈਵ ਆਵਾਜ਼ ਅਤੇ ਫੋਨੇਟਿਕ ਗਾਈਡ ਨਾਲ ਅੰਗਰੇਜ਼ੀ ਸਿੱਖੋ।",
+                feat2Title: "ਨੇਬੁਲਾ AI ਵਰਚੁਅਲ ਕਲਾਸਰੂਮ",
+                feat2Desc: "ਲਾਈਵ ਬਲੈਕਬੋਰਡ ਅਤੇ ਕਿਤਾਬ ਸਕੈਨਰ ਨਾਲ ਤੁਰੰਤ ਹੱਲ।",
+                feat3Title: "ਲੀਗਲ AI ਮਾਸਟਰ ਹੱਬ",
+                feat3Desc: "ਨਵੇਂ ਕਾਨੂੰਨਾਂ (BNS) ਅਤੇ ਕਾਨੂੰਨੀ ਨੋਟਿਸਾਂ ਦੀ ਸਹੀ ਜਾਣਕਾਰੀ।",
+                feat4Title: "26-ਲੇਅਰ ਸੁਰੱਖਿਆ ਮੈਟ੍ਰਿਕਸ",
+                feat4Desc: "ਪੂਰੀ ਤਰ੍ਹਾਂ ਸੁਰੱਖਿਅਤ ਅਤੇ ਪ੍ਰਮਾਣਿਤ ਡਾਟਾ ਪ੍ਰਣਾਲੀ।",
+                feat5Title: "ਸਮਾਰਟ ਨੋਟਸ ਅਤੇ ਕੁਇਜ਼ ਹੱਬ",
+                feat5Desc: "ਨੋਟਸ ਨੂੰ ਸਰਲ ਬਣਾਓ ਅਤੇ ਮੌਕ ਟੈਸਟ ਦਿਓ।",
+                feat6Title: "ਸੈਂਟਰਲ ਵਾਲਿਟ ਸਿੰਕ",
+                feat6Desc: "ਇੱਕ ਹੀ ਵਾਲਿਟ ਨਾਲ ਸਾਰੇ ਮੋਡਿਊਲ ਚਲਾਓ।",
+                pledgeBadge: "ਰਾਸ਼ਟਰੀ ਡਿਜੀਟਲ ਸਿੱਖਿਆ ਸੰਕਲਪ 2026",
+                pledgeTitle: '"ਹਰ ਹੱਥ ਵਿੱਚ 4D AI ਸਿੱਖਿਆ" - ਸੰਕਲਪ ਪੱਤਰ ਪ੍ਰਾਪਤ ਕਰੋ',
+                pledgeDesc: "ਧਰੁਵ ਅਕੈਡਮੀ ਨਾਲ ਜੁੜ ਕੇ ਡਿਜੀਟਲ ਸਿੱਖਿਆ ਦਾ ਹਿੱਸਾ ਬਣੋ।",
+                pledgeNamePh: "🔒 ਪਹਿਲਾਂ ਹੇਠਾਂ ਰਜਿਸਟਰ ਕਰੋ...",
+                btnPledgeText: "ਸੰਕਲਪ ਪੱਤਰ ਵੇਖੋ",
+                badgeCertPledge: "CERTIFIED PLEDGE",
+                pledgeCertificateText: "ਨੇ 'ਹਰ ਹੱਥ ਵਿੱਚ ਡਿਜੀਟਲ ਅਤੇ 4D AI ਸਿੱਖਿਆ' ਦਾ ਸੰਕਲਪ ਲਿਆ ਹੈ।",
+                btnDownloadPledgePng: "📥 ਸੰਕਲਪ ਪੱਤਰ ਡਾਊਨਲੋਡ ਕਰੋ (JPG)",
+                tabStudentText: "👨‍🎓 ਵਿਦਿਆਰਥੀ",
+                tabSchoolText: "🏫 ਸਕੂਲ / ਸੰਸਥਾ",
+                passBadge: "⚡ Instant Student Pass & Grant",
+                formHeading: "ਵਿਦਿਆਰਥੀ / ਅਧਿਆਪਕ ਰਜਿਸਟ੍ਰੇਸ਼ਨ",
+                formSubheading: "ਰਜਿਸਟਰ ਹੁੰਦੇ ਹੀ 50 ਬੋਨਸ ਟੋਕਨ ਅਤੇ VIP ਕਾਰਡ ਪ੍ਰਾਪਤ ਕਰੋ।",
+                lblName: "ਪੂਰਾ ਨਾਮ:",
+                namePh: "ਆਪਣਾ ਪੂਰਾ ਨਾਮ ਦਰਜ ਕਰੋ...",
+                lblMobile: "ਮੋਬਾਈਲ ਨੰਬਰ:",
+                mobilePh: "10-ਅੰਕਾਂ ਦਾ ਮੋਬਾਈਲ ਨੰਬਰ...",
+                lblRole: "ਭੂਮਿਕਾ ਚੁਣੋ:",
+                optRoleStudent: "ਵਿਦਿਆਰਥੀ (Student)",
+                optRoleAspirant: "ਪ੍ਰਤੀਯੋਗੀ ਪ੍ਰੀਖਿਆਰਥੀ",
+                optRoleTutor: "ਅਧਿਆਪਕ / ਸੰਸਥਾ",
+                optRoleParent: "ਮਾਤਾ-ਪਿਤਾ",
+                lblState: "ਸ਼ਹਿਰ / ਸੂਬਾ:",
+                locPh: "ਜਿਵੇਂ: ਪੰਜਾਬ / ਦਿੱਲੀ",
+                btnSubmitForm: "🚀 ਰਜਿਸਟਰ ਕਰੋ ਅਤੇ 50 ਟੋਕਨ ਲਓ",
+                regSuccessBanner: "ਵਧਾਈਆਂ! ਰਜਿਸਟ੍ਰੇਸ਼ਨ ਸਫਲ ਰਹੀ। 50 ਬੋਨਸ AI ਟੋਕਨ ਸ਼ਾਮਲ ਕੀਤੇ ਗਏ ਹਨ!",
+                cardBadgeActive: "VERIFIED VIP",
+                lblCardTokens: "ਟੋਕਨ ਬੈਲੇਂਸ:",
+                lblDownloadCardText: "ਆਪਣਾ VIP ਕਾਰਡ ਡਾਊਨਲੋਡ ਕਰੋ (PNG)",
+                lblDailyQuotaTitle: "ਰੋਜ਼ਾਨਾ ਸ਼ੇਅਰ ਕੋਟਾ (Daily Cap):",
+                lblQuotaRuleDesc: "• ਹਰੇਕ ਸ਼ੇਅਰ 'ਤੇ 25 ਟੋਕਨ ਮਿਲਣਗੇ (ਰੋਜ਼ਾਨਾ ਵੱਧ ਤੋਂ ਵੱਧ 10 ਦੋਸਤ = 250 ਟੋਕਨ)।<br>• 10 ਪੂਰੇ ਹੋਣ 'ਤੇ ਸਿਸਟਮ ਲਾਕ ਹੋ ਜਾਵੇਗਾ।",
+                btnCopyLink: "📋 ਲਿੰਕ ਕਾਪੀ ਕਰੋ",
+                lblCircularHeader: "📢 ਸਕੂਲ ਵਟਸਐਪ ਸਰਕੂਲਰ:",
+                lblCircularDesc: "ਸਿੱਧਾ ਆਪਣੀ ਕਲਾਸ ਦੇ ਗਰੁੱਪ ਵਿੱਚ ਨੋਟਿਸ ਭੇਜੋ:",
+                lblSendCircularText: "ਕਲਾਸ ਗਰੁੱਪ ਵਿੱਚ ਸਰਕੂਲਰ ਭੇਜੋ",
+                dockVoice: "ਵੌਇਸ ਲੈਬ",
+                dockBoard: "ਬਲੈਕਬੋਰਡ",
+                dockQuiz: "ਕੁਇਜ਼",
+                dockPledge: "ਸੰਕਲਪ",
+                dockReg: "ਰਜਿਸਟਰ",
+                footerBrand: "ਧਰੁਵ ਅਕੈਡਮੀ ਮਾਸਟਰ ਈਕੋਸਿਸਟਮ",
+                footerText1: "© 2026 Dhruv Academy. ਸਾਰੇ ਹੱਕ ਰਾਖਵੇਂ ਹਨ।",
+                aditiVoiceAudioText: "ਸਤਿ ਸ੍ਰੀ ਅਕਾਲ! ਮੈਂ ਅਦਿਤੀ ਮੈਮ ਹਾਂ। ਧਰੁਵ ਅਕੈਡਮੀ ਵਿੱਚ ਤੁਹਾਡਾ ਸਵਾਗਤ ਹੈ। ਆਓ ਮਿਲ ਕੇ ਅੰਗਰੇਜ਼ੀ ਸਿੱਖੀਏ!"
+            },
+            mr: {
+                metaTitle: "ध्रुव अकादमी | भारताची पहिली 4D AI शिक्षण प्रणाली",
+                brandName: "ध्रुव अकादमी (Dhruv Academy)",
+                brandTagline: "4D VIRTUAL ACADEMY ECOSYSTEM",
+                topUrgencyText: "दैनिक विद्यार्थी अभ्यास अनुदान: नोंदणीवर ५० टोकन्स + मित्रांसोबत शेअर केल्यास रोज २५० टोकन्सपर्यंत!",
+                navRegisterBtn: "मोफत नोंदणी",
+                heroBadge: "भारताची पहिली 26-लेयर प्रमाणित 4D AI शिक्षण प्रणाली",
+                heroHeading: "पारंपरिक अभ्यास सोडा, थेट 4D AI वर्गाशी जोडा!",
+                heroSubheading: "अदिती मॅमसह इंग्रजी संभाषण शिका, नेबुला 3D ब्लॅकबोर्डवर गणित-विज्ञान सोडवा, आणि BNS कायदेशीर सल्ला केंद्राचा लाभ घ्या!",
+                heroCtaRegister: "मोफत नोंदणी करा (50 टोकन्स मिळवा)",
+                heroAditiVoiceBtn: "अदिती मॅमचा आवाज ऐका 👩‍🏫",
+                btnFullShareText: "संपूर्ण पृष्ठ WhatsApp वर पाठवा",
+                stat1: "प्रमाणित आणि सुरक्षित",
+                stat2: "थेट मानवीय मेंटर",
+                stat3: "प्रमाणित संरक्षण",
+                stat4: "AI मास्टर मॉड्यूल्स",
+                sandboxBadge: "थेट 4D व्हॉइस लॅब: नोंदणी न करता बोलून चाचणी घ्या!",
+                sandboxTitle: 'माइक चालू करा आणि बोला: "Hello Aditi Ma\'am, I am ready to learn"',
+                sandboxBtnText: "माइक चालू करा आणि बोला",
+                lblYouSaid: "तुम्ही बोललात:",
+                sandboxFeedback: '✨ अदिती मॅम: "उत्कृष्ट उच्चार! संपूर्ण 4D मार्गदर्शनासाठी खाली मोफत नोंदणी करा."',
+                boardSimTitle: "नेबुला 4D डिजिटल फळा",
+                btnSimSolar: "🪐 सूर्यमाला (भूगोल)",
+                btnSimMath: "📐 गणित",
+                btnSimSci: "🌿 विज्ञान",
+                btnSimCode: "💻 कोडिंग",
+                quizBadge: "३०-सेकंद थेट आव्हान: उत्तर द्या आणि २० टोकन्स मिळवा!",
+                quizQuestion: '"पायथनमध्ये मेमरी ॲड्रेस तपासण्यासाठी कोणते फंक्शन वापरले जाते?"',
+                quizOpt1: "A) id() फंक्शन",
+                quizOpt2: "B) memory() फंक्शन",
+                quizCorrect: "🎉 अभिनंदन! अगदी अचूक उत्तर. टोकन्स क्लेम करण्यासाठी खाली नोंदणी करा!",
+                quizWrong: "❌ चुकीचे उत्तर! बरोबर उत्तर 'id()' आहे.",
+                featuresTitle: "ध्रुव अकादमीची ६ मुख्य वैशिष्ट्ये",
+                featuresSub: "विद्यार्थी आणि शिक्षकांसाठी परिपूर्ण व्यासपीठ",
+                feat1Title: "अदिति मॅम - 4D थेट इंग्रजी मार्गदर्शक",
+                feat1Desc: "थेट व्हॉइस आणि अचूक फोनेटिक मार्गदर्शनासह इंग्रजी शिका.",
+                feat2Title: "नेबुला AI व्हर्च्युअल क्लासरूम",
+                feat2Desc: "थेट ब्लॅकबोर्ड आणि कॅमेरा स्कॅनरने त्वरित उपाय मिळवा.",
+                feat3Title: "लीगल AI मास्टर हब",
+                feat3Desc: "BNS कायदे, आरटीआय मसुदा आणि कायदेशीर सल्ला केंद्र.",
+                feat4Title: "26-लेयर प्रमाणित सुरक्षा",
+                feat4Desc: "पूर्णपणे सुरक्षित आणि एन्क्रिप्टेड शिक्षण प्रणाली.",
+                feat5Title: "स्मार्ट नोट्स आणि क्विझ",
+                feat5Desc: "नोट्स सोप्या भाषेत बदला आणि सराव चाचण्या सोडवा.",
+                feat6Title: "सेंट्रल वॉलेट सुविधा",
+                feat6Desc: "एकाच वॉलेटमधून सर्व सुविधांचा लाभ घ्या.",
+                pledgeBadge: "राष्ट्रीय डिजिटल शिक्षण संकल्प २०२६",
+                pledgeTitle: '"प्रत्येकाच्या हातात 4D AI शिक्षण" - संकल्प पत्र मिळवा',
+                pledgeDesc: "ध्रुव अकादमीशी जोडून डिजिटल शिक्षणाचा भाग बना आणि प्रमाणपत्र डाउनलोड करा.",
+                pledgeNamePh: "🔒 आधी खाली नोंदणी करा...",
+                btnPledgeText: "संकल्प पत्र पहा",
+                badgeCertPledge: "CERTIFIED PLEDGE",
+                pledgeCertificateText: "यांनी 'प्रत्येकाच्या हातात डिजिटल व 4D AI शिक्षण' हा संकल्प घेतला आहे.",
+                btnDownloadPledgePng: "📥 संकल्प पत्र डाउनलोड करा (JPG)",
+                tabStudentText: "👨‍🎓 विद्यार्थी",
+                tabSchoolText: "🏫 शाळा / संस्था",
+                passBadge: "⚡ Instant Student Pass & Grant",
+                formHeading: "ध्रुव अकादमी त्वरित नोंदणी",
+                formSubheading: "नोंदणी पूर्ण करून 50 मोफत बोनस टोकन्स व VIP आयडी कार्ड मिळवा.",
+                lblName: "पूर्ण नाव:",
+                namePh: "आपले पूर्ण नाव प्रविष्ट करा...",
+                lblMobile: "मोबाईल नंबर:",
+                mobilePh: "१० अंकी मोबाईल नंबर...",
+                lblRole: "आपली भूमिका निवडा:",
+                optRoleStudent: "विद्यार्थी (Student)",
+                optRoleAspirant: "स्पर्धा परीक्षा परीक्षार्थी",
+                optRoleTutor: "शिक्षक / संस्था चालक",
+                optRoleParent: "पालक",
+                lblState: "शहर / राज्य:",
+                locPh: "उदा: महाराष्ट्र / मुंबई",
+                btnSubmitForm: "🚀 नोंदणी पूर्ण करा आणि 50 टोकन्स मिळवा",
+                regSuccessBanner: "अभिनंदन! नोंदणी यशस्वी झाली. ५० बोनस AI टोकन्स जमा झाले आहेत!",
+                cardBadgeActive: "VERIFIED VIP",
+                lblCardTokens: "टोकन शिल्लक:",
+                lblDownloadCardText: "VIP प्रिव्हिलेज कार्ड डाउनलोड करा (PNG)",
+                lblDailyQuotaTitle: "दैनिक शेअर कोटा (Daily Cap):",
+                lblQuotaRuleDesc: "• प्रत्येक शेअरवर २५ टोकन्स मिळतील (रोज जास्तीत जास्त १० मित्र = २५० टोकन्स).<br>• १० पूर्ण झाल्यावर कोटा आपोआप लॉक होईल.",
+                btnCopyLink: "📋 लिंक कॉपी करा",
+                lblCircularHeader: "📢 शाळा व्हॉट्सॲप परिपत्रक:",
+                lblCircularDesc: "थेट आपल्या वर्ग ग्रुपवर सूचना पाठवा:",
+                lblSendCircularText: "वर्ग ग्रुपवर पाठवा",
+                dockVoice: "व्हॉइस लॅब",
+                dockBoard: "ब्लॅकबोर्ड",
+                dockQuiz: "क्विझ",
+                dockPledge: "प्रतिज्ञा",
+                dockReg: "नोंदणी",
+                footerBrand: "ध्रुव अकादमी मास्टर इकोसिस्टम",
+                footerText1: "© 2026 Dhruv Academy. सर्व हक्क राखीव.",
+                aditiVoiceAudioText: "नमस्ते! मी अदिती मॅम आहे. ध्रुव अकादमीमध्ये आपले स्वागत आहे. चला एकत्र इंग्रजी संभाषण शिकूया!"
+            }
+        };
+
+        function switchLanguage(lang) {
+            currentLang = lang;
+            localStorage.setItem('user_lang', lang);
+
+            const selector = document.getElementById('langSelector');
+            if (selector) selector.value = lang;
+
+            const d = promoTranslations[lang] || promoTranslations.hi;
+            document.getElementById('htmlRoot').setAttribute('lang', lang);
+            document.title = d.metaTitle;
+
+            const updateTxt = (id, val) => {
+                const el = document.getElementById(id);
+                if (el) el.innerText = val;
+            };
+            const updateHtml = (id, val) => {
+                const el = document.getElementById(id);
+                if (el) el.innerHTML = val;
+            };
+            const updatePh = (id, val) => {
+                const el = document.getElementById(id);
+                if (el) el.placeholder = val;
+            };
+
+            updateTxt('brandName', d.brandName);
+            updateTxt('brandTagline', d.brandTagline);
+            updateTxt('topUrgencyText', d.topUrgencyText);
+            updateTxt('navRegisterBtn', d.navRegisterBtn);
+            updateTxt('heroBadge', d.heroBadge);
+            updateTxt('heroHeading', d.heroHeading);
+            updateTxt('heroSubheading', d.heroSubheading);
+            updateTxt('heroCtaRegister', d.heroCtaRegister);
+            updateTxt('heroAditiVoiceBtn', d.heroAditiVoiceBtn);
+            updateTxt('btnFullShareText', d.btnFullShareText);
+            updateTxt('stat1', d.stat1);
+            updateTxt('stat2', d.stat2);
+            updateTxt('stat3', d.stat3);
+            updateTxt('stat4', d.stat4);
+
+            updateTxt('sandboxBadge', d.sandboxBadge);
+            updateTxt('sandboxTitle', d.sandboxTitle);
+            updateTxt('sandboxBtnText', d.sandboxBtnText);
+            updateTxt('lblYouSaid', d.lblYouSaid);
+            updateTxt('sandboxFeedback', d.sandboxFeedback);
+
+            updateTxt('boardSimTitle', d.boardSimTitle);
+            updateTxt('btnSimSolar', d.btnSimSolar);
+            updateTxt('btnSimMath', d.btnSimMath);
+            updateTxt('btnSimSci', d.btnSimSci);
+            updateTxt('btnSimCode', d.btnSimCode);
+
+            updateTxt('quizBadge', d.quizBadge);
+            updateTxt('quizQuestion', d.quizQuestion);
+            updateTxt('quizOpt1', d.quizOpt1);
+            updateTxt('quizOpt2', d.quizOpt2);
+
+            updateTxt('featuresTitle', d.featuresTitle);
+            updateTxt('featuresSub', d.featuresSub);
+            updateTxt('feat1Title', d.feat1Title);
+            updateTxt('feat1Desc', d.feat1Desc);
+            updateTxt('feat2Title', d.feat2Title);
+            updateTxt('feat2Desc', d.feat2Desc);
+            updateTxt('feat3Title', d.feat3Title);
+            updateTxt('feat3Desc', d.feat3Desc);
+            updateTxt('feat4Title', d.feat4Title);
+            updateTxt('feat4Desc', d.feat4Desc);
+            updateTxt('feat5Title', d.feat5Title);
+            updateTxt('feat5Desc', d.feat5Desc);
+            updateTxt('feat6Title', d.feat6Title);
+            updateTxt('feat6Desc', d.feat6Desc);
+
+            updateTxt('pledgeBadge', d.pledgeBadge);
+            updateTxt('pledgeTitle', d.pledgeTitle);
+            updateTxt('pledgeDesc', d.pledgeDesc);
+            
+            const isReg = sessionStorage.getItem('dhruv_user_registered');
+            if (isReg !== 'true') {
+                updatePh('pledgeNameInput', d.pledgeNamePh);
+            }
+            updateTxt('btnPledgeText', d.btnPledgeText);
+            updateTxt('badgeCertPledge', d.badgeCertPledge);
+            updateTxt('pledgeCertificateText', d.pledgeCertificateText);
+            updateTxt('btnDownloadPledgePng', d.btnDownloadPledgePng);
+
+            updateTxt('tabStudent', d.tabStudentText);
+            updateTxt('tabSchool', d.tabSchoolText);
+            updateTxt('passBadge', d.passBadge);
+            updateTxt('formHeading', (currentRegType === 'student') ? d.formHeading : d.tabSchoolText);
+            updateTxt('formSubheading', d.formSubheading);
+
+            updateTxt('lblName', d.lblName);
+            updatePh('regName', d.namePh);
+            updateTxt('lblMobile', d.lblMobile);
+            updatePh('regMobile', d.mobilePh);
+            updateTxt('lblRole', d.lblRole);
+            updateTxt('optRoleStudent', d.optRoleStudent);
+            updateTxt('optRoleAspirant', d.optRoleAspirant);
+            updateTxt('optRoleTutor', d.optRoleTutor);
+            updateTxt('optRoleParent', d.optRoleParent);
+            updateTxt('lblState', d.lblState);
+            updatePh('regLocation', d.locPh);
+            updateTxt('btnSubmitForm', d.btnSubmitForm);
+
+            updateHtml('regSuccessBanner', `<span>🎉</span> <span>${d.regSuccessBanner}</span>`);
+            updateTxt('cardBadgeActive', d.cardBadgeActive);
+            updateTxt('lblCardTokens', d.lblCardTokens);
+            updateTxt('lblDownloadCardText', d.lblDownloadCardText);
+            updateTxt('lblDailyQuotaTitle', d.lblDailyQuotaTitle);
+            updateHtml('lblQuotaRuleDesc', d.lblQuotaRuleDesc);
+            updateTxt('btnCopyLink', d.btnCopyLink);
+            updateTxt('lblCircularHeader', d.lblCircularHeader);
+            updateTxt('lblCircularDesc', d.lblCircularDesc);
+            updateTxt('lblSendCircularText', d.lblSendCircularText);
+
+            updateTxt('dockVoice', d.dockVoice);
+            updateTxt('dockBoard', d.dockBoard);
+            updateTxt('dockQuiz', d.dockQuiz);
+            updateTxt('dockPledge', d.dockPledge);
+            updateTxt('dockReg', d.dockReg);
+
+            updateTxt('footerBrand', d.footerBrand);
+            updateTxt('footerText1', d.footerText1);
+        }
+
+        const indianNames = [
+            "आर्यन", "सिमरन", "अनिकेत", "साक्षी", "हरप्रीत", "तन्मय", "रोहन", "अदिति", "विक्रांत", "दीक्षा",
+            "मनीष", "रिया", "अभिषेक", "पूजा", "अक्षय", "नेहा", "करण", "कोमल", "गौरव", "सोनल",
+            "ऋषभ", "शालिनी", "कुणाल", "अंजली", "प्रदीप", "शिवानी", "विशाल", "अमृता", "दीपक", "कीर्ति",
+            "निखिल", "पायल", "मयंक", "आरती", "सचिन", "प्रीति", "हर्ष", "मोनिका", "अतुल", "स्वाति",
+            "सुरेश", "दिव्या", "कपिल", "ज्योति", "सौरभ", "कविता", "शुभम", "वर्षा", "तरुण", "पल्लवी"
+        ];
+        const indianCities = [
+            "प्रयागराज", "बदायूँ", "बरेली", "जयपुर", "इंदौर", "पटियाला", "पुणे", "नागपुर", "भोपाल", "कानपुर",
+            "लखनऊ", "वाराणसी", "लुधियाना", "ਜਲੰਧਰ", "ਅੰਮ੍ਰਿਤਸਰ", "ग्वालियर", "जबलपुर", "मेरठ", "आगरा", "गोरखपुर",
+            "अलवर", "उदयपुर", "कोटा", "नासिक", "छत्रपति संभाजीनगर", "रोहतक", "हिसार", "पानीपत", "सूरत", "वडोदरा",
+            "देहरादून", "हरिद्वार", "रांची", "पटना", "गया", "मुजफ्फरपुर", "धनबाद", "रायपुर", "बिलासपुर", "शिमला"
+        ];
+        const educationalActions = [
+            "ने 50 AI बोनस टोकन्स क्लेम किए!",
+            "अदिति मैम 4D लाइव क्लास में शामिल हुए!",
+            "ने BNS लीगल एडवाइज़र से समाधान प्राप्त किया!",
+            "ने 3D ब्लैकबोर्ड पर सौरमंडल सिमुलेशन देखा!",
+            "ने नोट्स वैलिडेटर से अध्ययन सामग्री डाउनलोड की!",
+            "ने 100% सही उत्तर देकर क्विज़ जीता!"
+        ];
+
+        let recentShownHistory = [];
+
+        function triggerProceduralSocialProof() {
+            if (recentShownHistory.length > 35) recentShownHistory.shift();
+
+            let name, city, pair;
+            let attempts = 0;
+            do {
+                name = indianNames[Math.floor(Math.random() * indianNames.length)];
+                city = indianCities[Math.floor(Math.random() * indianCities.length)];
+                pair = `${name}_${city}`;
+                attempts++;
+            } while (recentShownHistory.includes(pair) && attempts < 15);
+
+            recentShownHistory.push(pair);
+            const action = educationalActions[Math.floor(Math.random() * educationalActions.length)];
+
+            const popup = document.getElementById('socialProofPopup');
+            const pTitle = document.getElementById('proofTitle');
+            const pDesc = document.getElementById('proofDesc');
+
+            if(popup && pTitle && pDesc) {
+                pTitle.innerText = `${name} (${city})`;
+                pDesc.innerText = action;
+
+                popup.classList.remove('translate-y-28', 'opacity-0');
+                popup.classList.add('translate-y-0', 'opacity-100');
+
+                setTimeout(() => {
+                    popup.classList.remove('translate-y-0', 'opacity-100');
+                    popup.classList.add('translate-y-28', 'opacity-0');
+                }, 4500);
+            }
+        }
+
+        function getDailyShareCount() {
+            let today = new Date().toISOString().slice(0, 10);
+            let savedDate = localStorage.getItem('dhruv_share_date');
+            if (savedDate !== today) {
+                localStorage.setItem('dhruv_share_date', today);
+                localStorage.setItem('dhruv_daily_share_count', '0');
+                return 0;
+            }
+            return parseInt(localStorage.getItem('dhruv_daily_share_count') || '0', 10);
+        }
+
+        function updateQuotaUI() {
+            let count = getDailyShareCount();
+            const quotaDisplay = document.getElementById('quotaDisplay');
+            const quotaBar = document.getElementById('quotaProgressBar');
+            if (quotaDisplay) quotaDisplay.innerText = `${count} / 10 उपयोग किया गया`;
+            if (quotaBar) quotaBar.style.width = `${(count / 10) * 100}%`;
+        }
+
+        function recordAndShare(platform) {
+            let count = getDailyShareCount();
+            if (count >= 10) {
+                alert("⚠️ दैनिक सुरक्षा सीमा: आप आज का अधिकतम 10 इनवाइट्स का कोटा पूरा कर चुके हैं। नए टोकन कल मिलेंगे!");
+                shareDirectly(platform);
+                return;
+            }
+
+            count++;
+            localStorage.setItem('dhruv_daily_share_count', count.toString());
+            
+            let tokens = parseInt(localStorage.getItem('dhruv_wallet_tokens') || '50', 10) + 25;
+            localStorage.setItem('dhruv_wallet_tokens', tokens.toString());
+            localStorage.setItem('user_tokens', tokens.toString());
+
+            const cardTokens = document.getElementById('cardTokens');
+            if(cardTokens) cardTokens.innerText = `${tokens} Tokens`;
+
+            updateQuotaUI();
+            alert(`🎉 बधाई हो! सहपाठी के साथ शेयर करने पर 25 अतिरिक्त AI टोकन्स जोड़े जायेगें। कुल टोकन: ${tokens}`);
+            shareDirectly(platform);
+        }
+
+        function shareDirectly(platform) {
+            const message = `🔥 *ध्रुव एकेडमी (Dhruv Academy) - 4D AI वर्चुअल क्लासरूम*\n\nनमस्ते! मैंने अभी ध्रुव एकेडमी में निःशुल्क पंजीकरण करके 50 बोनस टोकन्स क्लेम किए हैं। यहाँ अदिति मैम के साथ 4D स्पोकन इंग्लिश, 3D डिजिटल ब्लैकबोर्ड और प्रमाणित लीगल AI टूल्स उपलब्ध हैं।\n\nआप भी अभी फ्री रजिस्टर करें और 50 बोनस टोकन पाएं:\n👉 ${APP_URL}`;
+            
+            const encodedMsg = encodeURIComponent(message);
+            const encodedUrl = encodeURIComponent(APP_URL);
+
+            let targetUrl = "";
+            if (platform === 'whatsapp') targetUrl = `https://api.whatsapp.com/send?text=${encodedMsg}`;
+            else if (platform === 'facebook') targetUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}&quote=${encodedMsg}`;
+            else if (platform === 'twitter') targetUrl = `https://twitter.com/intent/tweet?text=${encodedMsg}&url=${encodedUrl}`;
+            else if (platform === 'linkedin') targetUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${encodedUrl}`;
+
+            if (targetUrl) window.open(targetUrl, '_blank', 'width=650,height=550');
+        }
+
+        function shareSchoolCircular() {
+            const circular = `📢 *आवश्यक सूचना - डिजिटल 4D स्मार्ट क्लासरूम*\n\nसंस्थान के सभी छात्रों और शिक्षकों को सूचित किया जाता है कि ध्रुव एकेडमी के 4D AI लर्निंग पोर्टल पर अपना निःशुल्क स्टूडेंट पास एक्टिवेट करें।\n\n👉 पोर्टल लिंक: ${APP_URL}\n• अदिति मैम स्पोकन इंग्लिश (4D Voice)\n• नेबुला 3D ब्लैकबोर्ड\n• 50 AI टोकन्स तुरंत मुफ्त!`;
+            window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(circular)}`, '_blank');
+        }
+
+        // ========================================================
+        // 📸 1-क्लिक फुल पेज स्नैपशॉट व WhatsApp (Windows 7 100% Fix)
+        // ========================================================
+        async function captureAndShareFullPage() {
+            const btn = document.getElementById('fullShareBtn');
+            const originalContent = btn.innerHTML;
+            btn.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> <span>तैयार हो रहा है...</span>`;
+
+            const shareText = `🔥 *ध्रुव एकेडमी (Dhruv Academy) - 4D AI वर्चुअल क्लासरूम*\n\nअदिति मैम 4D स्पोकन इंग्लिश, 3D नेबुला ब्लैकबोर्ड और 26-लेयर डिफेंस सिस्टम।\nअभी फ्री रजिस्टर करें और 50 टोकन पाएं:\n👉 ${APP_URL}`;
+            const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+
+            let pcWindow = null;
+            if (!isMobile) {
+                pcWindow = window.open('https://web.whatsapp.com/send?text=' + encodeURIComponent(shareText), '_blank');
+            }
+
+            try {
+                window.scrollTo(0, 0);
+                const targetArea = document.getElementById('mainCaptureArea') || document.body;
+                
+                const exactHeight = Math.max(
+                    targetArea.scrollHeight, 
+                    targetArea.offsetHeight, 
+                    targetArea.clientHeight
+                );
+                const exactWidth = targetArea.offsetWidth || 1200;
+
+                const canvas = await html2canvas(targetArea, {
+                    scale: 1,
+                    useCORS: true,
+                    backgroundColor: '#020617',
+                    width: exactWidth,
+                    height: exactHeight,
+                    windowWidth: exactWidth,
+                    windowHeight: exactHeight,
+                    scrollY: 0,
+                    scrollX: 0,
+                    foreignObjectRendering: false
+                });
+
+                if (isMobile && navigator.share) {
+                    canvas.toBlob(async (blob) => {
+                        const file = new File([blob], "Dhruv_Academy_Brochure.png", { type: "image/png" });
+                        if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                            try {
+                                await navigator.share({
+                                    title: "Dhruv Academy 4D Ecosystem",
+                                    text: shareText,
+                                    files: [file]
+                                });
+                                btn.innerHTML = originalContent;
+                                return;
+                            } catch(e) {}
+                        }
+                        window.location.href = `whatsapp://send?text=${encodeURIComponent(shareText)}`;
+                        btn.innerHTML = originalContent;
+                    }, 'image/png', 0.85);
+                } else {
+                    const link = document.createElement('a');
+                    link.download = "Dhruv_Academy_Full_Brochure.png";
+                    link.href = canvas.toDataURL("image/png");
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+
+                    btn.innerHTML = originalContent;
+                }
+            } catch(e) {
+                if (pcWindow) {
+                    pcWindow.location.href = 'https://web.whatsapp.com/send?text=' + encodeURIComponent(shareText);
+                } else {
+                    window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(shareText)}`, '_blank');
+                }
+                btn.innerHTML = originalContent;
+            }
+        }
+
+        // 🎙️ लाइव 4D वॉयस लैब टेस्ट (Web Speech API)
+        function testSandboxVoice() {
+            const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+            const btn = document.getElementById('sandboxMicBtn');
+            const textSpan = document.getElementById('sandboxBtnText');
+            const resultBox = document.getElementById('sandboxResultBox');
+            const spokenText = document.getElementById('sandboxSpokenText');
+
+            if (!SpeechRec) {
+                alert("आपका ब्राउज़र स्पीच रिकग्निशन को सपोर्ट नहीं करता। कृपया Google Chrome का उपयोग करें।");
+                return;
+            }
+
+            const recognizer = new SpeechRec();
+            recognizer.lang = 'en-IN';
+            recognizer.interimResults = false;
+
+            recognizer.onstart = () => {
+                btn.className = "px-6 py-3 bg-red-600 text-white rounded-2xl font-bold text-xs sm:text-sm shadow-xl flex items-center gap-2 animate-pulse";
+                textSpan.innerText = (currentLang === 'en') ? "Listening... (Please speak)" : "सुन रही हूँ... (बोलिए)";
+            };
+
+            recognizer.onresult = (e) => {
+                let speech = e.results[0][0].transcript;
+                resultBox.classList.remove('hidden');
+                spokenText.innerText = `"${speech}"`;
+                try {
+                    confetti({ particleCount: 60, spread: 60, origin: { y: 0.6 } });
+                } catch(e){}
+            };
+
+            recognizer.onerror = () => {
+                btn.className = "px-6 py-3 bg-gradient-to-r from-rose-600 to-pink-600 text-white rounded-2xl font-bold text-xs sm:text-sm shadow-xl flex items-center gap-2";
+                textSpan.innerText = promoTranslations[currentLang].sandboxBtnText;
+            };
+
+            recognizer.onend = () => {
+                btn.className = "px-6 py-3 bg-gradient-to-r from-rose-600 to-pink-600 text-white rounded-2xl font-bold text-xs sm:text-sm shadow-xl flex items-center gap-2";
+                textSpan.innerText = (currentLang === 'en') ? "Speak Again 🎤" : "पुनः बोलें 🎤";
+            };
+
+            recognizer.start();
+        }
+
+        // 📺 नेबुला डिजिटल ब्लैकबोर्ड सिमुलेटर
+        function runBoardSimulation(type) {
+            if (physicsStepTimer) {
+                clearInterval(physicsStepTimer);
+                physicsStepTimer = null;
+            }
+
+            const out = document.getElementById('boardSimulationContent');
+            
+            const btns = ['btnSimPhysics', 'btnSimSolar', 'btnSimLegal', 'btnSimMath', 'btnSimSci', 'btnSimCode'];
+            btns.forEach(b => {
+                const el = document.getElementById(b);
+                if(el) {
+                    el.className = "px-3.5 py-1.5 bg-slate-900 hover:bg-slate-800 border border-slate-700 rounded-lg text-xs font-semibold text-slate-300";
+                }
+            });
+
+            if (type === 'physics') {
+                const b = document.getElementById('btnSimPhysics');
+                if(b) b.className = "px-3.5 py-1.5 bg-purple-900/90 border border-purple-500/50 rounded-lg text-xs font-bold text-amber-300 shadow";
+
+                out.innerHTML = `
+                    <div class="w-full space-y-2">
+                        <div class="flex justify-between items-center border-b border-cyan-500/20 pb-1 text-cyan-300">
+                            <span class="font-bold">⚛️ सैद्धांतिक भौतिकी (THEORETICAL PHYSICS): E = mc² व्युत्पत्ति</span>
+                            <span class="text-[10px] text-emerald-400">लूपिंग लाइव सॉल्वर सक्रिय</span>
+                        </div>
+                        <div id="physicsStepList" class="space-y-1 text-xs">
+                            <div class="step-proof-line" id="pstep1">[चरण 1] आपेक्षिकता सिद्धांत (Special Relativity): गतिशील द्रव्यमान m = m₀ / √(1 - v²/c²)</div>
+                            <div class="step-proof-line" id="pstep2">[चरण 2] संवेग एवं बल समीकरण: F = dp/dt = d(mv)/dt</div>
+                            <div class="step-proof-line" id="pstep3">[चरण 3] गतिज ऊर्जा रूपांतरण: dEk = F·dx = v·d(mv) = v² dm + mv dv</div>
+                            <div class="step-proof-line" id="pstep4">[चरण 4] अवकलन संबंध: c² dm = v² dm + mv dv</div>
+                            <div class="step-proof-line" id="pstep5">[चरण 5] समाकलन (Integration): ∫ dEk = c² ∫ dm (सीमा: m₀ से m तक)</div>
+                            <div class="step-proof-line" id="pstep6">[चरण 6] गतिज ऊर्जा: Ek = mc² - m₀c²</div>
+                            <div class="step-proof-line text-emerald-400 font-bold border-t border-emerald-500/30 pt-1 text-sm" id="pstep7">[अंतिम प्रमेय] कुल ऊर्जा (स्थिर द्रव्यमान + गतिज): E = mc² [प्रमाणित (Q.E.D.)]</div>
+                        </div>
+                    </div>
+                `;
+
+                let step = 1;
+                physicsStepTimer = setInterval(() => {
+                    const el = document.getElementById('pstep' + step);
+                    if (el) el.classList.add('visible');
+                    step++;
+                    if (step > 7) {
+                        clearInterval(physicsStepTimer);
+                        physicsStepTimer = setTimeout(() => runBoardSimulation('physics'), 6000);
+                    }
+                }, 1000);
+
+            } else if (type === 'solar') {
+                const b = document.getElementById('btnSimSolar');
+                if(b) b.className = "px-3.5 py-1.5 bg-cyan-900/90 border border-cyan-500/50 rounded-lg text-xs font-bold text-cyan-300 shadow";
+
+                out.innerHTML = `
+                    <div class="w-full text-center space-y-2">
+                        <div class="flex justify-between items-center text-[11px] text-amber-300 font-mono border-b border-cyan-500/20 pb-1">
+                            <span>🪐 NEBULA COSMIC ORBIT ENGINE: KEPLER LAWS ACTIVE</span>
+                            <span>SCALE: REAL-TIME RELATIVE VELOCITY</span>
+                        </div>
+                        <div class="solar-system-box">
+                            <div class="sun-core" title="Sun (सूर्य)"></div>
+                            <div class="orbit-ring orbit-mercury"><div class="planet-dot dot-mercury" title="Mercury (बुध)"></div></div>
+                            <div class="orbit-ring orbit-venus"><div class="planet-dot dot-venus" title="Venus (शुक्र)"></div></div>
+                            <div class="orbit-ring orbit-earth"><div class="planet-dot dot-earth" title="Earth (पृथ्वी 365 Days)"></div></div>
+                            <div class="orbit-ring orbit-mars"><div class="planet-dot dot-mars" title="Mars (मंगल 687 Days)"></div></div>
+                        </div>
+                        <p class="text-[11px] text-cyan-300">✓ सूर्य के गुरुत्वाकर्षण और ग्रहों के घूर्णन की लाइव 4D खगोलीय रेंडरिंग।</p>
+                    </div>
+                `;
+            } else if (type === 'legal') {
+                const b = document.getElementById('btnSimLegal');
+                if(b) b.className = "px-3.5 py-1.5 bg-rose-900/90 border border-rose-500/50 rounded-lg text-xs font-bold text-rose-300 shadow";
+
+                out.innerHTML = `
+                    <div class="w-full space-y-2 text-left">
+                        <div class="text-rose-400 font-bold border-b border-rose-500/20 pb-1 flex justify-between">
+                            <span>⚖️ BNS 2023 वैधानिक विज़ुअलाइज़र (भारतीय न्याय संहिता)</span>
+                            <span class="text-[10px] text-emerald-400">100% वेरिफाइड एक्ट</span>
+                        </div>
+                        <div class="p-2 bg-slate-900/90 rounded-lg border-l-4 border-rose-500">
+                            <span class="px-2 py-0.5 bg-rose-950 text-rose-300 text-[10px] font-bold rounded">BNS धारा 103(1)</span>
+                            <span class="text-[10px] text-rose-400 font-bold">संज्ञेय / गैर-जमानती</span>
+                            <p class="text-slate-200 mt-1"><b>हत्या का अपराध (पूर्व IPC धारा 302):</b> आजीवन कारावास अथवा मृत्युदंड व जुर्माना।</p>
+                        </div>
+                        <div class="p-2 bg-slate-900/90 rounded-lg border-l-4 border-amber-500">
+                            <span class="px-2 py-0.5 bg-amber-950 text-amber-300 text-[10px] font-bold rounded">BNS धारा 303(2)</span>
+                            <span class="text-[10px] text-amber-400 font-bold">संज्ञेय</span>
+                            <p class="text-slate-200 mt-1"><b>चोरी (पूर्व IPC धारा 379):</b> 3 वर्ष तक का कारावास अथवा जुर्माना या दोनों।</p>
+                        </div>
+                        <div class="p-2 bg-slate-900/90 rounded-lg border-l-4 border-cyan-500">
+                            <span class="px-2 py-0.5 bg-cyan-950 text-cyan-300 text-[10px] font-bold rounded">BNS धारा 115(2)</span>
+                            <span class="text-[10px] text-cyan-400 font-bold">जमानती</span>
+                            <p class="text-slate-200 mt-1"><b>स्वेच्छा से चोट पहुँचाना (पूर्व IPC धारा 323):</b> 1 वर्ष तक का कारावास अथवा ₹1,000 जुर्माना।</p>
+                        </div>
+                    </div>
+                `;
+            } else if (type === 'math') {
+                const b = document.getElementById('btnSimMath');
+                if(b) b.className = "px-3.5 py-1.5 bg-sky-900/90 border border-sky-500/50 rounded-lg text-xs font-bold text-sky-300 shadow";
+
+                out.innerHTML = `
+                    <div class="space-y-1">
+                        <p class="text-amber-400 font-bold">📐 Subject: Pythagoras Theorem (3D Geometry)</p>
+                        <p class="text-slate-300">Step 1: Formula: <b>Hypotenuse² = Base² + Perpendicular² (h² = p² + b²)</b></p>
+                        <p class="text-emerald-400">Step 2: Let p = 3, b = 4 ➔ h² = 3² + 4² = 9 + 16 = 25 ➔ <b>h = 5</b></p>
+                        <p class="text-cyan-300">✓ Nebula Core Verified (100% Solved)</p>
+                    </div>
+                `;
+            } else if (type === 'science') {
+                const b = document.getElementById('btnSimSci');
+                if(b) b.className = "px-3.5 py-1.5 bg-emerald-900/90 border border-emerald-500/50 rounded-lg text-xs font-bold text-emerald-300 shadow";
+
+                out.innerHTML = `
+                    <div class="space-y-1">
+                        <p class="text-emerald-400 font-bold">🌿 Subject: Photosynthesis Chemical Reaction</p>
+                        <p class="text-slate-300">Equation: <b>6CO₂ + 6H₂O + Sunlight ➔ C₆H₁₂O₆ (Glucose) + 6O₂</b></p>
+                        <p class="text-cyan-300">✓ Solar energy chloroplast absorption model active.</p>
+                    </div>
+                `;
+            } else if (type === 'code') {
+                const b = document.getElementById('btnSimCode');
+                if(b) b.className = "px-3.5 py-1.5 bg-amber-900/90 border border-amber-500/50 rounded-lg text-xs font-bold text-amber-300 shadow";
+
+                out.innerHTML = `
+                    <div class="space-y-1">
+                        <p class="text-cyan-400 font-bold">💻 Subject: Python Dynamic Memory Allocation</p>
+                        <p class="text-slate-300">Code: <code>x = 10; print(id(x))</code></p>
+                        <p class="text-amber-300">Output: ➔ Memory Address: <b>140726489201</b> (Reference Bound)</p>
+                    </div>
+                `;
+            }
+        }
+
+        // 🎯 लाइव मिनी क्विज़
+        function handleLiveQuiz(isCorrect) {
+            const d = promoTranslations[currentLang] || promoTranslations.hi;
+            const fb = document.getElementById('quizFeedback');
+            fb.classList.remove('hidden');
+            if(isCorrect) {
+                fb.className = "text-xs font-bold text-emerald-400";
+                fb.innerText = d.quizCorrect;
+                try {
+                    confetti({ particleCount: 50, spread: 60, origin: { y: 0.5 } });
+                } catch(e){}
+            } else {
+                fb.className = "text-xs font-bold text-rose-400";
+                fb.innerText = d.quizWrong;
+            }
+        }
+
+        // 🔒 सुरक्षा: प्रतिबंधित/अश्लील शब्दों की सूची
+        const vulgarKeywords = [
+            "gali", "fake", "hacker", "chutiya", "bhenchod", "madarchod", 
+            "sex", "porn", "xxx", "gand", "lund", "bhosdi"
+        ];
+        const exactVipNames = [
+            "admin", "administrator", "narendra modi", "rahul gandhi", "mayawati", "mulayam singh yadav"
+        ];
+
+        function isNameRestricted(name) {
+            const cleanName = name.toLowerCase().trim();
+            for (let bad of vulgarKeywords) {
+                if (cleanName.includes(bad)) return true;
+            }
+            for (let vip of exactVipNames) {
+                if (cleanName === vip) return true;
+            }
+            return false;
+        }
+
+        // ========================================================
+        // 10 सोशल शेयर गेटकीपर मॉड्यूल (WhatsApp, FB, X, LinkedIn)
+        // ========================================================
+        let requiredShares = 10;
+        let currentShareCount = parseInt(sessionStorage.getItem('dhruv_share_count') || "0");
+
+        const shareCampaignMsg = encodeURIComponent("मैंने ध्रुव एकेडमी (Dhruv Academy) के राष्ट्रीय डिजिटल शिक्षा संकल्प 2026 में भाग लिया। पारदर्शी, आधुनिक 4D AI शिक्षा से जुड़ने के लिए अभी रजिस्टर करें:");
+        const shareCampaignUrl = encodeURIComponent(window.location.origin + window.location.pathname);
+
+        function openShareGateModal() {
+            const modal = document.getElementById('shareGateModal');
+            if (modal) {
+                modal.classList.remove('hidden');
+                updateShareUI();
+            }
+        }
+
+        function handleSocialShare(platform) {
+            let shareUrl = "";
+
+            if (platform === 'whatsapp') {
+                shareUrl = `https://api.whatsapp.com/send?text=${shareCampaignMsg}%20${shareCampaignUrl}`;
+            } else if (platform === 'facebook') {
+                shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${shareCampaignUrl}&quote=${shareCampaignMsg}`;
+            } else if (platform === 'twitter') {
+                shareUrl = `https://twitter.com/intent/tweet?text=${shareCampaignMsg}&url=${shareCampaignUrl}`;
+            } else if (platform === 'linkedin') {
+                shareUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${shareCampaignUrl}`;
+            }
+
+            if (shareUrl) {
+                window.open(shareUrl, '_blank', 'width=600,height=500');
+            }
+
+            if (currentShareCount < requiredShares) {
+                currentShareCount++;
+                sessionStorage.setItem('dhruv_share_count', currentShareCount);
+                updateShareUI();
+            }
+        }
+
+        function updateShareUI() {
+            const countText = document.getElementById('shareCountText');
+            const progressBar = document.getElementById('shareProgressBar');
+            const statusHint = document.getElementById('shareStatusHint');
+            const unlockBtn = document.getElementById('finalUnlockCertificateBtn');
+
+            const percentage = Math.min(100, Math.round((currentShareCount / requiredShares) * 100));
+
+            if (countText) countText.innerText = `${currentShareCount} / ${requiredShares} पूर्ण`;
+            if (progressBar) progressBar.style.width = `${percentage}%`;
+            
+            const remaining = Math.max(0, requiredShares - currentShareCount);
+            if (statusHint) {
+                statusHint.innerText = remaining > 0 ? `बाकी शेयर: ${remaining}` : `🎉 बहुत बढ़िया! 10 शेयर पूरे हो चुके हैं।`;
+            }
+
+            if (currentShareCount >= requiredShares) {
+                if (unlockBtn) {
+                    unlockBtn.disabled = false;
+                    unlockBtn.className = "w-full py-3.5 px-4 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white font-extrabold text-xs sm:text-sm rounded-xl shadow-lg cursor-pointer transition duration-300";
+                    unlockBtn.innerHTML = "🎓 संकल्प पत्र प्राप्त करें (Unlock Certificate)";
+                }
+            }
+        }
+
+        function closeShareModalAndProceed() {
+            const modal = document.getElementById('shareGateModal');
+            if (modal) modal.classList.add('hidden');
+
+            sessionStorage.setItem('dhruv_share_completed', 'true');
+            
+            const pledgeSection = document.getElementById('sectionPledge');
+            if (pledgeSection) {
+                pledgeSection.scrollIntoView({ behavior: 'smooth' });
+            }
+            alert("🎉 धन्यवाद! 10 शेयर पूर्ण होने पर आपका संकल्प पत्र डाउनलोड के लिए अनलॉक कर दिया गया है।");
+        }
+
+        // 📜 शिक्षा प्रतिज्ञा पत्र जनरेटर
+        function generateEducationPledge() {
+            const isReg = sessionStorage.getItem('dhruv_user_registered');
+            const verifiedName = sessionStorage.getItem('registered_applicant_name');
+            const isShared = sessionStorage.getItem('dhruv_share_completed');
+
+            // 1. पहला गेटकीपर: रजिस्ट्रेशन अनिवार्य
+            if (isReg !== 'true' || !verifiedName) {
+                alert("⚠️ अनिवार्य सूचना:\n\nसंकल्प पत्र प्राप्त करने से पहले आपका पंजीकरण (विद्यार्थी अथवा स्कूल/कोचिंग) अनिवार्य है।\n\nकृपया पहले नीचे दिए गए फ़ॉर्म में पंजीकरण पूर्ण करें।");
+                const regSection = document.getElementById('registerSection');
+                if (regSection) regSection.scrollIntoView({ behavior: 'smooth' });
+                return;
+            }
+
+            // 2. दूसरा गेटकीपर: 10 सोशल शेयर अनिवार्य
+            if (isShared !== 'true') {
+                alert("⚠️ अनिवार्य सूचना:\n\nसंकल्प पत्र देखने व प्राप्त करने के लिए इसे 10 सहपाठियों/ग्रुप्स में साझा करना अनिवार्य है।");
+                openShareGateModal();
+                return;
+            }
+
+            const recipientEl = document.getElementById('pledgeRecipientName');
+            if(recipientEl) {
+                recipientEl.innerText = verifiedName;
+            }
+
+            try {
+                confetti({ particleCount: 70, spread: 70, origin: { y: 0.5 } });
+            } catch(e){}
+        }
+
+        // 📥 आधिकारिक सर्टिफिकेट डाउनलोडर
+        function downloadPledgeCard() {
+            const isReg = sessionStorage.getItem('dhruv_user_registered');
+            const verifiedName = sessionStorage.getItem('registered_applicant_name');
+            const isShared = sessionStorage.getItem('dhruv_share_completed');
+
+            // 1. रजिस्ट्रेशन चेक
+            if (isReg !== 'true' || !verifiedName) {
+                alert("⚠️ अनिवार्य सूचना:\n\nसर्टिफिकेट केवल पंजीकृत उपयोगकर्ताओं के लिए ही उपलब्ध है।\n\nकृपया पहले नीचे दिए गए फ़ॉर्म में पंजीकरण पूर्ण करें।");
+                const regSection = document.getElementById('registerSection');
+                if (regSection) regSection.scrollIntoView({ behavior: 'smooth' });
+                return;
+            }
+
+            // 2. 10 शेयर पूरा होने का कड़ा चेक
+            if (isShared !== 'true') {
+                alert("⚠️ शेयर वेरिफिकेशन अधूरा है!\n\nसर्टिफिकेट डाउनलोड करने से पहले 10 लोगों/ग्रुप्स में शेयर करना अनिवार्य है।");
+                openShareGateModal();
+                return;
+            }
+
+            const studentName = verifiedName;
+
+            const certImg = new Image();
+            certImg.src = '/static/images/certificate_template.jpg?v=' + Date.now();
+
+            certImg.onload = function() {
+                const canvas = document.createElement('canvas');
+                canvas.width = certImg.naturalWidth || 1200;
+                canvas.height = certImg.naturalHeight || 900;
+                const ctx = canvas.getContext('2d');
+
+                ctx.drawImage(certImg, 0, 0, canvas.width, canvas.height);
+
+                let fontSize = 38;
+                const maxTextWidth = canvas.width * 0.45;
+                ctx.font = `bold ${fontSize}px "Segoe UI", Arial, sans-serif`;
+
+                while (ctx.measureText(studentName).width > maxTextWidth && fontSize > 18) {
+                    fontSize -= 2;
+                    ctx.font = `bold ${fontSize}px "Segoe UI", Arial, sans-serif`;
+                }
+
+                ctx.fillStyle = '#0f172a';
+                ctx.textAlign = 'center';
+                ctx.fillText(studentName, canvas.width / 2, canvas.height * 0.53);
+
+                const link = document.createElement('a');
+                link.download = `Dhruv_Academy_National_Pledge_${studentName.replace(/\s+/g, '_')}.jpg`;
+                link.href = canvas.toDataURL('image/jpeg', 0.95);
+                link.click();
+            };
+
+            certImg.onerror = function() {
+                alert("सर्टिफिकेट टेम्पलेट लोड नहीं हो सका! कृपया सुनिश्चित करें कि फ़ाइल 'static/images/certificate_template.jpg' पाथ पर मौजूद है।");
+            };
+        }
+
+        // 🪪 स्टूडेंट VIP कार्ड डाउनलोडर
+        function downloadStudentCard() {
+            const cardEl = document.getElementById('idCardRenderElement');
+            html2canvas(cardEl, { backgroundColor: '#020617', scale: 2 }).then(canvas => {
+                const link = document.createElement('a');
+                link.download = `Dhruv_Academy_VIP_Card.png`;
+                link.href = canvas.toDataURL();
+                link.click();
+            });
+        }
+
+        function playAditiTeaserVoice() {
+            try {
+                if ('speechSynthesis' in window) {
+                    window.speechSynthesis.cancel();
+                    const d = promoTranslations[currentLang] || promoTranslations.hi;
+                    let utterance = new SpeechSynthesisUtterance(d.aditiVoiceAudioText);
+                    utterance.lang = (currentLang === 'en') ? 'en-IN' : 'hi-IN';
+                    utterance.rate = 0.88;
+                    window.speechSynthesis.speak(utterance);
+                }
+            } catch(e) {}
+        }
+
+        function setRegistrationType(type) {
+            currentRegType = type;
+            const bStu = document.getElementById('tabStudent');
+            const bSch = document.getElementById('tabSchool');
+            const formHead = document.getElementById('formHeading');
+            const roleSelect = document.getElementById('regRole');
+            const d = promoTranslations[currentLang] || promoTranslations.hi;
+
+            if(type === 'student') {
+                bStu.className = "px-5 py-2 rounded-xl text-xs font-extrabold bg-cyan-600 text-white shadow";
+                bSch.className = "px-5 py-2 rounded-xl text-xs font-bold text-slate-400 hover:text-white";
+                formHead.innerText = d.formHeading;
+                roleSelect.value = "student";
+            } else {
+                bSch.className = "px-5 py-2 rounded-xl text-xs font-extrabold bg-indigo-600 text-white shadow";
+                bStu.className = "px-5 py-2 rounded-xl text-xs font-bold text-slate-400 hover:text-white";
+                formHead.innerText = d.tabSchoolText;
+                roleSelect.value = "tutor";
+            }
+        }
+
+        // पंजीकरण हैंडलर
+        function handleRegistration(e) {
+            e.preventDefault();
+            const name = document.getElementById('regName').value.trim();
+            const mobile = document.getElementById('regMobile').value.trim();
+            const role = document.getElementById('regRole').value;
+            const loc = document.getElementById('regLocation').value.trim() || "India";
+
+            if (!name || name.length < 3) {
+                alert("कृपया अपना वास्तविक पूरा नाम दर्ज करें (कम से कम 3 अक्षर)!");
+                return;
+            }
+
+            const validNameRegex = /^[a-zA-Z\u0900-\u097F\s.]+$/;
+            if (!validNameRegex.test(name)) {
+                alert("नाम में संख्या (Numbers) या विशेष चिह्न (@, #, $ आदि) मान्य नहीं हैं!");
+                return;
+            }
+
+            if (isNameRestricted(name)) {
+                alert("अमान्य नाम! कृपया मर्यादा बनाए रखें और अपना वास्तविक नाम दर्ज करें।");
+                return;
+            }
+
+            const phoneRegex = /^[6-9]\d{9}$/;
+            if (!phoneRegex.test(mobile)) {
+                alert("कृपया 10 अंकों का वैध भारतीय मोबाइल नंबर दर्ज करें!");
+                return;
+            }
+
+            const auditLog = {
+                studentName: name,
+                mobileNumber: mobile,
+                role: role,
+                issuedAt: new Date().toISOString(),
+                certificateId: "DA-" + Math.floor(100000 + Math.random() * 900000)
+            };
+            try {
+                let logs = JSON.parse(localStorage.getItem('da_pledge_audit') || "[]");
+                logs.push(auditLog);
+                localStorage.setItem('da_pledge_audit', JSON.stringify(logs));
+            } catch(err){}
+
+            localStorage.setItem('dhruv_wallet_tokens', '50');
+            localStorage.setItem('user_tokens', '50');
+            localStorage.setItem('registered_user_name', name);
+
+            sessionStorage.setItem('dhruv_user_registered', 'true');
+            sessionStorage.setItem('registered_applicant_name', name);
+
+            const pledgeInput = document.getElementById('pledgeNameInput');
+            if (pledgeInput) {
+                pledgeInput.value = name;
+                pledgeInput.readOnly = true;
+                pledgeInput.classList.remove('cursor-not-allowed');
+                pledgeInput.classList.add('bg-slate-900', 'text-cyan-300', 'font-bold');
+            }
+
+            const pledgeRecipientEl = document.getElementById('pledgeRecipientName');
+            if (pledgeRecipientEl) {
+                pledgeRecipientEl.innerText = name;
+            }
+
+            document.getElementById('cardUserName').innerText = name;
+            document.getElementById('cardUserRole').innerText = (role === 'tutor') ? "संस्थान पार्टनर (Verified Partner)" : "सत्यापित 4D AI विद्यार्थी";
+            document.getElementById('cardUserLoc').innerText = "स्थान: " + loc;
+            document.getElementById('cardTokens').innerText = "50 Tokens";
+
+            try {
+                confetti({ particleCount: 120, spread: 80, origin: { y: 0.6 } });
+            } catch(e) {}
+
+            updateQuotaUI();
+            const shareHub = document.getElementById('viralShareHub');
+            shareHub.classList.remove('hidden');
+            
+            // पंजीकरण पूर्ण होने पर सीधे 10-शेयर गेटकीपर पॉपअप खोलना
+            alert(`🎉 बधाई हो ${name}! आपका पंजीकरण सफल रहा।\n\nसर्टिफिकेट अनलॉक करने के लिए अभियान को 10 मित्रों/ग्रुप्स में साझा करें।`);
+            openShareGateModal();
+        }
+        
+        function copyShareUrl() {
+            const box = document.getElementById('shareUrlBox');
+            navigator.clipboard.writeText(box.value).then(() => {
+                alert("प्रचार लिंक सफलतापूर्वक कॉपी हो गया है!");
+            });
+        }
+
+        function startCountdown() {
+            let totalSeconds = 7185;
+            setInterval(() => {
+                if(totalSeconds > 0) totalSeconds--;
+                const hrs = String(Math.floor(totalSeconds / 3600)).padStart(2, '0');
+                const mins = String(Math.floor((totalSeconds % 3600) / 60)).padStart(2, '0');
+                const secs = String(totalSeconds % 60).padStart(2, '0');
+                const timerEl = document.getElementById('countdownTimer');
+                if(timerEl) timerEl.innerText = `${hrs}:${mins}:${secs}`;
+            }, 1000);
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            const savedLang = localStorage.getItem('user_lang') || 'hi';
+            window.currentMasterLang = savedLang;
+
+            if (typeof switchLanguage === 'function') {
+                switchLanguage(savedLang);
+            }
+
+            const shareBox = document.getElementById('shareUrlBox');
+            if (shareBox && typeof APP_URL !== 'undefined') {
+                shareBox.value = APP_URL;
+            }
+            
+            if (typeof VanillaTilt !== 'undefined') {
+                VanillaTilt.init(document.querySelectorAll("[data-tilt]"));
+            }
+
+            if (typeof startCountdown === 'function') {
+                startCountdown();
+            }
+            if (typeof triggerProceduralSocialProof === 'function') {
+                setInterval(triggerProceduralSocialProof, 8500);
+                setTimeout(triggerProceduralSocialProof, 2000);
+            }
+
+            if (typeof runBoardSimulation === 'function') {
+                runBoardSimulation('physics');
+            }
+
+            const isReg = sessionStorage.getItem('dhruv_user_registered');
+            const savedApplicant = sessionStorage.getItem('registered_applicant_name');
+            const pledgeInput = document.getElementById('pledgeNameInput');
+            if (isReg === 'true' && savedApplicant && pledgeInput) {
+                pledgeInput.value = savedApplicant;
+                pledgeInput.readOnly = true;
+                pledgeInput.classList.remove('cursor-not-allowed');
+                const pledgeRecipientEl = document.getElementById('pledgeRecipientName');
+                if (pledgeRecipientEl) pledgeRecipientEl.innerText = savedApplicant;
+            }
+        });
+    </script>
+</body>
+</html>
