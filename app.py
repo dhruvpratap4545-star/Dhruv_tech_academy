@@ -1,18 +1,19 @@
-@app.route('/exotel-webhook', methods=['GET', 'POST'])
-def exotel_webhook():
+@app.route('/voice-webhook', methods=['GET', 'POST'])
+def voice_webhook():
   try:
-    # एक्सोटेल द्वारा भेजे जाने वाले पैरामीटर्स कैप्चर करें
+    # एक्सोटेल से आने वाले पैरामीटर्स को पढ़ना (जैसे किसने कॉल किया)
     caller_id = request.values.get('CallFrom')
-    call_sid = request.values.get('CallSid')
-    print(f'Exotel Call Received from: {caller_id}, SID: {call_sid}')
+    print(f'Exotel Call Received from: {caller_id}')
 
-    # एक्सोटेल के लिए रिस्पांस (आप यहाँ टेक्स्ट या रीडायरेक्ट लिंक दे सकते हैं)
-    # एक्सोटेल को प्ले या से करने के लिए आप अपना ऑडियो या टेक्स्ट रिस्पांस सेट कर सकते हैं
-    return (
-        '<?xml version="1.0" encoding="UTF-8"?><Response><Say>नमस्ते! ध्रुव'
-        ' अकादमी में आपका स्वागत है।</Say></Response>',
-        200,
-        {'Content-Type': 'application/xml'},
-    )
+    # एक्सोटेल के लिए सही XML रिस्पांस
+    xml_response = """<?xml version="1.0" encoding="UTF-8"?>
+        <Response>
+            <Say>नमस्ते! ध्रुव एकेडमी में आपका स्वागत है। आपके प्रतियोगी परीक्षाओं और स्मार्ट लर्निंग के नए मॉड्यूल्स अब लाइव हो चुके हैं।</Say>
+        </Response>"""
+    return xml_response, 200, {'Content-Type': 'application/xml'}
   except Exception as e:
-    return f'Error: {str(e)}', 500
+    error_xml = f"""<?xml version="1.0" encoding="UTF-8"?>
+        <Response>
+            <Say>Error occurred: {str(e)}</Say>
+        </Response>"""
+    return error_xml, 200, {'Content-Type': 'application/xml'}
