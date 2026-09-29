@@ -76,15 +76,13 @@ def coaching_hub():
 def legal_ai_assistant():
     return render_template('legal-ai.html')
 
-# --- जीरो ट्रस्ट मोबाइल शील्ड / सुरक्षा मॉड्यूल (सभी संभावित पाथ कवर्ड) ---
+# --- जीरो ट्रस्ट मोबाइल शील्ड (फाइल नाम: mobile-shield.html के अनुसार) ---
+@app.route('/mobile-shield')
+@app.route('/mobile-shield.html')
 @app.route('/shield')
 @app.route('/shield.html')
-@app.route('/shield-router')
-@app.route('/zero-trust-shield')
 def zero_trust_shield():
-    # यदि आपके फोल्डर में shield.html या कोई अन्य नाम है तो यहाँ सेट किया गया है
-    # यदि फाइल का नाम कुछ और हो तो नीचे render_template में नाम बदल सकते हैं
-    return render_template('shield.html')
+    return render_template('mobile-shield.html')
 
 @app.route('/admin/super-master-panel')
 def super_master_panel():
