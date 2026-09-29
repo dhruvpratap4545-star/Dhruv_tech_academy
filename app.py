@@ -12,7 +12,7 @@ app = Flask(__name__, template_folder=template_dir, static_folder=static_dir)
 def home():
     return render_template('index.html')
 
-# 2. एक्सोटेल का वेबहुक रूट
+# 2. एक्सोटेल का वेबहुक रूट (सुरक्षित और यथावत)
 @app.route('/voice-webhook', methods=['GET', 'POST'])
 def voice_webhook():
     xml_response = """<?xml version="1.0" encoding="UTF-8"?>
@@ -21,7 +21,7 @@ def voice_webhook():
     </Response>"""
     return Response(xml_response, mimetype='text/xml')
 
-# 3. सभी 12 मॉड्यूल्स के सुरक्षित रूट्स (सहित वे मॉड्यूल जो काम नहीं कर रहे थे)
+# 3. सभी मॉड्यूल्स के सटीक राउट्स (templates फोल्डर की वास्तविक फाइलों के अनुसार)
 @app.route('/ai-core')
 @app.route('/ai-core.html')
 def ai_core():
@@ -62,28 +62,19 @@ def central_wallet():
 def competition_solver():
     return render_template('competition-solver.html')
 
-@app.route('/live-guard-ai')
-@app.route('/live-guard-ai.html')
-def live_guard_ai():
-    return render_template('live-guard-ai.html')
-
-@app.route('/dhruv-mitra')
-@app.route('/dhruv-mitra.html')
-def dhruv_mitra():
-    return render_template('dhruv-mitra.html')
-
-# --- वे मॉड्यूल्स जो नहीं चल रहे थे (विशेष रूट्स) ---
 @app.route('/coaching-hub')
 @app.route('/coaching-hub.html')
 def coaching_hub():
     return render_template('coaching-hub.html')
 
+# लीगल एआई असिस्टेंट (फाइल नाम: legal-ai.html के अनुसार)
 @app.route('/legal-hub')
 @app.route('/legal-hub.html')
 @app.route('/legal-ai-assistant')
-def legal_hub():
-    return render_template('legal-hub.html')
+def legal_ai_assistant():
+    return render_template('legal-ai.html')
 
+# जीरो ट्रस्ट मोबाइल शील्ड / सुरक्षा मॉड्यूल
 @app.route('/shield-router')
 @app.route('/zero-trust-shield')
 @app.route('/shield.html')
@@ -92,7 +83,7 @@ def zero_trust_shield():
 
 @app.route('/admin/super-master-panel')
 def super_master_panel():
-    return render_template('super-master-panel.html')
+    return render_template('admin_login.html')
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
