@@ -21,7 +21,7 @@ def voice_webhook():
     </Response>"""
     return Response(xml_response, mimetype='text/xml')
 
-# 3. सभी मॉड्यूल्स के सटीक राउट्स (templates फोल्डर की वास्तविक फाइलों के अनुसार)
+# 3. सभी मॉड्यूल्स के सटीक राउट्स (सभी एक्सटेंशन और पाथ वेरिएशन के साथ)
 @app.route('/ai-core')
 @app.route('/ai-core.html')
 def ai_core():
@@ -67,18 +67,23 @@ def competition_solver():
 def coaching_hub():
     return render_template('coaching-hub.html')
 
-# लीगल एआई असिस्टेंट (फाइल नाम: legal-ai.html के अनुसार)
+# --- लीगल एआई असिस्टेंट (सभी संभावित यूआरएल पाथ और .html एक्सटेंशन कवर्ड) ---
+@app.route('/legal-ai')
+@app.route('/legal-ai.html')
 @app.route('/legal-hub')
 @app.route('/legal-hub.html')
 @app.route('/legal-ai-assistant')
 def legal_ai_assistant():
     return render_template('legal-ai.html')
 
-# जीरो ट्रस्ट मोबाइल शील्ड / सुरक्षा मॉड्यूल
+# --- जीरो ट्रस्ट मोबाइल शील्ड / सुरक्षा मॉड्यूल (सभी संभावित पाथ कवर्ड) ---
+@app.route('/shield')
+@app.route('/shield.html')
 @app.route('/shield-router')
 @app.route('/zero-trust-shield')
-@app.route('/shield.html')
 def zero_trust_shield():
+    # यदि आपके फोल्डर में shield.html या कोई अन्य नाम है तो यहाँ सेट किया गया है
+    # यदि फाइल का नाम कुछ और हो तो नीचे render_template में नाम बदल सकते हैं
     return render_template('shield.html')
 
 @app.route('/admin/super-master-panel')
