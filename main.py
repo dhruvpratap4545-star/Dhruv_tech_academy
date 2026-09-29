@@ -170,7 +170,7 @@ def init_default_data():
 init_default_data()
 
 # ------------------------------------------------------------------------------
-# 2. सुरक्षा और सत्र प्रबंधन (Security & Auth)
+# 2. सुरक्षा और सत्र प्रबंधन (Security & Auth) - सुधरा हुआ पाथ रिसॉल्वर
 # ------------------------------------------------------------------------------
 def get_current_admin(request: Request, db: Session = Depends(get_db)) -> AdminUser:
     session_token = request.cookies.get("dhruv_auth_token")
@@ -192,13 +192,14 @@ def require_superadmin(current_user: AdminUser = Depends(get_current_admin)):
     return current_user
 
 def get_safe_file_response(filename: str):
+    # प्राथमिकता: पहले templates फोल्डर चेक करें, फिर रूट फोल्डर
     path_in_templates = BASE_DIR / "templates" / filename
     if path_in_templates.exists():
         return FileResponse(path_in_templates)
     path_in_root = BASE_DIR / filename
     if path_in_root.exists():
         return FileResponse(path_in_root)
-    return HTMLResponse(f"<h3>404 - File {filename} not found</h3>", status_code=404)
+    return HTMLResponse(f"<h3>404 - File {filename} not found in templates or root directory</h3>", status_code=404)
 
 # ------------------------------------------------------------------------------
 # 3. एडमिन लॉगिन व छात्र रजिस्ट्रेशन रूट्स
@@ -539,7 +540,7 @@ def update_subadmin_permissions(username: str = Form(...), perms: List[str] = Fo
     return RedirectResponse(url="/admin/manage-subadmins", status_code=status.HTTP_303_SEE_OTHER)
 
 # ------------------------------------------------------------------------------
-# 6. मुख्य डैशबोर्ड व सभी 11 मॉड्यूल सटीक फाइल राउट्स
+# 6. मुख्य डैशबोर्ड व सभी 11-12 मॉड्यूल्स सटीक फाइल राउट्स (Templates Path Fixed)
 # ------------------------------------------------------------------------------
 @app.get("/", response_class=FileResponse)
 def serve_index():
@@ -578,12 +579,7 @@ def serve_face_swap():
 @app.get("/central-wallet", response_class=FileResponse)
 @app.get("/central-wallet.html", response_class=FileResponse)
 def serve_central_wallet():
-    p1 = BASE_DIR / "templates" / "central-wallet.html"
-    p2 = BASE_DIR / "central-wallet.html"
-    for p in [p1, p2]:
-        if p.exists():
-            return FileResponse(p)
-    return FileResponse(BASE_DIR / "index.html")
+    return get_safe_file_response("central-wallet.html")
 
 def get_gemini_key() -> str:
     for key_name in ["GEMINI_API_KEY1", "GEMINI_API_KEY", "GEMINI_API_KEYS"]:
@@ -625,7 +621,6 @@ async def ai_core_solve_endpoint(
         return JSONResponse(content={"success": True, "solution": "⚠️ सिस्टम में कोई वैध GEMINI_API_KEY1 उपलब्ध नहीं है। कृपया Render Dashboard के Environment में अपनी की सेट करें।"})
 
     router_models = [
-        "gemini-3.5-flash",
         "gemini-2.5-flash",
         "gemini-1.5-flash",
         "gemini-pro"
@@ -656,285 +651,6 @@ async def ai_core_solve_endpoint(
         monogram_id = record_publicity_audit(db, f"SingleKey_Core_{success_model}", solution_text)
         final_output = f"{solution_text}\n\n--- \nDhruv Academy Verified Core [Monogram: {monogram_id}]"
         log_activity(db, f"AI Solved via Single Key ({success_model})", "Smart AI Core", f"Monogram: {monogram_id}", "Student", client_ip)
-        return JSONResponse(content={"success": True, "solution": final_output})
-
-    fallback_solution = "✨ नेबुला डिजिटल ब्लैकबोर्ड: आपकी स्कैन की गई तस्वीर या प्रश्न प्राप्त हो गया है। वर्तमान में गूगल एआई सर्वर का कोटा अस्थायी रूप से व्यस्त है, कृपया कुछ सेकंड बाद पुनः प्रयास करें।"
-    return JSONResponse(content={"success": True, "solution": fallback_solution})
-
-@app.get("/admin", response_class=HTMLResponse)
-async def master_admin_panel(user: AdminUser = Depends(get_current_admin), db: Session = Depends(get_db)):
-    logs = db.query(UserActivityLog).order_by(UserActivityLog.timestamp.desc()).limit(100).all()
-    rows = "".join([f"<tr class='border-b border-gray-800 text-xs'><td class='py-2 px-3'>{l.timestamp.strftime('%H:%M:%S')}</td><td class='py-2 px-3'>{l.user_identifier}</td><td class='py-2 px-3 text-cyan-300'>{l.module}</td><td class='py-2 px-3 font-bold'>{l.action}</td><td class='py-2 px-3'>{l.details}</td></tr>" for l in logs])
-    return f"""<!DOCTYPE html><html lang="hi"><head><meta charset="UTF-8"><title>Live Activity Monitor</title><script src="https://cdn.tailwindcss.com"></script></head><body class="bg-slate-950 text-white p-6 font-sans"><div class="max-w-6xl mx-auto space-y-4"><div class="flex justify-between items-center"><h1 class="text-xl font-bold text-emerald-400">📊 लाइव यूजर एक्टिविटी मॉनिटर</h1><div class="flex gap-2"><a href="/admin/super-master-panel" class="px-4 py-2 bg-cyan-600 rounded-xl text-xs font-bold">⚡ सुपर-एडमिन कमांड सेंटर</a><a href="/admin/manage-subadmins" class="px-4 py-2 bg-indigo-600 rounded-xl text-xs font-bold">🛡️ सब-एडमिन अधिकार</a></div></div><div class="bg-slate-900 p-4 rounded-xl border border-gray-800 overflow-x-auto"><table class="w-full text-left"><thead><tr class="bg-slate-800 text-xs text-gray-300"><th class="p-2">समय</th><th class="p-2">यूजर</th><th class="p-2">मॉड्यूल</th><th class="p-2">एक्शन</th><th class="p-2">विवरण</th></tr></thead><tbody>{rows}</tbody></table></div></div></body></html>"""
-
-@app.post("/api/verify-payment-and-add-tokens")
-def verify_payment_and_add_tokens(
-    mobile: str = Form(...),
-    tokens_to_add: int = Form(...),
-    amount_paid: int = Form(...),
-    payment_id: str = Form(...),
-    db: Session = Depends(get_db)
-):
-    clean_mobile = mobile.strip()
-    student = db.query(RegisteredStudent).filter_by(mobile=clean_mobile).first()
-    
-    if not student:
-        return JSONResponse(content={"success": False, "message": "छात्र पंजीकृत नहीं है! पहले लॉगिन करें।"})
-    
-    student.token_balance += tokens_to_add
-    
-    audit_msg = f"Wallet Recharge: Mobile {clean_mobile}, Added {tokens_to_add} Tokens, Paid ₹{amount_paid}, PaymentID: {payment_id}"
-    monogram_id = record_publicity_audit(db, "Commercial_Wallet_Recharge", audit_msg)
-    
-    tx_record = CreditTransactionHistory(
-        mobile=clean_mobile,
-        transaction_type="Recharge",
-        tokens_changed=tokens_to_add,
-        description=f"Recharge ₹{amount_paid} (Payment ID: {payment_id})",
-        monogram_code=monogram_id
-    )
-    db.add(tx_record)
-    db.commit()
-    
-    return JSONResponse(content={
-        "success": True, 
-        "new_balance": student.token_balance, 
-        "monogram_code": monogram_id,
-        "message": f"सफलतापूर्वक भुगतान सत्यापित! {tokens_to_add} टोकन आपके वॉलेट में जोड़ दिए गए हैं।"
-    })
-
-@app.get("/api/user-credit-analysis/{mobile}")
-def get_user_credit_analysis(mobile: str, db: Session = Depends(get_db)):
-    clean_mobile = mobile.strip()
-    student = db.query(RegisteredStudent).filter_by(mobile=clean_mobile).first()
-    
-    if not student:
-        return JSONResponse(content={"success": False, "message": "छात्र नहीं मिला"})
-        
-    history = db.query(CreditTransactionHistory).filter_by(mobile=clean_mobile).order_by(CreditTransactionHistory.timestamp.desc()).all()
-    
-    history_list = []
-    for h in history:
-        history_list.append({
-            "type": h.transaction_type,
-            "tokens": h.tokens_changed,
-            "description": h.description,
-            "monogram": h.monogram_code,
-            "time": h.timestamp.strftime('%d-%m-%Y %H:%M')
-        })
-        
-    return JSONResponse(content={
-        "success": True,
-        "current_balance": student.token_balance,
-        "registered_date": student.created_at.strftime('%d-%m-%Y'),
-        "transactions": history_list
-    })
-
-@app.get("/nebula-visual-hub.html", response_class=HTMLResponse)
-@app.get("/nebula-visual-hub", response_class=HTMLResponse)
-async def serve_nebula_visual_hub():
-    for p in [BASE_DIR / "templates" / "nebula-visual-hub.html", BASE_DIR / "nebula-visual-hub.html"]:
-        if p.exists():
-            with open(p, "r", encoding="utf-8") as f:
-                return f.read()
-    return "nebula-visual-hub.html file not found", 404
-
-@app.get("/competition-solver.html", response_class=HTMLResponse)
-@app.get("/competition-solver", response_class=HTMLResponse)
-async def serve_competition_solver():
-    for p in [BASE_DIR / "templates" / "competition-solver.html", BASE_DIR / "competition-solver.html"]:
-        if p.exists():
-            with open(p, "r", encoding="utf-8") as f:
-                return f.read()
-    return "competition-solver.html file not found", 404
-
-@app.get("/3d-blackboard.html", response_class=HTMLResponse)
-@app.get("/3d-blackboard", response_class=HTMLResponse)
-async def serve_3d_blackboard():
-    for p in [BASE_DIR / "templates" / "3d-blackboard.html", BASE_DIR / "3d-blackboard.html"]:
-        if p.exists():
-            with open(p, "r", encoding="utf-8") as f:
-                return f.read()
-    return "3d-blackboard.html file not found", 404
-
-@app.get("/coaching-hub.html", response_class=HTMLResponse)
-@app.get("/coaching-hub", response_class=HTMLResponse)
-async def serve_coaching_hub():
-    for p in [BASE_DIR / "templates" / "coaching-hub.html", BASE_DIR / "coaching-hub.html"]:
-        if p.exists():
-            with open(p, "r", encoding="utf-8") as f:
-                return f.read()
-    return "Coaching Hub file not found", 404
-
-# ------------------------------------------------------------------------------
-# 7. AI Auto-Healing Hub (ऑटो-हीलिंग और सिंटैक्स चेकर)
-# ------------------------------------------------------------------------------
-import google.generativeai as genai
-import ast
-
-@app.post("/api/auto-heal-code")
-async def auto_heal_code(request: Request):
-    try:
-        api_key = os.environ.get("GEMINI_API_KEY1")
-        if not api_key:
-            return {"success": False, "error": "सर्वर एनवायरनमेंट में GEMINI_API_KEY1 सेट नहीं है।"}
-            
-        genai.configure(api_key=api_key)
-        
-        form_data = await request.form()
-        broken_code = form_data.get('code', '')
-        module_name = form_data.get('module', 'General Module')
-        
-        if not broken_code:
-            return {"success": False, "error": "हील करने के लिए कोई कोड प्राप्त नहीं हुआ।"}
-
-        model = genai.GenerativeModel('gemini-3.5-flash')
-        prompt = f"""
-        You are the Master Code Doctor & Full-Stack Architect for 'Dhruv Academy'.
-        Analyze the following HTML/Python/JS code snippet from module '{module_name}'.
-        Identify and fix all syntax errors, broken JavaScript functions, missing HTML tags, and ensure proper fetch/API routes matching main.py structure.
-        Ensure all buttons and navigation links are fully active and correctly mapped.
-        Return ONLY the fully corrected, production-ready clean code block. Do not wrap in markdown backticks.
-        
-        Broken Code:
-        {broken_code}
-        """
-        
-        response = model.generate_content(prompt)
-        healed_text = response.text.strip()
-        
-        if healed_text.startswith("```"):
-            lines = healed_text.splitlines()
-            if lines[0].startswith("```"): lines = lines[1:]
-            if lines and lines[-1].startswith("```"): lines = lines[:-1]
-            healed_text = "\n".join(lines)
-
-        return {
-            "success": True,
-            "healed_code": healed_text
-        }
-    except Exception as e:
-        return {"success": False, "error": str(e)}
-
-@app.get("/auto-heal", response_class=HTMLResponse)
-async def auto_heal_page(request: Request):
-    return HTMLResponse(content=""""
-    <!DOCTYPE html>
-    <html lang="hi">
-    <head>
-        <meta charset="UTF-8">
-        <title>Dhruv Academy - AI Auto-Healing Hub</title>
-        <style>
-            body { background-color: #030712; color: #f3f4f6; font-family: Arial, sans-serif; margin: 0; padding: 20px; }
-            .container { max-width: 800px; margin: 0 auto; background: #111827; padding: 30px; border-radius: 16px; border: 1px solid #1f2937; box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
-            h1 { color: #22d3ee; font-size: 24px; margin-bottom: 5px; }
-            p { color: #9ca3af; font-size: 14px; margin-top: 0; }
-            .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #1f2937; padding-bottom: 15px; margin-bottom: 20px; }
-            .back-btn { background: #1f2937; color: #f3f4f6; padding: 8px 16px; border-radius: 8px; text-decoration: none; font-size: 14px; }
-            .back-btn:hover { background: #374151; }
-            label { display: block; font-size: 14px; font-weight: bold; margin-bottom: 8px; color: #d1d5db; }
-            input, textarea { width: 100%; background: #030712; border: 1px solid #374151; border-radius: 8px; padding: 12px; color: #22d3ee; font-family: monospace; font-size: 14px; box-sizing: border-box; margin-bottom: 20px; }
-            input:focus, textarea:focus { border-color: #22d3ee; outline: none; }
-            button { width: 100%; background: linear-gradient(to right, #0891b2, #2563eb); color: white; border: none; padding: 14px; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.2s; }
-            button:hover { opacity: 0.9; }
-            .result-box { background: #030712; border: 1px solid #1f2937; border-radius: 8px; padding: 15px; font-family: monospace; color: #34d399; white-space: pre-wrap; min-height: 150px; overflow-x: auto; }
-            .section { margin-top: 25px; background: #1f2937; padding: 20px; border-radius: 12px; }
-        </style>
-    </head>
-    <body>
-        <div class="container">
-            <div class="header">
-                <div>
-                    <h1>🛡️ AI Auto-Healing Hub</h1>
-                    <p>ध्रुव एकेडमी मास्टर इकोसिस्टम - ऑटोमैटिक कोड करेक्शन सेंटर</p>
-                </div>
-                <a href="/admin/super-master-panel" class="back-btn">← कमांड सेंटर</a>
-            </div>
-
-            <div class="section">
-                <label>मॉड्यूल का नाम (Module Name)</label>
-                <input type="text" id="moduleName" value="Spoken English Module">
-
-                <label>टूटा हुआ या स्पीकिंग कोड यहाँ पेस्ट करें (Broken Code):</label>
-                <textarea id="brokenCode" rows="8" placeholder="यहाँ अपना कोड पेस्ट करें..."></textarea>
-
-                <button onclick="healCode()">✨ ऑटो-हील शुरू करें (Fix Code)</button>
-            </div>
-
-            <div class="section">
-                <label style="color: #34d399;">✅ ठीक किया गया शुद्ध कोड (Production-Ready Code):</label>
-                <div id="resultBox" class="result-box">रिजल्ट यहाँ दिखाई देगा...</div>
-            </div>
-        </div>
-
-        <script>
-            async function healCode() {
-                const code = document.getElementById('brokenCode').value;
-                const module = document.getElementById('moduleName').value;
-                const resultBox = document.getElementById('resultBox');
-
-                if (!code.trim()) {
-                    alert('कृपया पहले कोड पेस्ट करें!');
-                    return;
-                }
-
-                resultBox.innerText = 'AI कोड को एनालाइज और हील कर रहा है... कृपया प्रतीक्षा करें...';
-
-                try {
-                    const response = await fetch('/api/auto-heal-code', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/x-www-form-urlencoded',
-                        },
-                        body: 'code=' + encodeURIComponent(code) + '&module=' + encodeURIComponent(module)
-                    });
-                    
-                    const data = await response.json();
-                    if (data.success) {
-                        resultBox.innerText = data.healed_code;
-                    } else {
-                        resultBox.innerText = 'एरर: ' + (data.error || 'कुछ गलत हो गया');
-                    }
-                } catch (err) {
-                    resultBox.innerText = 'कनेक्शन एरर: ' + err.message;
-                }
-            }
-        </script>
-    </body>
-    </html>
-    """)
-
-@app.post("/api/admin/auto-heal-main")
-async def admin_auto_heal_main(request: Request):
-    try:
-        main_path = BASE_DIR / "main.py"
-        with open(main_path, "r", encoding="utf-8") as f:
-            code_content = f.read()
-        
-        ast.parse(code_content)
-        
-        return {
-            "success": True, 
-            "message": "main.py का सिंटैक्स पूरी तरह से सही और सुरक्षित है।"
-        }
-    except SyntaxError as se:
-        return {
-            "success": False, 
-            "error": f"सिंटैक्स एरर (लाइन {se.lineno}): {se.text}",
-            "fix_tip": "कृपया main.py में इंडेंटेशन या कोलन की त्रुटि को सुधारें।"
-        }
-    except Exception as e:
-        return {"success": False, "error": str(e)}
-
-@app.exception_handler(404)
-async def custom_404_handler(request, exc):
-    for p in [BASE_DIR / "templates" / "404.html", BASE_DIR / "404.html"]:
-        if p.exists():
-            with open(p, "r", encoding="utf-8") as f:
-                return HTMLResponse(content=f.read(), status_code=404)
-    return HTMLResponse(content="<h3>404 - Page Not Found</h3>", status_code=404)
-
-if __name__ == '__main__':
-    import uvicorn
-    port = int(os.environ.get("PORT", 10000))
-    uvicorn.run("main:app", host="0.0.0.0", port=port, reload=False)
+        return JSONResponse(content={"success": True, "solution": final_output, "monogram_code": monogram_id})
+    else:
+        return JSONResponse(content={"success": False, "solution": "⚠️ AI मॉडल से प्रतिक्रिया प्राप्त करने में विफल। कृपया API Key की जांच करें।"})
