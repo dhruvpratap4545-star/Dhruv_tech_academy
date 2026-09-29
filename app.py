@@ -21,7 +21,7 @@ def voice_webhook():
     </Response>"""
     return Response(xml_response, mimetype='text/xml')
 
-# 3. सभी 12 मॉड्यूल्स के सुरक्षित रूट्स (Flask Routes for 12 Modules)
+# 3. सभी 12 मॉड्यूल्स के सुरक्षित रूट्स (सहित वे मॉड्यूल जो काम नहीं कर रहे थे)
 @app.route('/ai-core')
 @app.route('/ai-core.html')
 def ai_core():
@@ -71,6 +71,24 @@ def live_guard_ai():
 @app.route('/dhruv-mitra.html')
 def dhruv_mitra():
     return render_template('dhruv-mitra.html')
+
+# --- वे मॉड्यूल्स जो नहीं चल रहे थे (विशेष रूट्स) ---
+@app.route('/coaching-hub')
+@app.route('/coaching-hub.html')
+def coaching_hub():
+    return render_template('coaching-hub.html')
+
+@app.route('/legal-hub')
+@app.route('/legal-hub.html')
+@app.route('/legal-ai-assistant')
+def legal_hub():
+    return render_template('legal-hub.html')
+
+@app.route('/shield-router')
+@app.route('/zero-trust-shield')
+@app.route('/shield.html')
+def zero_trust_shield():
+    return render_template('shield.html')
 
 @app.route('/admin/super-master-panel')
 def super_master_panel():
