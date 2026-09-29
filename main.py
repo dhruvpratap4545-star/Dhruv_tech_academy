@@ -1,7 +1,7 @@
 #!/usr/init/env python3
 # -*- coding: utf-8 -*-
 # ==============================================================================
-# main.py - Dhruv Academy Master Ecosystem (Complete 11 Modules Architecture)
+# main.py - Dhruv Academy Master Ecosystem (Complete 12 Modules Architecture)
 # 400-AI Multi-Agent Neural Core | Fail-safe Tokens | Sub-Admin Permissions
 # ==============================================================================
 
@@ -170,7 +170,7 @@ def init_default_data():
 init_default_data()
 
 # ------------------------------------------------------------------------------
-# 2. सुरक्षा और सत्र प्रबंधन (Security & Auth & Path Resolution)
+# 2. सुरक्षा, सत्र प्रबंधन व फुल-प्रूफ फाइल रिसॉल्वर (Security & Path Resolution)
 # ------------------------------------------------------------------------------
 def get_current_admin(request: Request, db: Session = Depends(get_db)) -> AdminUser:
     session_token = request.cookies.get("dhruv_auth_token")
@@ -192,29 +192,43 @@ def require_superadmin(current_user: AdminUser = Depends(get_current_admin)):
     return current_user
 
 def get_safe_file_response(filename: str):
-    # पूर्ण सुरक्षा के साथ templates और root फोल्डर दोनों की जांच
+    # 1. पहले templates फोल्डर में चेक करें
     path_in_templates = BASE_DIR / "templates" / filename
     if path_in_templates.exists():
         return FileResponse(path_in_templates)
+    
+    # 2. फिर मुख्य रूट फोल्डर में चेक करें
     path_in_root = BASE_DIR / filename
     if path_in_root.exists():
         return FileResponse(path_in_root)
+        
+    # 3. यदि .html के बिना पास किया गया हो और फाइल .html नाम से हो
+    if not filename.endswith(".html"):
+        p_temp = BASE_DIR / "templates" / f"{filename}.html"
+        if p_temp.exists():
+            return FileResponse(p_temp)
+        p_root = BASE_DIR / f"{filename}.html"
+        if p_root.exists():
+            return FileResponse(p_root)
+
+    # 4. यदि अंततः फाइल न मिले, तो स्पष्ट HTML एरर पेज दें ताकि 404 क्रैश न हो
     return HTMLResponse(f"""
     <!DOCTYPE html>
     <html lang="hi">
     <head><meta charset="UTF-8"><title>404 Not Found - Dhruv Academy</title><script src="https://cdn.tailwindcss.com"></script></head>
-    <body class="bg-slate-950 text-white flex items-center justify-center min-h-screen">
-        <div class="text-center space-y-4 p-8 bg-slate-900 border border-red-500/40 rounded-2xl shadow-2xl">
-            <h1 class="text-3xl font-bold text-red-400">404 - मॉड्यूल फ़ाइल नहीं मिली</h1>
-            <p class="text-sm text-gray-400">फ़ाइल <b>{filename}</b> न तो 'templates' फोल्डर में मिली और न ही मुख्य डायरेक्टरी में।</p>
-            <a href="/" class="inline-block px-6 py-2.5 bg-cyan-600 hover:bg-cyan-500 rounded-xl font-bold text-xs transition">🏠 मुख्य होम पेज पर लौटें</a>
+    <body class="bg-slate-950 text-white flex items-center justify-center min-h-screen font-sans">
+        <div class="text-center space-y-4 p-8 bg-slate-900/90 border border-red-500/40 rounded-3xl shadow-2xl max-w-lg">
+            <span class="text-4xl">⚠️</span>
+            <h1 class="text-xl font-bold text-red-400">मॉड्यूल फ़ाइल नहीं मिली (404 Error)</h1>
+            <p class="text-xs text-gray-300">फ़ाइल <b>{filename}</b> न तो 'templates' फोल्डर में पाई गई और न ही मुख्य डायरेक्टरी में। कृपया जांच लें कि यह फाइल सर्वर पर अपलोड है या नहीं।</p>
+            <a href="/" class="inline-block px-6 py-2.5 bg-cyan-600 hover:bg-cyan-500 rounded-xl font-bold text-xs transition shadow-lg">🏠 मुख्य होम पेज पर लौटें</a>
         </div>
     </body>
     </html>
     """, status_code=404)
 
 # ------------------------------------------------------------------------------
-# 3. एडमिन लॉगिन व छात्र रजिस्ट्रेशन रूट्स (Admin & Student Auth Routes)
+# 3. एडमिन लॉगिन व छात्र रजिस्ट्रेशन रूट्स
 # ------------------------------------------------------------------------------
 @app.get("/secret-admin-login-dhruv", response_class=HTMLResponse)
 def secret_login_page(error: Optional[str] = None):
@@ -316,7 +330,7 @@ def register_student_endpoint(mobile: str = Form(...), otp: Optional[str] = Form
     })
 
 # ------------------------------------------------------------------------------
-# 4. Fast2SMS ओटीपी सेवा एकीकरण (Fast2SMS OTP Service Routing)
+# 4. Fast2SMS ओटीपी सेवा एकीकरण
 # ------------------------------------------------------------------------------
 FAST2SMS_API_KEY = os.environ.get("FAST2SMS_API_KEY", "")
 
@@ -552,7 +566,7 @@ def update_subadmin_permissions(username: str = Form(...), perms: List[str] = Fo
     return RedirectResponse(url="/admin/manage-subadmins", status_code=status.HTTP_303_SEE_OTHER)
 
 # ------------------------------------------------------------------------------
-# 6. सभी 11-12 मॉड्यूल्स के राउट्स (All Modules Route Mapping)
+# 6. सभी 12 मॉड्यूल्स के राउट्स (फिक्सड सेफ पाथ रिसॉल्वर के साथ)
 # ------------------------------------------------------------------------------
 @app.get("/", response_class=FileResponse)
 def serve_index():
@@ -666,7 +680,7 @@ def admin_activity_logs(user: AdminUser = Depends(get_current_admin), db: Sessio
     """
 
 # ------------------------------------------------------------------------------
-# 7. जेमिनी एआई राउट और सिंगल-की इंटेलिजेंट राउटिंग (Gemini Neural Endpoint)
+# 7. जेमिनी एआई राउट और सिंगल-की इंटेलिजेंट राउटिंग
 # ------------------------------------------------------------------------------
 def get_gemini_key() -> str:
     for key_name in ["GEMINI_API_KEY1", "GEMINI_API_KEY", "GEMINI_API_KEYS"]:
