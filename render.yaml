@@ -1,0 +1,100 @@
+# Render Blueprint for Dhruv Online Academy.
+#
+# Covers the new platform only: API (backend/), web app (frontend/) and Postgres.
+# The existing site that serves legacy/templates is NOT in this blueprint — it stays a
+# dashboard-managed service, so applying this file cannot disturb what is already live.
+#
+# NOTE: nothing here has been applied yet. Review every value against the Render dashboard
+# before the first `blueprint apply`.
+#
+# Secrets use `sync: false` and are entered in the Render dashboard, never committed.
+# Verify field names against the current Render Blueprint docs before applying.
+
+services:
+  - type: web
+    name: dhruv-api
+    runtime: python
+    region: singapore
+    plan: starter          # free plan sleeps when idle; use a paid plan for production
+    rootDir: backend
+    buildCommand: pip install -r requirements.txt
+    preDeployCommand: alembic upgrade head && python -m app.core.seed
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT --workers 2 --proxy-headers --forwarded-allow-ips="*"
+    healthCheckPath: /healthz
+    envVars:
+      - key: ENVIRONMENT
+        value: production
+      - key: PYTHON_VERSION
+        value: "3.12.7"
+      - key: DATABASE_URL
+        fromDatabase:
+          name: dhruv-db
+          property: connectionString
+      - key: COOKIE_DOMAIN
+        value: .dhruvonlineacademy.com
+      - key: CORS_ORIGINS
+        value: '["https://dhruvonlineacademy.com","https://www.dhruvonlineacademy.com"]'
+      - key: EMAIL_FROM
+        value: Dhruv Online Academy <noreply@dhruvonlineacademy.com>
+      - key: JWT_KEY_ID
+        value: k1
+      - key: JWT_PRIVATE_KEY
+        sync: false
+      - key: JWT_PUBLIC_KEY
+        sync: false
+      - key: OTP_PEPPER
+        sync: false
+      - key: RESEND_API_KEY
+        sync: false
+      - key: SEED_SUPERADMIN_EMAIL
+        sync: false
+      - key: SENTRY_DSN
+        sync: false
+
+  - type: web
+    name: dhruv-web
+    runtime: static
+    rootDir: frontend
+    buildCommand: npm ci && npm run build
+    staticPublishPath: dist
+    headers:
+      - path: /*
+        name: X-Content-Type-Options
+        value: nosniff
+      - path: /*
+        name: X-Frame-Options
+        value: DENY
+      - path: /*
+        name: Referrer-Policy
+        value: strict-origin-when-cross-origin
+      - path: /*
+        name: Strict-Transport-Security
+        value: max-age=31536000; includeSubDomains
+      - path: /*
+        name: Content-Security-Policy
+        value: >-
+          default-src 'self';
+          connect-src 'self' https://api.dhruvonlineacademy.com;
+          img-src 'self' data:;
+          style-src 'self' 'unsafe-inline';
+          script-src 'self';
+          font-src 'self';
+          frame-ancestors 'none';
+          base-uri 'self';
+          form-action 'self'
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    envVars:
+      - key: VITE_API_URL
+        value: https://api.dhruvonlineacademy.com/api/v1
+
+databases:
+  # WARNING: once this database exists, `name`, `region` and `postgresMajorVersion` are
+  # write-once. Render matches databases by name — renaming this creates a NEW, EMPTY
+  # database and orphans the old one. Region and version cannot be changed at all.
+  - name: dhruv-db
+    region: singapore
+    plan: basic-256mb      # check current Render plan names/prices
+    postgresMajorVersion: "16"

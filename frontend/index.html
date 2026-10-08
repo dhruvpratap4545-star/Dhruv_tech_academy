@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en" class="h-full">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="color-scheme" content="light dark" />
+    <meta
+      name="description"
+      content="Dhruv Online Academy — premium online digital education for schools, colleges and coaching institutes."
+    />
+    <title>Dhruv Online Academy</title>
+
+    <!-- The client's crest, sized down from legacy/static/images/logo.png. Several sizes
+         because browsers pick different ones: 16 and 32 for the tab, 48 for Windows, 180
+         for an iOS home screen. favicon.ico stays for the clients that request /favicon.ico
+         by path whatever the HTML says. -->
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16.png" />
+    <link rel="icon" type="image/png" sizes="48x48" href="/favicon-48.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    <link rel="icon" href="/favicon.ico" sizes="any" />
+    <meta name="theme-color" content="#1e3a5f" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Manrope:wght@600;700;800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&family=Noto+Sans+Devanagari:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <script>
+      // Applies the saved theme before the first paint. Without this the page renders
+      // light and then flips, which is the flash every dark-mode site is judged on.
+      // Mirrors readStoredTheme() in src/features/theme/useTheme.ts.
+      (function () {
+        try {
+          var saved = localStorage.getItem("dhruv-theme");
+          var dark =
+            saved === "dark" ||
+            ((!saved || saved === "system") &&
+              window.matchMedia("(prefers-color-scheme: dark)").matches);
+          if (dark) document.documentElement.classList.add("dark");
+        } catch (e) {
+          /* private window or blocked storage — fall back to light */
+        }
+      })();
+    </script>
+  </head>
+  <body class="h-full">
+    <div id="root"></div>
+    <noscript>
+      <p style="padding: 2rem; font-family: sans-serif">
+        This application needs JavaScript. Please enable it and reload the page.
+      </p>
+    </noscript>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

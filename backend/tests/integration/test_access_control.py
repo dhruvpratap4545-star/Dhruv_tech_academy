@@ -1,0 +1,490 @@
+"""Custom roles and per-user permission grants, end to end (ADR-017).
+
+Four things are worth proving here, and each gets both halves — the case that must work and
+the case one step beyond it that must not:
+
+1. **Deny beats everything.** That is the entire reason the feature exists; if a role can
+   out-vote a block, the block is decoration.
+2. **You cannot hand out what you do not hold.** Both routes to it — a custom role's
+   permission list, and a direct grant — because closing one and leaving the other open
+   closes nothing.
+3. **You cannot edit your own access, or a peer's.** Every escalation story starts there.
+4. **Lists narrow as well as detail endpoints.** A deny the per-row check honours but the
+   list query ignores is a deny that leaks exactly the rows it was created to hide.
+"""
+
+from __future__ import annotations
+
+import uuid
+from datetime import UTC, datetime, timedelta
+
+import pytest
+import pytest_asyncio
+from httpx import AsyncClient
+
+pytestmark = pytest.mark.asyncio
+
+
+async def _as(client: AsyncClient, user) -> AsyncClient:
+    client.cookies.clear()
+    response = await client.post(
+        "/api/v1/auth/login", json={"email": user.email, "password": "testpassword9"}
+    )
+    assert response.status_code == 200, response.text
+    return client
+
+
+@pytest_asyncio.fixture
+async def world(institute, make_user, db):
+    """One institute, two branches, and somebody at every level that matters."""
+    abc, mca = await institute("ABC College", "ABC", with_branch="MCA")
+
+    from app.modules.org.models import Branch
+
+    bca = Branch(institute_id=abc.id, name="BCA", code="BCA")
+    db.add(bca)
+    await db.commit()
+
+    return {
+        "abc": abc,
+        "mca": mca,
+        "bca": bca,
+        "owner": await make_user("super_admin"),
+        "principal": await make_user("institute_admin", institute_id=abc.id),
+        "head": await make_user("branch_admin", institute_id=abc.id, branch_id=mca.id),
+        "teacher": await make_user("faculty", institute_id=abc.id, branch_id=mca.id),
+    }
+
+
+# ----------------------------------------------------------------- deny beats everything
+
+
+async def test_a_block_overrides_the_role_that_grants_it(client, world):
+    """The headline rule. A Branch Admin holds `user:read`; a block must end that."""
+    await _as(client, world["principal"])
+    allowed = await client.get("/api/v1/users", params={"institute_id": str(world["abc"].id)})
+    assert allowed.status_code == 200
+
+    response = await client.post(
+        f"/api/v1/users/{world['head'].id}/grants",
+        json={
+            "permission": "user:read",
+            "effect": "deny",
+            "institute_id": str(world["abc"].id),
+            "branch_id": str(world["mca"].id),
+            "reason": "Under investigation for sharing student records",
+        },
+    )
+    assert response.status_code == 201, response.text
+    assert response.json()["effect"] == "deny"
+
+    await _as(client, world["head"])
+    blocked = await client.get("/api/v1/users", params={"institute_id": str(world["abc"].id)})
+    assert blocked.status_code == 403
+
+
+async def test_a_block_on_one_branch_leaves_the_other_alone(client, world, make_user):
+    """Blocks are scoped, not global. The sibling branch must be untouched."""
+    other_head = await make_user(
+        "branch_admin", institute_id=world["abc"].id, branch_id=world["bca"].id
+    )
+    await _as(client, world["principal"])
+    response = await client.post(
+        f"/api/v1/users/{world['head'].id}/grants",
+        json={
+            "permission": "user:read",
+            "effect": "deny",
+            "institute_id": str(world["abc"].id),
+            "branch_id": str(world["mca"].id),
+            "reason": "Temporary block during handover",
+        },
+    )
+    assert response.status_code == 201
+
+    await _as(client, other_head)
+    assert (
+        await client.get("/api/v1/users", params={"institute_id": str(world["abc"].id)})
+    ).status_code == 200
+
+
+async def test_lifting_a_block_restores_access_immediately(client, world):
+    """No waiting out the permission cache: revoking must take effect on the next request."""
+    await _as(client, world["principal"])
+    created = await client.post(
+        f"/api/v1/users/{world['head'].id}/grants",
+        json={
+            "permission": "audit:read",
+            "effect": "deny",
+            "institute_id": str(world["abc"].id),
+            "reason": "Blocked pending review",
+        },
+    )
+    grant_id = created.json()["id"]
+
+    await _as(client, world["head"])
+    assert (await client.get("/api/v1/audit-logs")).status_code == 403
+
+    await _as(client, world["principal"])
+    removed = await client.delete(f"/api/v1/users/{world['head'].id}/grants/{grant_id}")
+    assert removed.status_code == 204
+
+    await _as(client, world["head"])
+    assert (await client.get("/api/v1/audit-logs")).status_code == 200
+
+
+async def test_an_expired_grant_does_not_apply(client, world, db):
+    """Expiry is the difference between covering someone's leave and a permanent promotion."""
+    from sqlalchemy import select
+
+    from app.modules.rbac.context import context_cache
+    from app.modules.rbac.models import UserPermissionGrant
+
+    await _as(client, world["principal"])
+    created = await client.post(
+        f"/api/v1/users/{world['teacher'].id}/grants",
+        json={
+            "permission": "audit:read",
+            "effect": "allow",
+            "institute_id": str(world["abc"].id),
+            "reason": "Covering for the branch head this week",
+            "expires_at": (datetime.now(UTC) + timedelta(days=7)).isoformat(),
+        },
+    )
+    assert created.status_code == 201
+
+    await _as(client, world["teacher"])
+    assert (await client.get("/api/v1/audit-logs")).status_code == 200
+
+    # Wind the clock past the expiry rather than waiting a week for it.
+    grant = await db.scalar(
+        select(UserPermissionGrant).where(UserPermissionGrant.id == uuid.UUID(created.json()["id"]))
+    )
+    grant.expires_at = datetime.now(UTC) - timedelta(minutes=1)
+    await db.commit()
+    context_cache.invalidate(world["teacher"].id)
+
+    await _as(client, world["teacher"])
+    assert (await client.get("/api/v1/audit-logs")).status_code == 403
+
+
+# ----------------------------------------------------- you cannot give away what you lack
+
+
+async def test_a_grant_cannot_exceed_what_the_granter_holds(client, world):
+    """An Institute Admin has no `platform_admin:manage`, so they cannot confer it."""
+    await _as(client, world["principal"])
+    response = await client.post(
+        f"/api/v1/users/{world['head'].id}/grants",
+        json={
+            "permission": "platform_admin:manage",
+            "effect": "allow",
+            "institute_id": str(world["abc"].id),
+            "reason": "Trying to escalate",
+        },
+    )
+    assert response.status_code == 403
+
+
+async def test_a_custom_role_cannot_exceed_what_its_creator_holds(client, world):
+    """The same ceiling by the other route, which is the one people forget to close."""
+    await _as(client, world["principal"])
+    response = await client.post(
+        "/api/v1/roles",
+        json={
+            "name": "Shadow Admin",
+            "scope_level": "institute",
+            "rank": 60,
+            "institute_id": str(world["abc"].id),
+            "permissions": ["user:read", "platform_admin:manage"],
+        },
+    )
+    assert response.status_code == 403
+    assert "platform_admin:manage" in response.json()["error"]["message"]
+
+
+async def test_a_block_may_name_a_permission_the_granter_lacks(client, world):
+    """Deliberately asymmetric: blocking only ever removes access, so it needs no ceiling."""
+    await _as(client, world["principal"])
+    response = await client.post(
+        f"/api/v1/users/{world['head'].id}/grants",
+        json={
+            "permission": "platform_admin:manage",
+            "effect": "deny",
+            "institute_id": str(world["abc"].id),
+            "reason": "Belt and braces",
+        },
+    )
+    assert response.status_code == 201
+
+
+# --------------------------------------------------------------------- self and peers
+
+
+async def test_nobody_can_change_their_own_access(client, world):
+    await _as(client, world["principal"])
+    response = await client.post(
+        f"/api/v1/users/{world['principal'].id}/grants",
+        json={
+            "permission": "user:read",
+            "effect": "allow",
+            "institute_id": str(world["abc"].id),
+            "reason": "Self service",
+        },
+    )
+    assert response.status_code == 403
+
+
+async def test_a_peer_cannot_change_a_peer(client, world, make_user):
+    peer = await make_user("institute_admin", institute_id=world["abc"].id)
+    await _as(client, world["principal"])
+    response = await client.post(
+        f"/api/v1/users/{peer.id}/grants",
+        json={
+            "permission": "audit:read",
+            "effect": "deny",
+            "institute_id": str(world["abc"].id),
+            "reason": "Peer attack",
+        },
+    )
+    assert response.status_code == 403
+
+
+async def test_a_branch_admin_cannot_grant_into_a_sibling_branch(client, world, make_user):
+    victim = await make_user("faculty", institute_id=world["abc"].id, branch_id=world["bca"].id)
+    await _as(client, world["head"])
+    response = await client.post(
+        f"/api/v1/users/{victim.id}/grants",
+        json={
+            "permission": "class:read",
+            "effect": "allow",
+            "institute_id": str(world["abc"].id),
+            "branch_id": str(world["bca"].id),
+            "reason": "Reaching across branches",
+        },
+    )
+    # A Branch Admin holds no `permission:grant` at all, so this never gets as far as scope.
+    assert response.status_code == 403
+
+
+# ------------------------------------------------------------------------ custom roles
+
+
+async def test_a_custom_role_can_be_created_assigned_and_used(client, world, make_user):
+    await _as(client, world["principal"])
+    created = await client.post(
+        "/api/v1/roles",
+        json={
+            "name": "Lab Assistant",
+            "description": "Can see classes and people, nothing else.",
+            "scope_level": "branch",
+            "rank": 20,
+            "institute_id": str(world["abc"].id),
+            "permissions": ["class:read", "user:read", "profile:read", "profile:update"],
+        },
+    )
+    assert created.status_code == 201, created.text
+    role = created.json()
+    assert role["key"] == "abc.lab_assistant"
+    assert role["is_system"] is False
+    assert role["editable"] is True
+
+    helper = await make_user("student", institute_id=world["abc"].id)
+    assigned = await client.post(
+        f"/api/v1/users/{helper.id}/roles",
+        json={
+            "role_key": "abc.lab_assistant",
+            "institute_id": str(world["abc"].id),
+            "branch_id": str(world["mca"].id),
+        },
+    )
+    assert assigned.status_code == 201, assigned.text
+
+    await _as(client, helper)
+    me = await client.get("/api/v1/me")
+    assert "class:read" in me.json()["permissions"]
+    assert "user:update_status" not in me.json()["permissions"]
+
+
+async def test_a_custom_role_is_invisible_to_another_institute(client, world, institute, make_user):
+    await _as(client, world["principal"])
+    await client.post(
+        "/api/v1/roles",
+        json={
+            "name": "Lab Assistant",
+            "scope_level": "branch",
+            "rank": 20,
+            "institute_id": str(world["abc"].id),
+            "permissions": ["class:read"],
+        },
+    )
+
+    xyz, _ = await institute("XYZ College", "XYZ", with_branch="CSE")
+    outsider = await make_user("institute_admin", institute_id=xyz.id)
+    await _as(client, outsider)
+    keys = [r["key"] for r in (await client.get("/api/v1/roles")).json()]
+    assert "abc.lab_assistant" not in keys
+    assert "institute_admin" in keys, "built-in roles stay visible to everyone"
+
+
+async def test_a_role_in_use_cannot_be_archived(client, world, make_user):
+    await _as(client, world["principal"])
+    created = await client.post(
+        "/api/v1/roles",
+        json={
+            "name": "Lab Assistant",
+            "scope_level": "branch",
+            "rank": 20,
+            "institute_id": str(world["abc"].id),
+            "permissions": ["class:read"],
+        },
+    )
+    role_id = created.json()["id"]
+    helper = await make_user("student", institute_id=world["abc"].id)
+    await client.post(
+        f"/api/v1/users/{helper.id}/roles",
+        json={
+            "role_key": "abc.lab_assistant",
+            "institute_id": str(world["abc"].id),
+            "branch_id": str(world["mca"].id),
+        },
+    )
+
+    response = await client.post(f"/api/v1/roles/{role_id}/archive")
+    assert response.status_code == 409
+    assert "1 person holds" in response.json()["error"]["message"]
+
+
+async def test_removing_a_permission_from_a_role_takes_effect_at_once(client, world, make_user):
+    """The cache must be dropped for every holder, not waited out — a permission is usually
+    removed precisely because it is being misused."""
+    await _as(client, world["principal"])
+    created = await client.post(
+        "/api/v1/roles",
+        json={
+            "name": "Lab Assistant",
+            "scope_level": "branch",
+            "rank": 20,
+            "institute_id": str(world["abc"].id),
+            "permissions": ["class:read", "audit:read"],
+        },
+    )
+    role_id = created.json()["id"]
+    helper = await make_user("student", institute_id=world["abc"].id)
+    await client.post(
+        f"/api/v1/users/{helper.id}/roles",
+        json={
+            "role_key": "abc.lab_assistant",
+            "institute_id": str(world["abc"].id),
+            "branch_id": str(world["mca"].id),
+        },
+    )
+
+    await _as(client, helper)
+    assert (await client.get("/api/v1/audit-logs")).status_code == 200
+
+    await _as(client, world["principal"])
+    updated = await client.patch(f"/api/v1/roles/{role_id}", json={"permissions": ["class:read"]})
+    assert updated.status_code == 200
+
+    await _as(client, helper)
+    assert (await client.get("/api/v1/audit-logs")).status_code == 403
+
+
+async def test_built_in_roles_cannot_be_edited_by_anyone(client, world):
+    await _as(client, world["owner"])
+    roles = (await client.get("/api/v1/roles")).json()
+    institute_admin = next(r for r in roles if r["key"] == "institute_admin")
+    assert institute_admin["editable"] is False
+
+    response = await client.patch(
+        f"/api/v1/roles/{institute_admin['id']}", json={"name": "Renamed"}
+    )
+    assert response.status_code == 404
+
+
+# ----------------------------------------------------------------------- the catalogue
+
+
+async def test_the_permission_catalogue_is_grouped_and_complete(client, world):
+    from app.modules.rbac.catalog import PERMISSIONS
+
+    await _as(client, world["principal"])
+    response = await client.get("/api/v1/permissions")
+    assert response.status_code == 200
+    body = response.json()
+    assert len(body) == len(PERMISSIONS)
+    assert {p["group"] for p in body} >= {"Organisation", "People", "Access control"}
+
+
+async def test_a_faculty_member_cannot_read_the_role_catalogue(client, world):
+    """Faculty hold no `role:read`: understanding the platform's power structure is not
+    part of teaching a class."""
+    await _as(client, world["teacher"])
+    assert (await client.get("/api/v1/roles")).status_code == 403
+    assert (await client.get("/api/v1/permissions")).status_code == 403
+
+
+async def test_my_access_describes_the_caller_without_needing_a_permission(client, world):
+    await _as(client, world["teacher"])
+    response = await client.get("/api/v1/me/access")
+    assert response.status_code == 200
+    body = response.json()
+
+    assert [r["key"] for r in body["roles"]] == ["faculty"]
+    assert body["granted_count"] < body["total_count"], "the boundary must be visible"
+    granted = {p["key"] for p in body["permissions"] if p["granted"]}
+    assert "class:read" in granted
+    assert "institute:create" not in granted
+    assert body["can_grant_roles"] == ["Student"]
+
+
+async def test_my_access_marks_an_exception_as_an_exception(client, world):
+    await _as(client, world["principal"])
+    await client.post(
+        f"/api/v1/users/{world['teacher'].id}/grants",
+        json={
+            "permission": "audit:read",
+            "effect": "allow",
+            "institute_id": str(world["abc"].id),
+            "reason": "Covering for the branch head",
+        },
+    )
+
+    await _as(client, world["teacher"])
+    body = (await client.get("/api/v1/me/access")).json()
+    audit_row = next(p for p in body["permissions"] if p["key"] == "audit:read")
+    assert audit_row["granted"] is True
+    assert audit_row["source"] == "direct", "an exception must not read as part of the role"
+    assert len(body["direct_grants"]) == 1
+    assert body["direct_grants"][0]["reason"] == "Covering for the branch head"
+
+
+async def test_a_retired_role_keeps_its_name(client, world):
+    """Reusing a retired role's key would make every past audit row ambiguous, so the name
+    stays reserved — and the refusal has to say so, or it reads as a bug."""
+    await _as(client, world["principal"])
+    created = await client.post(
+        "/api/v1/roles",
+        json={
+            "name": "Lab Assistant",
+            "scope_level": "branch",
+            "rank": 20,
+            "institute_id": str(world["abc"].id),
+            "permissions": ["class:read"],
+        },
+    )
+    assert created.status_code == 201
+    assert (await client.post(f"/api/v1/roles/{created.json()['id']}/archive")).status_code == 200
+
+    again = await client.post(
+        "/api/v1/roles",
+        json={
+            "name": "Lab Assistant",
+            "scope_level": "branch",
+            "rank": 20,
+            "institute_id": str(world["abc"].id),
+            "permissions": ["class:read"],
+        },
+    )
+    assert again.status_code == 409
+    assert "retired" in again.json()["error"]["message"].lower()

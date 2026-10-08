@@ -1,0 +1,16 @@
+# Normalise to LF in the repository. The backend and the static site are built and run
+# on Linux (Render, Docker, CI), so CRLF must never reach a committed file.
+* text=auto eol=lf
+
+# Binary assets in legacy/static — never touch these.
+*.png  binary
+*.jpg  binary
+*.jpeg binary
+*.gif  binary
+*.ico  binary
+*.mp4  binary
+*.woff  binary
+*.woff2 binary
+
+# Keep generated lock files out of diffs by default.
+package-lock.json -diff linguist-generated=true

@@ -1,0 +1,260 @@
+@import "tailwindcss";
+
+/* ===========================================================================
+   Dhruv Online Academy — design tokens
+
+   Taken from the client's approved wireframe (Dhruv Academy Console), which
+   supersedes the palette inferred from the old marketing templates:
+
+   * Navy #1e3a5f carries the brand and the sidebar; teal #2a7f74 is the single
+     interactive accent. Calm and institutional rather than consumer-bright —
+     this is a console people work in all day, not a landing page.
+   * Manrope for headings, IBM Plex Sans for body, IBM Plex Mono for codes and
+     identifiers. Devanagari and Gurmukhi faces are listed in the fallback stack
+     so Hindi and Punjabi names render correctly today, long before the UI itself
+     is translated.
+   * Surfaces are a cool grey ramp (#f5f7fa page, white cards) with a 10px radius.
+
+   Two layers, deliberately:
+   1. a *palette* of fixed values, and
+   2. *semantic* tokens (--surface, --fg, --line) that swap between light and dark.
+   Components only ever name semantic tokens, so a palette change is one edit here
+   rather than a sweep through markup.
+   =========================================================================== */
+
+@theme {
+  --font-sans:
+    "IBM Plex Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
+    "Noto Sans Devanagari", "Noto Sans Gurmukhi", sans-serif;
+  --font-display:
+    "Manrope", "IBM Plex Sans", ui-sans-serif, system-ui, "Noto Sans Devanagari", sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  /* Navy — brand, sidebar, the auth panel. */
+  --color-navy-700: #2c527f;
+  --color-navy-800: #1e3a5f;
+  --color-navy-900: #142942;
+  --color-navy-950: #0a1220;
+
+  /* Teal — the one interactive accent. */
+  --color-teal-400: #4cb3a5;
+  --color-teal-500: #35968a;
+  --color-teal-600: #2a7f74;
+  --color-teal-700: #1f6b61;
+
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+
+  --ease-out-soft: cubic-bezier(0.22, 1, 0.36, 1);
+  --duration-fast: 120ms;
+  --duration-base: 180ms;
+
+  /* Below this the sidebar becomes a drawer and the header wordmark is dropped. */
+  --breakpoint-xs: 25rem;
+}
+
+/* The user can override the OS setting (PRD §4.6), so dark styling keys off a class
+   on <html>. `useTheme` resolves "system" to one or the other before applying. */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* --------------------------------------------------------------- semantic tokens */
+
+:root {
+  --bg: #f5f7fa;
+  --surface: #ffffff;
+  --surface-2: #eef2f6;
+  --surface-3: #e3e9f0;
+  --line: #dde3ea;
+  --line-strong: #c6cfda;
+
+  --fg: #16233a;
+  --fg-2: #4a5a70;
+  --fg-3: #7a8799;
+
+  --brand: var(--color-navy-800);
+  --brand-fg: #ffffff;
+
+  --accent: var(--color-teal-600);
+  --accent-hover: var(--color-teal-700);
+  --accent-fg: #ffffff;
+  --accent-soft: #2a7f741a;
+  --accent-ink: var(--color-teal-700);
+
+  --ok: #1f8a4c;
+  --ok-soft: #1f8a4c1a;
+  --warn: #b7791f;
+  --warn-soft: #b7791f1f;
+  --bad: #c2413b;
+  --bad-soft: #c2413b1a;
+  --info: #3563b5;
+  --info-soft: #3563b51a;
+
+  --ring: var(--color-teal-600);
+  --overlay: #0f1a2b66;
+
+  --shadow-card: 0 1px 2px #16233a0f, 0 4px 16px #16233a0d;
+  --shadow-raised: 0 2px 4px #16233a12, 0 8px 24px #16233a12;
+  --shadow-overlay: 0 24px 48px #16233a30;
+
+  color-scheme: light;
+}
+
+.dark {
+  --bg: #0e141d;
+  --surface: #151d29;
+  --surface-2: #1b2533;
+  --surface-3: #222e3f;
+  --line: #263243;
+  --line-strong: #344257;
+
+  --fg: #e6ebf2;
+  --fg-2: #a7b3c3;
+  --fg-3: #768397;
+
+  --brand: var(--color-navy-950);
+  --brand-fg: #e6ebf2;
+
+  /* Lifted a step: teal-600 on a near-black surface falls below AA. */
+  --accent: var(--color-teal-400);
+  --accent-hover: #6fcabd;
+  --accent-fg: #06201d;
+  --accent-soft: #4cb3a51f;
+  --accent-ink: #6fcabd;
+
+  --ok: #4cc27e;
+  --ok-soft: #4cc27e1f;
+  --warn: #e0a84a;
+  --warn-soft: #e0a84a1f;
+  --bad: #ef6f69;
+  --bad-soft: #ef6f691f;
+  --info: #7aa2ec;
+  --info-soft: #7aa2ec1f;
+
+  --ring: var(--color-teal-400);
+  --overlay: #000000aa;
+
+  --shadow-card: 0 1px 2px #0006, 0 4px 16px #0004;
+  --shadow-raised: 0 2px 4px #0007, 0 8px 24px #0005;
+  --shadow-overlay: 0 24px 48px #000a;
+
+  color-scheme: dark;
+}
+
+/* Expose the semantic tokens to Tailwind so `bg-surface`, `text-fg-2`,
+   `border-line` and so on exist as real utilities. */
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-surface-3: var(--surface-3);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+
+  --color-fg: var(--fg);
+  --color-fg-2: var(--fg-2);
+  --color-fg-3: var(--fg-3);
+
+  --color-brand: var(--brand);
+  --color-brand-fg: var(--brand-fg);
+
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-accent-fg: var(--accent-fg);
+  --color-accent-soft: var(--accent-soft);
+  --color-accent-ink: var(--accent-ink);
+
+  --color-ok: var(--ok);
+  --color-ok-soft: var(--ok-soft);
+  --color-warn: var(--warn);
+  --color-warn-soft: var(--warn-soft);
+  --color-bad: var(--bad);
+  --color-bad-soft: var(--bad-soft);
+  --color-info: var(--info);
+  --color-info-soft: var(--info-soft);
+
+  --color-ring: var(--ring);
+  --color-overlay: var(--overlay);
+
+  --shadow-card: var(--shadow-card);
+  --shadow-raised: var(--shadow-raised);
+  --shadow-overlay: var(--shadow-overlay);
+}
+
+/* ------------------------------------------------------------------------- base */
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    @apply bg-bg text-fg antialiased;
+    font-size: 14px;
+    line-height: 1.5;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: var(--font-display);
+    letter-spacing: -0.01em;
+    text-wrap: balance;
+  }
+
+  /* One focus treatment everywhere, visible on both themes and never removed —
+     an invisible focus ring makes the app unusable by keyboard. */
+  :focus-visible {
+    @apply outline-2 outline-offset-2 outline-ring;
+  }
+
+  ::selection {
+    background: var(--accent);
+    color: #fff;
+  }
+
+  /* Honour the OS setting. Vestibular disorders make large motion genuinely
+     unpleasant, and this costs one declaration. */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+@layer utilities {
+  /* Identifiers, codes and timestamps: tabular figures stop columns dancing. */
+  .num {
+    font-variant-numeric: tabular-nums;
+  }
+
+  .mono {
+    font-family: var(--font-mono);
+    font-size: 0.85em;
+  }
+
+  .eyebrow {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-weight: 600;
+    color: var(--fg-3);
+  }
+
+  /* Skip link: hidden until focused. */
+  .focus-not-sr-only:focus {
+    position: static;
+    width: auto;
+    height: auto;
+    margin: 0;
+    overflow: visible;
+    clip: auto;
+    white-space: normal;
+  }
+}

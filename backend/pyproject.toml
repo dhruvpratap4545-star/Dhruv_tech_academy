@@ -1,0 +1,38 @@
+[project]
+name = "dhruv-academy-api"
+version = "0.1.0"
+description = "Dhruv Online Academy — platform API"
+requires-python = ">=3.12"
+
+[tool.ruff]
+target-version = "py312"
+line-length = 100
+extend-exclude = ["migrations/versions"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "ASYNC", "S", "C4", "SIM", "RUF"]
+ignore = [
+    "S101",  # assert is fine in tests
+    "B008",  # FastAPI Depends() in defaults is the documented pattern
+    # Product copy is Indian English and uses real typography (en dash, ₹).
+    "RUF001",
+    "RUF002",
+    "RUF003",
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["S105", "S106", "S107"]
+# S105 flags any constant whose NAME contains "password"/"token". These two files name
+# audit events and rate-limit settings, not secrets.
+"app/modules/audit/events.py" = ["S105"]
+"app/core/config.py" = ["S105"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+# One event loop for the whole session. The database engine and its connection pool are
+# session-scoped, and an asyncpg connection cannot be shared across event loops — a
+# function-scoped loop would make every session-scoped async fixture unusable.
+asyncio_default_fixture_loop_scope = "session"
+asyncio_default_test_loop_scope = "session"
+testpaths = ["tests"]
+addopts = "-q"

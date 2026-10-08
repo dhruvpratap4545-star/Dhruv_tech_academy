@@ -1,0 +1,341 @@
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useEffect, useMemo, useState } from "react";
+
+import { Alert } from "@/components/Alert";
+import { Badge, StatusBadge } from "@/components/Badge";
+import { Avatar } from "@/components/Logo";
+import { Button } from "@/components/Button";
+import { Card } from "@/components/Card";
+import { SelectField, TextField } from "@/components/Field";
+import { PageHeader } from "@/components/PageHeader";
+import type { Column } from "@/components/Table";
+import { EmptyState, Table } from "@/components/Table";
+import type { UserFilters } from "@/features/admin/api";
+import { fetchUsers, resendInvite, updateUserStatus, userKeys } from "@/features/admin/api";
+import { ChangeRoleModal } from "@/features/admin/components/ChangeRoleModal";
+import { InviteUserModal } from "@/features/admin/components/InviteUserModal";
+import { UserAccessModal } from "@/features/admin/components/UserAccessModal";
+import type { UserSummary } from "@/features/auth/types";
+import { useCan, useCurrentUser } from "@/features/auth/useAuth";
+import { formatRelative, initials } from "@/lib/format";
+import { ROLE_LABEL, roleScopeLabel } from "@/lib/permissions";
+
+/** Debounce so typing a name does not fire a request per keystroke. */
+function useDebounced<T>(value: T, delay = 300): T {
+  const [debounced, setDebounced] = useState(value);
+  useEffect(() => {
+    const timer = setTimeout(() => setDebounced(value), delay);
+    return () => clearTimeout(timer);
+  }, [value, delay]);
+  return debounced;
+}
+
+export function UsersPage() {
+  const queryClient = useQueryClient();
+  const me = useCurrentUser();
+  const canInvite = useCan("user:invite");
+  const canChangeStatus = useCan("user:update_status");
+  const canAssignRole = useCan("role:assign");
+  const canGrant = useCan("permission:grant");
+
+  const [search, setSearch] = useState("");
+  const [status, setStatus] = useState("");
+  const [inviteOpen, setInviteOpen] = useState(false);
+  const [roleTarget, setRoleTarget] = useState<UserSummary | null>(null);
+  const [accessTarget, setAccessTarget] = useState<UserSummary | null>(null);
+  const [role, setRole] = useState("");
+  const [cursors, setCursors] = useState<(string | null)[]>([null]);
+  const [pageIndex, setPageIndex] = useState(0);
+
+  const debouncedSearch = useDebounced(search);
+
+  // Changing a filter invalidates the cursor trail: page 3 of the old result set is
+  // meaningless against the new one. Adjusted during render rather than in an effect —
+  // React re-renders immediately without committing the stale page, so there is no flash
+  // of the wrong results and no cascading effect.
+  const filterKey = `${debouncedSearch}|${status}|${role}`;
+  const [lastFilterKey, setLastFilterKey] = useState(filterKey);
+  if (filterKey !== lastFilterKey) {
+    setLastFilterKey(filterKey);
+    setCursors([null]);
+    setPageIndex(0);
+  }
+
+  const filters: UserFilters = useMemo(
+    () => ({
+      search: debouncedSearch || undefined,
+      status: status || undefined,
+      role_key: role || undefined,
+      cursor: cursors[pageIndex] ?? undefined,
+      limit: 20,
+    }),
+    [debouncedSearch, status, role, cursors, pageIndex],
+  );
+
+  const users = useQuery({
+    queryKey: userKeys.list(filters),
+    queryFn: ({ signal }) => fetchUsers(filters, signal),
+    placeholderData: (previous) => previous,
+  });
+
+  const setStatusMutation = useMutation({
+    mutationFn: ({ id, next }: { id: string; next: "active" | "suspended" }) =>
+      updateUserStatus(id, next),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: userKeys.all }),
+  });
+
+  const resend = useMutation({
+    mutationFn: (id: string) => resendInvite(id),
+  });
+
+  const columns: Column<UserSummary>[] = [
+    {
+      key: "person",
+      primary: true,
+      header: "Name",
+      cell: (row) => (
+        <div className="flex min-w-0 items-center gap-2.5">
+          <Avatar initials={initials(row.full_name)} />
+          <div className="min-w-0">
+            <p className="truncate font-semibold text-fg">{row.full_name}</p>
+            <p className="truncate text-xs text-fg-2">{row.email}</p>
+          </div>
+        </div>
+      ),
+    },
+    {
+      key: "roles",
+      header: "Roles",
+      secondary: true,
+      cell: (row) => (
+        <div className="flex flex-wrap gap-1">
+          {row.roles.length === 0 && <span className="text-xs text-fg-3">—</span>}
+          {row.roles.map((role) => (
+            <Badge key={`${role.role_key}-${role.branch_id ?? role.institute_id ?? "platform"}`}>
+              {ROLE_LABEL[role.role_key] ?? role.role_name}
+            </Badge>
+          ))}
+        </div>
+      ),
+    },
+    {
+      key: "scope",
+      header: "Scope",
+      secondary: true,
+      cell: (row) => (
+        <div className="space-y-0.5">
+          {row.roles.length === 0 && <span className="text-xs text-fg-3">&mdash;</span>}
+          {[...new Set(row.roles.map(roleScopeLabel))].map((label) => (
+            <p key={label} className="text-xs text-fg-2">
+              {label}
+            </p>
+          ))}
+        </div>
+      ),
+    },
+    { key: "status", header: "Status", cell: (row) => <StatusBadge status={row.status} /> },
+    {
+      key: "last_login",
+      header: "Last login",
+      secondary: true,
+      cell: (row) => <span className="text-sm text-fg-2">{formatRelative(row.last_login_at)}</span>,
+    },
+    {
+      key: "actions",
+      label: "Actions",
+      header: <span className="sr-only">Actions</span>,
+      className: "text-right",
+      cell: (row) => (
+        <div className="flex flex-wrap justify-end gap-1.5">
+          {row.id === me?.id && <span className="px-2 text-xs text-fg-3">You</span>}
+          {row.id !== me?.id && canAssignRole && (
+            <Button size="sm" variant="ghost" onClick={() => setRoleTarget(row)}>
+              Change role
+            </Button>
+          )}
+          {row.id !== me?.id && canGrant && (
+            <Button size="sm" variant="ghost" onClick={() => setAccessTarget(row)}>
+              Access
+            </Button>
+          )}
+          {row.status === "invited" && canInvite && (
+            <Button
+              size="sm"
+              variant="ghost"
+              loading={resend.isPending && resend.variables === row.id}
+              onClick={() => resend.mutate(row.id)}
+            >
+              Resend invite
+            </Button>
+          )}
+          {/* Suspending yourself is refused by the server (it would lock an institute
+              out of its own account), so the action is not offered. */}
+          {canChangeStatus && row.status !== "invited" && row.id !== me?.id && (
+            <Button
+              size="sm"
+              variant={row.status === "suspended" ? "secondary" : "ghost"}
+              loading={setStatusMutation.isPending && setStatusMutation.variables?.id === row.id}
+              onClick={() =>
+                setStatusMutation.mutate({
+                  id: row.id,
+                  next: row.status === "suspended" ? "active" : "suspended",
+                })
+              }
+            >
+              {row.status === "suspended" ? "Re-activate" : "Suspend"}
+            </Button>
+          )}
+        </div>
+      ),
+    },
+  ];
+
+  const hasNext = Boolean(users.data?.next_cursor);
+
+  return (
+    <div className="space-y-6">
+      <PageHeader
+        title="Users"
+        description="Everyone you can see and manage in your scope."
+        actions={
+          canInvite && (
+            <Button onClick={() => setInviteOpen(true)} icon={<PlusIcon />}>
+              Invite user
+            </Button>
+          )
+        }
+      />
+
+      {resend.isSuccess && (
+        <Alert tone="success">
+          <p>A new setup code has been sent.</p>
+        </Alert>
+      )}
+      {resend.error && (
+        <Alert tone="danger">
+          <p>{resend.error.message}</p>
+        </Alert>
+      )}
+      {setStatusMutation.error && (
+        <Alert tone="danger">
+          <p>{setStatusMutation.error.message}</p>
+        </Alert>
+      )}
+
+      <Card>
+        <div className="grid gap-3 border-b border-line p-4 sm:grid-cols-2 lg:grid-cols-[1fr_11rem_11rem]">
+          <TextField
+            label="Search"
+            type="search"
+            placeholder="Name or email address"
+            value={search}
+            onChange={(event) => setSearch(event.target.value)}
+          />
+          <SelectField
+            label="Role"
+            placeholder="All roles"
+            value={role}
+            onChange={(event) => setRole(event.target.value)}
+            options={[
+              { value: "super_admin", label: "Super Admin" },
+              { value: "platform_admin", label: "Platform Admin" },
+              { value: "institute_admin", label: "Institute Admin" },
+              { value: "branch_admin", label: "Branch Admin" },
+              { value: "faculty", label: "Faculty" },
+              { value: "student", label: "Student" },
+            ]}
+          />
+          <SelectField
+            label="Status"
+            placeholder="All statuses"
+            value={status}
+            onChange={(event) => setStatus(event.target.value)}
+            options={[
+              { value: "active", label: "Active" },
+              { value: "invited", label: "Invited" },
+              { value: "suspended", label: "Suspended" },
+            ]}
+          />
+        </div>
+
+        {users.error ? (
+          <Alert tone="danger" className="m-4">
+            <p>{users.error.message}</p>
+          </Alert>
+        ) : (
+          <Table
+            caption="Users in your scope"
+            columns={columns}
+            rows={users.data?.items ?? []}
+            rowKey={(row) => row.id}
+            loading={users.isLoading}
+            empty={
+              <EmptyState
+                title={search || status ? "No users match those filters" : "No users yet"}
+                description={
+                  search || status
+                    ? "Try a different search or clear the filters."
+                    : "Invite someone to get started."
+                }
+                action={
+                  canInvite && !search && !status ? (
+                    <Button size="sm" onClick={() => setInviteOpen(true)}>
+                      Invite user
+                    </Button>
+                  ) : undefined
+                }
+              />
+            }
+          />
+        )}
+
+        {(pageIndex > 0 || hasNext) && (
+          <div className="flex items-center justify-between gap-2 border-t border-line px-4 py-3">
+            <Button
+              size="sm"
+              variant="secondary"
+              disabled={pageIndex === 0}
+              onClick={() => setPageIndex((index) => Math.max(0, index - 1))}
+            >
+              Previous
+            </Button>
+            <span className="text-xs text-fg-2">Page {pageIndex + 1}</span>
+            <Button
+              size="sm"
+              variant="secondary"
+              disabled={!hasNext}
+              onClick={() => {
+                const next = users.data?.next_cursor ?? null;
+                setCursors((trail) => (trail.length > pageIndex + 1 ? trail : [...trail, next]));
+                setPageIndex((index) => index + 1);
+              }}
+            >
+              Next
+            </Button>
+          </div>
+        )}
+      </Card>
+
+      <InviteUserModal open={inviteOpen} onClose={() => setInviteOpen(false)} />
+      <ChangeRoleModal
+        user={roleTarget}
+        open={roleTarget !== null}
+        onClose={() => setRoleTarget(null)}
+      />
+
+      <UserAccessModal
+        user={accessTarget}
+        open={accessTarget !== null}
+        onClose={() => setAccessTarget(null)}
+      />
+    </div>
+  );
+}
+
+function PlusIcon() {
+  return (
+    <svg viewBox="0 0 16 16" className="size-4" fill="none" aria-hidden>
+      <path d="M8 3.5v9M3.5 8h9" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+    </svg>
+  );
+}
