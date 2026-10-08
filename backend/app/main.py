@@ -14,6 +14,7 @@ limiting is innermost, where the authenticated user is known and can be used as 
 from __future__ import annotations
 
 import logging
+import re
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Request
@@ -41,6 +42,40 @@ from app.core.spa import SinglePageApp
 
 logger = logging.getLogger(__name__)
 
+_BASE64 = re.compile(r"[A-Za-z0-9+/=]*")
+
+
+def _check_pem(name: str, value: str, expected_label: str, load) -> None:
+    """Fail with a message that says what is wrong with a key, without ever logging it.
+
+    The library error ("Invalid padding") names neither the variable nor the fault, and a
+    key pasted into a dashboard can break in several different ways.
+    """
+    try:
+        load(value.encode())
+        return
+    except ValueError:
+        pass
+    begin = re.search(r"-----BEGIN ([A-Z0-9 ]+)-----", value)
+    body = re.sub(r"-----(BEGIN|END) [A-Z0-9 ]+-----|\s", "", value)
+    problems = []
+    # "EC PRIVATE KEY" (SEC1) is as valid as "PRIVATE KEY" (PKCS#8).
+    label = begin.group(1) if begin else expected_label
+    if not begin:
+        problems.append("no '-----BEGIN ...-----' line")
+    elif not label.endswith(expected_label):
+        problems.append(f"it is a '{label}', expected a '{expected_label}'")
+    if f"-----END {label}-----" not in value:
+        problems.append(f"no '-----END {label}-----' line")
+    if not _BASE64.fullmatch(body):
+        problems.append("the body contains characters that are not base64")
+    if len(body) % 4:
+        problems.append(f"the body is {len(body)} characters, not a multiple of 4 (truncated?)")
+    raise RuntimeError(
+        f"{name} is not a valid PEM key: {'; '.join(problems) or 'the key data is corrupt'}. "
+        f"Paste the whole block, BEGIN and END lines included, with nothing added."
+    )
+
 
 def _verify_signing_keys() -> None:
     """Prove the ES256 key pair works before accepting traffic.
@@ -61,6 +96,19 @@ def _verify_signing_keys() -> None:
             "JWT_PRIVATE_KEY and JWT_PUBLIC_KEY must be set. Generate an ES256 pair as "
             "described in backend/.env.example."
         )
+    from cryptography.hazmat.primitives.serialization import (
+        load_pem_private_key,
+        load_pem_public_key,
+    )
+
+    _check_pem(
+        "JWT_PRIVATE_KEY",
+        settings.jwt_private_key.get_secret_value(),
+        "PRIVATE KEY",
+        lambda data: load_pem_private_key(data, password=None),
+    )
+    _check_pem("JWT_PUBLIC_KEY", settings.jwt_public_key, "PUBLIC KEY", load_pem_public_key)
+
     probe_user, probe_session = _uuid.uuid4(), _uuid.uuid4()
     claims = decode_access_token(create_access_token(probe_user, probe_session))
     if claims.user_id != probe_user or claims.session_id != probe_session:

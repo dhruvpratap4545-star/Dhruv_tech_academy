@@ -163,3 +163,53 @@ def test_quotes_around_a_pasted_pem_are_dropped(jwt_keys: tuple[str, str]) -> No
 
     _, public_pem = jwt_keys
     assert load_pem_public_key(_normalise_pem(f'"{public_pem.strip()}"').encode())
+
+
+# ------------------------------------------------------------------- startup key check
+
+
+def test_a_corrupt_key_names_the_variable_and_the_fault(jwt_keys: tuple[str, str]) -> None:
+    import pytest
+    from cryptography.hazmat.primitives.serialization import load_pem_public_key
+
+    from app.main import _check_pem
+
+    _, public_pem = jwt_keys
+    truncated = public_pem.replace("-----END PUBLIC KEY-----", "").strip()[:-3]
+    with pytest.raises(RuntimeError) as raised:
+        _check_pem("JWT_PUBLIC_KEY", truncated, "PUBLIC KEY", load_pem_public_key)
+
+    message = str(raised.value)
+    assert "JWT_PUBLIC_KEY" in message
+    assert "no '-----END PUBLIC KEY-----' line" in message
+    assert truncated.splitlines()[1] not in message, "the key itself must never be logged"
+
+
+def test_keys_swapped_between_variables_is_reported(jwt_keys: tuple[str, str]) -> None:
+    import pytest
+    from cryptography.hazmat.primitives.serialization import load_pem_private_key
+
+    from app.main import _check_pem
+
+    _, public_pem = jwt_keys
+    with pytest.raises(RuntimeError, match="expected a 'PRIVATE KEY'"):
+        _check_pem(
+            "JWT_PRIVATE_KEY",
+            public_pem,
+            "PRIVATE KEY",
+            lambda data: load_pem_private_key(data, password=None),
+        )
+
+
+def test_a_valid_key_passes_the_startup_check(jwt_keys: tuple[str, str]) -> None:
+    from cryptography.hazmat.primitives.serialization import load_pem_private_key
+
+    from app.main import _check_pem
+
+    private_pem, _ = jwt_keys
+    _check_pem(
+        "JWT_PRIVATE_KEY",
+        private_pem,
+        "PRIVATE KEY",
+        lambda data: load_pem_private_key(data, password=None),
+    )
