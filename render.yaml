@@ -1,6 +1,10 @@
 # Render Blueprint for Dhruv Online Academy.
 #
-# Covers the new platform only: API (backend/), web app (frontend/) and Postgres.
+# ONE web service (`dhruv-app`) serves both the API and the web app on one URL, plus Postgres.
+# The root Dockerfile builds frontend/ and bakes it into the API image; FastAPI serves it
+# (backend/app/core/spa.py). Same origin means no CORS and the auth cookies always travel —
+# which separate services on *.onrender.com URLs would break.
+#
 # The existing site that serves legacy/templates is NOT in this blueprint — it stays a
 # dashboard-managed service, so applying this file cannot disturb what is already live.
 #
@@ -12,32 +16,33 @@
 
 services:
   - type: web
-    name: dhruv-api
-    runtime: python
+    name: dhruv-app
+    runtime: docker
     region: singapore
-    plan: starter          # free plan sleeps when idle; use a paid plan for production
-    rootDir: backend
-    buildCommand: pip install -r requirements.txt
-    preDeployCommand: alembic upgrade head && python -m app.core.seed
-    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT --workers 2 --proxy-headers --forwarded-allow-ips="*"
+    # FREE plan: sleeps after ~15 min idle (first request then takes ~1 min) and has no
+    # pre-deploy step, so migrations + seed run at container start (RUN_MIGRATIONS_ON_START).
+    # Moving to a paid plan: set `plan: starter`, delete RUN_MIGRATIONS_ON_START and add
+    #   preDeployCommand: alembic upgrade head && python -m app.core.seed
+    plan: free
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
     healthCheckPath: /healthz
     envVars:
       - key: ENVIRONMENT
         value: production
-      - key: PYTHON_VERSION
-        value: "3.12.7"
       - key: DATABASE_URL
         fromDatabase:
           name: dhruv-db
           property: connectionString
-      - key: COOKIE_DOMAIN
-        value: .dhruvonlineacademy.com
-      - key: CORS_ORIGINS
-        value: '["https://dhruvonlineacademy.com","https://www.dhruvonlineacademy.com"]'
+      # Same-origin deploy: no COOKIE_DOMAIN (host-only cookies) and no CORS_ORIGINS needed.
       - key: EMAIL_FROM
         value: Dhruv Online Academy <noreply@dhruvonlineacademy.com>
       - key: JWT_KEY_ID
         value: k1
+      - key: WEB_CONCURRENCY
+        value: "1"           # free instance has 512 MB RAM; one worker is enough
+      - key: RUN_MIGRATIONS_ON_START
+        value: "1"
       - key: JWT_PRIVATE_KEY
         sync: false
       - key: JWT_PUBLIC_KEY
@@ -51,60 +56,13 @@ services:
       - key: SENTRY_DSN
         sync: false
 
-  - type: web
-    name: dhruv-web
-    runtime: static
-    rootDir: frontend
-    buildCommand: npm ci && npm run build
-    staticPublishPath: dist
-    headers:
-      - path: /*
-        name: X-Content-Type-Options
-        value: nosniff
-      - path: /*
-        name: X-Frame-Options
-        value: DENY
-      - path: /*
-        name: Referrer-Policy
-        value: strict-origin-when-cross-origin
-      - path: /*
-        name: Strict-Transport-Security
-        value: max-age=31536000; includeSubDomains
-      - path: /*
-        name: Content-Security-Policy
-        # Every source here is one the built app actually uses. Getting this wrong fails
-        # silently in production and nowhere else: a blocked font just renders in Arial,
-        # and a blocked script just does not run.
-        #   style-src/font-src   the Google Fonts stylesheet and the font files it pulls
-        #   'unsafe-inline' style  React sets element styles directly (chart bar heights,
-        #                          tree indentation); without it those render unstyled
-        #   script-src sha256-...  the one inline script in index.html, which sets the
-        #                          theme before first paint. Hashed rather than
-        #                          'unsafe-inline' so it is the ONLY inline script allowed.
-        #                          frontend/src/csp.test.ts fails if it drifts.
-        value: >-
-          default-src 'self';
-          connect-src 'self' https://api.dhruvonlineacademy.com;
-          img-src 'self' data:;
-          style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
-          font-src 'self' https://fonts.gstatic.com;
-          script-src 'self' 'sha256-AfU8ekxEE7+UjmBGOQfriAbReu3QKCnkEOu3ilpdivA=';
-          frame-ancestors 'none';
-          base-uri 'self';
-          form-action 'self'
-    routes:
-      - type: rewrite
-        source: /*
-        destination: /index.html
-    envVars:
-      - key: VITE_API_URL
-        value: https://api.dhruvonlineacademy.com/api/v1
-
 databases:
   # WARNING: once this database exists, `name`, `region` and `postgresMajorVersion` are
   # write-once. Render matches databases by name — renaming this creates a NEW, EMPTY
   # database and orphans the old one. Region and version cannot be changed at all.
   - name: dhruv-db
     region: singapore
-    plan: basic-256mb      # check current Render plan names/prices
+    # FREE Postgres EXPIRES (30 days at the time of writing — check Render's docs) and is
+    # then deleted with its data. Upgrade to a paid plan before real users depend on it.
+    plan: free
     postgresMajorVersion: "16"

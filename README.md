@@ -96,8 +96,10 @@ Both suites run on every pull request via [GitHub Actions](.github/workflows/ci.
 
 ## Deployment
 
-Render, from [`render.yaml`](render.yaml): `dhruv-api` (web service),
-`dhruv-web` (static site) and `dhruv-db` (PostgreSQL 16).
+Render, from [`render.yaml`](render.yaml): one web service, `dhruv-app`, plus `dhruv-db`
+(PostgreSQL 16). The root [`Dockerfile`](Dockerfile) builds the frontend and bakes it into
+the API image, and FastAPI serves it, so the whole platform runs on one URL with no CORS.
+Locally nothing changes: Vite serves the frontend and `FRONTEND_DIST_DIR` stays unset.
 
 Nothing in `render.yaml` has been applied yet, and the file is written so that applying
 it cannot disturb the site already running on the account. Read the comments in it before

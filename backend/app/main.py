@@ -37,6 +37,7 @@ from app.core.logging import REQUEST_ID_HEADER, RequestContextMiddleware, config
 from app.core.middleware import CsrfHeaderMiddleware, SecurityHeadersMiddleware
 from app.core.rate_limit import limiter
 from app.core.security import CSRF_HEADER
+from app.core.spa import SinglePageApp
 
 logger = logging.getLogger(__name__)
 
@@ -169,6 +170,14 @@ def create_app() -> FastAPI:
         async with SessionLocal() as session:
             await session.execute(text("SELECT 1"))
         return {"status": "ok", "database": "reachable"}
+
+    # Last, so every route above wins and only what is left falls through to the web app.
+    if settings.frontend_dist_dir:
+        app.mount(
+            "/",
+            SinglePageApp(settings.frontend_dist_dir, (settings.api_v1_prefix, "/healthz")),
+            name="web",
+        )
 
     return app
 

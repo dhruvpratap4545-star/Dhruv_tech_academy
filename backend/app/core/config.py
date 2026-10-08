@@ -91,6 +91,10 @@ class Settings(BaseSettings):
     cookie_domain: str | None = None
     cors_origins: list[str] = []
 
+    # Built frontend (frontend/dist). When set, the API also serves the web app, so the
+    # whole platform runs on one URL. Unset locally, where Vite serves the frontend.
+    frontend_dist_dir: str | None = None
+
     # Seed + monitoring
     seed_superadmin_email: str | None = None
     sentry_dsn: str | None = None
