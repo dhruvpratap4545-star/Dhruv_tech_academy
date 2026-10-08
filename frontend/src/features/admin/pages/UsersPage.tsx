@@ -12,6 +12,7 @@ import type { Column } from "@/components/Table";
 import { EmptyState, Table } from "@/components/Table";
 import type { UserFilters } from "@/features/admin/api";
 import { fetchUsers, resendInvite, updateUserStatus, userKeys } from "@/features/admin/api";
+import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { ChangeRoleModal } from "@/features/admin/components/ChangeRoleModal";
 import { InviteUserModal } from "@/features/admin/components/InviteUserModal";
 import { UserAccessModal } from "@/features/admin/components/UserAccessModal";
@@ -43,6 +44,10 @@ export function UsersPage() {
   const [inviteOpen, setInviteOpen] = useState(false);
   const [roleTarget, setRoleTarget] = useState<UserSummary | null>(null);
   const [accessTarget, setAccessTarget] = useState<UserSummary | null>(null);
+  // Suspension signs the person out immediately and refuses their next sign-in, so it
+  // asks first. Re-activation restores access and needs no ceremony.
+  const [suspendTarget, setSuspendTarget] = useState<UserSummary | null>(null);
+  const [invited, setInvited] = useState<string | null>(null);
   const [role, setRole] = useState("");
   const [cursors, setCursors] = useState<(string | null)[]>([null]);
   const [pageIndex, setPageIndex] = useState(0);
@@ -81,7 +86,10 @@ export function UsersPage() {
   const setStatusMutation = useMutation({
     mutationFn: ({ id, next }: { id: string; next: "active" | "suspended" }) =>
       updateUserStatus(id, next),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: userKeys.all }),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: userKeys.all });
+      setSuspendTarget(null);
+    },
   });
 
   const resend = useMutation({
@@ -175,12 +183,13 @@ export function UsersPage() {
               size="sm"
               variant={row.status === "suspended" ? "secondary" : "ghost"}
               loading={setStatusMutation.isPending && setStatusMutation.variables?.id === row.id}
-              onClick={() =>
-                setStatusMutation.mutate({
-                  id: row.id,
-                  next: row.status === "suspended" ? "active" : "suspended",
-                })
-              }
+              onClick={() => {
+                if (row.status === "suspended") {
+                  setStatusMutation.mutate({ id: row.id, next: "active" });
+                } else {
+                  setSuspendTarget(row);
+                }
+              }}
             >
               {row.status === "suspended" ? "Re-activate" : "Suspend"}
             </Button>
@@ -205,6 +214,22 @@ export function UsersPage() {
           )
         }
       />
+
+      {/* The send happens in the background and can fail — a wrong address, a provider
+          rejection — without the request failing. Saying what *should* arrive, and naming
+          the recovery, is more honest than a bare "Invited". */}
+      {invited && (
+        <Alert tone="success" title={`${invited} has been invited`}>
+          <p>
+            An email with a 6-digit setup code is on its way, valid for 48 hours. They set their
+            own password with it — nobody else sees it, including you.
+          </p>
+          <p className="mt-1">
+            If it does not arrive, check the address in the list below and use{" "}
+            <strong className="font-semibold">Resend invite</strong> to send a fresh code.
+          </p>
+        </Alert>
+      )}
 
       {resend.isSuccess && (
         <Alert tone="success">
@@ -316,7 +341,11 @@ export function UsersPage() {
         )}
       </Card>
 
-      <InviteUserModal open={inviteOpen} onClose={() => setInviteOpen(false)} />
+      <InviteUserModal
+        open={inviteOpen}
+        onClose={() => setInviteOpen(false)}
+        onInvited={setInvited}
+      />
       <ChangeRoleModal
         user={roleTarget}
         open={roleTarget !== null}
@@ -328,6 +357,30 @@ export function UsersPage() {
         open={accessTarget !== null}
         onClose={() => setAccessTarget(null)}
       />
+
+      <ConfirmDialog
+        open={suspendTarget !== null}
+        onClose={() => {
+          setSuspendTarget(null);
+          setStatusMutation.reset();
+        }}
+        onConfirm={() =>
+          suspendTarget && setStatusMutation.mutate({ id: suspendTarget.id, next: "suspended" })
+        }
+        title={`Suspend ${suspendTarget?.full_name ?? ""}?`}
+        confirmLabel="Suspend this account"
+        pending={setStatusMutation.isPending}
+        error={setStatusMutation.error?.message ?? null}
+      >
+        <p>
+          <strong className="font-semibold text-fg">{suspendTarget?.full_name}</strong> will be
+          signed out of every device straight away and will not be able to sign in again.
+        </p>
+        <p>
+          Nothing is deleted — their roles, classes and history stay exactly as they are, and you
+          can re-activate the account at any time.
+        </p>
+      </ConfirmDialog>
     </div>
   );
 }

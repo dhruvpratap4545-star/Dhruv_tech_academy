@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Alert } from "@/components/Alert";
 import { Button } from "@/components/Button";
 import { Checkbox, SelectField, TextField } from "@/components/Field";
+import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { Modal } from "@/components/Modal";
 import { accessKeys, archiveRole, createRole, updateRole } from "@/features/admin/api";
 import type { PermissionInfo, Role } from "@/features/auth/types";
@@ -48,6 +49,7 @@ export function RoleEditor({
   );
   const [chosen, setChosen] = useState<Set<string>>(new Set(role?.permissions ?? []));
   const [error, setError] = useState<string | null>(null);
+  const [confirmRetire, setConfirmRetire] = useState(false);
 
   const done = () => {
     void queryClient.invalidateQueries({ queryKey: accessKeys.roles() });
@@ -106,12 +108,7 @@ export function RoleEditor({
       footer={
         <div className="flex w-full flex-wrap items-center gap-2">
           {editing && role.holder_count === 0 && (
-            <Button
-              variant="danger"
-              size="sm"
-              onClick={() => archive.mutate()}
-              disabled={archive.isPending}
-            >
+            <Button variant="danger" size="sm" onClick={() => setConfirmRetire(true)}>
               Retire this role
             </Button>
           )}
@@ -230,6 +227,24 @@ export function RoleEditor({
           </Alert>
         )}
       </div>
+
+      <ConfirmDialog
+        open={confirmRetire}
+        onClose={() => setConfirmRetire(false)}
+        onConfirm={() => archive.mutate()}
+        title={`Retire ${role?.name ?? "this role"}?`}
+        confirmLabel="Retire it"
+        pending={archive.isPending}
+        error={archive.error?.message ?? null}
+      >
+        <p>It will stop being offered when giving someone a role.</p>
+        <p>
+          The name stays reserved and cannot be reused, so past records keep their meaning —
+          if you later want a role called{" "}
+          <strong className="font-semibold text-fg">{role?.name}</strong> again, it will need a
+          different name.
+        </p>
+      </ConfirmDialog>
     </Modal>
   );
 }

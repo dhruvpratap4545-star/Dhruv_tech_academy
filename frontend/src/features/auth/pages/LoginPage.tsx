@@ -37,16 +37,9 @@ export function LoginPage() {
 
   return (
     <AuthLayout
-      title="Welcome back"
-      description="Log in to your Dhruv Online Academy account."
-      footer={
-        <>
-          New here?{" "}
-          <Link to="/register" className="font-medium text-accent hover:underline">
-            Create an account
-          </Link>
-        </>
-      }
+      tabs
+      title="Sign in"
+      description="Use the email and password for your Dhruv Online Academy account."
     >
       <form
         noValidate
@@ -59,37 +52,38 @@ export function LoginPage() {
           </Alert>
         )}
 
+        {/* No required markers: every field on a sign-in form is required, so an asterisk
+            on each one is decoration. The form is `noValidate` anyway — zod validates and
+            writes a real message, which beats the browser's native bubble. */}
         <TextField
-          label="Email address"
+          label="Email"
           type="email"
           autoComplete="email"
           autoFocus
-          required
           placeholder="you@example.com"
           error={form.formState.errors.email?.message}
           {...form.register("email")}
         />
 
-        <div className="space-y-1.5">
-          <TextField
-            label="Password"
-            type="password"
-            autoComplete="current-password"
-            required
-            error={form.formState.errors.password?.message}
-            {...form.register("password")}
-          />
-          <div className="text-right">
+        <TextField
+          label="Password"
+          type="password"
+          autoComplete="current-password"
+          error={form.formState.errors.password?.message}
+          action={
             <Link to="/forgot-password" className="text-xs font-medium text-accent hover:underline">
-              Forgot your password?
+              Forgot password?
             </Link>
-          </div>
-        </div>
+          }
+          {...form.register("password")}
+        />
 
-        <Checkbox label="Keep me logged in on this device" {...form.register("remember_me")} />
+        {/* States the duration. "On this device" told someone nothing about how long they
+            would stay signed in, which is the only thing they are deciding. */}
+        <Checkbox label="Keep me signed in for 30 days" {...form.register("remember_me")} />
 
         <Button type="submit" block size="lg" loading={submit.isPending}>
-          Log in
+          Sign in
         </Button>
       </form>
     </AuthLayout>

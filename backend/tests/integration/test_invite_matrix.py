@@ -153,17 +153,32 @@ async def test_the_reserved_parent_role_cannot_be_granted(client: AsyncClient, w
 # ------------------------------------------------------------------------ Super Admin
 
 
-@pytest.mark.parametrize("role_key", ["platform_admin", "institute_admin", "student"])
-async def test_super_admin_can_invite_any_role(client: AsyncClient, world, role_key) -> None:
+@pytest.mark.parametrize("role_key", ["institute_admin", "branch_admin", "faculty", "student"])
+async def test_super_admin_can_invite_any_role_inside_an_institute(
+    client: AsyncClient, world, role_key
+) -> None:
     await _as(client, world["super_admin"])
-    body = _invite(
-        world,
-        role_key,
-        institute=None if role_key == "platform_admin" else world["abc"],
-        email=f"sa-{role_key}@example.com",
-    )
+    body = _invite(world, role_key, institute=world["abc"], email=f"sa-{role_key}@example.com")
+    if role_key in {"branch_admin", "faculty"}:
+        body["branch_id"] = str(world["mca"].id)
     response = await client.post("/api/v1/users/invite", json=body)
     assert response.status_code == 201, response.text
+
+
+@pytest.mark.parametrize("role_key", ["super_admin", "platform_admin"])
+async def test_even_a_super_admin_cannot_invite_a_platform_role(
+    client: AsyncClient, world, role_key
+) -> None:
+    """Platform-wide authority is reached by promoting an account that already works, not
+    by sending an invitation to an address nobody has proved they control. PRD §3.1 still
+    holds — see the promotion test below."""
+    await _as(client, world["super_admin"])
+    response = await client.post(
+        "/api/v1/users/invite",
+        json=_invite(world, role_key, institute=None, email=f"sa-{role_key}@example.com"),
+    )
+    assert response.status_code == 422
+    assert "cannot be given to a new invitation" in response.json()["error"]["message"]
 
 
 async def test_super_admin_can_invite_into_any_institute(client: AsyncClient, world) -> None:
@@ -190,11 +205,17 @@ async def test_platform_admin_can_invite_an_institute_admin_anywhere(
 
 
 async def test_platform_admin_cannot_invite_a_peer(client: AsyncClient, world) -> None:
+    """Two independent rules forbid this now — no platform role may be invited at all, and
+    nobody may grant their own rank. The platform-role rule is checked first, so the status
+    is 422 rather than 403; what matters is that the account is not created."""
     await _as(client, world["platform_admin"])
     response = await client.post(
         "/api/v1/users/invite", json=_invite(world, "platform_admin", email="pa-pa@example.com")
     )
-    assert response.status_code == 403
+    assert response.status_code in (403, 422), response.text
+
+    listed = await client.get("/api/v1/users", params={"search": "pa-pa@example.com"})
+    assert listed.json()["items"] == [], "no account may exist after a refused invitation"
 
 
 async def test_platform_admin_cannot_invite_a_super_admin(client: AsyncClient, world) -> None:
@@ -202,7 +223,7 @@ async def test_platform_admin_cannot_invite_a_super_admin(client: AsyncClient, w
     response = await client.post(
         "/api/v1/users/invite", json=_invite(world, "super_admin", email="pa-sa@example.com")
     )
-    assert response.status_code == 403
+    assert response.status_code in (403, 422), response.text
 
 
 # -------------------------------------------------------------------- Institute Admin
@@ -507,19 +528,38 @@ async def test_the_assignable_role_catalogue_matches_the_matrix(
 
 
 async def test_the_catalogue_never_disagrees_with_the_check(client: AsyncClient, world) -> None:
-    """Whatever the list offers, the API must accept — and whatever it accepts, the list
-    must offer. A Super Admin may appoint another Super Admin (PRD §3.1 "any role"), so the
-    list has to say so, or the only way to add a second owner is a raw API call."""
+    """Whatever a list offers, the matching endpoint must accept — and the reverse.
+
+    There are two lists now, because there are two different questions. "Who can I invite?"
+    excludes platform roles; "who can I promote this person to?" does not, because a Super
+    Admin must be able to appoint a successor (PRD §3.1 "any role") or the first owner can
+    never be replaced.
+    """
     await _as(client, world["super_admin"])
 
-    offered = {r["key"] for r in (await client.get("/api/v1/users/roles/catalogue")).json()}
-    assert "super_admin" in offered, "a Super Admin must be able to appoint a successor"
+    for_invite = {
+        r["key"]
+        for r in (
+            await client.get("/api/v1/users/roles/catalogue", params={"purpose": "invite"})
+        ).json()
+    }
+    for_assign = {r["key"] for r in (await client.get("/api/v1/users/roles/catalogue")).json()}
 
+    assert "super_admin" not in for_invite, "an invitation must not offer platform authority"
+    assert "super_admin" in for_assign, "a Super Admin must be able to appoint a successor"
+
+    # Everything the invite list offers is genuinely invitable.
     created = await client.post(
         "/api/v1/users/invite",
-        json=_invite(world, "super_admin", email="second-owner@example.com"),
+        json=_invite(world, "institute_admin", institute=world["abc"], email="offered@example.com"),
     )
     assert created.status_code == 201, created.text
+
+    # And what the assign list offers is genuinely assignable.
+    promoted = await client.post(
+        f"/api/v1/users/{world['institute_admin'].id}/roles", json={"role_key": "super_admin"}
+    )
+    assert promoted.status_code == 201, promoted.text
 
 
 async def test_an_invited_super_admin_does_not_count_as_the_survivor(
@@ -538,15 +578,25 @@ async def test_an_invited_super_admin_does_not_count_as_the_survivor(
 
     await _as(client, world["super_admin"])
 
+    # A platform role cannot be invited directly any more, so build the same situation the
+    # supported way: invite the person into an institute, then promote them. They are still
+    # `invited` with no password, which is the condition under test.
     invited = await client.post(
         "/api/v1/users/invite",
-        json=_invite(world, "super_admin", email="successor@example.com"),
+        json=_invite(
+            world, "institute_admin", institute=world["abc"], email="successor@example.com"
+        ),
     )
     assert invited.status_code == 201, invited.text
 
     successor = await db.scalar(select(User).where(User.email == "successor@example.com"))
     assert successor is not None
     assert successor.status == "invited" and successor.password_hash is None
+
+    promoted = await client.post(
+        f"/api/v1/users/{successor.id}/roles", json={"role_key": "super_admin"}
+    )
+    assert promoted.status_code == 201, promoted.text
 
     # Two assignments exist, but only one of them belongs to someone who can log in.
     refused = await client.request(

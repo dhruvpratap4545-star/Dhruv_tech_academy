@@ -2,7 +2,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 
 import { Alert } from "@/components/Alert";
 import { Button } from "@/components/Button";
@@ -24,8 +24,15 @@ type Step = "email" | "code" | "password";
  */
 export function ForgotPasswordPage() {
   const navigate = useNavigate();
-  const [step, setStep] = useState<Step>("email");
-  const [email, setEmail] = useState("");
+
+  // The reset email links here with `?email=`, meaning "you already have a code". Start on
+  // the code step rather than the first one: sending them back to step one would issue a
+  // second code and silently invalidate the one they are holding.
+  const [params] = useSearchParams();
+  const linkedEmail = params.get("email") ?? "";
+
+  const [step, setStep] = useState<Step>(linkedEmail ? "code" : "email");
+  const [email, setEmail] = useState(linkedEmail);
   const [resetToken, setResetToken] = useState("");
 
   return (

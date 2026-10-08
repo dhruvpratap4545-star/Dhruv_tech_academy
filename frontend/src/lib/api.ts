@@ -67,6 +67,24 @@ export function cancelPendingRefresh(): void {
   inFlightRefresh = null;
 }
 
+let sessionExpired: (() => void) | null = null;
+
+/**
+ * Register what to do when the session is definitively gone — a 401 that survived a
+ * refresh attempt.
+ *
+ * Without this the app has no idea it has been signed out. Every request just fails,
+ * the screen keeps showing stale data, and the person sits on a page where nothing
+ * works and nothing explains why. The auth layer registers a handler that drops the
+ * cached user, which lets the route guards send them to the login page.
+ *
+ * A callback rather than importing the query client here: the HTTP layer should not
+ * depend on the cache, and the cache module already imports this one.
+ */
+export function onSessionExpired(handler: () => void): void {
+  sessionExpired = handler;
+}
+
 export async function apiFetch<T>(path: string, options: RequestOptions = {}): Promise<T> {
   const { method = "GET", body, signal, retry = true } = options;
 
@@ -86,6 +104,10 @@ export async function apiFetch<T>(path: string, options: RequestOptions = {}): P
     if (await refreshSession()) {
       return apiFetch<T>(path, { ...options, retry: false });
     }
+    // The refresh failed too, so this session is over — signed out elsewhere, revoked,
+    // or simply expired. Tell the auth layer rather than letting the caller swallow a
+    // 401 and leave a dead screen on display.
+    sessionExpired?.();
   }
 
   if (response.status === 204) {

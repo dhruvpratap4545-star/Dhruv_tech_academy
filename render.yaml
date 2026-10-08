@@ -35,6 +35,12 @@ services:
           name: dhruv-db
           property: connectionString
       # Same-origin deploy: no COOKIE_DOMAIN (host-only cookies) and no CORS_ORIGINS needed.
+      #
+      # FRONTEND_URL is still required even though the app is same-origin: the invitation
+      # and password-reset emails carry a link, and a background task composing one has no
+      # request to infer the host from. Point it at whatever people actually type.
+      - key: FRONTEND_URL
+        value: https://dhruvonlineacademy.com
       - key: EMAIL_FROM
         value: Dhruv Online Academy <noreply@dhruvonlineacademy.com>
       - key: JWT_KEY_ID

@@ -488,3 +488,62 @@ async def test_a_retired_role_keeps_its_name(client, world):
     )
     assert again.status_code == 409
     assert "retired" in again.json()["error"]["message"].lower()
+
+
+# --------------------------------------------------- platform roles are never invited
+
+
+async def test_a_super_admin_cannot_be_created_by_invitation(client, world):
+    """An invitation makes an account for an address nobody has proved they control. One
+    typo in the email field would hand the whole platform to a stranger's mailbox, and the
+    mistake stays invisible until it is used."""
+    await _as(client, world["owner"])
+    response = await client.post(
+        "/api/v1/users/invite",
+        json={
+            "full_name": "New Owner",
+            "email": "someone-elses-typo@example.com",
+            "role_key": "super_admin",
+        },
+    )
+    assert response.status_code == 422
+    assert "cannot be given to a new invitation" in response.json()["error"]["message"]
+
+
+async def test_a_platform_admin_cannot_be_created_by_invitation(client, world):
+    await _as(client, world["owner"])
+    response = await client.post(
+        "/api/v1/users/invite",
+        json={
+            "full_name": "New Platform Admin",
+            "email": "platform-typo@example.com",
+            "role_key": "platform_admin",
+        },
+    )
+    assert response.status_code == 422
+
+
+async def test_an_existing_account_can_still_be_promoted_to_super_admin(client, world):
+    """Succession must stay possible (PRD §3.1), or the first owner could never be
+    replaced. Promotion acts on somebody who has already proved they can sign in."""
+    await _as(client, world["owner"])
+    response = await client.post(
+        f"/api/v1/users/{world['principal'].id}/roles",
+        json={"role_key": "super_admin"},
+    )
+    assert response.status_code == 201, response.text
+
+
+async def test_the_invite_catalogue_hides_platform_roles(client, world):
+    """The form must not offer a choice the service goes on to refuse."""
+    await _as(client, world["owner"])
+
+    for_assign = await client.get("/api/v1/users/roles/catalogue")
+    for_invite = await client.get("/api/v1/users/roles/catalogue", params={"purpose": "invite"})
+    assert for_assign.status_code == 200 and for_invite.status_code == 200
+
+    assert "super_admin" in {r["key"] for r in for_assign.json()}
+    invite_keys = {r["key"] for r in for_invite.json()}
+    assert "super_admin" not in invite_keys
+    assert "platform_admin" not in invite_keys
+    assert "institute_admin" in invite_keys, "ordinary roles must still be invitable"

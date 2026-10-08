@@ -15,6 +15,12 @@ type FieldShellProps = {
   hint?: string;
   error?: string;
   required?: boolean;
+  /**
+   * A control that belongs beside the label rather than under the field — "Forgot
+   * password?" next to Password being the case this exists for. Below the input it reads
+   * as detached from the field and is easy to miss at exactly the moment it is needed.
+   */
+  action?: ReactNode;
   children: (ids: { controlId: string; describedBy: string | undefined }) => ReactNode;
 };
 
@@ -25,7 +31,7 @@ type FieldShellProps = {
  * error are announced through `aria-describedby`. A visually obvious error that a screen
  * reader never mentions is not an error message.
  */
-export function Field({ label, hint, error, required, children }: FieldShellProps) {
+export function Field({ label, hint, error, required, action, children }: FieldShellProps) {
   const controlId = useId();
   const hintId = `${controlId}-hint`;
   const errorId = `${controlId}-error`;
@@ -34,14 +40,17 @@ export function Field({ label, hint, error, required, children }: FieldShellProp
 
   return (
     <div className="space-y-1.5">
-      <label htmlFor={controlId} className="block text-sm font-medium text-fg">
-        {label}
-        {required && (
-          <span className="ml-0.5 text-bad" aria-hidden="true">
-            *
-          </span>
-        )}
-      </label>
+      <div className="flex items-baseline justify-between gap-3">
+        <label htmlFor={controlId} className="block text-sm font-medium text-fg">
+          {label}
+          {required && (
+            <span className="ml-0.5 text-bad" aria-hidden="true">
+              *
+            </span>
+          )}
+        </label>
+        {action}
+      </div>
 
       {children({ controlId, describedBy })}
 
@@ -78,11 +87,12 @@ export type TextFieldProps = Omit<InputHTMLAttributes<HTMLInputElement>, "id"> &
   label: string;
   hint?: string;
   error?: string;
+  action?: ReactNode;
 };
 
-export function TextField({ label, hint, error, className, ...rest }: TextFieldProps) {
+export function TextField({ label, hint, error, action, className, ...rest }: TextFieldProps) {
   return (
-    <Field label={label} hint={hint} error={error} required={rest.required}>
+    <Field label={label} hint={hint} error={error} required={rest.required} action={action}>
       {({ controlId, describedBy }) => (
         <input
           id={controlId}

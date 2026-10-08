@@ -3,6 +3,8 @@ import { Link } from "react-router-dom";
 
 import { ThemeToggle } from "@/features/theme/ThemeToggle";
 import { Logo } from "@/components/Logo";
+import { NavLink } from "react-router-dom";
+import { cn } from "@/lib/cn";
 
 /**
  * Shell for the signed-out pages.
@@ -15,17 +17,25 @@ export function AuthLayout({
   description,
   children,
   footer,
+  tabs = false,
 }: {
   title: string;
   description?: string;
   children: ReactNode;
   footer?: ReactNode;
+  /** Shows the Sign in / Sign up pair, as the client's wireframe does. */
+  tabs?: boolean;
 }) {
   return (
     <div className="grid min-h-dvh lg:grid-cols-[1fr_minmax(0,32rem)]">
       <aside aria-hidden="true" className="relative hidden overflow-hidden bg-brand lg:block">
         <div className="flex h-full flex-col justify-between p-12">
-          <Logo className="size-10" />
+          <div className="flex items-center gap-3">
+            <Logo className="size-10" />
+            <span className="font-display text-lg font-extrabold tracking-tight text-white">
+              Dhruv Online Academy
+            </span>
+          </div>
 
           <div className="max-w-md space-y-8">
             <p className="font-display text-4xl leading-tight font-extrabold text-white">
@@ -68,21 +78,21 @@ export function AuthLayout({
         </div>
       </aside>
 
-      <main className="flex flex-col justify-center px-4 py-10 sm:px-8">
-        <div className="mx-auto w-full max-w-sm">
-          <div className="mb-8 flex items-center justify-between">
-            <Link to="/" className="lg:hidden">
-              <Logo />
-            </Link>
-            <div className="ml-auto">
-              <ThemeToggle persist={false} />
-            </div>
-          </div>
+      <main className="relative flex flex-col justify-center px-4 py-10 sm:px-8">
+        <div className="absolute top-5 right-5 flex items-center gap-3">
+          <Link to="/" className="lg:hidden" aria-label="Dhruv Online Academy">
+            <Logo />
+          </Link>
+          <ThemeToggle persist={false} />
+        </div>
 
+        <div className="mx-auto w-full max-w-sm">
           <div className="space-y-1.5">
-            <h1 className="text-2xl font-bold tracking-tight text-fg">{title}</h1>
+            <h1 className="font-display text-2xl font-bold tracking-tight text-fg">{title}</h1>
             {description && <p className="text-sm text-fg-2">{description}</p>}
           </div>
+
+          {tabs && <AuthTabs />}
 
           <div className="mt-6">{children}</div>
 
@@ -90,5 +100,33 @@ export function AuthLayout({
         </div>
       </main>
     </div>
+  );
+}
+
+/**
+ * Sign in / Sign up, as two routes rather than a toggle.
+ *
+ * The wireframe shows them as tabs and it is the better affordance: both options are
+ * visible at once, so a new learner is not hunting for the sign-up link at the bottom of
+ * a form they cannot complete.
+ */
+function AuthTabs() {
+  const tab = (active: boolean) =>
+    cn(
+      "-mb-px border-b-2 px-1 pb-2.5 text-sm font-semibold transition-colors",
+      active
+        ? "border-accent text-fg"
+        : "border-transparent text-fg-3 hover:border-line-strong hover:text-fg-2",
+    );
+
+  return (
+    <nav aria-label="Sign in or sign up" className="mt-5 flex gap-6 border-b border-line">
+      <NavLink to="/login" className={({ isActive }) => tab(isActive)}>
+        Sign in
+      </NavLink>
+      <NavLink to="/register" className={({ isActive }) => tab(isActive)}>
+        Sign up
+      </NavLink>
+    </nav>
   );
 }

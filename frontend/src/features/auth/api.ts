@@ -71,7 +71,13 @@ export function updateProfile(body: { full_name?: string; phone?: string | null 
   return apiFetch<UserProfile>("/me", { method: "PATCH", body });
 }
 
-/** Roles the signed-in user is allowed to hand out — the backend already filters by rank. */
-export function fetchAssignableRoles() {
-  return apiFetch<AssignableRole[]>("/users/roles/catalogue");
+/**
+ * Roles the signed-in user is allowed to hand out — the backend filters by rank and scope.
+ *
+ * `purpose` matters: an invitation may not carry platform-wide authority, because it
+ * creates an account for an address nobody has proved they control. Promotion of an
+ * existing, active account still can.
+ */
+export function fetchAssignableRoles(purpose: "assign" | "invite" = "assign") {
+  return apiFetch<AssignableRole[]>(`/users/roles/catalogue?purpose=${purpose}`);
 }

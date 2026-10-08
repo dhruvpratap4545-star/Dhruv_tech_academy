@@ -33,7 +33,7 @@ export function ChangeRoleModal({
 
   const roles = useQuery({
     queryKey: ["assignable-roles"],
-    queryFn: fetchAssignableRoles,
+    queryFn: () => fetchAssignableRoles(),
     enabled: open,
   });
 

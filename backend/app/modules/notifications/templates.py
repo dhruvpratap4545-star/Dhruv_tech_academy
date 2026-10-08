@@ -28,6 +28,35 @@ def _wrap(heading: str, body_html: str) -> str:
 </div>"""
 
 
+def _button(href: str, label: str) -> str:
+    """A link styled as a button, with the URL spelled out underneath.
+
+    Both, deliberately. Mail clients and corporate gateways rewrite or strip anchors often
+    enough that a button alone is a dead end, and a recipient who can see the address can
+    still type it. The plain-text part of every message carries the same URL.
+    """
+    return (
+        f'<p style="margin:20px 0;"><a href="{href}" '
+        f'style="display:inline-block;background:#1e3a5f;color:#ffffff;text-decoration:none;'
+        f'padding:12px 22px;border-radius:8px;font-weight:600;font-size:15px;">{label}</a></p>'
+        f'<p style="font-size:12px;color:#64748b;margin:0;">'
+        f'Or open this address: <span style="color:#1e3a5f;">{href}</span></p>'
+    )
+
+
+def _link(path: str, email: str) -> str:
+    """A link to one of the app's pages, with the address pre-filled.
+
+    Pre-filling the email saves the recipient retyping the address the message was just
+    sent to. It is not a credential and grants nothing on its own — the six-digit code is
+    what authorises the change, and it is deliberately not in the URL, where it would end
+    up in browser history, proxy logs and anything that rewrites links.
+    """
+    from urllib.parse import quote
+
+    return f"{settings.frontend_url.rstrip('/')}{path}?email={quote(email)}"
+
+
 def _code_block(code: str) -> str:
     return (
         f'<p style="font-size:28px;letter-spacing:6px;font-weight:700;'
@@ -45,6 +74,7 @@ def password_reset(to: str, full_name: str, code: str) -> EmailMessage:
             f"Hello {full_name},",
             f"<p>Use this code to reset your password. It is valid for {minutes} minutes "
             f"and can be used once.</p>{_code_block(code)}"
+            f"{_button(_link('/forgot-password', to), 'Enter your code')}"
             "<p>If you did not ask for this, you can ignore this email. "
             "Your password has not changed.</p>",
         ),
@@ -52,6 +82,7 @@ def password_reset(to: str, full_name: str, code: str) -> EmailMessage:
             f"Hello {full_name},\n\n"
             f"Your {_BRAND} password reset code is {code}.\n"
             f"It is valid for {minutes} minutes and can be used once.\n\n"
+            f"Enter it here: {_link('/forgot-password', to)}\n\n"
             "If you did not ask for this, you can ignore this email."
         ),
     )
@@ -69,12 +100,14 @@ def password_setup(
             f"Welcome, {full_name}",
             f"<p>You have been added to {_BRAND}{who}. Use this code to set your "
             f"password. It is valid for {hours} hours.</p>{_code_block(code)}"
+            f"{_button(_link('/set-password', to), 'Set your password')}"
             "<p>Once your password is set you can log in with your email address.</p>",
         ),
         text=(
             f"Welcome, {full_name}\n\n"
             f"You have been added to {_BRAND}{who}.\n"
             f"Your setup code is {code}. It is valid for {hours} hours.\n\n"
+            f"Set your password here: {_link('/set-password', to)}\n\n"
             "Once your password is set you can log in with your email address."
         ),
     )

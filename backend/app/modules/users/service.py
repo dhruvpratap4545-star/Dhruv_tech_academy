@@ -72,6 +72,27 @@ def _validate_scope_for_role(role, scope: Scope) -> None:
             raise ValidationFailed(f"{role.name} must be given within a specific branch.")
 
 
+def _refuse_platform_role_on_invite(role) -> None:
+    """Platform-wide authority is never created by an invitation.
+
+    An invitation makes an account for an address nobody has proved they control, and the
+    account exists before anyone has signed in to it. Both of those are fine for a student
+    or a faculty member. For Super Admin or Platform Admin they are not: a single typo in
+    the email field would hand the whole platform — every institute, every record — to a
+    mailbox the inviter does not own, and the mistake is invisible until it is exploited.
+
+    Succession still works, and PRD §3.1 still holds: an existing, active account can be
+    promoted to any role its grantor may give. The two steps are the point. Promotion acts
+    on somebody who has already proved they can receive mail at that address and sign in.
+    """
+    if role.scope_level == "platform":
+        raise ValidationFailed(
+            f"{role.name} cannot be given to a new invitation. Invite the person with a "
+            "role inside an institute first, then change their role once their account "
+            "is active."
+        )
+
+
 # -------------------------------------------------------------------------- invitation
 
 
@@ -87,6 +108,7 @@ async def invite_user(
     await guard.ensure(scope)
 
     role = await _require_role(db, payload.role_key)
+    _refuse_platform_role_on_invite(role)
     _validate_scope_for_role(role, scope)
     guard.ensure_can_grant(role.rank, scope)
 

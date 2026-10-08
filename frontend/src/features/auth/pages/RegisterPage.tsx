@@ -37,6 +37,7 @@ export function RegisterPage() {
 
   return (
     <AuthLayout
+      tabs
       title="Create your account"
       description="For learners joining Dhruv Online Academy directly."
       footer={

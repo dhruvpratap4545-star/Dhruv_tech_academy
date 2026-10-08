@@ -1,12 +1,13 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
-import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
+import { NavLink, Outlet, useLocation } from "react-router-dom";
 
 import { Icon } from "@/components/Icon";
 import { Avatar, Wordmark } from "@/components/Logo";
 import type { NavGroup } from "@/app/navigation";
 import { visibleNavigation } from "@/app/navigation";
 import { logout } from "@/features/auth/api";
+import { endSession } from "@/features/auth/session";
 import { useAuth } from "@/features/auth/useAuth";
 import { GlobalSearch } from "@/features/search/GlobalSearch";
 import { ThemeToggle } from "@/features/theme/ThemeToggle";
@@ -22,17 +23,22 @@ import { ROLE_LABEL, scopeLabel } from "@/lib/permissions";
  */
 export function AppShell() {
   const { user } = useAuth();
-  const navigate = useNavigate();
   const location = useLocation();
-  const queryClient = useQueryClient();
   const [drawerOpen, setDrawerOpen] = useState(false);
 
   const signOut = useMutation({
     mutationFn: logout,
-    onSuccess: () => {
-      queryClient.clear();
-      navigate("/login", { replace: true });
-    },
+    // `onSettled`, not `onSuccess`: if the request fails — offline, server down — the
+    // person still asked to leave, and leaving them signed in on screen is the worst of
+    // both outcomes. The refresh token is revoked server-side whenever the request lands.
+    //
+    // And no `navigate` here on purpose. Ending the session makes `RequireAuth` redirect
+    // on its own. Navigating as well looks harmless but loses a race: React Router moves
+    // immediately while React Query's cache notification is still queued, so the login
+    // page renders with the *previous* user still in context and bounces straight back to
+    // the dashboard — which is exactly the bug this replaces. One source of truth, one
+    // redirect.
+    onSettled: endSession,
   });
 
   // Close the drawer when the route changes. Adjusted during render rather than in an

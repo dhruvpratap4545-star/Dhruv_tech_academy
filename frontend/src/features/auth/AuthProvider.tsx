@@ -4,8 +4,13 @@ import { useEffect } from "react";
 
 import { fetchMe, meKey } from "@/features/auth/api";
 import { AuthContext } from "@/features/auth/authContext";
+import { endSession } from "@/features/auth/session";
 import { useTheme } from "@/features/theme/useTheme";
-import { ApiError } from "@/lib/api";
+import { ApiError, onSessionExpired } from "@/lib/api";
+
+// Registered once, at module level rather than in an effect: a 401 can land before the
+// first render finishes, and a handler installed later would miss it.
+onSessionExpired(endSession);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const { adoptTheme } = useTheme();

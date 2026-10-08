@@ -125,3 +125,34 @@ def test_user_output_never_exposes_credential_fields() -> None:
     """A regression here would leak password hashes and lockout state to every caller."""
     fields = set(user_schemas.UserOut.model_fields)
     assert not fields & {"password_hash", "failed_login_count", "locked_until"}
+
+
+def test_invitation_and_reset_emails_carry_a_link() -> None:
+    """A six-digit code with nowhere to type it is not a usable instruction. The recipient
+    of an invitation has never seen the product and does not know the address."""
+    from app.modules.notifications import templates
+
+    setup = templates.password_setup("learner@example.com", "Learner", "123456")
+    reset = templates.password_reset("learner@example.com", "Learner", "654321")
+
+    for message, path in ((setup, "/set-password"), (reset, "/forgot-password")):
+        assert path in message.html, "the HTML body needs the link"
+        assert path in message.text, "so does the plain text, for clients that strip HTML"
+        # Pre-filled, so nobody retypes the address the mail was just sent to.
+        assert "email=learner%40example.com" in message.text
+
+
+def test_a_one_time_code_never_travels_in_a_url() -> None:
+    """The code is what authorises the change. Put it in a URL and it is copied into
+    browser history, proxy logs and every link-rewriting gateway in between."""
+    import re
+
+    from app.modules.notifications import templates
+
+    for message, code in (
+        (templates.password_setup("learner@example.com", "Learner", "123456"), "123456"),
+        (templates.password_reset("learner@example.com", "Learner", "654321"), "654321"),
+    ):
+        for part in (message.html, message.text):
+            for url in re.findall(r"https?://[^\s\"'<>]+", part):
+                assert code not in url, f"the code leaked into a link: {url}"

@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import uuid
-from typing import Annotated
+from typing import Annotated, Literal
 
 from fastapi import APIRouter, BackgroundTasks, Depends, Query, Request, status
 
@@ -253,6 +253,10 @@ async def revoke_role(
 async def list_assignable_roles(
     db: DbSession,
     guard: Annotated[Authorized, Depends(require_permission("role:assign"))],
+    purpose: Annotated[
+        Literal["assign", "invite"],
+        Query(description="'invite' hides platform roles, which a new invitation may not carry."),
+    ] = "assign",
 ) -> list[schemas.RoleOut]:
     from app.modules.rbac import repository as rbac_repo
     from app.modules.rbac.catalog import grantable_ceiling
@@ -263,4 +267,13 @@ async def list_assignable_roles(
     # produce a choice the assign endpoint goes on to refuse.
     visible_to = None if guard.context.is_platform_staff else guard.context.institute_ids
     roles = await rbac_repo.roles_visible_to(db, visible_to)
-    return [schemas.RoleOut.model_validate(r) for r in roles if r.is_active and r.rank <= ceiling]
+    return [
+        schemas.RoleOut.model_validate(r)
+        for r in roles
+        if r.is_active
+        and r.rank <= ceiling
+        # An invitation creates an account for an unproven address, so it never carries
+        # platform-wide authority. The service refuses it too; this keeps the form from
+        # offering a choice that would be rejected.
+        and not (purpose == "invite" and r.scope_level == "platform")
+    ]

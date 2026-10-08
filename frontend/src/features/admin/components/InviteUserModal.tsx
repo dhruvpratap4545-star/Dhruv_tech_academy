@@ -42,7 +42,16 @@ type Values = z.infer<typeof schema>;
  * rejects anything it did not offer, so a client-side guess would only produce confusing
  * 403s. The form shapes itself to the chosen role; the server is still the real check.
  */
-export function InviteUserModal({ open, onClose }: { open: boolean; onClose: () => void }) {
+export function InviteUserModal({
+  open,
+  onClose,
+  onInvited,
+}: {
+  open: boolean;
+  onClose: () => void;
+  /** Called with the invited person's name so the page can confirm what was sent. */
+  onInvited?: (name: string) => void;
+}) {
   const user = useCurrentUser();
   const queryClient = useQueryClient();
   const platformStaff = isPlatformStaff(user);
@@ -70,8 +79,8 @@ export function InviteUserModal({ open, onClose }: { open: boolean; onClose: () 
   const requirements = roleKey ? ROLE_REQUIREMENTS[roleKey] : null;
 
   const roles = useQuery({
-    queryKey: ["assignable-roles"],
-    queryFn: fetchAssignableRoles,
+    queryKey: ["assignable-roles", "invite"],
+    queryFn: () => fetchAssignableRoles("invite"),
     enabled: open,
   });
 
@@ -110,8 +119,9 @@ export function InviteUserModal({ open, onClose }: { open: boolean; onClose: () 
 
   const submit = useMutation({
     mutationFn: inviteUser,
-    onSuccess: async () => {
+    onSuccess: async (result) => {
       await queryClient.invalidateQueries({ queryKey: userKeys.all });
+      onInvited?.(result.user.full_name);
       form.reset();
       onClose();
     },

@@ -98,6 +98,10 @@ class Settings(BaseSettings):
     resend_api_key: SecretStr = SecretStr("")
     email_from: str = "Dhruv Online Academy <noreply@dhruvonlineacademy.com>"
 
+    # Where the web app lives, used to build links in emails. An OTP with no way to reach
+    # the page that accepts it leaves the recipient holding six digits and no door.
+    frontend_url: str = "http://localhost:5173"
+
     # Web security (PRD §7.5)
     cookie_domain: str | None = None
     cors_origins: list[str] = []
