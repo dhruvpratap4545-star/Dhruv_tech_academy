@@ -5,6 +5,7 @@ Every environment variable the backend reads is declared here. Modules import
 Add a placeholder to ``backend/.env.example`` whenever a new variable is added.
 """
 
+import re
 from functools import lru_cache
 from typing import Literal
 
@@ -15,6 +16,7 @@ Environment = Literal["local", "test", "staging", "production"]
 
 
 ESCAPED_NEWLINE = "\\n"
+_PEM_BLOCK = re.compile(r"-----BEGIN ([A-Z0-9 ]+)-----(.*?)-----END \1-----", re.DOTALL)
 
 
 def _normalise_pem(value: str | None) -> str:
@@ -27,7 +29,16 @@ def _normalise_pem(value: str | None) -> str:
     """
     if not value:
         return ""
-    return value.replace(ESCAPED_NEWLINE, "\n").strip()
+    value = value.replace(ESCAPED_NEWLINE, "\n").strip().strip("\"'").strip()
+    # A paste into a single-line field can also turn the line breaks into spaces, which
+    # corrupts the base64 ("Invalid padding"). Rebuild the canonical framing: header, body
+    # with every whitespace removed and wrapped at 64 columns, footer.
+    match = _PEM_BLOCK.fullmatch(value)
+    if not match:
+        return value
+    label, body = match.group(1), re.sub(r"\s+", "", match.group(2))
+    lines = [body[i : i + 64] for i in range(0, len(body), 64)]
+    return "\n".join([f"-----BEGIN {label}-----", *lines, f"-----END {label}-----"])
 
 
 class Settings(BaseSettings):

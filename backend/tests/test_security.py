@@ -141,3 +141,25 @@ def test_an_empty_key_normalises_to_empty() -> None:
 
     assert _normalise_pem(None) == ""
     assert _normalise_pem("") == ""
+
+
+def test_a_pem_whose_newlines_became_spaces_still_loads(jwt_keys: tuple[str, str]) -> None:
+    """A paste into a single-line field turns line breaks into spaces; the base64 is then
+    unreadable ("Invalid padding") and the app refuses to start."""
+    from cryptography.hazmat.primitives.serialization import load_pem_private_key
+
+    from app.core.config import _normalise_pem
+
+    private_pem, _ = jwt_keys
+    mangled = private_pem.strip().replace("\n", " ")
+
+    assert load_pem_private_key(_normalise_pem(mangled).encode(), password=None)
+
+
+def test_quotes_around_a_pasted_pem_are_dropped(jwt_keys: tuple[str, str]) -> None:
+    from cryptography.hazmat.primitives.serialization import load_pem_public_key
+
+    from app.core.config import _normalise_pem
+
+    _, public_pem = jwt_keys
+    assert load_pem_public_key(_normalise_pem(f'"{public_pem.strip()}"').encode())
