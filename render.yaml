@@ -72,13 +72,23 @@ services:
         value: max-age=31536000; includeSubDomains
       - path: /*
         name: Content-Security-Policy
+        # Every source here is one the built app actually uses. Getting this wrong fails
+        # silently in production and nowhere else: a blocked font just renders in Arial,
+        # and a blocked script just does not run.
+        #   style-src/font-src   the Google Fonts stylesheet and the font files it pulls
+        #   'unsafe-inline' style  React sets element styles directly (chart bar heights,
+        #                          tree indentation); without it those render unstyled
+        #   script-src sha256-...  the one inline script in index.html, which sets the
+        #                          theme before first paint. Hashed rather than
+        #                          'unsafe-inline' so it is the ONLY inline script allowed.
+        #                          frontend/src/csp.test.ts fails if it drifts.
         value: >-
           default-src 'self';
           connect-src 'self' https://api.dhruvonlineacademy.com;
           img-src 'self' data:;
-          style-src 'self' 'unsafe-inline';
-          script-src 'self';
-          font-src 'self';
+          style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
+          font-src 'self' https://fonts.gstatic.com;
+          script-src 'self' 'sha256-AfU8ekxEE7+UjmBGOQfriAbReu3QKCnkEOu3ilpdivA=';
           frame-ancestors 'none';
           base-uri 'self';
           form-action 'self'

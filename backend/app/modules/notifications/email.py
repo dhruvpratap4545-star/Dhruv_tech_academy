@@ -92,7 +92,19 @@ class ResendEmailProvider(EmailProvider):
         }
         # The SDK is synchronous; run it off the event loop so one slow call cannot
         # stall every other request this worker is serving.
-        await anyio.to_thread.run_sync(lambda: resend.Emails.send(payload))
+        sent = await anyio.to_thread.run_sync(lambda: resend.Emails.send(payload))
+
+        # Keep the provider's id. Without it a delivery complaint — "the code never
+        # arrived" — cannot be traced past our own logs, and the provider dashboard is
+        # where the answer actually lives (bounced, blocked, delivered to spam).
+        logger.info(
+            "email sent",
+            extra={
+                "to": message.to,
+                "subject": message.subject,
+                "provider_message_id": (sent or {}).get("id"),
+            },
+        )
 
 
 def _default_provider() -> EmailProvider:
