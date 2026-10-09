@@ -76,6 +76,22 @@ MUST_REFUSE = [
     "iloveyou143",
     "12345678",
     "Abcdefg1!",
+    # A single letter after the decoration used to defeat the whole list: nothing is cut
+    # from an end that is a letter, so no reading ever reduced to the listed word. These
+    # are here because that is the first thing anybody tries after being refused once.
+    "Qwerty123!A",
+    "qwerty123!A",
+    "Password1!A",
+    "Welcome123!z",
+    "Iloveyou1!a",
+    "Admin@123a",
+    "Dhruv@2026x",
+    "Ravi@2026x",
+    "MyPassw0rd!x",
+    "Logins2026!",
+    # "sunflower" with an s and a year on it. Listed here rather than in the accepted half
+    # on reflection: it is the listed word with trimmings, which is exactly the test.
+    "Sunflowers#2026",
 ]
 
 #: Passwords that must be accepted. This half matters as much as the other: a check that
@@ -108,8 +124,15 @@ MUST_ACCEPT = [
     "Dragonfly-9!",
     "Chelsea-Harbour1",
     "Indiana#Jones7",
-    "Sunflowers#2026",
     "Rootkit99!",
+    # Ordinary words that merely *contain* a listed one. Each is at least three characters
+    # longer than the word inside it, which is the line between "that word with trimmings"
+    # and "a different word".
+    "Carpenter42#",
+    "Blueberry77$",
+    "Akashdeep99!",
+    "Ravindra@12",
+    "Correct-Horse-Battery9!",
     # The demo accounts, so the seeded world cannot become unsignable-into.
     "Kestrel#Bay74",
     "Marigold$Loom9",
@@ -118,6 +141,11 @@ MUST_ACCEPT = [
     "Bramble@Dune3",
     "Thistle^Reed6",
     "Quartz%Vale41",
+    "Kestrel@Fen91",
+    "Tamarind7#One",
+    "Tamarind7#Two",
+    "Nope&Quince11",
+    "Wrong@Fen91",
 ]
 
 HEADER = """/**

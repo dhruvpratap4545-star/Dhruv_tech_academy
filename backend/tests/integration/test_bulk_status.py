@@ -13,6 +13,7 @@ import uuid
 import pytest
 import pytest_asyncio
 from httpx import AsyncClient
+from sqlalchemy import select
 
 pytestmark = pytest.mark.asyncio
 
@@ -230,3 +231,75 @@ async def test_an_empty_batch_is_refused(client, world):
         "/api/v1/users/bulk-status", json={"user_ids": [], "status": "suspended"}
     )
     assert response.status_code == 422
+
+
+async def test_a_peer_cannot_lift_a_suspension(client, world):
+    """Suspending and un-suspending are not the same decision.
+
+    Suspending reduces what somebody can do, so a peer may do it — that is what makes a
+    compromised administrator containable. Lifting a suspension *restores* authority, and
+    letting a peer do that would make containment reversible by the very people it might
+    be protecting against: suspend one compromised Institute Admin, and the second one
+    simply puts it back.
+    """
+    await _as(client, world["owner"])
+    suspended = await _bulk(client, [world["peer"].id])
+    assert suspended.json()["succeeded"] == 1, suspended.text
+
+    # The peer's equal is refused...
+    await _as(client, world["principal"])
+    refused = await _bulk(client, [world["peer"].id], status="active")
+    body = refused.json()
+    assert body["succeeded"] == 0 and body["skipped"] == 1, body
+    assert "level" in _by_id(body, world["peer"])["reason"].lower()
+
+    # ...and somebody senior is not.
+    await _as(client, world["owner"])
+    allowed = await _bulk(client, [world["peer"].id], status="active")
+    assert allowed.json()["succeeded"] == 1, allowed.text
+
+
+async def test_a_status_change_needs_authority_over_every_scope_they_hold(
+    client, world, make_user, db
+):
+    """Changing a status is account-wide, so one scope is not enough to authorise it.
+
+    Somebody who is Branch Admin of two branches has their authority over *both* ended by
+    a suspension. Checking only their most senior assignment meant the branch head of one
+    branch could suspend a colleague whose authority also covered a branch they have
+    nothing to do with — and which of the two got checked came down to a tie-break on row
+    order, so the same request could succeed or be refused from one call to the next.
+    """
+    from app.modules.rbac.models import Role, UserRoleAssignment
+
+    _, cse = await institute_second_branch(db, world)
+
+    both = await make_user("branch_admin", institute_id=world["abc"].id, branch_id=world["mca"].id)
+    role = await db.scalar(select(Role).where(Role.key == "branch_admin"))
+    db.add(
+        UserRoleAssignment(
+            user_id=both.id, role_id=role.id, institute_id=world["abc"].id, branch_id=cse.id
+        )
+    )
+    await db.flush()
+
+    # The head of MCA can see them — they hold a role in MCA — but cannot act on them,
+    # because half their authority is somewhere else.
+    await _as(client, world["head"])
+    refused = await _bulk(client, [both.id])
+    assert refused.json()["succeeded"] == 0, refused.text
+
+    # The principal commands the whole institute, so both scopes are theirs.
+    await _as(client, world["principal"])
+    allowed = await _bulk(client, [both.id])
+    assert allowed.json()["succeeded"] == 1, allowed.text
+
+
+async def institute_second_branch(db, world):
+    """A second branch of ABC, for the test above."""
+    from app.modules.org.models import Branch
+
+    branch = Branch(institute_id=world["abc"].id, name="CSE", code="CSE", status="active")
+    db.add(branch)
+    await db.flush()
+    return world["abc"], branch

@@ -289,6 +289,14 @@ COMMON_PASSWORDS: frozenset[str] = frozenset(
 )
 
 
+#: The list, grouped by word length. The near-match test below only ever needs words
+#: within `MAX_RESIDUE` of the form it is looking at, and scanning all 217 for every one of
+#: a dozen readings turned a validation into half a millisecond of pure string comparison.
+_BY_LENGTH: dict[int, tuple[str, ...]] = {}
+for _word in COMMON_PASSWORDS:
+    _BY_LENGTH[len(_word)] = (*_BY_LENGTH.get(len(_word), ()), _word)
+
+
 def undecorate(value: str) -> str:
     """Fold every substitution back to a letter, then keep only letters and digits."""
     folded = "".join(LEET.get(ch, ch) for ch in value.lower())
@@ -332,6 +340,21 @@ def trimmed_edges(value: str) -> list[str]:
     ]
 
 
+def letters_only(value: str, *, fold: bool) -> str:
+    """Just the letters, with the substitutions folded back first or not.
+
+    ``Qwerty123!A`` needs this. It ends in a letter, so nothing is cut from that end, and
+    the ``123`` sits in the middle where no edge rule reaches it — every other reading
+    keeps those three characters and the result is never exactly ``qwerty``. Dropping the
+    digits and symbols outright leaves ``qwertya``, which is one letter away.
+
+    Both foldings, for the usual reason: in ``P@ssw0rd!x`` the ``@`` and the ``0`` are
+    letters of the word, and in ``Qwerty123!A`` the ``!`` is punctuation.
+    """
+    source = "".join(LEET.get(ch, ch) for ch in value.lower()) if fold else value.lower()
+    return "".join(ch for ch in source if ch.isalpha())
+
+
 def candidates(value: str) -> list[str]:
     """Every reading of ``value`` worth checking.
 
@@ -344,29 +367,71 @@ def candidates(value: str) -> list[str]:
     lowered = value.lower()
     plain = "".join(ch for ch in lowered if ch.isalnum())
 
-    forms = [lowered, plain, undecorate(value), undecorate_digits_only(value)]
+    forms = [
+        lowered,
+        plain,
+        undecorate(value),
+        undecorate_digits_only(value),
+        letters_only(value, fold=True),
+        letters_only(value, fold=False),
+    ]
     for base in (value, plain):
         for cut in (_TRAILING_DIGITS.sub("", base), *trimmed_edges(base)):
             if cut and cut != base:
                 forms.extend([cut.lower(), undecorate(cut), undecorate_digits_only(cut)])
-    return [form for form in forms if form]
+
+    # Deduplicated: several of these readings collapse to the same string for most
+    # passwords, and the near-match loop below is run once per form.
+    return list(dict.fromkeys(form for form in forms if form))
+
+
+#: A listed word has to be at least this long before a near-match counts. Below it, only
+#: an exact match does — "exam" and "ravi" appear inside too many ordinary words.
+MIN_WORD_LENGTH = 4
+
+#: ...and the password may add at most this many characters to it. The question being
+#: asked is "is this that word with trimmings?", and two characters is where a trimming
+#: stops being a trimming.
+MAX_RESIDUE = 2
 
 
 def is_common(value: str) -> bool:
     """True when the password is a known-common one wearing a disguise.
 
-    Exact matching, against every reading of the password that `candidates` produces. An
-    earlier version also searched each reading for a listed word *inside* it, on the
-    reasoning that ``$h1va@2026`` never normalises to exactly ``shiva``. It does now —
-    `undecorate_edges` cuts the decoration off both ends first — and the substring search
-    turned out to cost far more than it bought.
+    Two rules, and the balance between them is the whole difficulty.
 
-    What it cost: ``Beetroot2026!`` was refused because "root" is in the list, and so were
-    ``Examiner7#``, ``Masterclass9!``, ``Dragonfly-9!`` and ``Secretariat4!``. Every one of
-    those is a good password, and the person typing one was told only "that password is too
-    common" with no way to work out which part of it was the problem — after a live
-    checklist had shown all four rules green. A check that refuses good passwords teaches
-    people to fight the form, and what they produce on the fourth attempt is reliably worse
-    than what they started with.
+    **Exact match against every reading.** `candidates` rewrites the password each way a
+    reader might take it, so ``P@ssw0rd123`` and ``$h1va@2026`` reduce to ``password`` and
+    ``shiva``.
+
+    **Near match, bounded by how much is left over.** Exact matching alone is defeated by a
+    single letter: ``Qwerty123!A`` ends in a letter, so nothing is cut from that end, and no
+    reading of it is ever exactly ``qwerty``. So a listed word found *inside* a reading also
+    counts — but only when the reading is at most `MAX_RESIDUE` characters longer than the
+    word. That is the difference between "this is qwerty with a letter stuck on" and "this
+    merely contains those six letters somewhere".
+
+    The bound is what an earlier version got wrong. It searched for listed words with a
+    ratio test, and refused ``Beetroot2026!`` for containing "root", along with
+    ``Examiner7#``, ``Masterclass9!``, ``Dragonfly-9!`` and ``Secretariat4!`` — good
+    passwords, rejected after a live checklist had shown all four rules green, with nothing
+    to say which part was wrong. A check that refuses good passwords teaches people to
+    fight the form, and what they produce on the fourth attempt is reliably worse than what
+    they started with. Those five are in the accepted half of the test table for that
+    reason, next to the suffixed ones above in the refused half.
+
+    This is a heuristic and it will always be beatable by someone who knows its shape. It
+    is here to stop the password people reach for first, not a determined attacker; a real
+    strength estimator or a breach-corpus lookup belongs in a later milestone.
     """
-    return any(form in COMMON_PASSWORDS for form in candidates(value))
+    forms = candidates(value)
+    if any(form in COMMON_PASSWORDS for form in forms):
+        return True
+
+    for form in forms:
+        shortest = max(MIN_WORD_LENGTH, len(form) - MAX_RESIDUE)
+        for length in range(shortest, len(form) + 1):
+            for word in _BY_LENGTH.get(length, ()):
+                if word in form:
+                    return True
+    return False

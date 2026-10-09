@@ -475,18 +475,35 @@ async def _apply_status(
 
     user = await _require_visible_user(db, guard, user_id)
     target_rank = await _highest_rank_of(db, user_id)
-    scope = await _primary_scope_of(db, user_id)
 
-    # The full authorization check, not just rank. `require_permission` only proved the
-    # caller holds `user:update_status` *somewhere*; this is where the target scope is
+    # *Every* scope the person holds a role at, not their most senior one.
+    #
+    # Changing a status is account-wide: suspending somebody who is Branch Admin of two
+    # branches ends their authority over both. Checking one scope meant a Branch Admin of
+    # branch X could suspend a colleague whose authority also covered branch Y, which they
+    # have nothing to do with — and which of the two was checked depended on a tie-break.
+    # The same request would succeed or return 403 depending on row order.
+    #
+    # Each check is the full one, not just rank. `require_permission` only proved the
+    # caller holds `user:update_status` *somewhere*; this is where the target scopes are
     # known, and it is what applies the deny layer (ADR-017) and the module-enabled test.
-    # Without it an explicit block on a branch is ignored by this endpoint while the list
-    # endpoints honour it — the block looks applied and is not.
-    await guard.ensure(scope)
-    # `restrain`, not `grant`: suspending an account only ever reduces what somebody can
-    # do, so it is allowed against an equal rank. The grant rule would mean a Super Admin
-    # whose password was stolen could not be shut down by the other Super Admins.
-    guard.ensure_can_restrain(target_rank, scope)
+    scopes = await _live_scopes_of(db, user_id) or [await _primary_scope_of(db, user_id)]
+    for scope in scopes:
+        await guard.ensure(scope)
+
+    if status == "suspended":
+        # `restrain`: suspending only ever reduces what somebody can do, so an equal rank
+        # is allowed. The grant rule would mean a Super Admin whose password was stolen
+        # could not be shut down by the other Super Admins (ADR-028).
+        for scope in scopes:
+            guard.ensure_can_restrain(target_rank, scope)
+    else:
+        # Lifting a suspension is the opposite: it *restores* authority. Letting a peer do
+        # it would make containment reversible by the very people it might be protecting
+        # against — suspend one compromised Institute Admin, and the second one puts it
+        # back. Reactivation needs somebody strictly senior.
+        for scope in scopes:
+            guard.ensure_can_grant(target_rank, scope)
 
     if status == "suspended":
         user.status = "suspended"
@@ -500,6 +517,7 @@ async def _apply_status(
         action = events.USER_REACTIVATED
 
     rbac.invalidate_context(user.id)
+    scope = await _primary_scope_of(db, user_id)
     audit.record(
         db,
         action=action,
@@ -588,7 +606,15 @@ async def _primary_scope_of(db: AsyncSession, user_id: uuid.UUID) -> Scope:
         return Scope()
 
     roles = {r.id: r for r in await rbac_repo.list_roles(db, include_inactive=True)}
-    senior = max(assignments, key=lambda a: roles[a.role_id].rank if a.role_id in roles else 0)
+    # Ties broken on the assignment's own id, so two roles at the same rank do not resolve
+    # differently from one request to the next. `max` keeps whichever it saw first, and the
+    # query behind `live_assignments_for_user` has no ORDER BY, so "first" is whatever
+    # PostgreSQL felt like returning — a fault that shows up once a month and never
+    # reproduces.
+    senior = max(
+        assignments,
+        key=lambda a: (roles[a.role_id].rank if a.role_id in roles else 0, str(a.id)),
+    )
     return Scope(institute_id=senior.institute_id, branch_id=senior.branch_id)
 
 
@@ -833,7 +859,18 @@ async def build_overview(db: AsyncSession, *, guard: Authorized) -> schemas.Over
     institute_ids = frozenset(scope) if scope is not None else frozenset()
 
     base = select(func.count()).select_from(User).where(User.status != "deleted")
-    if scope is not None:
+
+    # The same short-circuit the user list applies. Faculty see the students of the classes
+    # they teach and nobody else; without this the tile counted every branch-scoped person
+    # at their branch — forty-three where the list showed eleven. A number on a dashboard
+    # that disagrees with the list below it is worse than no number, because the reader has
+    # no way to tell which one is lying.
+    role_keys = {a.role_key for a in guard.context.assignments}
+    if role_keys and role_keys <= {FACULTY, STUDENT}:
+        class_ids = await rbac_repo.faculty_class_ids(db, guard.user_id)
+        visible_ids = await _students_in_classes(db, class_ids) | {guard.user_id}
+        base = base.where(User.id.in_(visible_ids))
+    elif scope is not None:
         if not scope:
             return schemas.OverviewOut(
                 users_total=0,
@@ -857,6 +894,20 @@ async def build_overview(db: AsyncSession, *, guard: Authorized) -> schemas.Over
     if scope is not None:
         institutes_stmt = institutes_stmt.where(Institute.id.in_(institute_ids))
     institutes = await count(institutes_stmt)
+
+    # The security tile reads the audit log, so it needs the permission that gates the
+    # audit log. A Branch Admin deliberately does not hold `audit:read` (ADR-033), and a
+    # Faculty member never did — handing either of them an institute-wide count of failed
+    # sign-ins and lockouts is a smaller version of the same disclosure.
+    if not guard.context.holds("audit:read"):
+        return schemas.OverviewOut(
+            users_total=total,
+            users_active=active,
+            users_invited=invited,
+            users_suspended=suspended,
+            institutes_total=institutes,
+            security_events_24h=0,
+        )
 
     since = datetime.now(UTC) - timedelta(hours=24)
     events_stmt = (

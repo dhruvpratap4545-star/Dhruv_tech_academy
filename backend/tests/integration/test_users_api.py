@@ -534,3 +534,60 @@ async def test_the_dashboard_count_respects_a_block_the_list_respects(
         assert overview.json()["users_total"] == 0, (
             "the tile still reported the platform-wide total to somebody who may see nobody"
         )
+
+
+async def test_the_dashboard_counts_the_same_people_the_list_shows(
+    client: AsyncClient, make_user, institute, db
+) -> None:
+    """A tile that disagrees with the list below it is worse than no tile.
+
+    Faculty see the students of the classes they teach and nobody else, and the user list
+    has always honoured that. The dashboard counted every branch-scoped person at their
+    branch instead, and the reader had no way to tell which number was lying.
+    """
+    college, branch = await institute("Tile College", "TILE1", with_branch="Maths")
+    teacher = await make_user(
+        "faculty", institute_id=college.id, branch_id=branch.id, email="tile-teacher@example.com"
+    )
+    for index in range(4):
+        await make_user(
+            "student",
+            institute_id=college.id,
+            branch_id=branch.id,
+            email=f"tile-learner{index}@example.com",
+        )
+
+    await _as(client, teacher)
+    listed = await client.get("/api/v1/users", params={"limit": 100})
+    assert listed.status_code == 200, listed.text
+
+    overview = await client.get("/api/v1/me/overview")
+    assert overview.status_code == 200, overview.text
+    assert overview.json()["users_total"] == listed.json()["total"]
+
+
+async def test_the_security_tile_needs_the_permission_that_gates_the_log(
+    client: AsyncClient, make_user, institute
+) -> None:
+    """The tile reads the audit log, so it answers to `audit:read`.
+
+    A Branch Admin deliberately does not hold it — an audit entry names an institute and
+    nothing finer, so a branch-scoped reader could only ever be shown the whole college's
+    history. Handing them an institute-wide count of failed sign-ins and lockouts is a
+    smaller version of the same disclosure.
+    """
+    college, branch = await institute("Tile Two", "TILE2", with_branch="Physics")
+    head = await make_user(
+        "branch_admin", institute_id=college.id, branch_id=branch.id, email="tile-head@example.com"
+    )
+    principal = await make_user(
+        "institute_admin", institute_id=college.id, email="tile-principal@example.com"
+    )
+
+    await _as(client, head)
+    assert (await client.get("/api/v1/audit-logs")).status_code == 403
+    assert (await client.get("/api/v1/me/overview")).json()["security_events_24h"] == 0
+
+    await _as(client, principal)
+    assert (await client.get("/api/v1/audit-logs")).status_code == 200
+    assert "security_events_24h" in (await client.get("/api/v1/me/overview")).json()

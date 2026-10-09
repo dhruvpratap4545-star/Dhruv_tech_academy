@@ -68,6 +68,26 @@ export function trimmedEdges(value: string): string[] {
   ];
 }
 
+const isLetter = (ch: string) => /\p{L}/u.test(ch);
+
+/**
+ * Just the letters, with the substitutions folded back first or not.
+ *
+ * `Qwerty123!A` needs this. It ends in a letter, so nothing is cut from that end, and the
+ * `123` sits in the middle where no edge rule reaches it — every other reading keeps those
+ * three characters and the result is never exactly `qwerty`. Dropping the digits and
+ * symbols outright leaves `qwertya`, which is one letter away.
+ *
+ * Both foldings, for the usual reason: in `P@ssw0rd!x` the `@` and the `0` are letters of
+ * the word, and in `Qwerty123!A` the `!` is punctuation.
+ */
+export function lettersOnly(value: string, fold: boolean): string {
+  const source = fold
+    ? [...value.toLowerCase()].map((ch) => LEET[ch] ?? ch)
+    : [...value.toLowerCase()];
+  return source.filter(isLetter).join("");
+}
+
 /**
  * Every reading of `value` worth checking.
  *
@@ -79,7 +99,14 @@ export function candidates(value: string): string[] {
   const lowered = value.toLowerCase();
   const plain = [...lowered].filter(isAlnum).join("");
 
-  const forms = [lowered, plain, undecorate(value), undecorateDigitsOnly(value)];
+  const forms = [
+    lowered,
+    plain,
+    undecorate(value),
+    undecorateDigitsOnly(value),
+    lettersOnly(value, true),
+    lettersOnly(value, false),
+  ];
   for (const base of [value, plain]) {
     for (const cut of [base.replace(TRAILING_DIGITS, ""), ...trimmedEdges(base)]) {
       if (cut && cut !== base) {
@@ -87,18 +114,46 @@ export function candidates(value: string): string[] {
       }
     }
   }
-  return forms.filter(Boolean);
+  return [...new Set(forms.filter(Boolean))];
+}
+
+/** A listed word must be at least this long before a near-match counts. */
+export const MIN_WORD_LENGTH = 4;
+
+/** ...and the password may add at most this many characters to it. */
+export const MAX_RESIDUE = 2;
+
+const BY_LENGTH = new Map<number, string[]>();
+for (const word of COMMON_PASSWORDS) {
+  BY_LENGTH.set(word.length, [...(BY_LENGTH.get(word.length) ?? []), word]);
 }
 
 /**
  * True when the password is a known-common one wearing a disguise.
  *
- * Exact matching, against every reading `candidates` produces. There is deliberately no
- * substring search: one was tried, and it refused `Beetroot2026!` because "root" is on the
- * list, along with `Examiner7#`, `Masterclass9!` and `Dragonfly-9!`. A check that refuses
- * good passwords teaches people to fight the form, and what they produce on the fourth
- * attempt is reliably worse than what they started with.
+ * Two rules. **Exact match against every reading**, so `P@ssw0rd123` and `$h1va@2026`
+ * reduce to `password` and `shiva`. And a **near match bounded by how much is left over**,
+ * because exact matching alone is defeated by a single letter: `Qwerty123!A` ends in a
+ * letter, so nothing is cut from that end and no reading of it is ever exactly `qwerty`.
+ *
+ * The bound is the part that matters. A listed word found inside a reading counts only
+ * when the reading is at most `MAX_RESIDUE` characters longer than the word — the
+ * difference between "this is qwerty with a letter stuck on" and "this merely contains
+ * those six letters somewhere". Without it, `Beetroot2026!` is refused for containing
+ * "root", along with `Examiner7#`, `Masterclass9!` and `Dragonfly-9!`, and a check that
+ * refuses good passwords teaches people to fight the form.
  */
 export function isCommonPassword(value: string): boolean {
-  return candidates(value).some((form) => COMMON_PASSWORDS.has(form));
+  const forms = candidates(value);
+  if (forms.some((form) => COMMON_PASSWORDS.has(form))) return true;
+
+  for (const form of forms) {
+    const shortest = Math.max(MIN_WORD_LENGTH, form.length - MAX_RESIDUE);
+    for (let length = shortest; length <= form.length; length += 1) {
+      for (const word of BY_LENGTH.get(length) ?? []) {
+        if (form.includes(word)) return true;
+      }
+    }
+  }
+  return false;
 }
