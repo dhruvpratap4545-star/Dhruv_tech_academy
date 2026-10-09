@@ -18,6 +18,7 @@ be empty.
 from __future__ import annotations
 
 import uuid
+from urllib.parse import quote
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -97,7 +98,12 @@ async def _people(db: AsyncSession, context: AuthContext, term: str) -> list[sch
             label="People",
             items=[
                 schemas.SearchHit(
-                    id=row.id, title=row.full_name, subtitle=row.email, href=f"/users?q={row.email}"
+                    id=row.id,
+                    title=row.full_name,
+                    subtitle=row.email,
+                    # Encoded: an address may contain "+", which means a space in a query
+                    # string and would arrive at the users list as a different address.
+                    href=f"/users?q={quote(row.email, safe='')}",
                 )
                 for row in rows
             ],

@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { useEffect, useRef } from "react";
+import { useEffect, useId, useRef } from "react";
 
 import { cn } from "@/lib/cn";
 
@@ -52,11 +52,16 @@ export function Modal({
     return () => dialog.removeEventListener("close", handleClose);
   }, [onClose]);
 
+  const baseId = useId();
+
   return (
     <dialog
       ref={ref}
-      aria-labelledby="modal-title"
-      aria-describedby={description ? "modal-description" : undefined}
+      // Generated, not hardcoded. Four dialogs can be mounted at once on the users
+      // screen, and a fixed id gave all four the same one — so `aria-labelledby` could
+      // resolve to another dialog's heading and announce the wrong title.
+      aria-labelledby={`${baseId}-title`}
+      aria-describedby={description ? `${baseId}-description` : undefined}
       // The backdrop is styled through ::backdrop in index.css rather than an extra div.
       className={cn(
         "m-auto w-[calc(100vw-2rem)] rounded-xl border border-line bg-surface p-0",
@@ -72,11 +77,11 @@ export function Modal({
     >
       <div className="flex items-start justify-between gap-4 border-b border-line px-5 py-4">
         <div className="min-w-0 space-y-1">
-          <h2 id="modal-title" className="text-base font-semibold">
+          <h2 id={`${baseId}-title`} className="text-base font-semibold">
             {title}
           </h2>
           {description && (
-            <p id="modal-description" className="text-sm text-fg-2">
+            <p id={`${baseId}-description`} className="text-sm text-fg-2">
               {description}
             </p>
           )}

@@ -407,7 +407,10 @@ function PermissionMatrix({
                                 aria-label={`${role.name}: ${permission.description}`}
                                 onClick={() => onToggle(role, permission.key, !allowed)}
                                 className={cn(
-                                  "mx-auto flex size-6 items-center justify-center rounded-sm",
+                                  // 32px on a phone, 24 from `sm` up. A 24px target is
+                                  // below what a finger can hit reliably, and this is a
+                                  // dense grid where a mis-tap changes a permission.
+                                  "mx-auto flex size-8 items-center justify-center rounded-sm sm:size-6",
                                   "hover:ring-2 hover:ring-accent focus-visible:ring-2",
                                   "focus-visible:ring-accent focus-visible:outline-none",
                                   allowed ? "text-ok" : "text-fg-3 hover:text-fg-2",

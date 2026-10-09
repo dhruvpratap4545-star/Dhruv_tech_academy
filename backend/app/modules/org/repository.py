@@ -15,7 +15,7 @@ from datetime import date
 from sqlalchemy import Select, func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.pagination import paginate
+from app.core.pagination import like_pattern, paginate
 from app.modules.org.models import (
     AcademicSession,
     Branch,
@@ -61,7 +61,7 @@ async def list_institutes(
     if status:
         stmt = stmt.where(Institute.status == status)
     if search:
-        pattern = f"%{search.strip()}%"
+        pattern = like_pattern(search)
         stmt = stmt.where(Institute.name.ilike(pattern) | Institute.code.ilike(pattern))
 
     return await paginate(
@@ -315,7 +315,8 @@ async def search_branches(
     ``None`` for either id set means "no restriction at this level" — platform staff, or a
     grant that covers whole institutes rather than named branches.
     """
-    stmt = select(Branch).where(or_(Branch.name.ilike(f"%{term}%"), Branch.code.ilike(f"%{term}%")))
+    pattern = like_pattern(term)
+    stmt = select(Branch).where(or_(Branch.name.ilike(pattern), Branch.code.ilike(pattern)))
     if institute_ids is not None:
         if not institute_ids:
             return []
@@ -339,7 +340,8 @@ async def search_classes(
 ) -> Sequence[Class]:
     """Same shape as ``search_branches``; ``class_ids`` additionally pins a faculty member
     or student to the classes they are actually attached to."""
-    stmt = select(Class).where(or_(Class.name.ilike(f"%{term}%"), Class.code.ilike(f"%{term}%")))
+    pattern = like_pattern(term)
+    stmt = select(Class).where(or_(Class.name.ilike(pattern), Class.code.ilike(pattern)))
     if institute_ids is not None:
         if not institute_ids:
             return []

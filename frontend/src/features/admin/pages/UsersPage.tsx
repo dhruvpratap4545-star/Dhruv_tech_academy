@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 
 import { Alert } from "@/components/Alert";
 import { Badge, StatusBadge } from "@/components/Badge";
@@ -51,7 +52,21 @@ export function UsersPage() {
   const canAssignRole = useCan("role:assign");
   const canGrant = useCan("permission:grant");
 
-  const [search, setSearch] = useState("");
+  // Seeded from the URL, so arriving from the global search lands on the person you
+  // picked. The header search links here as `/users?q=<email>`; without reading it the
+  // list opened unfiltered on page one, with the chosen person usually not on screen and
+  // the filter box empty — which looks like the search simply failed.
+  const [params, setParams] = useSearchParams();
+  const [search, setSearch] = useState(params.get("q") ?? "");
+
+  // The link may be followed again with a different address while this page is already
+  // mounted, which does not remount it.
+  const fromUrl = params.get("q") ?? "";
+  const [lastFromUrl, setLastFromUrl] = useState(fromUrl);
+  if (fromUrl !== lastFromUrl) {
+    setLastFromUrl(fromUrl);
+    setSearch(fromUrl);
+  }
   const [status, setStatus] = useState("");
   const [inviteOpen, setInviteOpen] = useState(false);
   const [roleTarget, setRoleTarget] = useState<UserSummary | null>(null);
@@ -368,7 +383,10 @@ export function UsersPage() {
       )}
 
       {resend.isSuccess && (
-        <Alert tone="success">
+        // Dismissible, and cleared on the way out. It used to survive changing the filter
+        // and paging forward, with no way to get rid of it, so it stopped reading as a
+        // response to anything.
+        <Alert tone="success" onDismiss={() => resend.reset()}>
           <p>A new setup code has been sent.</p>
         </Alert>
       )}
@@ -390,7 +408,16 @@ export function UsersPage() {
             type="search"
             placeholder="Name or email address"
             value={search}
-            onChange={(event) => setSearch(event.target.value)}
+            onChange={(event) => {
+              setSearch(event.target.value);
+              if (params.has("q")) {
+                // Drop the stale link parameter, or going back and forward would restore
+                // a term the box no longer shows.
+                const next = new URLSearchParams(params);
+                next.delete("q");
+                setParams(next, { replace: true });
+              }
+            }}
           />
           <SelectField
             label="Role"

@@ -13,7 +13,7 @@ from collections.abc import Sequence
 from sqlalchemy import Select, and_, exists, false, func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.pagination import paginate
+from app.core.pagination import like_pattern, paginate
 from app.modules.org.models import Branch, Institute
 from app.modules.rbac.models import Role, UserRoleAssignment
 from app.modules.users.models import User, UserPreference
@@ -118,7 +118,7 @@ async def list_users(
         stmt = stmt.where(User.status == status)
 
     if search:
-        pattern = f"%{search.strip()}%"
+        pattern = like_pattern(search)
         # ILIKE with a leading wildcard cannot use a btree index. Acceptable at this scale;
         # the fix when it stops being acceptable is a pg_trgm index, not a rewrite.
         stmt = stmt.where(or_(User.full_name.ilike(pattern), User.email.ilike(pattern)))

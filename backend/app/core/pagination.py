@@ -171,3 +171,19 @@ def split_page(rows: list[Any], limit: int) -> tuple[list[Any], str | None]:
     page = rows[:limit]
     last = page[-1]
     return page, encode_cursor(last.created_at, last.id)
+
+
+def like_pattern(term: str) -> str:
+    """A ``LIKE`` pattern that matches the characters somebody actually typed.
+
+    ``%`` and ``_`` are wildcards, so dropping a search term straight into
+    ``f"%{term}%"`` means a search for ``%`` matches every row and a search for ``a_c``
+    matches "abc". Nothing is injectable — the pattern is still a bound parameter — but
+    the results are wrong, and they are wrong in the direction of showing more than was
+    asked for.
+
+    Escaped with a backslash, which PostgreSQL uses for ``LIKE`` by default. The backslash
+    itself has to go first, or escaping the wildcards would then escape the escapes.
+    """
+    escaped = term.strip().replace("\\", r"\\").replace("%", r"\%").replace("_", r"\_")
+    return f"%{escaped}%"

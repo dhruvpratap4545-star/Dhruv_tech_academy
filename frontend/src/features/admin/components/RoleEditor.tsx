@@ -1,4 +1,4 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 
 import { Alert } from "@/components/Alert";
@@ -7,8 +7,10 @@ import { Checkbox, SelectField, TextField } from "@/components/Field";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { Modal } from "@/components/Modal";
 import {
-  removeRole,
   createRole,
+  fetchInstitutes,
+  instituteKeys,
+  removeRole,
   setInstituteRolePermissions,
   updateRole,
 } from "@/features/admin/api";
@@ -58,7 +60,28 @@ export function RoleEditor({
    */
   const adjusting = editing && !role.editable && role.customisable && Boolean(viewingInstituteId);
 
-  const institutes = (user?.roles ?? []).filter((r) => r.institute_id);
+  // Which institutes this person can create a role for.
+  //
+  // Taken from their own role assignments, which works for an institute administrator and
+  // fails completely for platform staff: a Super Admin's role carries no institute, so
+  // this came back empty, `instituteId` stayed "", and the Create button could never
+  // become enabled — greyed out with nothing on screen saying what was missing. Platform
+  // staff get the real list instead, and because `viewingInstituteId` is whichever
+  // institute the page is showing, it is pre-selected for them.
+  const myInstitutes = (user?.roles ?? [])
+    .filter((role) => role.institute_id)
+    .map((role) => ({ id: role.institute_id!, name: role.institute_name ?? "Institute" }));
+  const isPlatformStaff = (user?.roles ?? []).some((role) => role.institute_id === null);
+
+  const everyInstitute = useQuery({
+    queryKey: instituteKeys.list(),
+    queryFn: ({ signal }) => fetchInstitutes(signal),
+    enabled: isPlatformStaff && role === null,
+  });
+
+  const institutes = isPlatformStaff
+    ? (everyInstitute.data?.items ?? []).map((row) => ({ id: row.id, name: row.name }))
+    : [...new Map(myInstitutes.map((row) => [row.id, row])).values()];
   const myRank = user?.roles.length ? Math.max(...user.roles.map((r) => r.rank)) : 0;
 
   const [name, setName] = useState(role?.name ?? "");
@@ -67,9 +90,15 @@ export function RoleEditor({
     (role?.scope_level as "institute" | "branch") ?? "branch",
   );
   const [rank, setRank] = useState(String(role?.rank ?? Math.max(1, Math.min(20, myRank - 1))));
-  const [instituteId, setInstituteId] = useState(
-    role?.institute_id ?? institutes[0]?.institute_id ?? "",
-  );
+  const [instituteId, setInstituteId] = useState(role?.institute_id ?? viewingInstituteId ?? "");
+  // Fall back to the only institute they have, once the list has arrived. Written during
+  // render rather than in an effect, so the form is never briefly invalid for a person
+  // with exactly one institute.
+  const [lastOffered, setLastOffered] = useState(institutes.length);
+  if (institutes.length !== lastOffered) {
+    setLastOffered(institutes.length);
+    if (!instituteId && institutes.length === 1) setInstituteId(institutes[0]!.id);
+  }
   const [chosen, setChosen] = useState<Set<string>>(new Set(role?.permissions ?? []));
   const [error, setError] = useState<string | null>(null);
   const [confirmRemove, setConfirmRemove] = useState(false);
@@ -206,12 +235,11 @@ export function RoleEditor({
             {institutes.length > 1 && (
               <SelectField
                 label="Institute"
+                placeholder={everyInstitute.isLoading ? "Loading…" : "Choose an institute"}
+                hint="A role you create belongs to this institute alone."
                 value={instituteId}
                 onChange={(event) => setInstituteId(event.target.value)}
-                options={institutes.map((r) => ({
-                  value: r.institute_id!,
-                  label: r.institute_name ?? "Institute",
-                }))}
+                options={institutes.map((row) => ({ value: row.id, label: row.name }))}
               />
             )}
             <SelectField

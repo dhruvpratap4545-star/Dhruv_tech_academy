@@ -40,11 +40,27 @@ export function RequirePermission({
   return <>{children}</>;
 }
 
-/** Keeps signed-in users away from login and sign-up. */
+/**
+ * Keeps signed-in users away from login and sign-up.
+ *
+ * It has to send them to the same place the login form would, not always to the
+ * dashboard. `RequireAuth` records where somebody was headed before bouncing them here,
+ * and the login form reads it back and navigates there — but this guard is still mounted
+ * around the login route when that happens, sees the user appear, and redirects to "/"
+ * on top of it. The deep link was remembered, carried, used, and then overwritten a
+ * frame later; opening a bookmark of the activity log and signing in always landed on
+ * the dashboard.
+ *
+ * Reading the same state here means whichever of the two wins the race, the destination
+ * is the same one.
+ */
 export function RedirectIfSignedIn({ children }: { children: ReactNode }) {
   const { user, resolved } = useAuth();
+  const location = useLocation();
+  const intended = (location.state as { from?: string } | null)?.from;
+
   if (!resolved) return <FullPageSpinner />;
-  if (user) return <Navigate to="/" replace />;
+  if (user) return <Navigate to={intended ?? "/"} replace />;
   return <>{children}</>;
 }
 

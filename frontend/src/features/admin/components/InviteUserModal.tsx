@@ -56,6 +56,21 @@ export function InviteUserModal({
   const queryClient = useQueryClient();
   const platformStaff = isPlatformStaff(user);
 
+  /**
+   * Empty the form on the way out, not only after a successful send.
+   *
+   * Without this the dialog reopened holding whatever was last typed — including the red
+   * error messages from a failed attempt, as though it had just been submitted again.
+   * The dangerous version of that is the ordinary one: mistype an address, close the
+   * dialog, open it again, and the wrong address is sitting there pre-filled, next to a
+   * name that looks right.
+   */
+  const close = () => {
+    form.reset();
+    submit.reset();
+    onClose();
+  };
+
   const form = useForm<Values>({
     resolver: zodResolver(schema),
     defaultValues: {
@@ -130,12 +145,12 @@ export function InviteUserModal({
   return (
     <Modal
       open={open}
-      onClose={onClose}
+      onClose={close}
       title="Invite a user"
       description="They will get an email with a code to set their own password."
       footer={
         <>
-          <Button variant="secondary" onClick={onClose}>
+          <Button variant="secondary" onClick={close}>
             Cancel
           </Button>
           <Button form="invite-form" type="submit" loading={submit.isPending}>
