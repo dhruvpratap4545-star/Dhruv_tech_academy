@@ -114,6 +114,8 @@ export function RoleEditor({
   });
 
   const groups = [...new Set(permissions.map((p) => p.group))];
+  // What this caller may put into a role: exactly what they hold themselves.
+  const mine = new Set(user?.permissions ?? []);
   // Adjusting borrows the role's own name and institute, so neither is ours to validate.
   // A role with no permissions at all is legitimate here: it is how an institute says
   // "holders of this role may do nothing in our institute".
@@ -249,14 +251,30 @@ export function RoleEditor({
                     .map((permission) => (
                       <label
                         key={permission.key}
+                        title={
+                          mine.has(permission.key)
+                            ? undefined
+                            : "You do not hold this permission yourself, so you cannot put it in a role."
+                        }
                         className={cn(
-                          "flex cursor-pointer items-start gap-2.5 rounded-sm px-2 py-1.5",
-                          chosen.has(permission.key) ? "bg-accent-soft" : "hover:bg-surface-2",
+                          "flex items-start gap-2.5 rounded-sm px-2 py-1.5",
+                          !mine.has(permission.key)
+                            ? "cursor-not-allowed opacity-55"
+                            : chosen.has(permission.key)
+                              ? "cursor-pointer bg-accent-soft"
+                              : "cursor-pointer hover:bg-surface-2",
                         )}
                       >
                         <Checkbox
                           checked={chosen.has(permission.key)}
                           onChange={() => toggle(permission.key)}
+                          // A role may only carry permissions the person building it holds
+                          // themselves — otherwise it is a way to grant yourself more than
+                          // you have. The server has always refused it; the form used to
+                          // accept the tick and surface the refusal on submit, after the
+                          // name and the level had been filled in. Showing it greyed out
+                          // with the reason attached says the same thing before the work.
+                          disabled={!mine.has(permission.key)}
                           label=""
                         />
                         <span className="min-w-0">

@@ -235,3 +235,29 @@ class Authorized:
         holder_rank = self.context.max_rank_within(scope)
         if target_role_rank > grantable_ceiling(holder_rank):
             raise Forbidden("You cannot give someone a role at or above your own level.")
+
+    def ensure_can_restrain(self, target_rank: int, scope: Scope) -> None:
+        """May the caller take something *away* from somebody of this rank?
+
+        Deliberately one rank more permissive than `ensure_can_grant`, and the difference
+        matters more than it looks.
+
+        Granting is escalation: handing out your own level creates a peer who can undo
+        everything you do, so it is refused outright and a successor is appointed on the
+        server instead. Taking away is the opposite — suspending an account, or removing a
+        role — and it never gives the caller anything they did not already have.
+
+        Holding the two to the same rule was a mistake that only showed up in the case that
+        matters most. If a Super Admin's password is stolen, the other Super Admins are the
+        people who have to shut that account down, and under the grant rule every one of
+        them was refused: no suspension, no revocation, nothing short of shell access to
+        the server while the intruder stayed signed in. An account nobody can contain is
+        worse than a peer who can be appointed.
+
+        Equal rank, not above. A Branch Admin still cannot suspend the principal, and
+        `_guard_last_super_admin` still stops the final working administrator from being
+        removed.
+        """
+        holder_rank = self.context.max_rank_within(scope)
+        if target_rank > holder_rank:
+            raise Forbidden("You cannot act on someone above your own level.")

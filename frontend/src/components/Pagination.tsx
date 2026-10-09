@@ -33,7 +33,11 @@ export function Pagination({
   /** What is being counted, for the summary line: "users", "institutes", "entries". */
   noun?: string;
 }) {
-  const pageCount = Math.max(1, Math.ceil(total / pageSize));
+  // Never smaller than the page being looked at. Rows can disappear between requests —
+  // somebody else suspends four people, or a filter narrows while a cursor trail is held —
+  // and `total` drops while `pageIndex` does not. "Page 3 of 1" reads as a bug in the
+  // product rather than as a list that changed underneath.
+  const pageCount = Math.max(1, pageIndex + 1, Math.ceil(total / pageSize));
   const first = total === 0 ? 0 : pageIndex * pageSize + 1;
   const last = pageIndex * pageSize + shown;
 

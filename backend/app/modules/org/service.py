@@ -161,6 +161,7 @@ async def list_institutes(
     status: str | None,
     cursor: str | None,
     limit: int,
+    include_total: bool = True,
 ) -> tuple[Sequence[Institute], str | None, int]:
     """Platform staff see everything; everyone else sees only institutes they hold a role in.
 
@@ -169,7 +170,13 @@ async def list_institutes(
     """
     visible = guard.visible_institute_ids()
     return await repo.list_institutes(
-        db, visible_ids=visible, search=search, status=status, cursor=cursor, limit=limit
+        db,
+        visible_ids=visible,
+        search=search,
+        status=status,
+        cursor=cursor,
+        limit=limit,
+        include_total=include_total,
     )
 
 

@@ -367,15 +367,16 @@ async def revoke_role(
 
     role = await _require_role(db, payload.role_key)
 
-    # Taking a role away follows the same ceiling as giving one: you cannot reach a rank at
-    # or above your own. Without that, a second Institute Admin could strip the first one's
-    # authority, which is the same escalation as granting it, run backwards.
+    # Taking a role away is restrained by rank too, but one step more loosely than giving
+    # one: equal rank is allowed, because removing a role hands the caller nothing. The
+    # strict rule would have left a compromised Super Admin account with no one able to
+    # strip its access — see `Authorized.ensure_can_restrain`.
     #
-    # Standing down from your own role is the exception, because it is not escalation —
-    # it only ever reduces what the person doing it can do. `_guard_last_super_admin`
-    # still stops the final working Super Admin from leaving nobody in charge.
+    # Standing down from your own role needs no check at all; it only ever reduces what
+    # the person doing it can do. `_guard_last_super_admin` below still stops the final
+    # working Super Admin from leaving nobody in charge.
     if user_id != guard.user_id:
-        guard.ensure_can_grant(role.rank, scope)
+        guard.ensure_can_restrain(role.rank, scope)
 
     assignment = await rbac_repo.find_assignment(
         db,
@@ -482,7 +483,10 @@ async def _apply_status(
     # Without it an explicit block on a branch is ignored by this endpoint while the list
     # endpoints honour it — the block looks applied and is not.
     await guard.ensure(scope)
-    guard.ensure_can_grant(target_rank, scope)
+    # `restrain`, not `grant`: suspending an account only ever reduces what somebody can
+    # do, so it is allowed against an equal rank. The grant rule would mean a Super Admin
+    # whose password was stolen could not be shut down by the other Super Admins.
+    guard.ensure_can_restrain(target_rank, scope)
 
     if status == "suspended":
         user.status = "suspended"
@@ -624,6 +628,38 @@ async def get_user(db: AsyncSession, *, guard: Authorized, user_id: uuid.UUID) -
     return await _require_visible_user(db, guard, user_id)
 
 
+def _visible_scope(guard: Authorized, scopes, institute_id: uuid.UUID | None) -> repo.VisibleScope:
+    """Turn the caller's scopes into "which institute, and which branches of it".
+
+    One entry per institute, each mapped to the branches held there — or ``None`` when the
+    caller holds that institute as a whole. Keeping them separate is the point: somebody
+    who runs one college and one branch of another must not have the branch restriction
+    lifted on the second college just because the first one is theirs entirely.
+
+    ``None`` is returned for platform staff with a platform-wide scope, meaning everybody.
+    """
+    platform_wide = guard.context.is_platform_staff and any(s.institute_id is None for s in scopes)
+    if platform_wide:
+        return {institute_id: None} if institute_id else None
+
+    scope: dict[uuid.UUID, frozenset[uuid.UUID] | None] = {}
+    for s in scopes:
+        if s.institute_id is None:
+            continue
+        if s.branch_id is None:
+            # The whole institute. Overwrites any branch set already collected for it,
+            # and the `None` below stops a later branch-scoped entry narrowing it again.
+            scope[s.institute_id] = None
+        elif scope.get(s.institute_id, frozenset()) is not None:
+            scope[s.institute_id] = (scope.get(s.institute_id) or frozenset()) | {s.branch_id}
+
+    if institute_id:
+        if institute_id not in scope:
+            raise Forbidden()
+        return {institute_id: scope[institute_id]}
+    return scope
+
+
 async def list_users(
     db: AsyncSession,
     *,
@@ -634,6 +670,7 @@ async def list_users(
     institute_id: uuid.UUID | None,
     cursor: str | None,
     limit: int,
+    include_total: bool = True,
 ) -> tuple[Sequence[User], str | None, int]:
     """Scope the query to what the caller may see, then let PostgreSQL do the filtering.
 
@@ -649,40 +686,25 @@ async def list_users(
         user_ids = await _students_in_classes(db, class_ids)
         return await repo.list_users(
             db,
-            institute_ids=None,
+            scope=None,
             user_ids=user_ids | {guard.user_id},
             search=search,
             status=status,
             role_key=role_key,
             cursor=cursor,
             limit=limit,
-        )
-
-    platform_wide = guard.context.is_platform_staff and any(s.institute_id is None for s in scopes)
-    if platform_wide:
-        institute_ids = frozenset({institute_id}) if institute_id else None
-        branch_ids = None
-    else:
-        institute_ids = frozenset(s.institute_id for s in scopes if s.institute_id)
-        if institute_id:
-            if institute_id not in institute_ids:
-                raise Forbidden()
-            institute_ids = frozenset({institute_id})
-        branch_scoped = [s for s in scopes if s.branch_id]
-        institute_wide = any(s.institute_id and s.branch_id is None for s in scopes)
-        branch_ids = (
-            None if institute_wide else frozenset(s.branch_id for s in branch_scoped if s.branch_id)
+            include_total=include_total,
         )
 
     return await repo.list_users(
         db,
-        institute_ids=institute_ids,
-        branch_ids=branch_ids,
+        scope=_visible_scope(guard, scopes, institute_id),
         search=search,
         status=status,
         role_key=role_key,
         cursor=cursor,
         limit=limit,
+        include_total=include_total,
     )
 
 
@@ -800,12 +822,19 @@ async def build_overview(db: AsyncSession, *, guard: Authorized) -> schemas.Over
     # `usable_scopes`, not raw grants: a deny has to narrow the counts as well as the
     # rows, or the tiles quietly report on people the caller may not see.
     scopes = guard.usable_scopes()
-    platform = guard.context.is_platform_staff
-    institute_ids = frozenset(s.institute_id for s in scopes if s.institute_id)
+
+    # Exactly the test `list_users` applies, and for the same reason. Holding platform
+    # staff *status* is not enough on its own: an explicit deny on `user:read` removes the
+    # platform scope from `usable_scopes` entirely, and a Platform Admin blocked that way
+    # correctly sees no rows in the user list — while this tile went on reporting the
+    # platform-wide total. "There are four hundred users" told to somebody allowed to see
+    # none of them is the same leak in a smaller box.
+    scope = _visible_scope(guard, scopes, None)
+    institute_ids = frozenset(scope) if scope is not None else frozenset()
 
     base = select(func.count()).select_from(User).where(User.status != "deleted")
-    if not platform:
-        if not institute_ids:
+    if scope is not None:
+        if not scope:
             return schemas.OverviewOut(
                 users_total=0,
                 users_active=0,
@@ -814,14 +843,7 @@ async def build_overview(db: AsyncSession, *, guard: Authorized) -> schemas.Over
                 institutes_total=0,
                 security_events_24h=0,
             )
-        branch_scoped = [s for s in scopes if s.branch_id]
-        institute_wide = any(s.institute_id and s.branch_id is None for s in scopes)
-        branch_ids = (
-            None if institute_wide else frozenset(s.branch_id for s in branch_scoped if s.branch_id)
-        )
-        base = base.where(
-            repo.visible_users_filter(institute_ids=institute_ids, branch_ids=branch_ids)
-        )
+        base = base.where(repo.visible_users_filter(scope))
 
     async def count(stmt) -> int:
         return int(await db.scalar(stmt) or 0)
@@ -832,7 +854,7 @@ async def build_overview(db: AsyncSession, *, guard: Authorized) -> schemas.Over
     suspended = await count(base.where(User.status == "suspended"))
 
     institutes_stmt = select(func.count()).select_from(Institute)
-    if not platform:
+    if scope is not None:
         institutes_stmt = institutes_stmt.where(Institute.id.in_(institute_ids))
     institutes = await count(institutes_stmt)
 
@@ -845,7 +867,7 @@ async def build_overview(db: AsyncSession, *, guard: Authorized) -> schemas.Over
             AuditLog.action.in_(("login_failure", "account_locked", "token_reuse_detected")),
         )
     )
-    if not platform:
+    if scope is not None:
         events_stmt = events_stmt.where(AuditLog.institute_id.in_(institute_ids))
 
     return schemas.OverviewOut(

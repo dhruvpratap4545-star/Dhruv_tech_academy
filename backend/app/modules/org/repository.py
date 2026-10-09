@@ -50,6 +50,7 @@ async def list_institutes(
     status: str | None = None,
     cursor: str | None = None,
     limit: int = 20,
+    include_total: bool = True,
 ) -> tuple[Sequence[Institute], str | None, int]:
     """``visible_ids=None`` means platform staff, who see every institute."""
     stmt: Select[tuple[Institute]] = select(Institute)
@@ -70,6 +71,7 @@ async def list_institutes(
         id_col=Institute.id,
         cursor=cursor,
         limit=limit,
+        include_total=include_total,
     )
 
 

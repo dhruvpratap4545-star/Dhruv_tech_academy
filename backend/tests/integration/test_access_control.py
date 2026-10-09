@@ -331,7 +331,7 @@ async def test_a_custom_role_is_invisible_to_another_institute(client, world, in
     assert "institute_admin" in keys, "built-in roles stay visible to everyone"
 
 
-async def test_a_role_in_use_cannot_be_archived(client, world, make_user):
+async def test_a_role_in_use_cannot_be_removed(client, world, make_user):
     await _as(client, world["principal"])
     created = await client.post(
         "/api/v1/roles",

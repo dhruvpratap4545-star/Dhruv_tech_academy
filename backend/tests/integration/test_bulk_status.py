@@ -100,16 +100,41 @@ async def test_you_are_skipped_from_your_own_batch(client, world):
     assert me.status_code == 200, "the actor must still be signed in and active"
 
 
-async def test_a_peer_is_skipped_and_the_rest_still_apply(client, world):
+async def test_somebody_above_the_caller_is_skipped_and_the_rest_still_apply(client, world):
     """One refusal must not fail the batch — the administrator would have no idea which
-    person caused it, and would unpick the selection by hand."""
+    person caused it, and would unpick the selection by hand.
+
+    The person refused here is the platform owner, who outranks the caller. A *peer* is no
+    longer refused: see the test below.
+    """
     await _as(client, world["principal"])
-    response = await _bulk(client, [world["peer"].id, world["student_a"].id, world["student_b"].id])
+    response = await _bulk(
+        client, [world["owner"].id, world["student_a"].id, world["student_b"].id]
+    )
 
     body = response.json()
     assert body["succeeded"] == 2 and body["skipped"] == 1
-    assert _by_id(body, world["peer"])["outcome"] == "skipped"
-    assert "level" in _by_id(body, world["peer"])["reason"].lower()
+    assert _by_id(body, world["owner"])["outcome"] == "skipped"
+
+
+async def test_a_peer_can_be_suspended(client, world):
+    """Suspending is restraint, not escalation, so equal rank is allowed.
+
+    It used to be refused, on the same rule that governs *granting* a role. That looked
+    tidy and was wrong in the case that matters most: if an administrator's password is
+    stolen, the people who have to shut that account down are the ones at their own level,
+    and the strict rule refused every one of them. At the top of the hierarchy there is
+    nobody above to fall back on, so the account simply could not be contained.
+
+    The caller gains nothing by it — a peer already has every power they do — and
+    `_guard_last_super_admin` still stops the platform being left with nobody in charge.
+    """
+    await _as(client, world["principal"])
+    response = await _bulk(client, [world["peer"].id])
+
+    body = response.json()
+    assert body["succeeded"] == 1 and body["skipped"] == 0, body
+    assert _by_id(body, world["peer"])["outcome"] == "succeeded"
 
 
 async def test_somebody_in_another_institute_is_skipped(client, world):
@@ -177,11 +202,12 @@ async def test_every_change_writes_its_own_audit_row(client, world):
 async def test_a_skipped_person_leaves_no_audit_row(client, world):
     """Nothing happened to them, so nothing may be recorded as having happened."""
     await _as(client, world["principal"])
-    await _bulk(client, [world["peer"].id, world["student_a"].id])
+    await _bulk(client, [world["owner"].id, world["student_a"].id])
 
     logs = await client.get("/api/v1/audit-logs", params={"action": "user_suspended", "limit": 100})
     targets = {row["target_id"] for row in logs.json()["items"]}
-    assert str(world["peer"].id) not in targets
+    assert str(world["owner"].id) not in targets
+    assert str(world["student_a"].id) in targets, "the rest of the batch still applied"
 
 
 async def test_the_batch_is_capped(client, world):

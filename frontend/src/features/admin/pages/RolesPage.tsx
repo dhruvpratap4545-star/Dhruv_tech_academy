@@ -57,7 +57,12 @@ export function RolesPage() {
     .filter((role) => role.institute_id)
     .map((role) => ({ id: role.institute_id!, name: role.institute_name ?? "Institute" }));
 
-  const isPlatformStaff = myInstitutes.length === 0;
+  // Platform staff hold a role with no institute attached, which is the same test the
+  // server makes. Inferring it from "holds no institute-scoped role" was wrong twice over:
+  // it was true of somebody with no roles at all, and false for a Super Admin who also
+  // happens to hold a role at one college — who would then lose both the platform view and
+  // the full institute list, which is the exact failure this selector exists to fix.
+  const isPlatformStaff = (user?.roles ?? []).some((role) => role.institute_id === null);
   const allInstitutes = useQuery({
     queryKey: instituteKeys.list(),
     queryFn: ({ signal }) => fetchInstitutes(signal),
@@ -183,7 +188,7 @@ export function RolesPage() {
           </select>
           <p className="text-xs text-fg-2">
             {viewing
-              ? "Every role can be adjusted here. Changes apply to this institute only."
+              ? "Every role that applies inside an institute can be adjusted here, built-in ones included. Changes affect this institute only."
               : "Read-only. Pick an institute to change what a role allows there."}
           </p>
         </Card>
@@ -345,6 +350,14 @@ function PermissionMatrix({
                       Change
                     </button>
                   )}
+                  {/* A platform role is not inside any institute, so there is nothing for
+                      an institute to adjust about it. Said here rather than left as a
+                      missing link, which reads as an oversight. */}
+                  {instituteId && role.scope_level === "platform" && (
+                    <span className="mt-1 block text-[0.6rem] font-normal text-fg-3">
+                      platform-wide
+                    </span>
+                  )}
                 </th>
               ))}
             </tr>
@@ -454,6 +467,14 @@ function CustomRoles({
     },
   });
 
+  // Clear the error with the dialog. Otherwise a delete that failed leaves its message
+  // sitting there the next time the dialog opens — for a different role, about which it
+  // says nothing true.
+  const stopRemoving = () => {
+    setRemoving(null);
+    remove.reset();
+  };
+
   return (
     <Card>
       <div className="border-b border-line p-4">
@@ -531,7 +552,7 @@ function CustomRoles({
 
       <ConfirmDialog
         open={removing !== null}
-        onClose={() => setRemoving(null)}
+        onClose={stopRemoving}
         onConfirm={() => removing && remove.mutate(removing)}
         title={`Delete ${removing?.name ?? "this role"}?`}
         confirmLabel="Delete it"

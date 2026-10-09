@@ -1,266 +1,25 @@
+import { COMMON_PASSWORDS, LEET } from "@/features/auth/commonPasswordList";
+
 /**
  * The "that password is too common" check, in the browser.
  *
- * A live checklist that ticks every box and is then refused by the API is worse than no
- * checklist at all, so this is a character-for-character mirror of
- * `backend/app/modules/auth/passwords.py`.
+ * A mirror of `backend/app/modules/auth/passwords.py`. The backend still decides; this
+ * exists so the person typing finds out now rather than after a round trip, and a live
+ * checklist that goes all green and is then refused by the API is worse than no checklist
+ * at all.
  *
- * GENERATED FILE — do not edit. Run `python scripts/make_common_passwords.py` in `backend`
- * after changing the Python. `backend/tests/test_common_passwords.py` fails the build if
- * the two ever disagree.
+ * The word list and the substitution table are generated from the Python
+ * (`commonPasswordList.ts`). The algorithm below is written by hand so it can be read and
+ * reviewed like any other code — and `commonPasswords.test.ts` runs it against a fixture
+ * of answers produced by calling the real Python function, so the two cannot drift apart
+ * without the build failing.
  *
- * The backend still decides. This exists so the person typing finds out now rather than
- * after a round trip.
+ * Four structural rules — length, a letter, a digit, a symbol — stop almost nothing on
+ * their own, because the passwords people actually choose satisfy all four. `Password123!`
+ * is twelve characters with a letter, a digit and a symbol, and it is among the most
+ * guessed strings in the world. So the rules are paired with a list, and the list is only
+ * useful if it sees through the decoration people add to get past the rules.
  */
-
-/** Characters people substitute to satisfy a symbol rule without changing the word. */
-export const LEET: Record<string, string> = {
-  "@": "a",
-  "4": "a",
-  "8": "b",
-  "(": "c",
-  "3": "e",
-  "6": "g",
-  "9": "g",
-  "1": "i",
-  "!": "i",
-  "|": "i",
-  "0": "o",
-  "5": "s",
-  "$": "s",
-  "7": "t",
-  "+": "t",
-  "2": "z",
-};
-
-/** A matched word must be at least this long, or "ravi" would fire inside "travinder". */
-export const MIN_WORD_LENGTH = 4;
-
-/**
- * ...and must account for at least this much of the password, or one common word buried in
- * a genuinely long passphrase would be refused for no reason.
- */
-export const MIN_COVERAGE = 0.5;
-
-export const COMMON_PASSWORDS: ReadonlySet<string> = new Set([
-  "00000000",
-  "11111111",
-  "112233",
-  "121212",
-  "123123123",
-  "123321",
-  "123456",
-  "1234567",
-  "12345678",
-  "123456789",
-  "1234567890",
-  "654321",
-  "666666",
-  "696969",
-  "777777",
-  "888888",
-  "987654321",
-  "999999",
-  "abcdef",
-  "abcdefg",
-  "abcdefgh",
-  "academy",
-  "access",
-  "aditya",
-  "admin",
-  "adminadmin",
-  "administrator",
-  "akash",
-  "amanda",
-  "ananya",
-  "andrew",
-  "angel",
-  "ankit",
-  "anthony",
-  "arjun",
-  "arsenal",
-  "asdfgh",
-  "asdfghjkl",
-  "ashley",
-  "autumn",
-  "azerty",
-  "babygirl",
-  "bajrangbali",
-  "bangalore",
-  "barcelona",
-  "baseball",
-  "basketball",
-  "batman",
-  "bharat",
-  "bollywood",
-  "buster",
-  "butterfly",
-  "chaiwala",
-  "changeme",
-  "charlie",
-  "cheese",
-  "chelsea",
-  "chennai",
-  "chocolate",
-  "classroom",
-  "coaching",
-  "college",
-  "computer",
-  "contrasena",
-  "cricket",
-  "daniel",
-  "darling",
-  "deepak",
-  "default",
-  "delhi",
-  "demodemo",
-  "dhoni",
-  "dhruv",
-  "dhruvacademy",
-  "dhruvonline",
-  "dhruvonlineacademy",
-  "dilwale",
-  "dosti",
-  "dragon",
-  "education",
-  "exam",
-  "example",
-  "faculty",
-  "family",
-  "father",
-  "flower",
-  "football",
-  "forever",
-  "freedom",
-  "ganesh",
-  "ganesha",
-  "guest",
-  "hanuman",
-  "harley",
-  "hunter",
-  "hyderabad",
-  "iloveyou",
-  "india",
-  "indian",
-  "institute",
-  "internet",
-  "iqazzwsx",
-  "iqzwderf",
-  "jaishreeram",
-  "jennifer",
-  "jessica",
-  "jordan",
-  "joshua",
-  "kavita",
-  "kohli",
-  "kolkata",
-  "krishna",
-  "learning",
-  "letmein",
-  "library",
-  "liverpool",
-  "login",
-  "lovely",
-  "manager",
-  "manchester",
-  "manish",
-  "master",
-  "matthew",
-  "michael",
-  "mohabbat",
-  "monkey",
-  "mother",
-  "mumbai",
-  "mypassword",
-  "namaste",
-  "neha",
-  "newpass",
-  "nicole",
-  "ninja",
-  "omnamahshivaya",
-  "onlineacademy",
-  "passord",
-  "passpass",
-  "password",
-  "passwort",
-  "pokemon",
-  "pooja",
-  "prakash",
-  "princess",
-  "priya",
-  "pyaar",
-  "qazwsx",
-  "qweasdzxc",
-  "qwerty",
-  "qwertyuiop",
-  "qwertz",
-  "radhekrishna",
-  "rahul",
-  "rainbow",
-  "rajesh",
-  "ranger",
-  "ravi",
-  "realmadrid",
-  "result",
-  "robert",
-  "rohan",
-  "rohit",
-  "root",
-  "rootroot",
-  "sachin",
-  "saibaba",
-  "salman",
-  "samantha",
-  "sample",
-  "sandbox",
-  "sandeep",
-  "sanjay",
-  "school",
-  "secret",
-  "service",
-  "shadow",
-  "shahrukh",
-  "shiva",
-  "shivam",
-  "sneha",
-  "soccer",
-  "spiderman",
-  "starwars",
-  "student",
-  "students",
-  "summer",
-  "sunflower",
-  "sunita",
-  "sunshine",
-  "superman",
-  "support",
-  "suresh",
-  "sweetie",
-  "teacher",
-  "teachers",
-  "temporary",
-  "temppass",
-  "tendulkar",
-  "testing",
-  "testtest",
-  "thomas",
-  "tigger",
-  "toor",
-  "trustme",
-  "trustno",
-  "university",
-  "vijay",
-  "vikram",
-  "virat",
-  "vishal",
-  "wallet",
-  "welcome",
-  "whatever",
-  "winter",
-  "yourpassword",
-  "zxcvbn",
-  "zxcvbnm",
-]);
 
 const isAlnum = (ch: string) => /[\p{L}\p{Nd}]/u.test(ch);
 const isDigit = (ch: string) => /\p{Nd}/u.test(ch);
@@ -278,7 +37,8 @@ export function undecorate(value: string): string {
  *
  * `l3tm31n!` needs this. Folding everything turns the final `!` into an `i` and produces
  * `letmeini`; folding only the digits and discarding the punctuation gives `letmein`. Both
- * readings are plausible, so both are tried.
+ * readings are plausible — `!` really is used for `i` mid-word, and it is also just an
+ * exclamation mark on the end — so both are tried.
  */
 export function undecorateDigitsOnly(value: string): string {
   return [...value.toLowerCase()]
@@ -288,14 +48,32 @@ export function undecorateDigitsOnly(value: string): string {
 }
 
 const TRAILING_DIGITS = /\d+$/;
+const LEADING_DECORATION = /^[^A-Za-z]+/;
+const TRAILING_DECORATION = /[^A-Za-z]+$/;
+
+/**
+ * `value` with its leading decoration gone, its trailing decoration gone, and both.
+ *
+ * All three, because an edge symbol is ambiguous and nothing in the string says which it
+ * is. In `$h1va@2026` the leading `$` is the `S` of "Shiva" and has to be folded, while
+ * the trailing `@2026` is padding and has to be cut. Cutting both ends gives `h1va` —
+ * "hiva", which is nothing; cutting only the trailing end leaves `$h1va`, which folds to
+ * exactly `shiva`. `2026@Dhruv` needs the mirror image.
+ */
+export function trimmedEdges(value: string): string[] {
+  return [
+    value.replace(TRAILING_DECORATION, ""),
+    value.replace(LEADING_DECORATION, ""),
+    value.replace(TRAILING_DECORATION, "").replace(LEADING_DECORATION, ""),
+  ];
+}
 
 /**
  * Every reading of `value` worth checking.
  *
  * There is no single correct normalisation, because the same character means different
- * things in different passwords: `!` is an `i` in `l3tm31n!` and an exclamation mark in
- * `Password!`. Rather than guess, every plausible reading is produced and the password is
- * refused if any of them is a known-common one.
+ * things in different passwords: `0` is an `o` in `passw0rd` and a zero in `Student2026`.
+ * Rather than guess, every plausible reading is produced.
  */
 export function candidates(value: string): string[] {
   const lowered = value.toLowerCase();
@@ -303,9 +81,10 @@ export function candidates(value: string): string[] {
 
   const forms = [lowered, plain, undecorate(value), undecorateDigitsOnly(value)];
   for (const base of [value, plain]) {
-    const stripped = base.replace(TRAILING_DIGITS, "");
-    if (stripped && stripped !== base) {
-      forms.push(stripped.toLowerCase(), undecorate(stripped), undecorateDigitsOnly(stripped));
+    for (const cut of [base.replace(TRAILING_DIGITS, ""), ...trimmedEdges(base)]) {
+      if (cut && cut !== base) {
+        forms.push(cut.toLowerCase(), undecorate(cut), undecorateDigitsOnly(cut));
+      }
     }
   }
   return forms.filter(Boolean);
@@ -314,23 +93,12 @@ export function candidates(value: string): string[] {
 /**
  * True when the password is a known-common one wearing a disguise.
  *
- * Exact matching alone is not enough: `$h1va@2026` is "Shiva" with a dollar sign, a one and
- * this year stuck on the end, and no normalisation turns it into exactly `shiva`. So each
- * reading is also searched for a listed word inside it, subject to two conditions — the
- * word has to be at least `MIN_WORD_LENGTH` characters, so short names do not fire inside
- * longer ones, and it has to make up at least `MIN_COVERAGE` of what was typed.
+ * Exact matching, against every reading `candidates` produces. There is deliberately no
+ * substring search: one was tried, and it refused `Beetroot2026!` because "root" is on the
+ * list, along with `Examiner7#`, `Masterclass9!` and `Dragonfly-9!`. A check that refuses
+ * good passwords teaches people to fight the form, and what they produce on the fourth
+ * attempt is reliably worse than what they started with.
  */
 export function isCommonPassword(value: string): boolean {
-  const forms = candidates(value);
-  if (forms.some((form) => COMMON_PASSWORDS.has(form))) return true;
-
-  for (const form of forms) {
-    const threshold = form.length * MIN_COVERAGE;
-    for (const word of COMMON_PASSWORDS) {
-      if (word.length >= MIN_WORD_LENGTH && word.length >= threshold && form.includes(word)) {
-        return true;
-      }
-    }
-  }
-  return false;
+  return candidates(value).some((form) => COMMON_PASSWORDS.has(form));
 }

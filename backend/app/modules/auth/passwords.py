@@ -6,19 +6,30 @@ twelve characters with a letter, a digit and a symbol, and it is among the most 
 strings in the world. So the rules are paired with a list, and the list is only useful if
 it sees through the decoration people add to get past the rules.
 
-Two steps, in order:
+The password is not compared to the list directly. It is first rewritten every way a
+reader might reasonably read it, and the list is consulted for each:
 
-1. **Undecorate.** Lower-case, fold the usual character substitutions back to letters
-   (``@`` to ``a``, ``0`` to ``o``, ``$`` to ``s``, and so on), then drop everything that
-   is not a letter or a digit. ``P@ssw0rd!`` and ``p a s s w o r d`` both become
-   ``password``.
-2. **Strip the trailing run of digits** and try again, so ``password2026``, ``qwerty99``
-   and ``iloveyou143`` are recognised as what they are. Only trailing digits, and only
-   when something is left — ``123456`` still has to be caught by step 1.
+* **Undecorated.** Lower-cased, with the usual character substitutions folded back to
+  letters (``@`` to ``a``, ``0`` to ``o``, ``$`` to ``s``), then everything that is not a
+  letter or digit removed. ``P@ssw0rd`` becomes ``password``.
+* **With the symbols dropped rather than folded.** ``!`` is an ``i`` in ``l3tm31n!`` and
+  an exclamation mark in ``Password!``, and nothing in the string says which, so both
+  readings are produced.
+* **With the decoration cut off the edges** — leading, trailing, and both. The same
+  ambiguity again: in ``$h1va@2026`` the leading ``$`` is the ``S`` of "Shiva" and must be
+  folded, while the trailing ``@2026`` is padding and must be cut.
 
-The same two steps run in the browser, in ``frontend/src/features/auth/commonPasswords.ts``.
-``tests/test_common_passwords.py`` reads that file and fails if the two drift apart, because
-a checklist that ticks every box and is then refused by the API is worse than no checklist.
+A password is refused only when one of those readings *is* a listed word. There is no
+substring search. An earlier version had one, and it refused ``Beetroot2026!`` because
+"root" is on the list, along with ``Examiner7#``, ``Masterclass9!`` and
+``Dragonfly-9!`` — good passwords, rejected with a message that gave the person no way to
+work out which part was wrong, after a live checklist had shown every rule satisfied.
+
+The same readings are produced in the browser, in
+``frontend/src/features/auth/commonPasswords.ts``, which is generated from this file by
+``scripts/make_common_passwords.py``. ``tests/test_common_passwords.py`` fails the build if
+the two drift apart, because a checklist that goes all green and is then refused by the API
+is worse than no checklist at all.
 """
 
 from __future__ import annotations
@@ -296,12 +307,29 @@ def undecorate_digits_only(value: str) -> str:
     return "".join(ch for ch in folded if ch.isalnum())
 
 
-#: A matched word must be at least this long, or "ravi" would fire inside "travinder".
-MIN_WORD_LENGTH = 4
+#: Runs of digits and symbols at the edges — the decoration people add to get past a
+#: character-class rule, wrapped around the word they actually chose.
+_LEADING_DECORATION = re.compile(r"^[^A-Za-z]+")
+_TRAILING_DECORATION = re.compile(r"[^A-Za-z]+$")
 
-#: ...and must account for at least this much of the password, or one common word buried
-#: in a genuinely long passphrase would be refused for no reason.
-MIN_COVERAGE = 0.5
+
+def trimmed_edges(value: str) -> list[str]:
+    """``value`` with its leading decoration gone, its trailing decoration gone, and both.
+
+    All three, because an edge symbol is ambiguous and only the reader knows which it is.
+    In ``$h1va@2026`` the leading ``$`` is the ``S`` of "Shiva" and has to be folded, while
+    the trailing ``@2026`` is decoration and has to be cut. Cutting both ends gives
+    ``h1va`` — "hiva", which is nothing. Cutting only the trailing end leaves ``$h1va``,
+    which folds to exactly ``shiva``.
+
+    ``2026@Dhruv`` needs the mirror image, and ``Beetroot2026!`` needs the trailing cut so
+    that it ends up as "beetroot" and is correctly left alone.
+    """
+    return [
+        _TRAILING_DECORATION.sub("", value),
+        _LEADING_DECORATION.sub("", value),
+        _LEADING_DECORATION.sub("", _TRAILING_DECORATION.sub("", value)),
+    ]
 
 
 def candidates(value: str) -> list[str]:
@@ -311,43 +339,34 @@ def candidates(value: str) -> list[str]:
     things in different passwords. ``!`` is an ``i`` in ``l3tm31n!`` and an exclamation
     mark in ``Password!``. ``0`` is an ``o`` in ``passw0rd`` and a zero in ``Student2026``.
     Rather than guess, every plausible reading is produced and the password is refused if
-    *any* of them is a known-common one.
+    any one of them is exactly a listed word.
     """
     lowered = value.lower()
     plain = "".join(ch for ch in lowered if ch.isalnum())
 
     forms = [lowered, plain, undecorate(value), undecorate_digits_only(value)]
     for base in (value, plain):
-        stripped = _TRAILING_DIGITS.sub("", base)
-        if stripped and stripped != base:
-            forms.append(stripped.lower())
-            forms.append(undecorate(stripped))
-            forms.append(undecorate_digits_only(stripped))
+        for cut in (_TRAILING_DIGITS.sub("", base), *trimmed_edges(base)):
+            if cut and cut != base:
+                forms.extend([cut.lower(), undecorate(cut), undecorate_digits_only(cut)])
     return [form for form in forms if form]
 
 
 def is_common(value: str) -> bool:
     """True when the password is a known-common one wearing a disguise.
 
-    Exact matching alone is not enough. ``$h1va@2026`` is "Shiva" with a dollar sign, a
-    one, and this year stuck on the end; no normalisation turns it into exactly ``shiva``,
-    because the decoration is on both sides of the word. So each reading is also searched
-    for a listed word *inside* it.
+    Exact matching, against every reading of the password that `candidates` produces. An
+    earlier version also searched each reading for a listed word *inside* it, on the
+    reasoning that ``$h1va@2026`` never normalises to exactly ``shiva``. It does now —
+    `undecorate_edges` cuts the decoration off both ends first — and the substring search
+    turned out to cost far more than it bought.
 
-    Two conditions keep that from refusing everything. The word has to be at least
-    ``MIN_WORD_LENGTH`` characters, so short names do not fire inside longer ones, and it
-    has to make up at least ``MIN_COVERAGE`` of what was typed — the test of whether the
-    password *is* that word with trimmings, or merely contains it somewhere.
-    ``Ravi@2026`` reads as "ravi" plus decoration and is refused; a twenty-character
-    passphrase that happens to contain "ravi" is not.
+    What it cost: ``Beetroot2026!`` was refused because "root" is in the list, and so were
+    ``Examiner7#``, ``Masterclass9!``, ``Dragonfly-9!`` and ``Secretariat4!``. Every one of
+    those is a good password, and the person typing one was told only "that password is too
+    common" with no way to work out which part of it was the problem — after a live
+    checklist had shown all four rules green. A check that refuses good passwords teaches
+    people to fight the form, and what they produce on the fourth attempt is reliably worse
+    than what they started with.
     """
-    forms = candidates(value)
-    if any(form in COMMON_PASSWORDS for form in forms):
-        return True
-
-    for form in forms:
-        threshold = len(form) * MIN_COVERAGE
-        for word in COMMON_PASSWORDS:
-            if len(word) >= MIN_WORD_LENGTH and len(word) >= threshold and word in form:
-                return True
-    return False
+    return any(form in COMMON_PASSWORDS for form in candidates(value))

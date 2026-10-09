@@ -289,6 +289,7 @@ export function UsersPage() {
   ];
 
   const hasNext = Boolean(users.data?.next_cursor);
+  const filtering = Boolean(search || status || role);
 
   return (
     <div className="space-y-6">
@@ -431,14 +432,17 @@ export function UsersPage() {
             loading={users.isLoading}
             empty={
               <EmptyState
-                title={search || status ? "No users match those filters" : "No users yet"}
+                // Every filter, not two of them. Narrowing to a role nobody holds used to
+                // say "No users yet · Invite someone to get started", which is both wrong
+                // and unhelpful: there are users, just not that kind.
+                title={filtering ? "No users match those filters" : "No users yet"}
                 description={
-                  search || status
+                  filtering
                     ? "Try a different search or clear the filters."
                     : "Invite someone to get started."
                 }
                 action={
-                  canInvite && !search && !status ? (
+                  canInvite && !filtering ? (
                     <Button size="sm" onClick={() => setInviteOpen(true)}>
                       Invite user
                     </Button>

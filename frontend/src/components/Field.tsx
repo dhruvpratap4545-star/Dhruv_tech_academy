@@ -114,17 +114,19 @@ export function TextField({ label, hint, error, action, className, ...rest }: Te
           {isPassword && (
             <button
               type="button"
-              // Not in the tab order. Someone filling in a form with the keyboard wants
-              // the next field, not a button they did not ask for between every password
-              // and the one after it. It stays reachable by pointer, and by screen
-              // readers, which navigate by element rather than by tab stop.
-              tabIndex={-1}
+              // A normal tab stop. It was taken out of the tab order to keep the path
+              // from the field to the submit button short, which made the control
+              // unreachable for anybody without a pointer — a WCAG 2.1.1 failure, and the
+              // people most likely to need to check what they typed are exactly the ones
+              // it locked out. Every browser and password manager puts a stop here too.
               onClick={() => setRevealed((shown) => !shown)}
               aria-label={revealed ? `Hide ${label.toLowerCase()}` : `Show ${label.toLowerCase()}`}
               aria-pressed={revealed}
               className={cn(
                 "absolute top-1/2 right-1 flex size-9 -translate-y-1/2 items-center justify-center",
                 "rounded-md text-fg-3 transition-colors hover:bg-surface-2 hover:text-fg",
+                // It is in the tab order now, so it has to show where focus is.
+                "focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none",
               )}
             >
               <EyeIcon off={revealed} />

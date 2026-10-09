@@ -431,3 +431,106 @@ async def test_a_branch_admin_does_not_see_institute_wide_staff(
     # And the two endpoints agree, which is the point.
     assert (await client.get(f"/api/v1/users/{principal.id}")).status_code == 404
     assert (await client.get(f"/api/v1/users/{in_my_branch.id}")).status_code == 200
+
+
+async def test_running_one_college_does_not_widen_a_branch_role_in_another(
+    client: AsyncClient, make_user, institute, db
+) -> None:
+    """Scope is per institute, not a pair of flat sets.
+
+    Somebody can genuinely be Institute Admin of one college and Branch Admin of one
+    branch of another. The scope used to be carried as "every institute I can reach" plus
+    "every branch I hold" plus one flag saying whether *any* of it was institute-wide — and
+    that flag, set by the first college, lifted the branch restriction on the second one
+    too. The user list then returned every member of staff at the second college, while
+    opening any of their rows answered "That user does not exist", because the per-row
+    check compares scopes properly.
+    """
+    from app.modules.rbac.models import Role, UserRoleAssignment
+
+    first, _ = await institute("First College", "FIRST1", with_branch="Alpha")
+    second, beta = await institute("Second College", "SECOND1", with_branch="Beta")
+    _, gamma = await institute("Second Annexe", "SECOND2", with_branch="Gamma")
+
+    # One person, two hats: the whole of First College, one branch of Second College.
+    wearer = await make_user("institute_admin", institute_id=first.id)
+    branch_admin_role = await db.scalar(select(Role).where(Role.key == "branch_admin"))
+    db.add(
+        UserRoleAssignment(
+            user_id=wearer.id,
+            role_id=branch_admin_role.id,
+            institute_id=second.id,
+            branch_id=beta.id,
+        )
+    )
+    await db.flush()
+
+    # Three people at Second College: one in the branch they run, one institute-wide, and
+    # one in a branch that is nothing to do with them.
+    in_my_branch = await make_user(
+        "faculty", institute_id=second.id, branch_id=beta.id, email="beta-teacher@example.com"
+    )
+    institute_wide = await make_user(
+        "institute_admin", institute_id=second.id, email="second-principal@example.com"
+    )
+    other_branch = await make_user(
+        "faculty", institute_id=second.id, branch_id=gamma.id, email="gamma-teacher@example.com"
+    )
+
+    await _as(client, wearer)
+    listed = await client.get("/api/v1/users", params={"limit": 100})
+    assert listed.status_code == 200, listed.text
+    emails = {row["email"] for row in listed.json()["items"]}
+
+    assert in_my_branch.email in emails, "their own branch at Second College is still visible"
+    assert institute_wide.email not in emails, "Second College's principal leaked"
+    assert other_branch.email not in emails, "a branch they have nothing to do with leaked"
+
+    # The list and the detail endpoint agree, which is the point.
+    assert (await client.get(f"/api/v1/users/{institute_wide.id}")).status_code == 404
+    assert (await client.get(f"/api/v1/users/{other_branch.id}")).status_code == 404
+    assert (await client.get(f"/api/v1/users/{in_my_branch.id}")).status_code == 200
+
+    # And the count on the dashboard describes the same people as the list.
+    overview = await client.get("/api/v1/me/overview")
+    assert overview.status_code == 200, overview.text
+    assert overview.json()["users_total"] == listed.json()["total"]
+
+
+async def test_the_dashboard_count_respects_a_block_the_list_respects(
+    client: AsyncClient, make_user, institute
+) -> None:
+    """A deny has to narrow the tile as well as the rows.
+
+    `list_users` asked whether the caller still had a platform-wide scope; the dashboard
+    asked only whether they were platform staff. An explicit deny on `user:read` removes
+    the scope but not the status, so the list correctly showed nothing while the tile went
+    on reporting the platform-wide total. "There are four hundred users", told to somebody
+    allowed to see none of them, is the same leak in a smaller box.
+    """
+    owner = await make_user("super_admin")
+    deputy = await make_user("platform_admin", email="deputy@example.com")
+    college, _ = await institute("Counted College", "COUNT1")
+    await make_user("student", institute_id=college.id, email="counted@example.com")
+
+    await _as(client, deputy)
+    before = (await client.get("/api/v1/me/overview")).json()["users_total"]
+    assert before >= 3
+
+    await _as(client, owner)
+    blocked = await client.post(
+        f"/api/v1/users/{deputy.id}/grants",
+        json={"permission": "user:read", "effect": "deny", "reason": "Under review"},
+    )
+    assert blocked.status_code == 201, blocked.text
+
+    await _as(client, deputy)
+    listed = await client.get("/api/v1/users", params={"limit": 100})
+    assert listed.status_code == 403 or listed.json()["items"] == []
+
+    overview = await client.get("/api/v1/me/overview")
+    assert overview.status_code in (200, 403)
+    if overview.status_code == 200:
+        assert overview.json()["users_total"] == 0, (
+            "the tile still reported the platform-wide total to somebody who may see nobody"
+        )

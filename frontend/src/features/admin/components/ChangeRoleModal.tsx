@@ -180,7 +180,7 @@ export function ChangeRoleModal({
                 {held.map((role) => (
                   <li
                     key={`${role.role_key}-${role.branch_id ?? role.institute_id ?? "platform"}`}
-                    className="press flex items-center justify-between gap-3 rounded-lg border border-line px-3 py-2"
+                    className="flex items-center justify-between gap-3 rounded-lg border border-line px-3 py-2"
                   >
                     <div className="min-w-0">
                       <p className="text-sm font-medium text-fg">

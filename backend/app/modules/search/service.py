@@ -79,7 +79,8 @@ async def _people(db: AsyncSession, context: AuthContext, term: str) -> list[sch
     guard = _guard(db, context, "user:read")
     if guard is None:
         return []
-    rows, _, _total = await users.list_users(
+    # No total: global search fires on every keystroke and displays no count.
+    rows, _, _ = await users.list_users(
         db,
         guard=guard,
         search=term,
@@ -88,6 +89,7 @@ async def _people(db: AsyncSession, context: AuthContext, term: str) -> list[sch
         institute_id=None,
         cursor=None,
         limit=PER_GROUP,
+        include_total=False,
     )
     return [
         schemas.SearchGroup(
@@ -109,8 +111,14 @@ async def _institutes(
     guard = _guard(db, context, "institute:read")
     if guard is None:
         return []
-    rows, _, _total = await org.list_institutes(
-        db, guard=guard, search=term, status=None, cursor=None, limit=PER_GROUP
+    rows, _, _ = await org.list_institutes(
+        db,
+        guard=guard,
+        search=term,
+        status=None,
+        cursor=None,
+        limit=PER_GROUP,
+        include_total=False,
     )
     return [
         schemas.SearchGroup(

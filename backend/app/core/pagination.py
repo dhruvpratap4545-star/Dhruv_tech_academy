@@ -21,6 +21,7 @@ from typing import Any
 
 from pydantic import BaseModel, Field
 from sqlalchemy import ColumnElement, Select, and_, func, or_, select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.errors import ValidationFailed
 
@@ -108,7 +109,7 @@ def apply_keyset(
     return stmt.order_by(*order).limit(limit + 1)
 
 
-async def count_matching(db: Any, stmt: Select[Any]) -> int:
+async def count_matching(db: AsyncSession, stmt: Select[Any]) -> int:
     """How many rows the filters match in total, ignoring the page window.
 
     Keyset paging gives no total of its own — that is the trade for its speed, and it is
@@ -128,7 +129,7 @@ async def count_matching(db: Any, stmt: Select[Any]) -> int:
 
 
 async def paginate(
-    db: Any,
+    db: AsyncSession,
     stmt: Select[Any],
     *,
     created_at_col: ColumnElement[datetime],
@@ -136,13 +137,20 @@ async def paginate(
     cursor: str | None,
     limit: int,
     descending: bool = True,
+    include_total: bool = True,
 ) -> tuple[list[Any], str | None, int]:
     """Count, seek, fetch and trim — the whole of one page, in one call.
 
     The count is taken from ``stmt`` *before* the cursor condition is added, so it stays
     the total for the filters rather than "everything after row 60".
+
+    ``include_total=False`` skips the aggregate for callers that throw it away. Global
+    search is the one that matters: it fires on every keystroke over an ``ILIKE '%term%'``
+    that cannot use an index, and counting the matches as well as fetching the first ten
+    doubles the cost of the most latency-sensitive query in the application, to produce a
+    number nothing displays.
     """
-    total = await count_matching(db, stmt)
+    total = await count_matching(db, stmt) if include_total else 0
     windowed = apply_keyset(
         stmt,
         created_at_col=created_at_col,

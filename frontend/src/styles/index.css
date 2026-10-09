@@ -249,8 +249,13 @@
     *::before,
     *::after {
       animation-duration: 0.01ms !important;
+      /* The delay too. `animation-fill-mode: both` holds a staggered element at
+         opacity 0 for the length of its delay, so zeroing only the duration leaves
+         somebody who asked for less motion looking at blank space that then pops in. */
+      animation-delay: 0ms !important;
       animation-iteration-count: 1 !important;
       transition-duration: 0.01ms !important;
+      transition-delay: 0ms !important;
       scroll-behavior: auto !important;
     }
   }
@@ -364,6 +369,7 @@
       box-shadow 0.12s ease,
       background-color 0.12s ease,
       border-color 0.12s ease,
+      /* `opacity`, so `disabled:opacity-55` still fades rather than snapping. */ opacity 0.12s ease,
       color 0.12s ease;
   }
   .press:active:not(:disabled) {

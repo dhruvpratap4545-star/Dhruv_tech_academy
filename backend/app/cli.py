@@ -19,32 +19,47 @@ Run with the application's environment loaded::
 A granted account is *invited*, never given a password here: a password created by a
 command ends up in shell history, a deploy log or a screenshot. The person proves they
 control the mailbox through the normal Forgot password flow.
+
+Both commands write an audit entry with no actor, marked ``via: cli``, because a shell has
+no session behind it. `revoke-super-admin` also ends the account's sessions.
+
+Two things to know when running this against a live API process. The permission cache in
+that process is per-process and lasts `permission_cache_ttl_seconds`, so a grant made here
+can take up to a minute to be seen by an API that is already running — the in-process
+invalidation below only affects this command's own memory. And `print` is the output
+channel on purpose: this is a command-line tool, not a request handler, and its output is
+for the person who typed it.
 """
 
 from __future__ import annotations
 
 import argparse
 import asyncio
-import sys
 from datetime import UTC, datetime
 
 from sqlalchemy import func, select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.db import SessionLocal, engine
 from app.core.logging import configure_logging
+from app.modules.audit import events
+from app.modules.audit import service as audit
+from app.modules.auth import repository as auth_repo
 from app.modules.rbac import catalog
+from app.modules.rbac import repository as rbac_repo
+from app.modules.rbac import service as rbac
 from app.modules.rbac.models import Role, UserRoleAssignment
 from app.modules.users.models import User, UserPreference
 
 
-async def _super_admin_role(db) -> Role:
+async def _super_admin_role(db: AsyncSession) -> Role:
     role = await db.scalar(select(Role).where(Role.key == catalog.SUPER_ADMIN))
     if role is None:
         raise SystemExit("The super_admin role is missing. Run `python -m app.core.seed` first.")
     return role
 
 
-async def _find_user(db, email: str) -> User | None:
+async def _find_user(db: AsyncSession, email: str) -> User | None:
     return await db.scalar(select(User).where(func.lower(User.email) == email.strip().lower()))
 
 
@@ -66,8 +81,12 @@ async def grant(email: str, *, create_missing: bool) -> None:
             db.add(UserPreference(user_id=user.id))
             print(f"Created {email} as an invited account with no password.")
 
-        if user.status == "deleted":
-            raise SystemExit(f"{email} has been deleted. Restore the account before granting.")
+        if user.status not in ("active", "invited"):
+            raise SystemExit(
+                f"{email} is {user.status}. Only an active or invited account may be given "
+                f"Super Admin — a suspended one cannot sign in, and granting it would let "
+                f"the real administrator be removed with nobody able to take over."
+            )
 
         existing = await db.scalar(
             select(UserRoleAssignment).where(
@@ -82,6 +101,21 @@ async def grant(email: str, *, create_missing: bool) -> None:
             return
 
         db.add(UserRoleAssignment(user_id=user.id, role_id=role.id))
+
+        # The audit log has to show this. Appointing a platform owner is the most
+        # privileged change the system allows, and since the web app can no longer do it
+        # at all, this command is the only route — which would make it the only
+        # authorization change with no record of who made it or when. `actor_user_id` is
+        # null because a shell has no session behind it; `via` says where it came from.
+        audit.record(
+            db,
+            action=events.ROLE_ASSIGNED,
+            actor_user_id=None,
+            target_type="user",
+            target_id=user.id,
+            extra={"role_key": catalog.SUPER_ADMIN, "via": "cli", "email": email},
+        )
+        rbac.invalidate_context(user.id)
         await db.commit()
 
     print(f"Granted Super Admin to {email}.")
@@ -96,30 +130,55 @@ async def revoke(email: str) -> None:
         if user is None:
             raise SystemExit(f"No account exists for {email}.")
 
-        rows = list(
+        mine = list(
             (
                 await db.execute(
                     select(UserRoleAssignment).where(
                         UserRoleAssignment.role_id == role.id,
+                        UserRoleAssignment.user_id == user.id,
                         UserRoleAssignment.revoked_at.is_(None),
                     )
                 )
             ).scalars()
         )
-        mine = [r for r in rows if r.user_id == user.id]
         if not mine:
             raise SystemExit(f"{email} does not hold Super Admin.")
-        if len(rows) == len(mine):
+
+        # "At least one Super Admin must always exist" (PRD §3) has to mean one who can
+        # actually sign in — the same rule the API applies. Counting bare assignment rows
+        # instead would let this command create the gap itself: grant the role to an
+        # invited account that has no password, then remove it from the only working
+        # administrator, and the platform is left with nobody able to administer it and no
+        # way back except direct SQL.
+        usable = await rbac_repo.count_usable_role_holders(db, role.id)
+        can_sign_in = user.password_hash is not None and user.status == "active"
+        if usable - (1 if can_sign_in else 0) < 1:
             raise SystemExit(
-                "That is the only Super Admin on the platform. "
-                "Grant the role to someone else first, or nobody will be able to administer it."
+                f"{email} is the only Super Admin who can sign in. Grant the role to "
+                f"somebody else and have them set a password first, or nobody will be "
+                f"able to administer the platform."
             )
 
         for row in mine:
             row.revoked_at = datetime.now(UTC)
+
+        # End their sessions too. Without this the removed account keeps working until its
+        # access token expires and the permission cache lapses — and "I revoked them and
+        # they could still get in" is how a routine change becomes an incident report.
+        await auth_repo.revoke_all_user_tokens(db, user.id, "role_revoked")
+        rbac.invalidate_context(user.id)
+
+        audit.record(
+            db,
+            action=events.ROLE_REVOKED,
+            actor_user_id=None,
+            target_type="user",
+            target_id=user.id,
+            extra={"role_key": catalog.SUPER_ADMIN, "via": "cli", "email": email},
+        )
         await db.commit()
 
-    print(f"Removed Super Admin from {email}.")
+    print(f"Removed Super Admin from {email}, and ended their sessions.")
 
 
 async def listing() -> None:
@@ -182,11 +241,10 @@ def main(argv: list[str] | None = None) -> None:
         finally:
             await engine.dispose()
 
-    try:
-        asyncio.run(run())
-    except SystemExit as exit_error:
-        print(str(exit_error), file=sys.stderr)
-        raise
+    # No try/except around this. `SystemExit("message")` already makes CPython write the
+    # message to stderr and exit 1; catching it to print the same thing again produced
+    # every error twice.
+    asyncio.run(run())
 
 
 if __name__ == "__main__":
