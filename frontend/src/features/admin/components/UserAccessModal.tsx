@@ -20,7 +20,7 @@ import { cn } from "@/lib/cn";
 import { formatDate } from "@/lib/format";
 
 /**
- * One person's exceptions: extra permissions, or blocks (ADR-017).
+ * One person's exceptions: extra permissions, or blocks.
  *
  * This is the detailed control. A role answers "what does this job allow?"; this answers
  * "what is different about this person?" — covering someone's leave for a fortnight, or

@@ -14,8 +14,7 @@ const DAYS = 14;
  *
  * No chart library. This is one series of fourteen bars; a charting dependency would add
  * more to the bundle than the whole rest of this page and bring a styling system that
- * fights the one we have. It also needs an ADR to introduce (CLAUDE.md), which is not a
- * trade worth making for forty lines of `<rect>`.
+ * fights the one we have. Not a trade worth making for forty lines of `<rect>`.
  *
  * The numbers are real and scoped by the server: platform staff see the whole platform,
  * an institute admin sees their own institute only.

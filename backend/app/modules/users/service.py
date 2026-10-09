@@ -486,7 +486,7 @@ async def _apply_status(
     #
     # Each check is the full one, not just rank. `require_permission` only proved the
     # caller holds `user:update_status` *somewhere*; this is where the target scopes are
-    # known, and it is what applies the deny layer (ADR-017) and the module-enabled test.
+    # known, and it is what applies the deny layer and the module-enabled test.
     scopes = await _live_scopes_of(db, user_id) or [await _primary_scope_of(db, user_id)]
     for scope in scopes:
         await guard.ensure(scope)
@@ -494,7 +494,7 @@ async def _apply_status(
     if status == "suspended":
         # `restrain`: suspending only ever reduces what somebody can do, so an equal rank
         # is allowed. The grant rule would mean a Super Admin whose password was stolen
-        # could not be shut down by the other Super Admins (ADR-028).
+        # could not be shut down by the other Super Admins.
         for scope in scopes:
             guard.ensure_can_restrain(target_rank, scope)
     else:
@@ -639,7 +639,7 @@ async def _require_visible_user(db: AsyncSession, guard: Authorized, user_id: uu
     if not target_scopes:
         target_scopes = [Scope()]
 
-    # `usable_scopes`, not the raw grants. An explicit deny (ADR-017) has to narrow who is
+    # `usable_scopes`, not the raw grants. An explicit deny has to narrow who is
     # visible as well as what may be done to them — a deny the per-row check honours but
     # this one ignores is a deny that leaks exactly the people it was created to hide.
     # Platform staff hold a platform-level grant, which covers every scope, so they need
@@ -896,7 +896,7 @@ async def build_overview(db: AsyncSession, *, guard: Authorized) -> schemas.Over
     institutes = await count(institutes_stmt)
 
     # The security tile reads the audit log, so it needs the permission that gates the
-    # audit log. A Branch Admin deliberately does not hold `audit:read` (ADR-033), and a
+    # audit log. A Branch Admin deliberately does not hold `audit:read`, and a
     # Faculty member never did — handing either of them an institute-wide count of failed
     # sign-ins and lockouts is a smaller version of the same disclosure.
     if not guard.context.holds("audit:read"):

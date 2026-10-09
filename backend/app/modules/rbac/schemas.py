@@ -1,4 +1,4 @@
-"""Request and response bodies for the access-control endpoints (ADR-017).
+"""Request and response bodies for the access-control endpoints.
 
 Two things leave this module: the *catalogue* (what roles and permissions exist, and what
 each allows) and the *exceptions* (what has been granted to, or blocked for, one person).
@@ -165,7 +165,7 @@ class EffectivePermission(BaseModel):
 
     Both held and unheld permissions are returned. A screen whose whole purpose is to
     explain someone's access has to show the boundary, not just the inside of it — and
-    this is the one place in the product that does (ADR-018).
+    this is the one place in the product that does.
     """
 
     key: str

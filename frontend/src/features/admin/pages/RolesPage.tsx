@@ -278,7 +278,7 @@ const SCOPE_WORD: Record<string, string> = {
  *
  * It scrolls sideways inside its own container rather than stacking: a matrix *is* its
  * two-dimensional comparison, and stacking it into per-role lists destroys the only thing
- * it is for. This is the documented exception to the stacking rule (ADR-015).
+ * it is for. This is the one deliberate exception to the rule that layouts stack.
  */
 function PermissionMatrix({
   roles,

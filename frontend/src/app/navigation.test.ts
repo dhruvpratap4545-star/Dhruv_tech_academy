@@ -4,10 +4,10 @@ import { ALL_NAV_ITEMS, NAVIGATION, visibleNavigation } from "@/app/navigation";
 import { makeUser, roleAssignment } from "@/test/utils";
 
 /**
- * The navigation registry (ADR-018).
+ * The navigation registry.
  *
  * Two properties matter here. One is that people see only what they can open — the rule
- * the client asked for. The other is quieter but caused a real defect: the registry has to
+ * the product promises. The other is quieter but caused a real defect: the registry has to
  * stay internally consistent, because `/audit` was once linked from two hand-written lists
  * with no route behind it and nothing could catch that by reading either list.
  */

@@ -1,4 +1,4 @@
-"""Custom roles and per-user permission grants, end to end (ADR-017).
+"""Custom roles and per-user permission grants, end to end.
 
 Four things are worth proving here, and each gets both halves — the case that must work and
 the case one step beyond it that must not:
@@ -776,7 +776,7 @@ async def test_the_change_takes_effect_without_waiting_out_the_cache(client, wor
     assert (await client.get("/api/v1/users")).status_code == 403
 
 
-# ----------------------------------------------------- the matrix, as the client asked
+# ------------------------------------------------------------- the permission matrix
 
 
 async def test_a_system_role_is_read_only_for_everyone(client, world):

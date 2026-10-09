@@ -16,7 +16,7 @@ from app.modules.auth.passwords import is_common
 # PRD §7.1: at least 8 characters, with a letter, a number and a special character.
 #
 # A character-class checklist is a weaker rule than length alone — it mostly teaches people
-# to end a password with "1!" — but it is the rule the client asked for, it is the one most
+# to end a password with "1!" — but it is the agreed rule, it is the one most
 # users already expect, and it is checkable live as somebody types, which is worth more in
 # practice than a strength score nobody can act on. The common-password list below is what
 # actually catches the worst choices.

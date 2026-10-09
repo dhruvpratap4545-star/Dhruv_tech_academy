@@ -23,7 +23,7 @@ export const LEET: Record<string, string> = {
   "|": "i",
   "0": "o",
   "5": "s",
-  "$": "s",
+  $: "s",
   "7": "t",
   "+": "t",
   "2": "z",

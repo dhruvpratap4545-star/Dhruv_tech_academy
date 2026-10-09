@@ -1,4 +1,4 @@
-"""Managing access, as opposed to checking it (ADR-017).
+"""Managing access, as opposed to checking it.
 
 ``service.py`` answers "may this person do X here?". This file is the other half: creating
 custom roles, and granting or blocking single permissions for single people.
@@ -583,7 +583,7 @@ async def build_my_access(db: AsyncSession, context: AuthContext) -> schemas.MyA
 
     Every permission in the catalogue appears, held or not. The unheld ones are the point:
     this is the one screen whose job is to describe the boundary of someone's access, and a
-    boundary you cannot see is not an explanation (ADR-018).
+    boundary you cannot see is not an explanation.
     """
     names = await _names_for(db, [a.scope for a in context.assignments])
     roles = [

@@ -18,7 +18,7 @@ import { useAuth } from "@/features/auth/useAuth";
 import { cn } from "@/lib/cn";
 
 /**
- * Create or edit a role belonging to one institute (ADR-017).
+ * Create or edit a role belonging to one institute.
  *
  * The permission list is deliberately *not* filtered to what the author may grant. The
  * server refuses anything beyond their own authority, and it says which key it refused —

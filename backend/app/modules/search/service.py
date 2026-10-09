@@ -8,7 +8,7 @@ than the one the list endpoints use.
 So nothing here queries without a scope. Users and institutes reuse the very same service
 functions the list endpoints call, which means their scoping cannot drift from the lists;
 branches and classes use dedicated queries that take the caller's usable grant scopes
-(deny included, ADR-017) and refuse to run at all when those are empty.
+(explicit denials included) and refuse to run at all when those are empty.
 
 Each group is also independently permission-gated: someone without ``class:read`` gets no
 class group, rather than an empty one, because an empty group tells you a thing exists to

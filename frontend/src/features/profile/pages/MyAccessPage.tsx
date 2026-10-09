@@ -18,7 +18,7 @@ import { formatDate } from "@/lib/format";
  * "What can I actually do here?" — answered from the server, for this person.
  *
  * This is the one screen that shows permissions you do **not** have. Everywhere else, a
- * thing you cannot use is simply absent (ADR-018); here the boundary is the subject. A
+ * thing you cannot use is simply absent; here the boundary is the subject. A
  * list of destinations is navigation and should contain only open doors; a list of
  * permissions is an explanation, and an explanation that omits the limits explains nothing.
  */

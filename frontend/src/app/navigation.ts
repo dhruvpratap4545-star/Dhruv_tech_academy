@@ -4,7 +4,7 @@ import type { Permission } from "@/lib/permissions";
 import { can } from "@/lib/permissions";
 
 /**
- * Every destination in the console, declared once (ADR-018).
+ * Every destination in the console, declared once.
  *
  * The sidebar and the "My access" screen both render from this list. They used to be two
  * hand-written lists, which is exactly how `/audit` ended up linked from two places with
