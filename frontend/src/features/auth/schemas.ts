@@ -37,14 +37,14 @@ export const PASSWORD_RULES = [
   // count those same letters as special characters. The backend uses Python's `str`
   // methods, which are Unicode-aware for the same reason.
   { label: "One letter", test: (v: string) => /\p{L}/u.test(v) },
-  { label: "One number", test: (v: string) => /\p{N}/u.test(v) },
+  { label: "One number", test: (v: string) => /\p{Nd}/u.test(v) },
   // Anything that is neither, spaces included. Listing "allowed symbols" is how a
   // password manager's output gets rejected for a character nobody thought of.
-  { label: "One special character", test: (v: string) => /[^\p{L}\p{N}]/u.test(v) },
+  { label: "One special character", test: (v: string) => /[^\p{L}\p{Nd}]/u.test(v) },
 ] as const;
 
 /** Strip the decoration before the common check: "password123!" is not a new password. */
-const undecorate = (value: string) => value.replace(/[^\p{L}\p{N}]/gu, "").toLowerCase();
+const undecorate = (value: string) => value.replace(/[^\p{L}\p{Nd}]/gu, "").toLowerCase();
 
 export const password = z
   .string()

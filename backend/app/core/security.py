@@ -12,6 +12,7 @@ from __future__ import annotations
 import hashlib
 import hmac
 import secrets
+import unicodedata
 
 from fastapi import Response
 from pwdlib import PasswordHash
@@ -32,8 +33,24 @@ UNSAFE_METHODS = frozenset({"POST", "PUT", "PATCH", "DELETE"})
 DUMMY_PASSWORD_HASH = password_hasher.hash(secrets.token_urlsafe(32))
 
 
+def normalise_password(plain: str) -> str:
+    """Unicode-normalise before hashing or verifying, on both paths.
+
+    The same password typed in Devanagari, Kannada or Tamil can arrive as different bytes
+    from different keyboards — iOS composes (NFC), several Linux input methods decompose
+    (NFD). Argon2 sees bytes, so without this the account is set up from one device and
+    refuses the *correct* password typed on another, with no error anyone could diagnose.
+
+    NFKC rather than NFC so visually identical compatibility forms (full-width Latin from
+    a CJK keyboard, for one) also settle to the same bytes. Applied symmetrically: any
+    change here must apply to hashing and verification together, or every existing
+    password stops matching.
+    """
+    return unicodedata.normalize("NFKC", plain)
+
+
 def hash_password(plain: str) -> str:
-    return password_hasher.hash(plain)
+    return password_hasher.hash(normalise_password(plain))
 
 
 def verify_password(plain: str, hashed: str | None) -> bool:
@@ -44,7 +61,7 @@ def verify_password(plain: str, hashed: str | None) -> bool:
     password" take the same time and cannot be told apart (PRD §7.4).
     """
     try:
-        matched = password_hasher.verify(plain, hashed or DUMMY_PASSWORD_HASH)
+        matched = password_hasher.verify(normalise_password(plain), hashed or DUMMY_PASSWORD_HASH)
     except Exception:
         # A malformed or truncated stored hash must read as "wrong password", not a 500.
         return False

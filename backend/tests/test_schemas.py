@@ -211,3 +211,37 @@ def test_a_common_password_is_refused_even_with_a_symbol_bolted_on(value: str) -
 
     with pytest.raises(ValueError, match="too common"):
         validate_password_strength(value)
+
+
+def test_the_browser_and_the_server_agree_on_what_a_digit_is() -> None:
+    r"""A checklist that ticks every box while the API refuses the password is worse than
+    no checklist. "½" is \p{N} but not a decimal digit; both sides now use \p{Nd}."""
+    from app.modules.auth.schemas import validate_password_strength
+
+    with pytest.raises(ValueError, match="one number"):
+        validate_password_strength("Abcdefg½!")
+
+    assert validate_password_strength("Abcdefg1!") == "Abcdefg1!"
+
+
+def test_the_same_password_verifies_however_it_was_typed() -> None:
+    """Devanagari, Kannada and Tamil compose differently on different keyboards — iOS
+    composes, several Linux input methods decompose. Argon2 sees bytes, so without
+    normalisation an account set up on one device refuses the correct password on another.
+    """
+    import unicodedata
+
+    from app.core.security import hash_password, verify_password
+
+    composed = unicodedata.normalize("NFC", "Café123!")
+    decomposed = unicodedata.normalize("NFD", "Café123!")
+    assert composed.encode() != decomposed.encode(), "the test needs two byte sequences"
+
+    assert verify_password(decomposed, hash_password(composed))
+    assert verify_password(composed, hash_password(decomposed))
+
+
+def test_a_wrong_password_is_still_wrong_after_normalisation() -> None:
+    from app.core.security import hash_password, verify_password
+
+    assert not verify_password("Different9!", hash_password("Café123!"))

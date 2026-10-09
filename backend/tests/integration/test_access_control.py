@@ -820,3 +820,120 @@ async def test_a_custom_role_cannot_be_created_at_or_above_your_own_rank(client,
             },
         )
         assert response.status_code == 403, f"rank {rank} should be refused"
+
+
+# ------------------------------------ the holes the review found, each with its repro
+
+
+async def test_a_narrower_deny_still_blocks_the_status_endpoints(client, world, make_user):
+    """The deny layer has to reach every endpoint, not only the list ones.
+
+    The subtle case is a deny *narrower* than the grant: an institute-wide `user:update_status`
+    with a block on one branch. `holds()` stays true, so the permission dependency lets the
+    request through, and anything that does not re-check at the target scope silently acts.
+    """
+    victim = await make_user("faculty", institute_id=world["abc"].id, branch_id=world["mca"].id)
+
+    await _as(client, world["owner"])
+    blocked = await client.post(
+        f"/api/v1/users/{world['principal'].id}/grants",
+        json={
+            "permission": "user:update_status",
+            "effect": "deny",
+            "institute_id": str(world["abc"].id),
+            "branch_id": str(world["mca"].id),
+            "reason": "Blocked from acting in MCA",
+        },
+    )
+    assert blocked.status_code == 201, blocked.text
+
+    await _as(client, world["principal"])
+    single = await client.patch(f"/api/v1/users/{victim.id}/status", json={"status": "suspended"})
+    assert single.status_code in (403, 404), "a block on the branch must stop the single endpoint"
+
+    bulk = await client.post(
+        "/api/v1/users/bulk-status",
+        json={"user_ids": [str(victim.id)], "status": "suspended"},
+    )
+    assert bulk.json()["succeeded"] == 0, "the same block must stop the bulk endpoint"
+    assert bulk.json()["skipped"] == 1
+
+
+async def test_another_institutes_role_view_is_not_readable(client, world, institute, make_user):
+    """`role:read` is held somewhere, not everywhere. Asking for another institute's view
+    would disclose which permissions they have deliberately added or removed."""
+    xyz, _branch = await institute("XYZ College", "XYZ", with_branch="CSE")
+
+    await _as(client, world["principal"])
+    response = await client.get("/api/v1/roles", params={"institute_id": str(xyz.id)})
+    assert response.status_code == 404
+
+    # Their own institute still works, and so does omitting the parameter entirely.
+    assert (
+        await client.get("/api/v1/roles", params={"institute_id": str(world["abc"].id)})
+    ).status_code == 200
+    assert (await client.get("/api/v1/roles")).status_code == 200
+
+
+async def test_platform_staff_may_still_look_at_any_institute(client, world, institute):
+    xyz, _branch = await institute("XYZ College", "XYZ", with_branch="CSE")
+    await _as(client, world["owner"])
+    assert (
+        await client.get("/api/v1/roles", params={"institute_id": str(xyz.id)})
+    ).status_code == 200
+
+
+async def test_an_invited_account_cannot_be_promoted_to_a_platform_role(client, world):
+    """Refusing platform roles on `invite` is decorative if the same account can be invited
+    as a Student and promoted a second later — the address is still unproven, and whoever
+    reads that mailbox completes the setup and owns the platform."""
+    await _as(client, world["owner"])
+    invited = await client.post(
+        "/api/v1/users/invite",
+        json={
+            "full_name": "Typo Victim",
+            "email": "typo@nobody-owns-this.example",
+            "role_key": "student",
+            "institute_id": str(world["abc"].id),
+        },
+    )
+    assert invited.status_code == 201
+    victim = invited.json()["user"]
+    assert victim["status"] == "invited"
+
+    promoted = await client.post(
+        f"/api/v1/users/{victim['id']}/roles", json={"role_key": "super_admin"}
+    )
+    assert promoted.status_code == 422
+    assert "already active" in promoted.json()["error"]["message"]
+
+
+async def test_an_active_account_can_still_be_promoted(client, world):
+    """The restriction is about proving the address, not about blocking succession."""
+    await _as(client, world["owner"])
+    promoted = await client.post(
+        f"/api/v1/users/{world['principal'].id}/roles", json={"role_key": "super_admin"}
+    )
+    assert promoted.status_code == 201, promoted.text
+
+
+async def test_only_a_super_admin_may_appoint_platform_admins(client, world, make_user):
+    """`platform_admin:manage` gates something now. It was in the catalogue, granted to
+    Super Admin and shown in the matrix — and checked nowhere; what actually stopped a
+    Platform Admin minting another was the rank ceiling, a different rule that happens to
+    have the same effect. A permission nobody enforces is worse than one that does not
+    exist."""
+    platform_admin = await make_user("platform_admin")
+    target = world["principal"]
+
+    await _as(client, platform_admin)
+    refused = await client.post(
+        f"/api/v1/users/{target.id}/roles", json={"role_key": "platform_admin"}
+    )
+    assert refused.status_code == 403
+
+    await _as(client, world["owner"])
+    allowed = await client.post(
+        f"/api/v1/users/{target.id}/roles", json={"role_key": "platform_admin"}
+    )
+    assert allowed.status_code == 201, allowed.text

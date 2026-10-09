@@ -8,7 +8,13 @@ import { Card } from "@/components/Card";
 import { Icon } from "@/components/Icon";
 import { PageHeader } from "@/components/PageHeader";
 import { Spinner } from "@/components/Spinner";
-import { accessKeys, fetchPermissions, fetchRoles, updateRole } from "@/features/admin/api";
+import {
+  accessKeys,
+  fetchPermissions,
+  fetchRoles,
+  setInstituteRolePermissions,
+  updateRole,
+} from "@/features/admin/api";
 import { RoleEditor } from "@/features/admin/components/RoleEditor";
 import type { PermissionInfo, Role } from "@/features/auth/types";
 import { useAuth, useCan } from "@/features/auth/useAuth";
@@ -51,11 +57,26 @@ export function RolesPage() {
       const permissions = next
         ? [...role.permissions, permission]
         : role.permissions.filter((p) => p !== permission);
-      return updateRole(role.id, { permissions });
+
+      // Which endpoint depends on what the displayed set actually *is*.
+      //
+      // With an institute in view, `role.permissions` is that institute's effective set —
+      // the definition plus its additions, minus its removals. Posting that to
+      // `updateRole` would bake the overrides into the role's own definition and leave the
+      // override rows behind, so a permission sitting in a `deny` would appear to toggle
+      // on and then vanish on the next refetch, with no error. `setInstituteRolePermissions`
+      // takes the effective set and works out the difference, which is what we mean.
+      return viewing
+        ? setInstituteRolePermissions(role.id, viewing, permissions)
+        : updateRole(role.id, { permissions });
     },
-    onSuccess: () => {
+    // `await`, so the mutation stays pending until the refetch lands. Without it
+    // `isPending` drops while the table still holds the pre-change permissions, and a
+    // second click in that window sends a set computed from stale data — silently
+    // reverting the first change.
+    onSuccess: async () => {
       setToggleError(null);
-      void queryClient.invalidateQueries({ queryKey: ["access", "roles"] });
+      await queryClient.invalidateQueries({ queryKey: ["access", "roles"] });
     },
     onError: (error: Error) => setToggleError(error.message),
   });
@@ -293,10 +314,12 @@ function PermissionMatrix({
                       </td>
                       {roles.map((role) => {
                         const allowed = held.get(role.id)?.has(permission.key) ?? false;
-                        // A cell is editable only where the role itself is. System roles
-                        // mean the same thing on every installation, so their definitions
-                        // are read-only for everyone — including a Super Admin.
-                        const canToggle = role.editable && !saving;
+                        // With an institute in view a cell follows `customisable`,
+                        // which includes built-ins: adjusting Faculty for ABC changes
+                        // nothing about Faculty anywhere else. Without one it follows
+                        // `editable`, which is custom roles only — a built-in's own
+                        // definition is read-only to everyone, Super Admin included.
+                        const canToggle = (instituteId ? role.customisable : role.editable) && !saving;
 
                         return (
                           <td

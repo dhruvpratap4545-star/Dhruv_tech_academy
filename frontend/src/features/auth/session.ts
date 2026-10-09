@@ -27,7 +27,11 @@ export function endSession(): void {
   // that the user is gone and the console stays on screen. Write the null answer first,
   // while the observer is still attached, and only then drop everything else.
   queryClient.setQueryData(meKey, null);
+
+  // Everything except the `['me']` entry itself. Matching the whole `['me']` prefix would
+  // also spare `['me', 'overview']` — the previous user's institute counts — and the next
+  // person to sign in on this browser would see them for a paint.
   queryClient.removeQueries({
-    predicate: (query) => query.queryKey[0] !== meKey[0],
+    predicate: (query) => !(query.queryKey.length === 1 && query.queryKey[0] === meKey[0]),
   });
 }

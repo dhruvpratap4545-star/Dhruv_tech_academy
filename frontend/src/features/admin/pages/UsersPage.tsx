@@ -74,12 +74,14 @@ export function UsersPage() {
   // of the wrong results and no cascading effect.
   const filterKey = `${debouncedSearch}|${status}|${role}`;
 
-  // Changing filters or page changes who is on screen. Keeping a selection across that
+  // Changing filters *or page* changes who is on screen. Keeping a selection across that
   // would mean acting on people the administrator can no longer see, which is exactly the
-  // mistake a confirmation dialog cannot catch.
-  const [lastView, setLastView] = useState(filterKey);
-  if (filterKey !== lastView) {
-    setLastView(filterKey);
+  // mistake a confirmation dialog cannot catch — and "Select everyone on this page" would
+  // report itself unchecked while a hidden selection was still live.
+  const viewKey = `${filterKey}|${pageIndex}`;
+  const [lastView, setLastView] = useState(viewKey);
+  if (viewKey !== lastView) {
+    setLastView(viewKey);
     if (selected.size > 0) setSelected(new Set());
   }
   const [lastFilterKey, setLastFilterKey] = useState(filterKey);

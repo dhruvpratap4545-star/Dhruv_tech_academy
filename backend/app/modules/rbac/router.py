@@ -22,6 +22,7 @@ from app.modules.rbac.deps import (
     require_permission,
     user_agent,
 )
+from app.modules.rbac.scopes import Scope
 from app.modules.rbac.service import Authorized
 from app.modules.users.models import User
 
@@ -64,8 +65,16 @@ async def list_roles(
     # Default to the caller's own institute: an institute admin asking "what does Faculty
     # allow?" means in their institute, and answering with the untouched definition would
     # be answering a question nobody asked.
-    if institute_id is None and not context.is_platform_staff:
-        institute_id = context.primary_institute_id
+    if institute_id is None:
+        institute_id = None if context.is_platform_staff else context.primary_institute_id
+    elif not context.can("role:read", Scope(institute_id=institute_id)):
+        # `require_permission` only proved they hold `role:read` *somewhere*. Without this
+        # the query parameter is a cross-tenant read: another institute's effective
+        # permissions, and which ones they deliberately added or removed, are that
+        # institute's business. Not found rather than forbidden, so the response does not
+        # confirm the institute exists.
+        raise NotFound("That institute does not exist.")
+
     return await admin.list_roles(db, context, institute_id)
 
 

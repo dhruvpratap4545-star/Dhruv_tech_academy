@@ -88,7 +88,25 @@ async def http_error_handler(_: Request, exc: Exception) -> JSONResponse:
 async def validation_error_handler(_: Request, exc: Exception) -> JSONResponse:
     """Pydantic errors, flattened to field names only — request bodies are never echoed back."""
     assert isinstance(exc, RequestValidationError)
-    fields = sorted({".".join(str(p) for p in e["loc"][1:]) or "body" for e in exc.errors()})
+    errors = exc.errors()
+
+    # A validator that wrote a real sentence gets to keep it.
+    #
+    # Pydantic wraps a `ValueError` raised in a field validator as `value_error`, and the
+    # default response here replaces it with "Please check these fields: password." — which
+    # throws away "Password needs one special character." and leaves the person guessing.
+    # Only `value_error` messages are passed through: those are ours, written for a reader.
+    # Type and shape errors stay hidden, because they describe the request body and echoing
+    # it back is how a validation message becomes a reflection vector.
+    authored = [
+        str(e.get("msg", "")).removeprefix("Value error, ")
+        for e in errors
+        if e.get("type") == "value_error" and e.get("msg")
+    ]
+    if authored:
+        return JSONResponse(status_code=422, content=error_body("VALIDATION_FAILED", authored[0]))
+
+    fields = sorted({".".join(str(p) for p in e["loc"][1:]) or "body" for e in errors})
     return JSONResponse(
         status_code=422,
         content=error_body(

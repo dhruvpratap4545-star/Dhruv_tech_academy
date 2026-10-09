@@ -49,17 +49,28 @@ type RequestOptions = {
 let inFlightRefresh: Promise<boolean> | null = null;
 
 function refreshSession(): Promise<boolean> {
-  inFlightRefresh ??= fetch(`${BASE_URL}/auth/refresh`, {
+  if (inFlightRefresh) return inFlightRefresh;
+
+  const attempt = fetch(`${BASE_URL}/auth/refresh`, {
     method: "POST",
     credentials: "include",
     headers: { "X-Requested-With": "XMLHttpRequest" },
   })
     .then((response) => response.ok)
-    .catch(() => false)
-    .finally(() => {
-      inFlightRefresh = null;
-    });
-  return inFlightRefresh;
+    .catch(() => false);
+
+  inFlightRefresh = attempt;
+
+  // Clear the slot only if it still holds *this* attempt. An unconditional reset lets a
+  // cancelled-then-restarted refresh null out its successor's slot when it finally
+  // settles, after which a third caller starts a second rotation alongside the first —
+  // and two refresh tokens in flight is exactly what the backend treats as theft,
+  // answering by killing the whole session family.
+  void attempt.finally(() => {
+    if (inFlightRefresh === attempt) inFlightRefresh = null;
+  });
+
+  return attempt;
 }
 
 /** Called by the auth layer on logout, so a stale attempt cannot revive a dead session. */

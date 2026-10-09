@@ -11,6 +11,7 @@ from typing import Annotated
 
 from fastapi import APIRouter, BackgroundTasks, Depends, Query, Request, status
 
+from app.core.errors import Forbidden
 from app.core.pagination import Page, clamp_limit
 from app.modules.auth.service import RequestMeta
 from app.modules.notifications.email import send_email
@@ -94,9 +95,19 @@ async def create_institute_with_admin(
     institute = await org.create_institute(
         db, guard=guard, payload=payload.institute, meta=_meta(request)
     )
+    # A guard carries the permission it was built for, and every check inside
+    # `invite_user` asks about `guard.permission`. Passing the `institute:create` guard
+    # would silently evaluate the invite rules — scope, rank, faculty classes — against
+    # the wrong permission, so a block on `user:invite` would not stop this path. Today
+    # everyone holding `institute:create` also holds `user:invite`, so it is a bypass
+    # primitive rather than a live hole; it stops being either one here.
+    invite_guard = Authorized(db, guard.context, "user:invite")
+    if not guard.context.holds("user:invite"):
+        raise Forbidden("You cannot invite the administrator for this institute.")
+
     admin, message = await users.invite_user(
         db,
-        guard=guard,
+        guard=invite_guard,
         payload=user_schemas.InviteUserRequest(
             full_name=payload.admin_full_name,
             email=payload.admin_email,

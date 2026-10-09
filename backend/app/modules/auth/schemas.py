@@ -6,6 +6,7 @@ being silently ignored — which is how "I set remember_me and it did nothing" b
 
 from __future__ import annotations
 
+import unicodedata
 from typing import Annotated, Literal
 
 from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator
@@ -30,19 +31,33 @@ MAX_PASSWORD_LENGTH = 128
 # every one of those letters as a "special character" — so "ಕನ್ನಡ123" would pass a rule it
 # should not and fail one it should. Python's `str` methods already know the whole of
 # Unicode; a hand-written character class does not.
+# Defined by Unicode *category*, so the browser and the server agree character for
+# character. `str.isalpha()` and `str.isdigit()` look equivalent to `\p{L}` and `\p{N}`
+# and are not: `isdigit()` rejects "½" while `\p{N}` accepts it, so a password could tick
+# all four boxes in the live checklist and be refused by the API — which is the one thing
+# a checklist must never do.
+def _is_letter(ch: str) -> bool:
+    return unicodedata.category(ch).startswith("L")
+
+
+def _is_digit(ch: str) -> bool:
+    # Nd only — decimal digits. Matches `\p{Nd}` in the browser exactly.
+    return unicodedata.category(ch) == "Nd"
+
+
 def _has_letter(value: str) -> bool:
-    return any(ch.isalpha() for ch in value)
+    return any(_is_letter(ch) for ch in value)
 
 
 def _has_digit(value: str) -> bool:
-    return any(ch.isdigit() for ch in value)
+    return any(_is_digit(ch) for ch in value)
 
 
 def _has_special(value: str) -> bool:
-    """Anything that is neither a letter nor a digit, spaces included. Enumerating an
-    allowed-symbols set is how a password manager's output gets rejected for a character
+    """Anything that is neither a letter nor a decimal digit, spaces included. Enumerating
+    an allowed-symbols set is how a password manager's output gets rejected for a character
     nobody thought of."""
-    return any(not ch.isalnum() for ch in value)
+    return any(not _is_letter(ch) and not _is_digit(ch) for ch in value)
 
 
 # Passwords seen constantly in breach corpora. A full breach-list check belongs in a later
@@ -100,7 +115,7 @@ def validate_password_strength(value: str) -> str:
     # Compare with the decoration stripped. A character-class rule invites exactly one
     # evasion — take a breached password and bolt a symbol on the end — and "password123!"
     # is no stronger than "password123" against anyone running a list with mangling rules.
-    stripped = "".join(ch for ch in value if ch.isalnum()).lower()
+    stripped = "".join(ch for ch in value if _is_letter(ch) or _is_digit(ch)).lower()
     if value.lower() in _COMMON_PASSWORDS or stripped in _COMMON_PASSWORDS:
         raise ValueError("That password is too common. Please choose a different one.")
     return value

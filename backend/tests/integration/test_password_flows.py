@@ -394,3 +394,32 @@ async def test_a_completed_reset_activates_an_invited_account(
     refreshed = await db.scalar(select(User).where(User.email == "newbie@example.com"))
     assert refreshed is not None
     assert refreshed.status == "active"
+
+
+async def test_a_refused_password_says_what_is_missing(client, seeded) -> None:
+    """The validator writes a sentence a person can act on; it has to survive the error
+    handler. "Please check these fields: password." sends somebody back to guess again."""
+    response = await client.post(
+        "/api/v1/auth/register",
+        json={
+            "full_name": "Asha Rao",
+            "email": "asha-weak@example.com",
+            "password": "abcdefgh1",
+            "accept_terms": True,
+        },
+    )
+    assert response.status_code == 422
+    message = response.json()["error"]["message"]
+    assert "special character" in message, f"unhelpful message: {message!r}"
+
+
+async def test_a_malformed_body_still_hides_its_contents(client, seeded) -> None:
+    """Only messages we authored are passed through. A type error describes the request
+    body, and echoing that back is how a validation message becomes a reflection vector."""
+    response = await client.post(
+        "/api/v1/auth/register",
+        json={"full_name": 12345, "email": "not-an-email", "password": 99, "accept_terms": True},
+    )
+    assert response.status_code == 422
+    message = response.json()["error"]["message"]
+    assert "12345" not in message and "99" not in message

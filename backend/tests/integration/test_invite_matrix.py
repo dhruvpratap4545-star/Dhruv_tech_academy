@@ -574,13 +574,12 @@ async def test_an_invited_super_admin_does_not_count_as_the_survivor(
     """
     from sqlalchemy import select
 
+    from app.modules.rbac import repository as rbac_repo
+    from app.modules.rbac.models import UserRoleAssignment
     from app.modules.users.models import User
 
     await _as(client, world["super_admin"])
 
-    # A platform role cannot be invited directly any more, so build the same situation the
-    # supported way: invite the person into an institute, then promote them. They are still
-    # `invited` with no password, which is the condition under test.
     invited = await client.post(
         "/api/v1/users/invite",
         json=_invite(
@@ -593,10 +592,16 @@ async def test_an_invited_super_admin_does_not_count_as_the_survivor(
     assert successor is not None
     assert successor.status == "invited" and successor.password_hash is None
 
-    promoted = await client.post(
-        f"/api/v1/users/{successor.id}/roles", json={"role_key": "super_admin"}
-    )
-    assert promoted.status_code == 201, promoted.text
+    # Give them the role directly in the database, not through the API.
+    #
+    # The API refuses this now, and rightly so — promoting an unproven address to platform
+    # authority is the hole that restriction closes. But the guard under test is the *last
+    # line*: it has to hold even if such a row exists anyway, from a seed, a migration, or
+    # a release that predates the restriction. Building the state by hand is the only way
+    # to exercise a defence whose front door has since been locked.
+    super_admin_role = await rbac_repo.get_role_by_key(db, "super_admin")
+    db.add(UserRoleAssignment(user_id=successor.id, role_id=super_admin_role.id))
+    await db.commit()
 
     # Two assignments exist, but only one of them belongs to someone who can log in.
     refused = await client.request(

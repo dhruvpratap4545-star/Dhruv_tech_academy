@@ -65,6 +65,12 @@ def _validate_scope_for_role(role, scope: Scope) -> None:
         )
     if role.scope_level == "institute" and scope.institute_id is None:
         raise ValidationFailed(f"{role.name} must be given within an institute.")
+    # An institute-level role granted *with* a branch is allowed on purpose, and it is
+    # load-bearing. `scope_level` is the widest a role may reach, not the only shape it may
+    # take. A Branch Admin inviting a Student names their branch because that is where
+    # their own authority is; demand institute scope instead and `guard.ensure` refuses
+    # them, so Branch Admins and Faculty could not invite students at all. The assignment
+    # that results is *narrower* than institute-wide, which is the safe direction to err.
     if role.scope_level == "branch":
         if scope.institute_id is None:
             raise ValidationFailed(f"{role.name} must be given within an institute.")
@@ -90,6 +96,44 @@ def _refuse_platform_role_on_invite(role) -> None:
             f"{role.name} cannot be given to a new invitation. Invite the person with a "
             "role inside an institute first, then change their role once their account "
             "is active."
+        )
+
+
+def _require_platform_admin_authority(guard: Authorized, role) -> None:
+    """`platform_admin:manage` actually gates something now.
+
+    It was in the catalogue, granted to Super Admin, shown in the permission matrix — and
+    checked nowhere. What really stopped a Platform Admin minting another was the rank
+    ceiling, which is a different rule that happens to have the same effect today. A
+    permission nobody enforces is worse than one that does not exist: an administrator
+    toggling that cell believes they have changed who can appoint platform staff, and they
+    have not.
+    """
+    if role.key != "platform_admin":
+        return
+    if not guard.context.holds("platform_admin:manage"):
+        raise Forbidden("Only a Super Admin can add or remove Platform Admins.")
+
+
+def _refuse_platform_role_for_unproven_account(role, user: User) -> None:
+    """The other half of the invitation rule, and without it that rule is decorative.
+
+    Refusing platform roles on `invite` is pointless if the same account can be invited as
+    a Student and promoted a second later: the account still belongs to an address nobody
+    has proved they control, and whoever reads that mailbox completes the password setup
+    and owns the platform. The restriction is not about which endpoint is used — it is
+    about whether the person on the other end has demonstrated they are there.
+
+    "Proved" means exactly two things: the account is active, and a password has been set.
+    Both only become true after somebody received the setup code at that address and used
+    it.
+    """
+    if role.scope_level != "platform":
+        return
+    if user.status != "active" or user.password_hash is None:
+        raise ValidationFailed(
+            f"{role.name} can only be given to an account that is already active. "
+            "Ask the person to finish setting their password first."
         )
 
 
@@ -285,10 +329,12 @@ async def assign_role(
     role = await _require_role(db, payload.role_key)
     _validate_scope_for_role(role, scope)
     guard.ensure_can_grant(role.rank, scope)
+    _require_platform_admin_authority(guard, role)
 
     user = await repo.get_user(db, user_id)
     if user is None or user.status == "deleted":
         raise NotFound("That user does not exist.")
+    _refuse_platform_role_for_unproven_account(role, user)
 
     assignment = await _grant_role(
         db, user_id=user_id, role=role, scope=scope, granted_by=guard.user_id
@@ -420,6 +466,13 @@ async def _apply_status(
     user = await _require_visible_user(db, guard, user_id)
     target_rank = await _highest_rank_of(db, user_id)
     scope = await _primary_scope_of(db, user_id)
+
+    # The full authorization check, not just rank. `require_permission` only proved the
+    # caller holds `user:update_status` *somewhere*; this is where the target scope is
+    # known, and it is what applies the deny layer (ADR-017) and the module-enabled test.
+    # Without it an explicit block on a branch is ignored by this endpoint while the list
+    # endpoints honour it — the block looks applied and is not.
+    await guard.ensure(scope)
     guard.ensure_can_grant(target_rank, scope)
 
     if status == "suspended":
@@ -502,15 +555,28 @@ async def _highest_rank_of(db: AsyncSession, user_id: uuid.UUID) -> int:
     return context.max_rank
 
 
+async def _live_scopes_of(db: AsyncSession, user_id: uuid.UUID) -> list[Scope]:
+    """Every scope this person currently holds a role at."""
+    assignments = await rbac_repo.live_assignments_for_user(db, user_id)
+    return [Scope(institute_id=a.institute_id, branch_id=a.branch_id) for a in assignments]
+
+
 async def _primary_scope_of(db: AsyncSession, user_id: uuid.UUID) -> Scope:
-    """The scope a user's actions are audited against. Their first live assignment is a
-    good enough answer; a user with roles in several institutes is rare and the audit row
-    records the acting admin anyway."""
+    """The scope a user's actions are audited against.
+
+    Their most senior assignment, deliberately — not whichever row the database happened to
+    return first. ``live_assignments_for_user`` has no ``ORDER BY``, so "the first one" is
+    not a stable answer, and this value decides both the audit row's institute and, through
+    ``ensure_can_grant``, whether an action is permitted at all. Two calls disagreeing is
+    the kind of fault that shows up once a month and never reproduces.
+    """
     assignments = await rbac_repo.live_assignments_for_user(db, user_id)
     if not assignments:
         return Scope()
-    first = assignments[0]
-    return Scope(institute_id=first.institute_id, branch_id=first.branch_id)
+
+    roles = {r.id: r for r in await rbac_repo.list_roles(db, include_inactive=True)}
+    senior = max(assignments, key=lambda a: roles[a.role_id].rank if a.role_id in roles else 0)
+    return Scope(institute_id=senior.institute_id, branch_id=senior.branch_id)
 
 
 # -------------------------------------------------------------------------- reading
@@ -526,11 +592,21 @@ async def _require_visible_user(db: AsyncSession, guard: Authorized, user_id: uu
     if user is None or user.status == "deleted":
         raise NotFound("That user does not exist.")
 
-    if guard.context.is_platform_staff:
-        return user
+    # Every scope the target holds a role at, not one arbitrarily chosen. Picking one made
+    # visibility depend on database row order: a person with roles in two institutes could
+    # be listed by `list_users` (which tests all their assignments) and then 404 when
+    # opened, intermittently, for the same caller.
+    target_scopes = await _live_scopes_of(db, user_id)
+    if not target_scopes:
+        target_scopes = [Scope()]
 
-    target_scope = await _primary_scope_of(db, user_id)
-    if not any(s.contains(target_scope) for s in guard.context.scopes_for(guard.permission)):
+    # `usable_scopes`, not the raw grants. An explicit deny (ADR-017) has to narrow who is
+    # visible as well as what may be done to them — a deny the per-row check honours but
+    # this one ignores is a deny that leaks exactly the people it was created to hide.
+    # Platform staff hold a platform-level grant, which covers every scope, so they need
+    # no special case here; giving them one would skip their denies too.
+    mine = guard.usable_scopes()
+    if not any(s.contains(target) for s in mine for target in target_scopes):
         raise NotFound("That user does not exist.")
     return user
 
@@ -712,7 +788,9 @@ async def build_overview(db: AsyncSession, *, guard: Authorized) -> schemas.Over
     from app.modules.audit.models import AuditLog
     from app.modules.org.models import Institute
 
-    scopes = guard.context.scopes_for(guard.permission)
+    # `usable_scopes`, not raw grants: a deny has to narrow the counts as well as the
+    # rows, or the tiles quietly report on people the caller may not see.
+    scopes = guard.usable_scopes()
     platform = guard.context.is_platform_staff
     institute_ids = frozenset(s.institute_id for s in scopes if s.institute_id)
 
