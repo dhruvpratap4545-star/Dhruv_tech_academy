@@ -13,6 +13,7 @@ from app.modules.auth.models import RefreshToken  # noqa: F401  (FK target for m
 from app.modules.org.models import Class, ClassEnrollment, ClassFaculty
 from app.modules.rbac.models import (
     InstituteModule,
+    InstituteRolePermission,
     Module,
     Permission,
     Role,
@@ -33,11 +34,17 @@ def _live_assignments(user_id: uuid.UUID) -> Select[tuple[UserRoleAssignment]]:
 
 
 async def load_grants(db: AsyncSession, user_id: uuid.UUID) -> Sequence[GrantRow]:
-    """Every (role, scope, permission) the user currently holds — in one round trip.
+    """Every (role, scope, permission) the user currently holds, after their institute's
+    own adjustments to those roles have been applied.
 
-    Three joins instead of three queries. The result is small (roles x permissions, so
-    tens of rows) and is immediately folded into an ``AuthContext`` and cached, so this
-    runs at most once per user per cache TTL.
+    Two queries. The first is the base: three joins rather than three round trips, and the
+    result is small (roles x permissions, so tens of rows). The second reads only the rows
+    where an institute has chosen to differ from the built-in definition, which for most
+    institutes is none at all.
+
+    Applying the difference here, rather than in the engine, is deliberate: every caller
+    above this line then sees one flat truth about what the user may do, and no call site
+    has to remember that institute customisation exists.
     """
     stmt = (
         select(
@@ -57,8 +64,99 @@ async def load_grants(db: AsyncSession, user_id: uuid.UUID) -> Sequence[GrantRow
             Role.is_active.is_(True),
         )
     )
-    result = await db.execute(stmt)
-    return result.all()  # type: ignore[return-value]
+    rows: list[GrantRow] = list(await db.execute(stmt))  # type: ignore[arg-type]
+
+    overrides = await _role_overrides_for_user(db, user_id)
+    if not overrides:
+        return rows
+    return _apply_role_overrides(rows, overrides)
+
+
+# (role_key, role_name, rank, institute_id, branch_id) -> the assignment a grant came from
+_Assignment = tuple[str, str, int, uuid.UUID | None, uuid.UUID | None]
+
+
+async def _role_overrides_for_user(
+    db: AsyncSession, user_id: uuid.UUID
+) -> dict[tuple[uuid.UUID, str], dict[str, str]]:
+    """(institute id, role key) -> {permission key: effect}, for this user's institutes."""
+    stmt = (
+        select(
+            InstituteRolePermission.institute_id,
+            Role.key,
+            Permission.key,
+            InstituteRolePermission.effect,
+        )
+        .join(Permission, Permission.id == InstituteRolePermission.permission_id)
+        .join(Role, Role.id == InstituteRolePermission.role_id)
+        .where(
+            InstituteRolePermission.institute_id.in_(
+                select(UserRoleAssignment.institute_id).where(
+                    UserRoleAssignment.user_id == user_id,
+                    UserRoleAssignment.revoked_at.is_(None),
+                    UserRoleAssignment.institute_id.is_not(None),
+                )
+            ),
+            InstituteRolePermission.role_id.in_(
+                select(UserRoleAssignment.role_id).where(
+                    UserRoleAssignment.user_id == user_id,
+                    UserRoleAssignment.revoked_at.is_(None),
+                )
+            ),
+        )
+    )
+    found: dict[tuple[uuid.UUID, str], dict[str, str]] = {}
+    for institute_id, role_key, permission_key, effect in await db.execute(stmt):
+        found.setdefault((institute_id, role_key), {})[permission_key] = effect
+    return found
+
+
+async def role_ids_by_key(db: AsyncSession) -> dict[str, uuid.UUID]:
+    result = await db.execute(select(Role.key, Role.id))
+    return dict(result.all())  # type: ignore[arg-type]
+
+
+def _apply_role_overrides(
+    rows: Sequence[GrantRow],
+    overrides: dict[tuple[uuid.UUID, str], dict[str, str]],
+) -> list[GrantRow]:
+    """Remove what the institute denied for a role, add what it allowed.
+
+    Keyed on (institute, role) so one institute's adjustment cannot reach a person's roles
+    in another — which is the whole reason it hangs off the institute and not the role.
+    """
+    kept: list[GrantRow] = []
+    # Every distinct assignment, so an "allow" can be expanded against the right scope.
+    assignments: set[tuple[str, str, int, uuid.UUID | None, uuid.UUID | None]] = set()
+
+    for row in rows:
+        role_key, role_name, rank, institute_id, branch_id, permission_key = row
+        assignments.add((role_key, role_name, rank, institute_id, branch_id))
+        blocked_here = (
+            institute_id is not None
+            and overrides.get((institute_id, role_key), {}).get(permission_key) == "deny"
+        )
+        if not blocked_here:
+            kept.append(row)
+
+    for role_key, role_name, rank, institute_id, branch_id in assignments:
+        if institute_id is None:
+            continue
+        for permission_key, effect in overrides.get((institute_id, role_key), {}).items():
+            if effect != "allow":
+                continue
+            added: GrantRow = (
+                role_key,
+                role_name,
+                rank,
+                institute_id,
+                branch_id,
+                permission_key,
+            )
+            if added not in kept:
+                kept.append(added)
+
+    return kept
 
 
 async def load_personal_grants(db: AsyncSession, user_id: uuid.UUID) -> Sequence[PersonalGrantRow]:
@@ -384,3 +482,75 @@ async def find_live_grant(
 
 async def get_grant(db: AsyncSession, grant_id: uuid.UUID) -> UserPermissionGrant | None:
     return await db.get(UserPermissionGrant, grant_id)
+
+
+async def institute_overrides(
+    db: AsyncSession, institute_id: uuid.UUID
+) -> dict[uuid.UUID, dict[str, str]]:
+    """role id -> {permission key: effect} for one institute, for the roles screen."""
+    stmt = (
+        select(
+            InstituteRolePermission.role_id,
+            Permission.key,
+            InstituteRolePermission.effect,
+        )
+        .join(Permission, Permission.id == InstituteRolePermission.permission_id)
+        .where(InstituteRolePermission.institute_id == institute_id)
+    )
+    grouped: dict[uuid.UUID, dict[str, str]] = {}
+    for role_id, key, effect in await db.execute(stmt):
+        grouped.setdefault(role_id, {})[key] = effect
+    return grouped
+
+
+async def customised_role_ids(db: AsyncSession) -> set[uuid.UUID]:
+    """Roles that at least one institute has adjusted, so the catalogue can say so."""
+    result = await db.execute(select(InstituteRolePermission.role_id).distinct())
+    return set(result.scalars())
+
+
+async def replace_institute_overrides(
+    db: AsyncSession,
+    *,
+    institute_id: uuid.UUID,
+    role_id: uuid.UUID,
+    effects: dict[uuid.UUID, str],
+    created_by: uuid.UUID | None,
+) -> None:
+    """Set one institute's adjustments to one role to exactly ``effects``.
+
+    Delete-then-insert rather than a diff: the set is a handful of rows, the operation is
+    rare and deliberate, and a diff is more code to get subtly wrong for no gain. An empty
+    ``effects`` therefore means "this institute uses the role exactly as defined", and the
+    rows disappear rather than lingering as a no-op that future readers have to decode.
+    """
+    await db.execute(
+        delete(InstituteRolePermission).where(
+            InstituteRolePermission.institute_id == institute_id,
+            InstituteRolePermission.role_id == role_id,
+        )
+    )
+    db.add_all(
+        InstituteRolePermission(
+            institute_id=institute_id,
+            role_id=role_id,
+            permission_id=permission_id,
+            effect=effect,
+            created_by=created_by,
+        )
+        for permission_id, effect in effects.items()
+    )
+
+
+async def user_ids_holding_role_in(
+    db: AsyncSession, *, role_id: uuid.UUID, institute_id: uuid.UUID
+) -> set[uuid.UUID]:
+    """Everyone whose cached permissions this role change invalidates."""
+    result = await db.execute(
+        select(UserRoleAssignment.user_id).where(
+            UserRoleAssignment.role_id == role_id,
+            UserRoleAssignment.institute_id == institute_id,
+            UserRoleAssignment.revoked_at.is_(None),
+        )
+    )
+    return set(result.scalars())

@@ -6,7 +6,12 @@ import { Button } from "@/components/Button";
 import { Checkbox, SelectField, TextField } from "@/components/Field";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { Modal } from "@/components/Modal";
-import { accessKeys, archiveRole, createRole, updateRole } from "@/features/admin/api";
+import {
+  archiveRole,
+  createRole,
+  setInstituteRolePermissions,
+  updateRole,
+} from "@/features/admin/api";
 import type { PermissionInfo, Role } from "@/features/auth/types";
 import { useAuth } from "@/features/auth/useAuth";
 import { cn } from "@/lib/cn";
@@ -25,15 +30,28 @@ import { cn } from "@/lib/cn";
 export function RoleEditor({
   role,
   permissions,
+  viewingInstituteId,
   onClose,
 }: {
   role: Role | null;
   permissions: PermissionInfo[];
+  /** The institute whose view is on screen, when there is one. Distinct from the
+   *  `instituteId` state below, which is the institute a *new* role is being created for. */
+  viewingInstituteId?: string;
   onClose: () => void;
 }) {
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const editing = role !== null;
+
+  /**
+   * Two different jobs share this dialog, and they must not be confused.
+   *
+   * *Adjusting* changes what a role allows inside one institute, and is offered for the
+   * built-ins too. *Defining* changes the role itself, and only a custom role can be
+   * defined. A built-in that is customisable but not editable lands in the first mode.
+   */
+  const adjusting = editing && !role.editable && role.customisable && Boolean(viewingInstituteId);
 
   const institutes = (user?.roles ?? []).filter((r) => r.institute_id);
   const myRank = user?.roles.length ? Math.max(...user.roles.map((r) => r.rank)) : 0;
@@ -52,26 +70,28 @@ export function RoleEditor({
   const [confirmRetire, setConfirmRetire] = useState(false);
 
   const done = () => {
-    void queryClient.invalidateQueries({ queryKey: accessKeys.roles() });
+    void queryClient.invalidateQueries({ queryKey: ["access", "roles"] });
     onClose();
   };
 
   const save = useMutation({
     mutationFn: () =>
-      editing
-        ? updateRole(role.id, {
-            name,
-            description: description || undefined,
-            permissions: [...chosen],
-          })
-        : createRole({
-            name,
-            description: description || undefined,
-            scope_level: scopeLevel,
-            rank: Number(rank),
-            institute_id: instituteId,
-            permissions: [...chosen],
-          }),
+      adjusting
+        ? setInstituteRolePermissions(role.id, viewingInstituteId!, [...chosen])
+        : editing
+          ? updateRole(role.id, {
+              name,
+              description: description || undefined,
+              permissions: [...chosen],
+            })
+          : createRole({
+              name,
+              description: description || undefined,
+              scope_level: scopeLevel,
+              rank: Number(rank),
+              institute_id: instituteId,
+              permissions: [...chosen],
+            }),
     onSuccess: done,
     onError: (err: Error) => setError(err.message),
   });
@@ -83,7 +103,11 @@ export function RoleEditor({
   });
 
   const groups = [...new Set(permissions.map((p) => p.group))];
-  const valid = name.trim().length >= 2 && chosen.size > 0 && (editing || instituteId);
+  // Adjusting borrows the role's own name and institute, so neither is ours to validate.
+  // A role with no permissions at all is legitimate here: it is how an institute says
+  // "holders of this role may do nothing in our institute".
+  const valid =
+    adjusting || (name.trim().length >= 2 && chosen.size > 0 && (editing || instituteId));
 
   function toggle(key: string) {
     setChosen((current) => {
@@ -99,15 +123,21 @@ export function RoleEditor({
       open
       onClose={onClose}
       size="lg"
-      title={editing ? `Edit ${role.name}` : "New role"}
+      title={
+        adjusting ? `${role.name} in your institute` : editing ? `Edit ${role.name}` : "New role"
+      }
       description={
-        editing
-          ? "Changes apply immediately to everyone holding this role."
-          : "A role is a bundle of permissions. Where it applies is decided when you give it to someone."
+        adjusting
+          ? "Changes what this role allows inside your institute only. Holders of the same role elsewhere are not affected, and the role's own definition does not change."
+          : editing
+            ? "Changes apply immediately to everyone holding this role."
+            : "A role is a bundle of permissions. Where it applies is decided when you give it to someone."
       }
       footer={
         <div className="flex w-full flex-wrap items-center gap-2">
-          {editing && role.holder_count === 0 && (
+          {/* Retiring is about the role itself, so it has no place while adjusting one
+              institute's view of a built-in. */}
+          {editing && !adjusting && role.holder_count === 0 && (
             <Button variant="danger" size="sm" onClick={() => setConfirmRetire(true)}>
               Retire this role
             </Button>
@@ -117,7 +147,13 @@ export function RoleEditor({
               Cancel
             </Button>
             <Button onClick={() => save.mutate()} disabled={!valid || save.isPending}>
-              {save.isPending ? "Saving…" : editing ? "Save changes" : "Create role"}
+              {save.isPending
+                ? "Saving…"
+                : adjusting
+                  ? "Save for this institute"
+                  : editing
+                    ? "Save changes"
+                    : "Create role"}
             </Button>
           </div>
         </div>
@@ -130,21 +166,27 @@ export function RoleEditor({
           </Alert>
         )}
 
-        <TextField
-          label="Name"
-          value={name}
-          onChange={(event) => setName(event.target.value)}
-          placeholder="Lab Assistant"
-          required
-        />
-
-        <TextField
-          label="What is it for?"
-          hint="One line, so the next administrator knows why it exists."
-          value={description}
-          onChange={(event) => setDescription(event.target.value)}
-          placeholder="Can see classes and students, but change nothing."
-        />
+        {/* Name, purpose, level and scope belong to the role itself. When this dialog is
+            adjusting one institute's view of a built-in, none of them is ours to change —
+            only which permissions apply here. */}
+        {!adjusting && (
+          <>
+            <TextField
+              label="Name"
+              value={name}
+              onChange={(event) => setName(event.target.value)}
+              placeholder="Lab Assistant"
+              required
+            />
+            <TextField
+              label="What is it for?"
+              hint="One line, so the next administrator knows why it exists."
+              value={description}
+              onChange={(event) => setDescription(event.target.value)}
+              placeholder="Can see classes and students, but change nothing."
+            />
+          </>
+        )}
 
         {!editing && (
           <div className="grid gap-4 sm:grid-cols-2">
@@ -218,7 +260,17 @@ export function RoleEditor({
           </div>
         </fieldset>
 
-        {editing && role.holder_count > 0 && (
+        {adjusting && (
+          <Alert tone="info">
+            <p>
+              This changes <strong className="font-semibold">{role.name}</strong> for your institute
+              only. The same role in other institutes keeps its own permissions, and the built-in
+              definition is untouched.
+            </p>
+          </Alert>
+        )}
+
+        {editing && !adjusting && role.holder_count > 0 && (
           <Alert tone="info">
             <p>
               {role.holder_count} {role.holder_count === 1 ? "person holds" : "people hold"} this
@@ -239,10 +291,9 @@ export function RoleEditor({
       >
         <p>It will stop being offered when giving someone a role.</p>
         <p>
-          The name stays reserved and cannot be reused, so past records keep their meaning —
-          if you later want a role called{" "}
-          <strong className="font-semibold text-fg">{role?.name}</strong> again, it will need a
-          different name.
+          The name stays reserved and cannot be reused, so past records keep their meaning — if you
+          later want a role called <strong className="font-semibold text-fg">{role?.name}</strong>{" "}
+          again, it will need a different name.
         </p>
       </ConfirmDialog>
     </Modal>

@@ -118,6 +118,48 @@ class RolePermission(Base):
     )
 
 
+class InstituteRolePermission(TimestampMixin, Base):
+    """One institute's adjustment to what a role allows, inside that institute only.
+
+    The six built-in roles mean the same thing everywhere, which is what makes them
+    supportable — but "Faculty" is not the same job at a coaching centre and a degree
+    college, and forcing every customer onto one definition either over-grants somebody or
+    blocks work the product is supposed to enable.
+
+    So the role definition stays the baseline and this table records the *difference*:
+
+        effect='allow'  this institute's holders of the role also get this permission
+        effect='deny'   this institute's holders of the role do not get it
+
+    Storing the difference rather than a full copy is what keeps the baseline meaningful.
+    A copy would freeze on the day it was made: add a permission to Faculty in a later
+    release and every institute that had ever customised the role would silently miss it.
+
+    Platform-scoped roles are never overridden — they belong to no institute, so there is
+    no institute whose view could differ.
+    """
+
+    __tablename__ = "institute_role_permissions"
+    __table_args__ = (
+        CheckConstraint("effect IN ('allow', 'deny')", name="institute_role_permissions_effect"),
+        Index("ix_institute_role_permissions_role", "role_id"),
+    )
+
+    institute_id: Mapped[uuid.UUID] = mapped_column(
+        Uuid, ForeignKey("institutes.id", ondelete="CASCADE"), primary_key=True
+    )
+    role_id: Mapped[uuid.UUID] = mapped_column(
+        Uuid, ForeignKey("roles.id", ondelete="CASCADE"), primary_key=True
+    )
+    permission_id: Mapped[uuid.UUID] = mapped_column(
+        Uuid, ForeignKey("permissions.id", ondelete="CASCADE"), primary_key=True
+    )
+    effect: Mapped[str] = mapped_column(String(8), nullable=False)
+    created_by: Mapped[uuid.UUID | None] = mapped_column(
+        Uuid, ForeignKey("users.id", ondelete="SET NULL")
+    )
+
+
 class UserRoleAssignment(UuidPkMixin, TimestampMixin, Base):
     __tablename__ = "user_role_assignments"
     __table_args__ = (

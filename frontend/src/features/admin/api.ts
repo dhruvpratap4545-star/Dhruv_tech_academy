@@ -155,14 +155,31 @@ export function fetchSigninStats(days: number, signal?: AbortSignal) {
 // ----------------------------------------------------------------- access control
 
 export const accessKeys = {
-  roles: () => ["access", "roles"] as const,
+  roles: (instituteId?: string) => ["access", "roles", instituteId ?? "all"] as const,
   permissions: () => ["access", "permissions"] as const,
   grants: (userId: string) => ["access", "grants", userId] as const,
   myAccess: () => ["access", "me"] as const,
 };
 
-export function fetchRoles(signal?: AbortSignal) {
-  return apiFetch<Role[]>("/roles", { signal });
+export function fetchRoles(instituteId?: string, signal?: AbortSignal) {
+  return apiFetch<Role[]>(`/roles${query({ institute_id: instituteId })}`, { signal });
+}
+
+/**
+ * Set what a role allows inside one institute.
+ *
+ * Send the full effective set, not a difference — the server works the difference out.
+ * Sending exactly the role's own definition clears the customisation.
+ */
+export function setInstituteRolePermissions(
+  roleId: string,
+  instituteId: string,
+  permissions: string[],
+) {
+  return apiFetch<Role>(`/roles/${roleId}/institutes/${instituteId}/permissions`, {
+    method: "PUT",
+    body: { permissions },
+  });
 }
 
 export function fetchPermissions(signal?: AbortSignal) {

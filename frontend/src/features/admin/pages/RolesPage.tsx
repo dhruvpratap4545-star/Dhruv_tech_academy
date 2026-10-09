@@ -27,9 +27,16 @@ export function RolesPage() {
   const canManage = useCan("role:manage");
   const [editing, setEditing] = useState<Role | "new" | null>(null);
 
+  // Which institute's view this is. Platform staff hold no institute, so they see the
+  // definitions; everyone else sees their own institute's version, which is what they
+  // meant by "what does Faculty allow?".
+  const institutes = (user?.roles ?? []).filter((r) => r.institute_id);
+  const [instituteId, setInstituteId] = useState<string>(institutes[0]?.institute_id ?? "");
+  const viewing = instituteId || undefined;
+
   const roles = useQuery({
-    queryKey: accessKeys.roles(),
-    queryFn: ({ signal }) => fetchRoles(signal),
+    queryKey: accessKeys.roles(viewing),
+    queryFn: ({ signal }) => fetchRoles(viewing, signal),
   });
   const permissions = useQuery({
     queryKey: accessKeys.permissions(),
@@ -74,9 +81,32 @@ export function RolesPage() {
         }
       />
 
+      {institutes.length > 1 && (
+        <Card className="flex flex-wrap items-center gap-3 p-4">
+          <span className="text-sm font-medium text-fg">Showing permissions for</span>
+          <select
+            value={instituteId}
+            onChange={(event) => setInstituteId(event.target.value)}
+            className="h-9 rounded-sm border border-line bg-surface px-2.5 text-sm text-fg"
+          >
+            {institutes.map((r) => (
+              <option key={r.institute_id} value={r.institute_id!}>
+                {r.institute_name ?? "Institute"}
+              </option>
+            ))}
+          </select>
+        </Card>
+      )}
+
       <RoleSummary roles={builtIn} myRank={myRank} />
 
-      <PermissionMatrix roles={active} permissions={permissions.data} myRank={myRank} />
+      <PermissionMatrix
+        roles={active}
+        permissions={permissions.data}
+        myRank={myRank}
+        instituteId={viewing}
+        onCustomise={setEditing}
+      />
 
       <CustomRoles
         roles={custom}
@@ -89,6 +119,7 @@ export function RolesPage() {
         <RoleEditor
           role={editing === "new" ? null : editing}
           permissions={permissions.data}
+          viewingInstituteId={viewing}
           onClose={() => setEditing(null)}
         />
       )}
@@ -137,10 +168,14 @@ function PermissionMatrix({
   roles,
   permissions,
   myRank,
+  instituteId,
+  onCustomise,
 }: {
   roles: Role[];
   permissions: PermissionInfo[];
   myRank: number;
+  instituteId?: string;
+  onCustomise: (role: Role) => void;
 }) {
   const groups = [...new Set(permissions.map((p) => p.group))];
   const held = new Map(roles.map((role) => [role.id, new Set(role.permissions)]));
@@ -180,7 +215,21 @@ function PermissionMatrix({
                     role.rank === myRank ? "text-accent-ink" : "text-fg-2",
                   )}
                 >
-                  {role.name}
+                  <span className="block">{role.name}</span>
+                  {role.customised_here && (
+                    <span className="mt-0.5 block text-[0.6rem] font-medium text-accent-ink">
+                      adjusted here
+                    </span>
+                  )}
+                  {instituteId && role.customisable && (
+                    <button
+                      type="button"
+                      onClick={() => onCustomise(role)}
+                      className="mt-1 block w-full text-[0.65rem] font-medium text-accent hover:underline"
+                    >
+                      Change
+                    </button>
+                  )}
                 </th>
               ))}
             </tr>

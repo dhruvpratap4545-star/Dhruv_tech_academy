@@ -547,3 +547,159 @@ async def test_the_invite_catalogue_hides_platform_roles(client, world):
     assert "super_admin" not in invite_keys
     assert "platform_admin" not in invite_keys
     assert "institute_admin" in invite_keys, "ordinary roles must still be invitable"
+
+
+# ------------------------------------- per-institute adjustments to a built-in role
+
+
+async def _customise(client, role_key, institute, permissions):
+    roles = (await client.get("/api/v1/roles")).json()
+    role = next(r for r in roles if r["key"] == role_key)
+    return await client.put(
+        f"/api/v1/roles/{role['id']}/institutes/{institute.id}/permissions",
+        json={"permissions": permissions},
+    )
+
+
+async def test_an_institute_can_widen_a_built_in_role_for_itself(client, world, make_user):
+    """The headline: ABC decides their Faculty may read the audit log. Faculty elsewhere
+    are untouched, and the built-in definition is unchanged."""
+    teacher = world["teacher"]
+    await _as(client, teacher)
+    assert (await client.get("/api/v1/audit-logs")).status_code == 403
+
+    await _as(client, world["principal"])
+    roles = (await client.get("/api/v1/roles")).json()
+    faculty = next(r for r in roles if r["key"] == "faculty")
+    assert faculty["customisable"] is True, "an institute admin may adjust Faculty"
+    assert faculty["editable"] is False, "but not redefine the built-in itself"
+
+    response = await _customise(
+        client, "faculty", world["abc"], [*faculty["permissions"], "audit:read"]
+    )
+    assert response.status_code == 200, response.text
+    assert response.json()["customised_here"] is True
+    assert "audit:read" in response.json()["permissions"]
+
+    await _as(client, teacher)
+    assert (await client.get("/api/v1/audit-logs")).status_code == 200
+
+
+async def test_one_institute_s_change_does_not_reach_another(client, world, institute, make_user):
+    """The property that makes this safe to offer at all."""
+    xyz, xyz_branch = await institute("XYZ College", "XYZ", with_branch="CSE")
+    their_teacher = await make_user("faculty", institute_id=xyz.id, branch_id=xyz_branch.id)
+
+    await _as(client, world["principal"])
+    roles = (await client.get("/api/v1/roles")).json()
+    faculty = next(r for r in roles if r["key"] == "faculty")
+    assert (
+        await _customise(client, "faculty", world["abc"], [*faculty["permissions"], "audit:read"])
+    ).status_code == 200
+
+    await _as(client, their_teacher)
+    assert (await client.get("/api/v1/audit-logs")).status_code == 403, (
+        "ABC's decision leaked into XYZ"
+    )
+
+
+async def test_an_institute_can_narrow_a_built_in_role_for_itself(client, world):
+    """Removal works as well as addition — Faculty here may no longer read people."""
+    await _as(client, world["teacher"])
+    assert (await client.get("/api/v1/users")).status_code == 200
+
+    await _as(client, world["principal"])
+    roles = (await client.get("/api/v1/roles")).json()
+    faculty = next(r for r in roles if r["key"] == "faculty")
+    kept = [p for p in faculty["permissions"] if p != "user:read"]
+    assert (await _customise(client, "faculty", world["abc"], kept)).status_code == 200
+
+    await _as(client, world["teacher"])
+    assert (await client.get("/api/v1/users")).status_code == 403
+
+
+async def test_restoring_the_definition_clears_the_customisation(client, world):
+    await _as(client, world["principal"])
+    roles = (await client.get("/api/v1/roles")).json()
+    faculty = next(r for r in roles if r["key"] == "faculty")
+    original = list(faculty["permissions"])
+
+    await _customise(client, "faculty", world["abc"], [*original, "audit:read"])
+    restored = await _customise(client, "faculty", world["abc"], original)
+    assert restored.status_code == 200
+    assert restored.json()["customised_here"] is False, "no rows should be left behind"
+
+
+async def test_nobody_can_customise_a_role_at_or_above_their_own_level(client, world):
+    """Otherwise an Institute Admin redefines Institute Admin and takes the institute."""
+    await _as(client, world["principal"])
+    roles = (await client.get("/api/v1/roles")).json()
+    mine = next(r for r in roles if r["key"] == "institute_admin")
+    assert mine["customisable"] is False
+
+    response = await _customise(
+        client, "institute_admin", world["abc"], [*mine["permissions"], "platform_admin:manage"]
+    )
+    assert response.status_code == 403
+
+
+async def test_customising_cannot_add_a_permission_the_caller_lacks(client, world):
+    """The subset rule, by this route too — closing one door and leaving the other open
+    closes nothing."""
+    await _as(client, world["principal"])
+    roles = (await client.get("/api/v1/roles")).json()
+    faculty = next(r for r in roles if r["key"] == "faculty")
+
+    response = await _customise(
+        client, "faculty", world["abc"], [*faculty["permissions"], "platform_admin:manage"]
+    )
+    assert response.status_code == 403
+
+
+async def test_a_platform_role_cannot_be_customised_for_one_institute(client, world):
+    """Super Admin belongs to no institute, so no institute's view of it could differ."""
+    await _as(client, world["owner"])
+    roles = (await client.get("/api/v1/roles")).json()
+    super_admin = next(r for r in roles if r["key"] == "super_admin")
+    assert super_admin["customisable"] is False
+
+    response = await _customise(client, "super_admin", world["abc"], ["user:read"])
+    assert response.status_code == 422
+
+
+async def test_a_branch_admin_cannot_customise_roles(client, world):
+    """`role:manage` is institute-level; a branch is not the right blast radius for a
+    change that lands on everyone holding the role across the institute."""
+    await _as(client, world["head"])
+    roles = (await client.get("/api/v1/roles")).json()
+    faculty = next(r for r in roles if r["key"] == "faculty")
+    assert faculty["customisable"] is False
+
+    response = await _customise(client, "faculty", world["abc"], ["class:read"])
+    assert response.status_code == 403
+
+
+async def test_an_outsider_cannot_customise_another_institute(client, world, institute, make_user):
+    xyz, _branch = await institute("XYZ College", "XYZ", with_branch="CSE")
+    outsider = await make_user("institute_admin", institute_id=xyz.id)
+
+    await _as(client, outsider)
+    response = await _customise(client, "faculty", world["abc"], ["class:read"])
+    assert response.status_code == 403
+
+
+async def test_the_change_takes_effect_without_waiting_out_the_cache(client, world):
+    """A permission removed from a role is usually removed because it is being misused."""
+    await _as(client, world["teacher"])
+    assert (await client.get("/api/v1/users")).status_code == 200
+
+    await _as(client, world["principal"])
+    roles = (await client.get("/api/v1/roles")).json()
+    faculty = next(r for r in roles if r["key"] == "faculty")
+    await _customise(
+        client, "faculty", world["abc"], [p for p in faculty["permissions"] if p != "user:read"]
+    )
+
+    # No re-login, no cache expiry: the next request must already see it.
+    await _as(client, world["teacher"])
+    assert (await client.get("/api/v1/users")).status_code == 403

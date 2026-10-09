@@ -54,13 +54,24 @@ class RoleOut(BaseModel):
     is_system: bool
     is_active: bool
     institute_id: uuid.UUID | None
+    # The effective set for the institute being viewed: the role's own definition plus
+    # that institute's additions, minus its removals.
     permissions: list[str]
+    # True when this institute's view differs from the role's definition, so the screen can
+    # say so rather than leaving someone to compare two lists by eye.
+    customised_here: bool = False
     # How many people currently hold it. Shown so nobody archives a role out from under
     # forty users without being told first.
     holder_count: int
-    # Whether *this* caller may edit it — the server already knows, and making the UI
-    # re-derive it from rank and institute is how a button appears that the API refuses.
+    # Whether *this* caller may edit the role's own definition. Custom roles only: a
+    # built-in means the same thing on every installation, which is what makes it
+    # supportable.
     editable: bool
+    # Whether this caller may adjust what the role allows *inside the institute being
+    # viewed*. True for built-ins below their level too — that is the whole feature.
+    # The server already knows; making the UI re-derive it from rank, scope and ownership
+    # is how a button appears that the API then refuses.
+    customisable: bool = False
 
 
 class RoleCreateRequest(StrictModel):
@@ -97,6 +108,26 @@ class RoleUpdateRequest(StrictModel):
     name: RoleName | None = None
     description: Annotated[str | None, Field(max_length=255)] = None
     permissions: Annotated[list[str] | None, Field(min_length=1, max_length=200)] = None
+
+
+class InstituteRolePermissionsRequest(StrictModel):
+    """The effective permission set this institute wants for a role.
+
+    Send what the role should allow here, not the difference from its definition. The
+    server works out the difference; an interface that asked somebody to think in deltas
+    would be an interface that produced the wrong delta.
+
+    Sending exactly the role's own definition clears the customisation.
+    """
+
+    permissions: Annotated[list[str], Field(max_length=200)]
+
+    @field_validator("permissions")
+    @classmethod
+    def _unique_permissions(cls, value: list[str]) -> list[str]:
+        if len(set(value)) != len(value):
+            raise ValueError("The same permission is listed more than once.")
+        return value
 
 
 # ----------------------------------------------------------------------- personal grants

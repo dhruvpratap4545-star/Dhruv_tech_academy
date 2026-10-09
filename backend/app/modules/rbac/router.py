@@ -9,7 +9,7 @@ from __future__ import annotations
 import uuid
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, Request, status
+from fastapi import APIRouter, Depends, Query, Request, status
 
 from app.core.errors import NotFound
 from app.modules.auth.service import RequestMeta
@@ -56,8 +56,17 @@ async def list_roles(
     db: DbSession,
     context: AuthContextDep,
     _: Annotated[Authorized, Depends(require_permission("role:read"))],
+    institute_id: Annotated[
+        uuid.UUID | None,
+        Query(description="Show each role as this institute sees it, after its own changes."),
+    ] = None,
 ) -> list[schemas.RoleOut]:
-    return await admin.list_roles(db, context)
+    # Default to the caller's own institute: an institute admin asking "what does Faculty
+    # allow?" means in their institute, and answering with the untouched definition would
+    # be answering a question nobody asked.
+    if institute_id is None and not context.is_platform_staff:
+        institute_id = context.primary_institute_id
+    return await admin.list_roles(db, context, institute_id)
 
 
 @roles_router.post(
@@ -78,6 +87,37 @@ async def create_role(
         db, actor=actor, guard=guard, payload=payload, meta=_meta(request)
     )
     return await _one_role(db, context, role.id)
+
+
+@roles_router.put(
+    "/{role_id}/institutes/{institute_id}/permissions",
+    response_model=schemas.RoleOut,
+    summary="Change what a role allows inside one institute",
+    description="Adjusts the role for this institute only — holders of the same role in "
+    "other institutes are unaffected. Send the full set the role should allow here; the "
+    "server stores the difference from the role's own definition. Sending exactly that "
+    "definition clears the customisation.",
+)
+async def set_institute_role_permissions(
+    role_id: uuid.UUID,
+    institute_id: uuid.UUID,
+    payload: schemas.InstituteRolePermissionsRequest,
+    request: Request,
+    db: DbSession,
+    actor: CurrentUser,
+    context: AuthContextDep,
+    guard: Annotated[Authorized, Depends(require_permission("role:manage"))],
+) -> schemas.RoleOut:
+    await admin.set_role_permissions_for_institute(
+        db,
+        actor=actor,
+        guard=guard,
+        institute_id=institute_id,
+        role_id=role_id,
+        permissions=payload.permissions,
+        meta=_meta(request),
+    )
+    return await _one_role(db, context, role_id, institute_id)
 
 
 @roles_router.patch(
@@ -119,10 +159,16 @@ async def archive_role(
     return await _one_role(db, context, role_id)
 
 
-async def _one_role(db: DbSession, context: AuthContextDep, role_id: uuid.UUID) -> schemas.RoleOut:
+async def _one_role(
+    db: DbSession,
+    context: AuthContextDep,
+    role_id: uuid.UUID,
+    institute_id: uuid.UUID | None = None,
+) -> schemas.RoleOut:
     """Re-read through the list builder so a single role and a listed role are the same
-    shape — including ``editable`` and ``holder_count``, which the ORM object has not got."""
-    for row in await admin.list_roles(db, context):
+    shape — including ``editable``, ``customisable`` and ``holder_count``, none of which
+    the ORM object has got."""
+    for row in await admin.list_roles(db, context, institute_id):
         if row.id == role_id:
             return row
     raise NotFound("That role does not exist.")

@@ -168,10 +168,15 @@ export type Role = {
   is_system: boolean;
   is_active: boolean;
   institute_id: string | null;
+  /** The effective set for the institute being viewed. */
   permissions: string[];
+  /** True when this institute's view differs from the role's own definition. */
+  customised_here: boolean;
   holder_count: number;
-  /** The server's answer to "may I edit this?" — never re-derived here. */
+  /** May the caller edit the role's own definition? Custom roles only. */
   editable: boolean;
+  /** May the caller adjust it for the institute being viewed? Built-ins included. */
+  customisable: boolean;
 };
 
 /** `GET /permissions` */
