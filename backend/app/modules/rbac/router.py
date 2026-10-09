@@ -149,23 +149,26 @@ async def update_role(
     return await _one_role(db, context, role_id)
 
 
-@roles_router.post(
-    "/{role_id}/archive",
-    response_model=schemas.RoleOut,
-    summary="Retire a custom role",
-    description="Refused while anyone still holds it — move those people first. The role is "
-    "archived, never deleted, so past assignments can still name it.",
+@roles_router.delete(
+    "/{role_id}",
+    response_model=schemas.RoleRemovalOut,
+    summary="Delete a custom role",
+    description="Refused while anyone still holds it — move those people to another role "
+    "first. A role nobody has ever been given is deleted outright and its name becomes "
+    "free again. One that people have held is retired instead: it disappears from every "
+    "list, but the definition is kept so the audit log can still say what it allowed. "
+    "The response says which of the two happened.",
 )
-async def archive_role(
+async def remove_role(
     role_id: uuid.UUID,
     request: Request,
     db: DbSession,
     actor: CurrentUser,
-    context: AuthContextDep,
     guard: Annotated[Authorized, Depends(require_permission("role:manage"))],
-) -> schemas.RoleOut:
-    await admin.archive_role(db, actor=actor, guard=guard, role_id=role_id, meta=_meta(request))
-    return await _one_role(db, context, role_id)
+) -> schemas.RoleRemovalOut:
+    return await admin.remove_role(
+        db, actor=actor, guard=guard, role_id=role_id, meta=_meta(request)
+    )
 
 
 async def _one_role(

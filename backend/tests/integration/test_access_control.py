@@ -28,7 +28,7 @@ pytestmark = pytest.mark.asyncio
 async def _as(client: AsyncClient, user) -> AsyncClient:
     client.cookies.clear()
     response = await client.post(
-        "/api/v1/auth/login", json={"email": user.email, "password": "testpassword9!"}
+        "/api/v1/auth/login", json={"email": user.email, "password": "Jacaranda!Tide4"}
     )
     assert response.status_code == 200, response.text
     return client
@@ -108,12 +108,17 @@ async def test_a_block_on_one_branch_leaves_the_other_alone(client, world, make_
 
 
 async def test_lifting_a_block_restores_access_immediately(client, world):
-    """No waiting out the permission cache: revoking must take effect on the next request."""
+    """No waiting out the permission cache: revoking must take effect on the next request.
+
+    `user:read` rather than `audit:read`, because a Branch Admin no longer holds the
+    latter — an audit entry names the institute an action happened in and nothing finer,
+    so a branch-scoped reader could only ever be shown the whole college's history.
+    """
     await _as(client, world["principal"])
     created = await client.post(
         f"/api/v1/users/{world['head'].id}/grants",
         json={
-            "permission": "audit:read",
+            "permission": "user:read",
             "effect": "deny",
             "institute_id": str(world["abc"].id),
             "reason": "Blocked pending review",
@@ -122,14 +127,14 @@ async def test_lifting_a_block_restores_access_immediately(client, world):
     grant_id = created.json()["id"]
 
     await _as(client, world["head"])
-    assert (await client.get("/api/v1/audit-logs")).status_code == 403
+    assert (await client.get("/api/v1/users")).status_code == 403
 
     await _as(client, world["principal"])
     removed = await client.delete(f"/api/v1/users/{world['head'].id}/grants/{grant_id}")
     assert removed.status_code == 204
 
     await _as(client, world["head"])
-    assert (await client.get("/api/v1/audit-logs")).status_code == 200
+    assert (await client.get("/api/v1/users")).status_code == 200
 
 
 async def test_an_expired_grant_does_not_apply(client, world, db):
@@ -349,7 +354,7 @@ async def test_a_role_in_use_cannot_be_archived(client, world, make_user):
         },
     )
 
-    response = await client.post(f"/api/v1/roles/{role_id}/archive")
+    response = await client.delete(f"/api/v1/roles/{role_id}")
     assert response.status_code == 409
     assert "1 person holds" in response.json()["error"]["message"]
 
@@ -459,33 +464,91 @@ async def test_my_access_marks_an_exception_as_an_exception(client, world):
     assert body["direct_grants"][0]["reason"] == "Covering for the branch head"
 
 
-async def test_a_retired_role_keeps_its_name(client, world):
-    """Reusing a retired role's key would make every past audit row ambiguous, so the name
-    stays reserved — and the refusal has to say so, or it reads as a bug."""
-    await _as(client, world["principal"])
-    created = await client.post(
+async def _lab_assistant(client, world, name="Lab Assistant"):
+    return await client.post(
         "/api/v1/roles",
         json={
-            "name": "Lab Assistant",
+            "name": name,
             "scope_level": "branch",
             "rank": 20,
             "institute_id": str(world["abc"].id),
             "permissions": ["class:read"],
         },
     )
-    assert created.status_code == 201
-    assert (await client.post(f"/api/v1/roles/{created.json()['id']}/archive")).status_code == 200
 
-    again = await client.post(
-        "/api/v1/roles",
+
+async def test_a_role_nobody_ever_held_is_deleted_and_frees_its_name(client, world):
+    """A role created by mistake should leave nothing behind.
+
+    Nobody was ever given it, so no audit row depends on reading its definition, and
+    keeping the name reserved would only mean the second attempt at "Lab Assistant" has to
+    be called "Lab Assistant 2" forever.
+    """
+    await _as(client, world["principal"])
+    created = await _lab_assistant(client, world)
+    assert created.status_code == 201
+
+    removed = await client.delete(f"/api/v1/roles/{created.json()['id']}")
+    assert removed.status_code == 200, removed.text
+    assert removed.json()["deleted"] is True
+    assert "deleted" in removed.json()["message"]
+
+    # The name is free, so the same one works again.
+    again = await _lab_assistant(client, world)
+    assert again.status_code == 201, again.text
+
+    # And it is genuinely gone, not merely hidden.
+    gone = await client.delete(f"/api/v1/roles/{created.json()['id']}")
+    assert gone.status_code == 404
+
+
+async def test_a_role_people_have_held_is_retired_and_keeps_its_name(client, world, make_user):
+    """The opposite case, behind the same button.
+
+    Somebody held this one. "Priya was a Lab Assistant in March" only means something
+    while the definition of Lab Assistant can still be read, so the row stays and the name
+    stays reserved — and the response says that plainly instead of claiming a delete.
+    """
+    await _as(client, world["principal"])
+    created = await _lab_assistant(client, world)
+    assert created.status_code == 201
+    role_id = created.json()["id"]
+
+    helper = await make_user("student", institute_id=world["abc"].id)
+    granted = await client.post(
+        f"/api/v1/users/{helper.id}/roles",
         json={
-            "name": "Lab Assistant",
-            "scope_level": "branch",
-            "rank": 20,
+            "role_key": "abc.lab_assistant",
             "institute_id": str(world["abc"].id),
-            "permissions": ["class:read"],
+            "branch_id": str(world["mca"].id),
         },
     )
+    assert granted.status_code == 201, granted.text
+
+    # Taken away again, so there is no *current* holder to block removal — but a past one.
+    revoked = await client.request(
+        "DELETE",
+        f"/api/v1/users/{helper.id}/roles",
+        json={
+            "role_key": "abc.lab_assistant",
+            "institute_id": str(world["abc"].id),
+            "branch_id": str(world["mca"].id),
+        },
+    )
+    assert revoked.status_code in (200, 204), revoked.text
+
+    removed = await client.delete(f"/api/v1/roles/{role_id}")
+    assert removed.status_code == 200, removed.text
+    assert removed.json()["deleted"] is False
+    assert "retired" in removed.json()["message"]
+    assert "audit log" in removed.json()["message"]
+
+    # It is gone from the catalogue...
+    keys = {r["key"] for r in (await client.get("/api/v1/roles")).json()}
+    assert "abc.lab_assistant" not in keys
+
+    # ...but the name is still spoken for, and the refusal explains why.
+    again = await _lab_assistant(client, world)
     assert again.status_code == 409
     assert "retired" in again.json()["error"]["message"].lower()
 
@@ -523,15 +586,20 @@ async def test_a_platform_admin_cannot_be_created_by_invitation(client, world):
     assert response.status_code == 422
 
 
-async def test_an_existing_account_can_still_be_promoted_to_super_admin(client, world):
-    """Succession must stay possible (PRD §3.1), or the first owner could never be
-    replaced. Promotion acts on somebody who has already proved they can sign in."""
+async def test_a_super_admin_cannot_appoint_another_super_admin(client, world):
+    """No role may hand out its own level, Super Admin included.
+
+    This used to be the one exception, so that the platform could gain a second owner.
+    Succession has moved to `python -m app.cli grant-super-admin`, which needs shell access
+    to the server rather than a session cookie — see `rbac.catalog.grantable_ceiling`.
+    """
     await _as(client, world["owner"])
     response = await client.post(
         f"/api/v1/users/{world['principal'].id}/roles",
         json={"role_key": "super_admin"},
     )
-    assert response.status_code == 201, response.text
+    assert response.status_code == 403, response.text
+    assert "at or above your own level" in response.json()["error"]["message"]
 
 
 async def test_the_invite_catalogue_hides_platform_roles(client, world):
@@ -542,7 +610,10 @@ async def test_the_invite_catalogue_hides_platform_roles(client, world):
     for_invite = await client.get("/api/v1/users/roles/catalogue", params={"purpose": "invite"})
     assert for_assign.status_code == 200 and for_invite.status_code == 200
 
-    assert "super_admin" in {r["key"] for r in for_assign.json()}
+    assert "super_admin" not in {r["key"] for r in for_assign.json()}, (
+        "the catalogue must not offer a role the rank check goes on to refuse"
+    )
+    assert "platform_admin" in {r["key"] for r in for_assign.json()}
     invite_keys = {r["key"] for r in for_invite.json()}
     assert "super_admin" not in invite_keys
     assert "platform_admin" not in invite_keys
@@ -901,18 +972,21 @@ async def test_an_invited_account_cannot_be_promoted_to_a_platform_role(client, 
     victim = invited.json()["user"]
     assert victim["status"] == "invited"
 
+    # `platform_admin`, not `super_admin`: nobody can grant their own level any more, so a
+    # super_admin request is refused by the rank ceiling before this rule is ever consulted,
+    # and the test would pass while proving nothing about it.
     promoted = await client.post(
-        f"/api/v1/users/{victim['id']}/roles", json={"role_key": "super_admin"}
+        f"/api/v1/users/{victim['id']}/roles", json={"role_key": "platform_admin"}
     )
     assert promoted.status_code == 422
     assert "already active" in promoted.json()["error"]["message"]
 
 
 async def test_an_active_account_can_still_be_promoted(client, world):
-    """The restriction is about proving the address, not about blocking succession."""
+    """The restriction is about proving the address, not about blocking promotion."""
     await _as(client, world["owner"])
     promoted = await client.post(
-        f"/api/v1/users/{world['principal'].id}/roles", json={"role_key": "super_admin"}
+        f"/api/v1/users/{world['principal'].id}/roles", json={"role_key": "platform_admin"}
     )
     assert promoted.status_code == 201, promoted.text
 

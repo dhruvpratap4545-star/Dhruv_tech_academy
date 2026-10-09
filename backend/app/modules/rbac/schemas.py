@@ -198,3 +198,20 @@ class MyAccessOut(BaseModel):
     # I add?", which is the question people actually bring to this screen.
     can_grant_roles: list[str]
     direct_grants: list[GrantOut]
+
+
+class RoleRemovalOut(BaseModel):
+    """What happened when a custom role was removed.
+
+    Two different things can happen behind one button, so the answer says which. A screen
+    that reported "deleted" for both would be wrong half the time, and the half it was
+    wrong about is the half where a record still exists.
+    """
+
+    id: uuid.UUID
+    key: str
+    name: str
+    #: True when the row is gone. False when it was retired and the definition is kept.
+    deleted: bool
+    #: A sentence for the person who pressed the button, explaining which one they got.
+    message: str

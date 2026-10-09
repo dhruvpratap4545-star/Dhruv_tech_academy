@@ -15,7 +15,7 @@ from datetime import date
 from sqlalchemy import Select, func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.pagination import apply_keyset, split_page
+from app.core.pagination import paginate
 from app.modules.org.models import (
     AcademicSession,
     Branch,
@@ -50,12 +50,12 @@ async def list_institutes(
     status: str | None = None,
     cursor: str | None = None,
     limit: int = 20,
-) -> tuple[Sequence[Institute], str | None]:
+) -> tuple[Sequence[Institute], str | None, int]:
     """``visible_ids=None`` means platform staff, who see every institute."""
     stmt: Select[tuple[Institute]] = select(Institute)
     if visible_ids is not None:
         if not visible_ids:
-            return [], None
+            return [], None, 0
         stmt = stmt.where(Institute.id.in_(visible_ids))
     if status:
         stmt = stmt.where(Institute.status == status)
@@ -63,15 +63,14 @@ async def list_institutes(
         pattern = f"%{search.strip()}%"
         stmt = stmt.where(Institute.name.ilike(pattern) | Institute.code.ilike(pattern))
 
-    stmt = apply_keyset(
+    return await paginate(
+        db,
         stmt,
         created_at_col=Institute.created_at,
         id_col=Institute.id,
         cursor=cursor,
         limit=limit,
     )
-    rows = (await db.execute(stmt)).scalars().all()
-    return split_page(list(rows), limit)
 
 
 # ----------------------------------------------------------------------------- branches
@@ -103,21 +102,19 @@ async def list_branches(
     status: str | None = None,
     cursor: str | None = None,
     limit: int = 20,
-) -> tuple[Sequence[Branch], str | None]:
+) -> tuple[Sequence[Branch], str | None, int]:
     """``branch_ids`` narrows the result for a Branch Admin, who sees only their own."""
     stmt = select(Branch).where(Branch.institute_id == institute_id)
     if branch_ids is not None:
         if not branch_ids:
-            return [], None
+            return [], None, 0
         stmt = stmt.where(Branch.id.in_(branch_ids))
     if status:
         stmt = stmt.where(Branch.status == status)
 
-    stmt = apply_keyset(
-        stmt, created_at_col=Branch.created_at, id_col=Branch.id, cursor=cursor, limit=limit
+    return await paginate(
+        db, stmt, created_at_col=Branch.created_at, id_col=Branch.id, cursor=cursor, limit=limit
     )
-    rows = (await db.execute(stmt)).scalars().all()
-    return split_page(list(rows), limit)
 
 
 # --------------------------------------------------------------------- academic sessions
@@ -150,16 +147,15 @@ async def list_sessions(
     institute_id: uuid.UUID,
     cursor: str | None = None,
     limit: int = 20,
-) -> tuple[Sequence[AcademicSession], str | None]:
-    stmt = apply_keyset(
+) -> tuple[Sequence[AcademicSession], str | None, int]:
+    return await paginate(
+        db,
         select(AcademicSession).where(AcademicSession.institute_id == institute_id),
         created_at_col=AcademicSession.created_at,
         id_col=AcademicSession.id,
         cursor=cursor,
         limit=limit,
     )
-    rows = (await db.execute(stmt)).scalars().all()
-    return split_page(list(rows), limit)
 
 
 async def clear_current_session(db: AsyncSession, institute_id: uuid.UUID) -> None:
@@ -213,7 +209,7 @@ async def list_classes(
     status: str | None = None,
     cursor: str | None = None,
     limit: int = 20,
-) -> tuple[Sequence[Class], str | None]:
+) -> tuple[Sequence[Class], str | None, int]:
     """``class_ids`` restricts to a faculty's assigned classes or a student's enrolments."""
     stmt = select(Class).where(Class.institute_id == institute_id)
     if branch_id is not None:
@@ -222,16 +218,14 @@ async def list_classes(
         stmt = stmt.where(Class.academic_session_id == session_id)
     if class_ids is not None:
         if not class_ids:
-            return [], None
+            return [], None, 0
         stmt = stmt.where(Class.id.in_(class_ids))
     if status:
         stmt = stmt.where(Class.status == status)
 
-    stmt = apply_keyset(
-        stmt, created_at_col=Class.created_at, id_col=Class.id, cursor=cursor, limit=limit
+    return await paginate(
+        db, stmt, created_at_col=Class.created_at, id_col=Class.id, cursor=cursor, limit=limit
     )
-    rows = (await db.execute(stmt)).scalars().all()
-    return split_page(list(rows), limit)
 
 
 async def current_session_id(db: AsyncSession, institute_id: uuid.UUID) -> uuid.UUID | None:
@@ -278,11 +272,12 @@ async def list_enrollments(
     status: str | None = "active",
     cursor: str | None = None,
     limit: int = 20,
-) -> tuple[Sequence[ClassEnrollment], str | None]:
+) -> tuple[Sequence[ClassEnrollment], str | None, int]:
     stmt = select(ClassEnrollment).where(ClassEnrollment.class_id == class_id)
     if status:
         stmt = stmt.where(ClassEnrollment.status == status)
-    stmt = apply_keyset(
+    return await paginate(
+        db,
         stmt,
         created_at_col=ClassEnrollment.created_at,
         id_col=ClassEnrollment.id,
@@ -290,8 +285,6 @@ async def list_enrollments(
         limit=limit,
         descending=False,
     )
-    rows = (await db.execute(stmt)).scalars().all()
-    return split_page(list(rows), limit)
 
 
 async def sessions_overlapping(

@@ -366,7 +366,16 @@ async def revoke_role(
     await guard.ensure(scope)
 
     role = await _require_role(db, payload.role_key)
-    guard.ensure_can_grant(role.rank, scope)
+
+    # Taking a role away follows the same ceiling as giving one: you cannot reach a rank at
+    # or above your own. Without that, a second Institute Admin could strip the first one's
+    # authority, which is the same escalation as granting it, run backwards.
+    #
+    # Standing down from your own role is the exception, because it is not escalation —
+    # it only ever reduces what the person doing it can do. `_guard_last_super_admin`
+    # still stops the final working Super Admin from leaving nobody in charge.
+    if user_id != guard.user_id:
+        guard.ensure_can_grant(role.rank, scope)
 
     assignment = await rbac_repo.find_assignment(
         db,
@@ -625,7 +634,7 @@ async def list_users(
     institute_id: uuid.UUID | None,
     cursor: str | None,
     limit: int,
-) -> tuple[Sequence[User], str | None]:
+) -> tuple[Sequence[User], str | None, int]:
     """Scope the query to what the caller may see, then let PostgreSQL do the filtering.
 
     ``usable_scopes`` rather than the raw grants: an explicit deny has to narrow
@@ -810,7 +819,9 @@ async def build_overview(db: AsyncSession, *, guard: Authorized) -> schemas.Over
         branch_ids = (
             None if institute_wide else frozenset(s.branch_id for s in branch_scoped if s.branch_id)
         )
-        base = base.where(repo._scope_filter(institute_ids=institute_ids, branch_ids=branch_ids))
+        base = base.where(
+            repo.visible_users_filter(institute_ids=institute_ids, branch_ids=branch_ids)
+        )
 
     async def count(stmt) -> int:
         return int(await db.scalar(stmt) or 0)

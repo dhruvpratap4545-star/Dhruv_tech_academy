@@ -79,7 +79,7 @@ async def _people(db: AsyncSession, context: AuthContext, term: str) -> list[sch
     guard = _guard(db, context, "user:read")
     if guard is None:
         return []
-    rows, _ = await users.list_users(
+    rows, _, _total = await users.list_users(
         db,
         guard=guard,
         search=term,
@@ -109,7 +109,7 @@ async def _institutes(
     guard = _guard(db, context, "institute:read")
     if guard is None:
         return []
-    rows, _ = await org.list_institutes(
+    rows, _, _total = await org.list_institutes(
         db, guard=guard, search=term, status=None, cursor=None, limit=PER_GROUP
     )
     return [

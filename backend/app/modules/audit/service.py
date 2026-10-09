@@ -18,7 +18,7 @@ from sqlalchemy import text as sa_text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.logging import current_request_id
-from app.core.pagination import apply_keyset, split_page
+from app.core.pagination import paginate
 from app.modules.audit import events
 from app.modules.audit.models import AuditLog
 
@@ -106,16 +106,15 @@ async def list_logs(
     actor_user_id: uuid.UUID | None = None,
     cursor: str | None = None,
     limit: int = 20,
-) -> tuple[Sequence[AuditLog], str | None]:
-    stmt = apply_keyset(
+) -> tuple[Sequence[AuditLog], str | None, int]:
+    return await paginate(
+        db,
         _visible_logs(institute_ids=institute_ids, action=action, actor_user_id=actor_user_id),
         created_at_col=AuditLog.created_at,
         id_col=AuditLog.id,
         cursor=cursor,
         limit=limit,
     )
-    rows = (await db.execute(stmt)).scalars().all()
-    return split_page(list(rows), limit)
 
 
 # --------------------------------------------------------------------- sign-in reporting

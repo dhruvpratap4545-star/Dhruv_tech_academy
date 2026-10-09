@@ -16,7 +16,7 @@ def _register(**overrides):
     payload = {
         "full_name": "Asha Rao",
         "email": "asha@example.com",
-        "password": "goodpassword9!",
+        "password": "Kaveri#Delta88",
         "accept_terms": True,
     }
     payload.update(overrides)
@@ -36,7 +36,7 @@ def test_consent_is_mandatory() -> None:
 def test_consent_cannot_be_omitted() -> None:
     with pytest.raises(ValidationError):
         auth_schemas.RegisterRequest(
-            full_name="Asha Rao", email="asha@example.com", password="goodpassword9!"
+            full_name="Asha Rao", email="asha@example.com", password="Kaveri#Delta88"
         )
 
 
@@ -221,7 +221,7 @@ def test_the_browser_and_the_server_agree_on_what_a_digit_is() -> None:
     with pytest.raises(ValueError, match="one number"):
         validate_password_strength("Abcdefg½!")
 
-    assert validate_password_strength("Abcdefg1!") == "Abcdefg1!"
+    assert validate_password_strength("Tamarind7#") == "Tamarind7#"
 
 
 def test_the_same_password_verifies_however_it_was_typed() -> None:

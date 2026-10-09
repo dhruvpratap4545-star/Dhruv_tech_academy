@@ -175,7 +175,15 @@ ROLE_PERMISSIONS: dict[str, tuple[str, ...]] = {
         "role:read",
         "enrollment:manage",
         "class_faculty:manage",
-        "audit:read",
+        # `audit:read` is deliberately not here. An audit entry records the institute it
+        # happened in and nothing finer, so there is no way to show a Branch Admin their
+        # own branch's history without also showing them the principal's actions and every
+        # other branch's. Granting a permission that can only be honoured too widely is
+        # worse than withholding it.
+        #
+        # It is not gone, only not assumed: a college that wants its branch heads to read
+        # the log can switch it on for themselves in Roles & permissions, which applies to
+        # that college alone.
         "profile:read",
         "profile:update",
     ),
@@ -216,16 +224,20 @@ def max_grantable_rank(holder_rank: int) -> int:
 
 
 def grantable_ceiling(holder_rank: int) -> int:
-    """The real ceiling, including the one exception to "strictly below".
+    """Highest rank anyone may hand out: strictly below their own, with no exceptions.
 
-    PRD §3.1 gives Super Admin "any user, any role" — without it the platform could never
-    gain a second owner, and since at least one Super Admin must always exist (PRD §3), the
-    first could never be replaced either.
+    Super Admin used to be exempt, so one Super Admin could appoint another. That is gone.
+    Every role now obeys the same sentence — you cannot give away your own level or
+    anything above it — which is the rule administrators already believe is in force, and
+    the only one that reads the same whichever role you happen to hold.
 
-    This lives in one place on purpose. The authorization check and the "roles you may give"
-    list must agree exactly: a list that is narrower than the check hides a legitimate
+    Appointing a Super Admin has not become impossible, it has moved off the web app
+    entirely: `python -m app.cli grant-super-admin <email>`, run by whoever has access to
+    the server. A second owner is a decision about who controls the platform, not a task
+    for a screen that a stolen session could reach.
+
+    This lives in one place on purpose. The authorization check and the "roles you may
+    give" list must agree exactly: a list narrower than the check hides a legitimate
     action, and one that is wider offers a choice the server will refuse.
     """
-    if holder_rank >= ROLES_BY_KEY[SUPER_ADMIN].rank:
-        return holder_rank
     return max_grantable_rank(holder_rank)

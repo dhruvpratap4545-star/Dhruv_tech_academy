@@ -318,19 +318,36 @@ async def update_role(
     return role
 
 
-async def archive_role(
+async def remove_role(
     db: AsyncSession,
     *,
     actor: User,
     guard: Authorized,
     role_id: uuid.UUID,
     meta: RequestMeta,
-) -> Role:
+) -> schemas.RoleRemovalOut:
+    """Delete a custom role outright, or retire it — whichever the history allows.
+
+    A role nobody has ever held is a draft or a mistake. Deleting it leaves no question
+    unanswerable, and it frees the name, which matters when the first attempt was called
+    "Librarian" and the second one wants to be called that too.
+
+    A role somebody *has* held is different. "Ravi was a Lab Assistant last March" only
+    means something while the definition of Lab Assistant can still be read, so that row
+    stays and the role is marked inactive instead: gone from every list and every picker,
+    still answerable when an audit asks what it allowed.
+
+    The caller does not choose between the two, because the caller does not know which
+    applies — and an administrator who picked "delete permanently" and silently got an
+    archive would be entitled to feel lied to. The screen is told what happened and says
+    so afterwards.
+    """
     role = await repository.get_role(db, role_id)
     if role is None or not _may_edit(role, guard.context):
         raise NotFound("That role does not exist, or you cannot edit it.")
     assert role.institute_id is not None
-    await guard.ensure(Scope(institute_id=role.institute_id))
+    institute_id = role.institute_id
+    await guard.ensure(Scope(institute_id=institute_id))
 
     holders = (await repository.holder_counts(db)).get(role.id, 0)
     if holders:
@@ -339,20 +356,51 @@ async def archive_role(
             "Move them to another role first."
         )
 
-    role.is_active = False
+    # Everyone who ever held it, revoked assignments included. `holder_counts` above only
+    # sees live ones, and a role that was granted and then taken away still has a past
+    # that the audit log refers to.
+    ever_held = await repository.ever_assigned_count(db, role.id)
+    deleted = ever_held == 0
+    name, key = role.name, role.key
+
     audit.record(
         db,
-        action=events.ROLE_ARCHIVED,
+        action=events.ROLE_DELETED if deleted else events.ROLE_ARCHIVED,
         actor_user_id=actor.id,
+        # The role row is about to disappear in the delete case, so the audit entry carries
+        # the name and key in its own payload rather than relying on a lookup that will
+        # find nothing.
         target_type="role",
         target_id=role.id,
-        institute_id=role.institute_id,
+        institute_id=institute_id,
         ip=meta.ip,
         user_agent=meta.user_agent,
-        extra={"key": role.key},
+        extra={"key": key, "name": name, "deleted": deleted},
     )
+
+    if deleted:
+        # `role_permissions` and this institute's overrides cascade away with it. The
+        # foreign key from `user_role_assignments` is RESTRICT, so if anything was missed
+        # above, PostgreSQL refuses the delete rather than orphaning a person's history.
+        await repository.delete_role(db, role)
+    else:
+        role.is_active = False
+
     await db.commit()
-    return role
+
+    return schemas.RoleRemovalOut(
+        id=role_id,
+        key=key,
+        name=name,
+        deleted=deleted,
+        message=(
+            f"{name} was deleted. Nobody had ever been given it, so there is no record to keep."
+            if deleted
+            else f"{name} was retired and is no longer offered anywhere. The record is kept "
+            f"because {ever_held} {'person has' if ever_held == 1 else 'people have'} held it, "
+            f"and the audit log still has to be able to say what it allowed."
+        ),
+    )
 
 
 async def _invalidate_holders(db: AsyncSession, role_id: uuid.UUID) -> None:

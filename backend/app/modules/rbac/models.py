@@ -143,6 +143,11 @@ class InstituteRolePermission(TimestampMixin, Base):
     __table_args__ = (
         CheckConstraint("effect IN ('allow', 'deny')", name="institute_role_permissions_effect"),
         Index("ix_institute_role_permissions_role", "role_id"),
+        # PostgreSQL does not index the referencing side of a foreign key on its own,
+        # and without these every delete from `permissions` or `users` has to scan this
+        # whole table to check the constraint.
+        Index("ix_institute_role_permissions_permission", "permission_id"),
+        Index("ix_institute_role_permissions_created_by", "created_by"),
     )
 
     institute_id: Mapped[uuid.UUID] = mapped_column(

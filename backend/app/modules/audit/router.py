@@ -35,7 +35,7 @@ async def list_audit_logs(
 ) -> Page[schemas.AuditLogOut]:
     size = clamp_limit(limit)
     institute_ids = guard.visible_institute_ids()
-    rows, next_cursor = await audit.list_logs(
+    rows, next_cursor, total = await audit.list_logs(
         db,
         institute_ids=institute_ids,
         action=action,
@@ -44,7 +44,9 @@ async def list_audit_logs(
         limit=size,
     )
     return Page[schemas.AuditLogOut](
-        items=[schemas.AuditLogOut.model_validate(r) for r in rows], next_cursor=next_cursor
+        items=[schemas.AuditLogOut.model_validate(r) for r in rows],
+        next_cursor=next_cursor,
+        total=total,
     )
 
 

@@ -116,7 +116,7 @@ async def list_users(
     limit: Limit = 20,
 ) -> Page[schemas.UserDetailOut]:
     size = clamp_limit(limit)
-    rows, next_cursor = await users.list_users(
+    rows, next_cursor, total = await users.list_users(
         db,
         guard=guard,
         search=search,
@@ -133,7 +133,7 @@ async def list_users(
         )
         for row in rows
     ]
-    return Page[schemas.UserDetailOut](items=items, next_cursor=next_cursor)
+    return Page[schemas.UserDetailOut](items=items, next_cursor=next_cursor, total=total)
 
 
 @router.get("/{user_id}", response_model=schemas.UserDetailOut, summary="Read one user")

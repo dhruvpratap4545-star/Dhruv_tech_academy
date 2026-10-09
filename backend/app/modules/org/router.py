@@ -48,11 +48,13 @@ async def list_institutes(
     limit: Limit = 20,
 ) -> Page[schemas.InstituteOut]:
     size = clamp_limit(limit)
-    rows, next_cursor = await org.list_institutes(
+    rows, next_cursor, total = await org.list_institutes(
         db, guard=guard, search=search, status=status_filter, cursor=cursor, limit=size
     )
     return Page[schemas.InstituteOut](
-        items=[schemas.InstituteOut.model_validate(r) for r in rows], next_cursor=next_cursor
+        items=[schemas.InstituteOut.model_validate(r) for r in rows],
+        next_cursor=next_cursor,
+        total=total,
     )
 
 
@@ -189,7 +191,7 @@ async def list_branches(
     limit: Limit = 20,
 ) -> Page[schemas.BranchOut]:
     size = clamp_limit(limit)
-    rows, next_cursor = await org.list_branches(
+    rows, next_cursor, total = await org.list_branches(
         db,
         guard=guard,
         institute_id=institute_id,
@@ -198,7 +200,9 @@ async def list_branches(
         limit=size,
     )
     return Page[schemas.BranchOut](
-        items=[schemas.BranchOut.model_validate(r) for r in rows], next_cursor=next_cursor
+        items=[schemas.BranchOut.model_validate(r) for r in rows],
+        next_cursor=next_cursor,
+        total=total,
     )
 
 
@@ -260,12 +264,13 @@ async def list_sessions(
     limit: Limit = 20,
 ) -> Page[schemas.AcademicSessionOut]:
     size = clamp_limit(limit)
-    rows, next_cursor = await org.list_sessions(
+    rows, next_cursor, total = await org.list_sessions(
         db, guard=guard, institute_id=institute_id, cursor=cursor, limit=size
     )
     return Page[schemas.AcademicSessionOut](
         items=[schemas.AcademicSessionOut.model_validate(r) for r in rows],
         next_cursor=next_cursor,
+        total=total,
     )
 
 
@@ -328,7 +333,7 @@ async def list_classes(
     limit: Limit = 20,
 ) -> Page[schemas.ClassOut]:
     size = clamp_limit(limit)
-    rows, next_cursor = await org.list_classes(
+    rows, next_cursor, total = await org.list_classes(
         db,
         guard=guard,
         institute_id=institute_id,
@@ -339,7 +344,9 @@ async def list_classes(
         limit=size,
     )
     return Page[schemas.ClassOut](
-        items=[schemas.ClassOut.model_validate(r) for r in rows], next_cursor=next_cursor
+        items=[schemas.ClassOut.model_validate(r) for r in rows],
+        next_cursor=next_cursor,
+        total=total,
     )
 
 

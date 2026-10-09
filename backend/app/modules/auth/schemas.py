@@ -11,7 +11,7 @@ from typing import Annotated, Literal
 
 from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator
 
-from app.core.config import settings
+from app.modules.auth.passwords import is_common
 
 # PRD §7.1: at least 8 characters, with a letter, a number and a special character.
 #
@@ -62,24 +62,6 @@ def _has_special(value: str) -> bool:
 
 # Passwords seen constantly in breach corpora. A full breach-list check belongs in a later
 # milestone; this catches the worst offenders at zero cost.
-_COMMON_PASSWORDS = frozenset(
-    {
-        "password",
-        "password1",
-        "password123",
-        "12345678",
-        "123456789",
-        "1234567890",
-        "qwerty123",
-        "abc12345",
-        "iloveyou",
-        "admin123",
-        "welcome1",
-        "letmein1",
-        "dhruv123",
-        "academy123",
-    }
-)
 
 Password = Annotated[str, Field(min_length=MIN_PASSWORD_LENGTH, max_length=MAX_PASSWORD_LENGTH)]
 OtpCode = Annotated[str, Field(min_length=4, max_length=10)]
@@ -112,11 +94,10 @@ def validate_password_strength(value: str) -> str:
     failures = password_rule_failures(value)
     if failures:
         raise ValueError("Password needs " + ", ".join(failures) + ".")
-    # Compare with the decoration stripped. A character-class rule invites exactly one
-    # evasion — take a breached password and bolt a symbol on the end — and "password123!"
-    # is no stronger than "password123" against anyone running a list with mangling rules.
-    stripped = "".join(ch for ch in value if _is_letter(ch) or _is_digit(ch)).lower()
-    if value.lower() in _COMMON_PASSWORDS or stripped in _COMMON_PASSWORDS:
+    # A character-class rule invites exactly one evasion — take a breached password and
+    # bolt a symbol on the end — and "P@ssw0rd123!" is no stronger than "password" against
+    # anyone running a list with mangling rules. `is_common` undoes the mangling first.
+    if is_common(value):
         raise ValueError("That password is too common. Please choose a different one.")
     return value
 
@@ -220,5 +201,4 @@ __all__ = [
     "VerifyOtpRequest",
     "VerifyOtpResponse",
     "password_policy_text",
-    "settings",
 ]

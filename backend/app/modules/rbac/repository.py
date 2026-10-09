@@ -56,8 +56,14 @@ async def load_grants(db: AsyncSession, user_id: uuid.UUID) -> Sequence[GrantRow
             Permission.key,
         )
         .join(Role, Role.id == UserRoleAssignment.role_id)
-        .join(RolePermission, RolePermission.role_id == Role.id)
-        .join(Permission, Permission.id == RolePermission.permission_id)
+        # Outer, so a role that currently grants nothing still produces one row naming the
+        # assignment and its scope. An inner join drops it entirely, and then an institute
+        # that adds a permission to an empty role has nothing for the addition to attach
+        # to: the override row exists, the screen shows the tick, and the person it was
+        # granted to still cannot do the thing. The permission column is NULL on those
+        # rows and `_apply_role_overrides` discards them once it has read the scope.
+        .outerjoin(RolePermission, RolePermission.role_id == Role.id)
+        .outerjoin(Permission, Permission.id == RolePermission.permission_id)
         .where(
             UserRoleAssignment.user_id == user_id,
             UserRoleAssignment.revoked_at.is_(None),
@@ -68,7 +74,7 @@ async def load_grants(db: AsyncSession, user_id: uuid.UUID) -> Sequence[GrantRow
 
     overrides = await _role_overrides_for_user(db, user_id)
     if not overrides:
-        return rows
+        return [row for row in rows if row[5] is not None]
     return _apply_role_overrides(rows, overrides)
 
 
@@ -126,18 +132,24 @@ def _apply_role_overrides(
     in another — which is the whole reason it hangs off the institute and not the role.
     """
     kept: list[GrantRow] = []
+    seen: set[GrantRow] = set()
     # Every distinct assignment, so an "allow" can be expanded against the right scope.
-    assignments: set[tuple[str, str, int, uuid.UUID | None, uuid.UUID | None]] = set()
+    assignments: set[_Assignment] = set()
 
     for row in rows:
         role_key, role_name, rank, institute_id, branch_id, permission_key = row
         assignments.add((role_key, role_name, rank, institute_id, branch_id))
+        if permission_key is None:
+            # The outer join's placeholder for a role that grants nothing. Its only job was
+            # to put the assignment above into `assignments`.
+            continue
         blocked_here = (
             institute_id is not None
             and overrides.get((institute_id, role_key), {}).get(permission_key) == "deny"
         )
         if not blocked_here:
             kept.append(row)
+            seen.add(row)
 
     for role_key, role_name, rank, institute_id, branch_id in assignments:
         if institute_id is None:
@@ -153,8 +165,11 @@ def _apply_role_overrides(
                 branch_id,
                 permission_key,
             )
-            if added not in kept:
+            # A set rather than scanning `kept`: someone holding several roles across
+            # several branches turns that scan into the slowest part of every request.
+            if added not in seen:
                 kept.append(added)
+                seen.add(added)
 
     return kept
 
@@ -360,15 +375,24 @@ async def user_ids_in_scope(
 
 
 async def roles_visible_to(
-    db: AsyncSession, institute_ids: frozenset[uuid.UUID] | None
+    db: AsyncSession,
+    institute_ids: frozenset[uuid.UUID] | None,
+    *,
+    include_retired: bool = False,
 ) -> Sequence[Role]:
     """Built-in roles, plus the custom roles of the institutes the caller can see.
 
     ``None`` means platform staff: every role, custom ones included. Everyone else sees the
     six built-ins (they need to, to understand what a role means) and only their own
     institute's inventions — another institute's role names are that institute's business.
+
+    Retired roles are left out. They were removed on purpose, and a permission matrix that
+    still lists one invites somebody to tick a box on a role nobody can be given — the
+    setting saves, nothing happens, and there is no error to explain why.
     """
     stmt = select(Role).order_by(Role.rank.desc(), Role.name)
+    if not include_retired:
+        stmt = stmt.where(Role.is_active.is_(True))
     if institute_ids is not None:
         stmt = stmt.where(or_(Role.institute_id.is_(None), Role.institute_id.in_(institute_ids)))
     result = await db.execute(stmt)
@@ -554,3 +578,28 @@ async def user_ids_holding_role_in(
         )
     )
     return set(result.scalars())
+
+
+async def ever_assigned_count(db: AsyncSession, role_id: uuid.UUID) -> int:
+    """How many assignments of this role have ever existed, revoked ones included.
+
+    `holder_counts` answers "who holds it now", which is the question for "can I retire
+    this?". This is the question for "can I erase it?" — and the two differ precisely in
+    the case that matters: a role granted to someone last term and taken back since has no
+    current holder, but the audit log still refers to it.
+    """
+    from sqlalchemy import func
+
+    return (
+        await db.scalar(
+            select(func.count())
+            .select_from(UserRoleAssignment)
+            .where(UserRoleAssignment.role_id == role_id)
+        )
+    ) or 0
+
+
+async def delete_role(db: AsyncSession, role: Role) -> None:
+    """Remove a role row outright. Only safe once `ever_assigned_count` is zero."""
+    await db.delete(role)
+    await db.flush()

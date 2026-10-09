@@ -228,9 +228,9 @@ class Authorized:
         Rank is compared against what the caller holds *at this scope*, not their highest
         rank anywhere — otherwise a Branch Admin of one branch could grant roles in another.
 
-        One deliberate exception: PRD §3.1 gives Super Admin "any user, any role". Without
-        it the platform could never gain a second owner, and since at least one Super Admin
-        must always exist (PRD §3), the first one could never be replaced either.
+        There is no exception. Super Admin cannot appoint another Super Admin either; that
+        happens through `python -m app.cli grant-super-admin`, run on the server. See
+        `grantable_ceiling` for why succession was moved out of the web app.
         """
         holder_rank = self.context.max_rank_within(scope)
         if target_role_rank > grantable_ceiling(holder_rank):

@@ -34,7 +34,7 @@ ROLE_RANK = {
 async def _as(client: AsyncClient, user) -> AsyncClient:
     client.cookies.clear()
     response = await client.post(
-        "/api/v1/auth/login", json={"email": user.email, "password": "testpassword9!"}
+        "/api/v1/auth/login", json={"email": user.email, "password": "Jacaranda!Tide4"}
     )
     assert response.status_code == 200, response.text
     return client
@@ -530,10 +530,11 @@ async def test_the_assignable_role_catalogue_matches_the_matrix(
 async def test_the_catalogue_never_disagrees_with_the_check(client: AsyncClient, world) -> None:
     """Whatever a list offers, the matching endpoint must accept — and the reverse.
 
-    There are two lists now, because there are two different questions. "Who can I invite?"
-    excludes platform roles; "who can I promote this person to?" does not, because a Super
-    Admin must be able to appoint a successor (PRD §3.1 "any role") or the first owner can
-    never be replaced.
+    There are two lists, because there are two different questions. "Who can I invite?"
+    excludes every platform role, because an invitation goes to an address nobody has
+    proved they control. "Who can I promote this person to?" allows platform roles but
+    still stops one rank below the caller's own, so a Super Admin sees Platform Admin and
+    not Super Admin — appointing a peer owner is a server command, not a screen.
     """
     await _as(client, world["super_admin"])
 
@@ -546,7 +547,8 @@ async def test_the_catalogue_never_disagrees_with_the_check(client: AsyncClient,
     for_assign = {r["key"] for r in (await client.get("/api/v1/users/roles/catalogue")).json()}
 
     assert "super_admin" not in for_invite, "an invitation must not offer platform authority"
-    assert "super_admin" in for_assign, "a Super Admin must be able to appoint a successor"
+    assert "super_admin" not in for_assign, "nobody may be offered their own level"
+    assert "platform_admin" in for_assign, "the rank below must still be on offer"
 
     # Everything the invite list offers is genuinely invitable.
     created = await client.post(
@@ -557,7 +559,7 @@ async def test_the_catalogue_never_disagrees_with_the_check(client: AsyncClient,
 
     # And what the assign list offers is genuinely assignable.
     promoted = await client.post(
-        f"/api/v1/users/{world['institute_admin'].id}/roles", json={"role_key": "super_admin"}
+        f"/api/v1/users/{world['institute_admin'].id}/roles", json={"role_key": "platform_admin"}
     )
     assert promoted.status_code == 201, promoted.text
 

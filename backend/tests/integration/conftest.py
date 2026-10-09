@@ -41,6 +41,31 @@ TEST_DATABASE_URL = (
 IN_CI = os.environ.get("CI", "").lower() == "true"
 
 
+def _refuse_unless_disposable(url: str) -> None:
+    """Refuse to wipe a database whose name does not say it is for tests.
+
+    `_apply_migrations` drops the whole `public` schema. The URL it uses falls back to a
+    hard-coded default, so running pytest on a machine where `TEST_DATABASE_URL` is unset
+    but a database happens to sit on that host and port destroys it — every table, with no
+    prompt and no way back. A developer's local `app` database is exactly that shape.
+
+    The name is the only signal available before the drop, so the name has to carry the
+    consent: a database called `app_test`, `dhruv_test` or `test` is one somebody created
+    to be thrown away. Anything else stops the run with an explanation rather than a
+    restore from backup.
+    """
+    from urllib.parse import urlsplit
+
+    name = urlsplit(url).path.lstrip("/").split("?")[0]
+    if name == "test" or name.endswith("_test") or name.startswith("test_"):
+        return
+    raise pytest.UsageError(
+        f"Refusing to run: the integration tests erase every table in '{name}', and that "
+        f"name does not mark it as a test database. Point TEST_DATABASE_URL at a database "
+        f"named 'test', or ending in '_test', or starting with 'test_'."
+    )
+
+
 async def _database_reachable(url: str) -> str | None:
     engine = build_engine(url, pool_size=1, max_overflow=0)
     try:
@@ -54,6 +79,7 @@ async def _database_reachable(url: str) -> str | None:
 
 @pytest_asyncio.fixture(scope="session")
 async def db_engine():
+    _refuse_unless_disposable(TEST_DATABASE_URL)
     reason = await _database_reachable(TEST_DATABASE_URL)
     if reason is not None:
         message = (
@@ -187,7 +213,7 @@ async def make_user(db: AsyncSession, seeded: AsyncSession):
         institute_id: uuid.UUID | None = None,
         branch_id: uuid.UUID | None = None,
         email: str | None = None,
-        password: str = "testpassword9!",
+        password: str = "Jacaranda!Tide4",
         status: str = "active",
     ) -> User:
         user = User(
@@ -221,7 +247,7 @@ async def make_user(db: AsyncSession, seeded: AsyncSession):
 async def login_as(client: AsyncClient):
     """Log a user in on the shared client and leave the cookies in place."""
 
-    async def _login(email: str, password: str = "testpassword9!") -> AsyncClient:
+    async def _login(email: str, password: str = "Jacaranda!Tide4") -> AsyncClient:
         response = await client.post(
             "/api/v1/auth/login", json={"email": email, "password": password}
         )

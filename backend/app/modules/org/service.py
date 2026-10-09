@@ -161,7 +161,7 @@ async def list_institutes(
     status: str | None,
     cursor: str | None,
     limit: int,
-) -> tuple[Sequence[Institute], str | None]:
+) -> tuple[Sequence[Institute], str | None, int]:
     """Platform staff see everything; everyone else sees only institutes they hold a role in.
 
     Derived from the permission's own usable scopes, so a deny on ``institute:read``
@@ -260,7 +260,7 @@ async def list_branches(
     status: str | None,
     cursor: str | None,
     limit: int,
-) -> tuple[Sequence[Branch], str | None]:
+) -> tuple[Sequence[Branch], str | None, int]:
     # Listing is authorised by holding the permission *somewhere inside* this institute;
     # the result is then narrowed to exactly the branches those grants cover.
     scopes = await guard.ensure_within(institute_id)
@@ -365,7 +365,7 @@ def _validate_session_dates(start: date, end: date) -> None:
 
 async def list_sessions(
     db: AsyncSession, *, guard: Authorized, institute_id: uuid.UUID, cursor: str | None, limit: int
-) -> tuple[Sequence[AcademicSession], str | None]:
+) -> tuple[Sequence[AcademicSession], str | None, int]:
     await guard.ensure_within(institute_id)
     return await repo.list_sessions(db, institute_id=institute_id, cursor=cursor, limit=limit)
 
@@ -460,7 +460,7 @@ async def list_classes(
     status: str | None,
     cursor: str | None,
     limit: int,
-) -> tuple[Sequence[Class], str | None]:
+) -> tuple[Sequence[Class], str | None, int]:
     """Faculty and students see only the classes they are linked to (PRD §5.3 ``class:read``)."""
     from app.modules.rbac import repository as rbac_repo
     from app.modules.rbac.catalog import FACULTY, STUDENT

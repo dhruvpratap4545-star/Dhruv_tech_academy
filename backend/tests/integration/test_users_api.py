@@ -17,7 +17,7 @@ from app.modules.auth.models import RefreshToken
 async def _as(client: AsyncClient, user) -> AsyncClient:
     client.cookies.clear()
     response = await client.post(
-        "/api/v1/auth/login", json={"email": user.email, "password": "testpassword9!"}
+        "/api/v1/auth/login", json={"email": user.email, "password": "Jacaranda!Tide4"}
     )
     assert response.status_code == 200, response.text
     return client
@@ -358,3 +358,76 @@ async def test_audit_rows_carry_the_request_id(client: AsyncClient, org, db: Asy
     await _as(client, org["admin"])
     row = await db.scalar(select(AuditLog).where(AuditLog.action == "login_success").limit(1))
     assert row is not None and row.request_id
+
+
+async def test_a_page_reports_how_many_rows_match_in_total(client: AsyncClient, make_user) -> None:
+    """ "Page 3 of 7" needs a number that cursor paging does not produce by itself.
+
+    The count has to describe the *filters*, not the window: it is the same on every page
+    of one filtered list, and it changes when the filter changes. Returning the page size
+    instead would make the last page claim the list is nearly empty.
+    """
+    owner = await make_user("super_admin")
+    for index in range(7):
+        await make_user("student", email=f"counted{index}@example.com")
+    await _as(client, owner)
+
+    first = await client.get("/api/v1/users", params={"limit": 3})
+    assert first.status_code == 200, first.text
+    body = first.json()
+    total = body["total"]
+    assert total >= 8, "the owner and seven students are all visible"
+    assert len(body["items"]) == 3
+    assert body["next_cursor"]
+
+    # The second page reports the same total, not "what is left".
+    second = await client.get("/api/v1/users", params={"limit": 3, "cursor": body["next_cursor"]})
+    assert second.json()["total"] == total
+
+    # Walking to the end, the totals never disagree and the rows add up to it.
+    seen = len(body["items"])
+    cursor = body["next_cursor"]
+    while cursor:
+        page = (await client.get("/api/v1/users", params={"limit": 3, "cursor": cursor})).json()
+        assert page["total"] == total
+        seen += len(page["items"])
+        cursor = page["next_cursor"]
+    assert seen == total
+
+    # A filter narrows the total as well as the rows.
+    filtered = (await client.get("/api/v1/users", params={"limit": 3, "search": "counted"})).json()
+    assert filtered["total"] == 7
+
+
+async def test_a_branch_admin_does_not_see_institute_wide_staff(
+    client: AsyncClient, make_user, institute
+) -> None:
+    """The list and the detail endpoint must answer the same question.
+
+    A Branch Admin of MCA may act only inside MCA. The list used to also show everyone
+    holding an institute-wide role at the same college — the principal, and every member
+    of staff attached to the institute rather than to a branch, including people in
+    branches the caller has nothing to do with. Opening any of those rows returned "That
+    user does not exist", because the per-row check compares scopes properly. Reading a
+    name and an email address is a use of authority too, so the list was the half that was
+    wrong.
+    """
+    college, mca = await institute("Scope College", "SCOPE1", with_branch="MCA")
+    other = await make_user("branch_admin", institute_id=college.id, branch_id=mca.id)
+
+    principal = await make_user("institute_admin", institute_id=college.id)
+    in_my_branch = await make_user(
+        "faculty", institute_id=college.id, branch_id=mca.id, email="mine@example.com"
+    )
+
+    await _as(client, other)
+    listed = await client.get("/api/v1/users", params={"limit": 100})
+    assert listed.status_code == 200, listed.text
+    emails = {row["email"] for row in listed.json()["items"]}
+
+    assert in_my_branch.email in emails, "their own branch is still fully visible"
+    assert principal.email not in emails
+
+    # And the two endpoints agree, which is the point.
+    assert (await client.get(f"/api/v1/users/{principal.id}")).status_code == 404
+    assert (await client.get(f"/api/v1/users/{in_my_branch.id}")).status_code == 200

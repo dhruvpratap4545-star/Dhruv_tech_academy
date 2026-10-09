@@ -17,7 +17,7 @@ from app.modules.users.models import User
 SIGNUP = {
     "full_name": "Asha Rao",
     "email": "asha@example.com",
-    "password": "goodpassword9!",
+    "password": "Kaveri#Delta88",
     "accept_terms": True,
 }
 
@@ -57,7 +57,7 @@ async def test_signup_then_login_then_me(client: AsyncClient) -> None:
     await client.post("/api/v1/auth/logout")
 
     login = await client.post(
-        "/api/v1/auth/login", json={"email": "asha@example.com", "password": "goodpassword9!"}
+        "/api/v1/auth/login", json={"email": "asha@example.com", "password": "Kaveri#Delta88"}
     )
     assert login.status_code == 200
 
@@ -70,7 +70,7 @@ async def test_signup_then_login_then_me(client: AsyncClient) -> None:
 async def test_login_is_case_insensitive_on_email(client: AsyncClient) -> None:
     await client.post("/api/v1/auth/register", json=SIGNUP)
     response = await client.post(
-        "/api/v1/auth/login", json={"email": "ASHA@Example.com", "password": "goodpassword9!"}
+        "/api/v1/auth/login", json={"email": "ASHA@Example.com", "password": "Kaveri#Delta88"}
     )
     assert response.status_code == 200
 
@@ -80,10 +80,10 @@ async def test_a_wrong_password_and_an_unknown_email_look_identical(client: Asyn
     await client.post("/api/v1/auth/register", json=SIGNUP)
 
     wrong = await client.post(
-        "/api/v1/auth/login", json={"email": "asha@example.com", "password": "wrongpassword9"}
+        "/api/v1/auth/login", json={"email": "asha@example.com", "password": "Marigold$Pepper9"}
     )
     unknown = await client.post(
-        "/api/v1/auth/login", json={"email": "nobody@example.com", "password": "wrongpassword9"}
+        "/api/v1/auth/login", json={"email": "nobody@example.com", "password": "Marigold$Pepper9"}
     )
     assert wrong.status_code == unknown.status_code == 401
     assert wrong.json() == unknown.json()
@@ -97,13 +97,13 @@ async def test_five_failures_lock_the_account_for_fifteen_minutes(
 
     for _ in range(5):
         response = await client.post(
-            "/api/v1/auth/login", json={"email": "asha@example.com", "password": "wrongpassword9"}
+            "/api/v1/auth/login", json={"email": "asha@example.com", "password": "Marigold$Pepper9"}
         )
         assert response.status_code == 401
 
     # The sixth attempt is refused even with the correct password.
     locked = await client.post(
-        "/api/v1/auth/login", json={"email": "asha@example.com", "password": "goodpassword9!"}
+        "/api/v1/auth/login", json={"email": "asha@example.com", "password": "Kaveri#Delta88"}
     )
     assert locked.status_code == 429
 
@@ -117,7 +117,7 @@ async def test_the_lockout_is_recorded_in_the_audit_log(
     await client.post("/api/v1/auth/register", json=SIGNUP)
     for _ in range(5):
         await client.post(
-            "/api/v1/auth/login", json={"email": "asha@example.com", "password": "wrongpassword9"}
+            "/api/v1/auth/login", json={"email": "asha@example.com", "password": "Marigold$Pepper9"}
         )
 
     actions = set((await db.execute(select(AuditLog.action))).scalars())
@@ -131,10 +131,10 @@ async def test_a_successful_login_resets_the_failure_counter(
     await client.post("/api/v1/auth/register", json=SIGNUP)
     for _ in range(3):
         await client.post(
-            "/api/v1/auth/login", json={"email": "asha@example.com", "password": "wrongpassword9"}
+            "/api/v1/auth/login", json={"email": "asha@example.com", "password": "Marigold$Pepper9"}
         )
     await client.post(
-        "/api/v1/auth/login", json={"email": "asha@example.com", "password": "goodpassword9!"}
+        "/api/v1/auth/login", json={"email": "asha@example.com", "password": "Kaveri#Delta88"}
     )
 
     user = await db.scalar(select(User).where(User.email == "asha@example.com"))
@@ -244,7 +244,7 @@ async def test_a_suspended_user_cannot_log_in(client: AsyncClient, db: AsyncSess
     await db.commit()
 
     response = await client.post(
-        "/api/v1/auth/login", json={"email": "asha@example.com", "password": "goodpassword9!"}
+        "/api/v1/auth/login", json={"email": "asha@example.com", "password": "Kaveri#Delta88"}
     )
     assert response.status_code == 403
 

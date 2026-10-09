@@ -20,7 +20,7 @@ pytestmark = pytest.mark.asyncio
 async def _as(client: AsyncClient, user) -> AsyncClient:
     client.cookies.clear()
     response = await client.post(
-        "/api/v1/auth/login", json={"email": user.email, "password": "testpassword9!"}
+        "/api/v1/auth/login", json={"email": user.email, "password": "Jacaranda!Tide4"}
     )
     assert response.status_code == 200, response.text
     return client
@@ -79,7 +79,7 @@ async def test_a_suspended_person_cannot_sign_in_afterwards(client, world):
     client.cookies.clear()
     denied = await client.post(
         "/api/v1/auth/login",
-        json={"email": world["student_a"].email, "password": "testpassword9!"},
+        json={"email": world["student_a"].email, "password": "Jacaranda!Tide4"},
     )
     assert denied.status_code == 403
 

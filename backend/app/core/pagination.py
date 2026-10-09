@@ -20,7 +20,7 @@ from datetime import UTC, datetime
 from typing import Any
 
 from pydantic import BaseModel, Field
-from sqlalchemy import ColumnElement, Select, and_, or_
+from sqlalchemy import ColumnElement, Select, and_, func, or_, select
 
 from app.core.errors import ValidationFailed
 
@@ -35,6 +35,12 @@ class Page[T](BaseModel):
     next_cursor: str | None = Field(
         default=None,
         description="Pass back as `cursor` for the next page. Null means this is the last page.",
+    )
+    total: int = Field(
+        default=0,
+        description="How many rows match the current filters in total, across every page. "
+        "Lets a screen say 'Page 3 of 7' and 'Showing 41-60 of 134' instead of leaving "
+        "the reader to click Next until it stops.",
     )
 
 
@@ -100,6 +106,54 @@ def apply_keyset(
 
     order = (created_at_col.desc(), id_col.desc()) if descending else (created_at_col, id_col)
     return stmt.order_by(*order).limit(limit + 1)
+
+
+async def count_matching(db: Any, stmt: Select[Any]) -> int:
+    """How many rows the filters match in total, ignoring the page window.
+
+    Keyset paging gives no total of its own — that is the trade for its speed, and it is
+    why "Next" is the only control a cursor-paged list can honestly offer. A separate
+    COUNT buys back "page 3 of 7", which is what people actually want from a list of
+    users: a sense of how much there is, and the ability to jump.
+
+    The cost is one extra aggregate per request over the same filtered set. At this
+    product's scale that is a few milliseconds; if a table ever grows past the point where
+    it is not, the fix is an estimate for large results, not removing the number.
+
+    Ordering, limit and offset are stripped first: they change nothing about the count, and
+    PostgreSQL rejects ORDER BY inside the subquery when the sort column is not selected.
+    """
+    counted = stmt.order_by(None).limit(None).offset(None)
+    return await db.scalar(select(func.count()).select_from(counted.subquery())) or 0
+
+
+async def paginate(
+    db: Any,
+    stmt: Select[Any],
+    *,
+    created_at_col: ColumnElement[datetime],
+    id_col: ColumnElement[uuid.UUID],
+    cursor: str | None,
+    limit: int,
+    descending: bool = True,
+) -> tuple[list[Any], str | None, int]:
+    """Count, seek, fetch and trim — the whole of one page, in one call.
+
+    The count is taken from ``stmt`` *before* the cursor condition is added, so it stays
+    the total for the filters rather than "everything after row 60".
+    """
+    total = await count_matching(db, stmt)
+    windowed = apply_keyset(
+        stmt,
+        created_at_col=created_at_col,
+        id_col=id_col,
+        cursor=cursor,
+        limit=limit,
+        descending=descending,
+    )
+    rows = list((await db.execute(windowed)).scalars().all())
+    page, next_cursor = split_page(rows, limit)
+    return page, next_cursor, total
 
 
 def split_page(rows: list[Any], limit: int) -> tuple[list[Any], str | None]:

@@ -13,7 +13,7 @@ from collections.abc import Sequence
 from sqlalchemy import Select, exists, func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.pagination import apply_keyset, split_page
+from app.core.pagination import paginate
 from app.modules.org.models import Branch, Institute
 from app.modules.rbac.models import Role, UserRoleAssignment
 from app.modules.users.models import User, UserPreference
@@ -37,12 +37,20 @@ async def upsert_preferences(db: AsyncSession, user_id: uuid.UUID) -> UserPrefer
     return created
 
 
-def _scope_filter(
+def visible_users_filter(
     *, institute_ids: frozenset[uuid.UUID] | None, branch_ids: frozenset[uuid.UUID] | None
 ):
-    """EXISTS over live assignments, so a user is visible if *any* of their roles sits in
-    the caller's scope. Correlated sub-query rather than a join: a user with three roles
-    must not appear three times."""
+    """The one definition of "which users may this caller see".
+
+    EXISTS over live assignments, so a user is visible if *any* of their roles sits in the
+    caller's scope. A correlated sub-query rather than a join, because a user holding three
+    roles must not appear three times.
+
+    Public because the dashboard counts the same people this filters, and it reached in and
+    used the private name to do it. Two callers with one rule between them is fine; two
+    callers where one is quietly depending on the other's internals is how the list and the
+    count drift apart and nobody notices until the numbers disagree on screen.
+    """
     conditions = [
         UserRoleAssignment.user_id == User.id,
         UserRoleAssignment.revoked_at.is_(None),
@@ -50,15 +58,17 @@ def _scope_filter(
     if institute_ids is not None:
         conditions.append(UserRoleAssignment.institute_id.in_(institute_ids))
     if branch_ids is not None:
-        # Institute-wide roles have no branch; they are still visible to a branch admin
-        # only when the caller's own institute scope covers them, which the institute
-        # filter above has already established.
-        conditions.append(
-            or_(
-                UserRoleAssignment.branch_id.in_(branch_ids),
-                UserRoleAssignment.branch_id.is_(None),
-            )
-        )
+        # Branch only. This used to also admit assignments with no branch at all, on the
+        # reasoning that an institute-wide role still sits inside the caller's institute —
+        # but a caller reaching this line holds *no* institute-wide scope of their own, so
+        # what it actually admitted was every institute-scoped member of staff, from every
+        # other branch, to a Branch Admin who cannot act on any of them. Opening one of
+        # those rows already returned "That user does not exist", because the per-row check
+        # compares scopes properly; the list was the half that disagreed.
+        #
+        # Reading somebody's name and email address is as much a use of authority as
+        # changing them, so the two now answer the same question.
+        conditions.append(UserRoleAssignment.branch_id.in_(branch_ids))
     return exists().where(*conditions)
 
 
@@ -73,18 +83,18 @@ async def list_users(
     role_key: str | None = None,
     cursor: str | None = None,
     limit: int = 20,
-) -> tuple[Sequence[User], str | None]:
+) -> tuple[Sequence[User], str | None, int]:
     """``institute_ids=None`` means platform staff, who see every user."""
     stmt: Select[tuple[User]] = select(User).where(User.status != "deleted")
 
     if user_ids is not None:
         if not user_ids:
-            return [], None
+            return [], None, 0
         stmt = stmt.where(User.id.in_(user_ids))
     elif institute_ids is not None:
         if not institute_ids:
-            return [], None
-        stmt = stmt.where(_scope_filter(institute_ids=institute_ids, branch_ids=branch_ids))
+            return [], None, 0
+        stmt = stmt.where(visible_users_filter(institute_ids=institute_ids, branch_ids=branch_ids))
 
     if status:
         stmt = stmt.where(User.status == status)
@@ -105,11 +115,9 @@ async def list_users(
             )
         )
 
-    stmt = apply_keyset(
-        stmt, created_at_col=User.created_at, id_col=User.id, cursor=cursor, limit=limit
+    return await paginate(
+        db, stmt, created_at_col=User.created_at, id_col=User.id, cursor=cursor, limit=limit
     )
-    rows = (await db.execute(stmt)).scalars().all()
-    return split_page(list(rows), limit)
 
 
 RoleRow = tuple[str, str, int, uuid.UUID | None, uuid.UUID | None, str | None, str | None]
