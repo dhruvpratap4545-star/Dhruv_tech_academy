@@ -3,8 +3,8 @@ import { useState } from "react";
 
 import { Alert } from "@/components/Alert";
 import { Badge } from "@/components/Badge";
-import { Button } from "@/components/Button";
 import { Card } from "@/components/Card";
+import { Pagination } from "@/components/Pagination";
 import { SelectField } from "@/components/Field";
 import { PageHeader } from "@/components/PageHeader";
 import type { Column } from "@/components/Table";
@@ -57,6 +57,9 @@ function actionTone(action: string): "neutral" | "success" | "warning" | "danger
   return "neutral";
 }
 
+/** One page of the activity log. The query and the "page X of Y" arithmetic must agree. */
+const PAGE_SIZE = 25;
+
 export function AuditPage() {
   const [action, setAction] = useState("");
   const [cursors, setCursors] = useState<(string | null)[]>([null]);
@@ -74,7 +77,7 @@ export function AuditPage() {
   const filters = {
     action: action || undefined,
     cursor: cursors[pageIndex] ?? undefined,
-    limit: 25,
+    limit: PAGE_SIZE,
   };
 
   const log = useQuery({
@@ -187,31 +190,20 @@ export function AuditPage() {
           />
         )}
 
-        {(pageIndex > 0 || hasNext) && (
-          <div className="flex items-center justify-between gap-2 border-t border-line px-4 py-3">
-            <Button
-              size="sm"
-              variant="secondary"
-              disabled={pageIndex === 0}
-              onClick={() => setPageIndex((index) => Math.max(0, index - 1))}
-            >
-              Previous
-            </Button>
-            <span className="text-xs text-fg-3">Page {pageIndex + 1}</span>
-            <Button
-              size="sm"
-              variant="secondary"
-              disabled={!hasNext}
-              onClick={() => {
-                const next = log.data?.next_cursor ?? null;
-                setCursors((trail) => (trail.length > pageIndex + 1 ? trail : [...trail, next]));
-                setPageIndex((index) => index + 1);
-              }}
-            >
-              Next
-            </Button>
-          </div>
-        )}
+        <Pagination
+          pageIndex={pageIndex}
+          pageSize={PAGE_SIZE}
+          total={log.data?.total ?? 0}
+          shown={log.data?.items.length ?? 0}
+          hasNext={hasNext}
+          noun="entries"
+          onPrevious={() => setPageIndex((index) => Math.max(0, index - 1))}
+          onNext={() => {
+            const next = log.data?.next_cursor ?? null;
+            setCursors((trail) => (trail.length > pageIndex + 1 ? trail : [...trail, next]));
+            setPageIndex((index) => index + 1);
+          }}
+        />
       </Card>
     </div>
   );

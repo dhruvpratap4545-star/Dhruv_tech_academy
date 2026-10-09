@@ -135,7 +135,10 @@ export function AppShell() {
           </header>
 
           <main id="main" className="min-w-0 flex-1 px-4 py-6 sm:px-6 lg:px-8">
-            <div className="mx-auto max-w-6xl">
+            {/* Keyed on the path, so the animation replays when the page changes rather
+                than running once at sign-in and never again. `opacity` and `transform`
+                only, so a route change costs no layout work. */}
+            <div key={location.pathname} className="animate-rise mx-auto max-w-6xl">
               <Outlet />
             </div>
           </main>

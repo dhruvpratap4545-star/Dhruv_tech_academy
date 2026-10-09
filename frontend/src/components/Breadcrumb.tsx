@@ -30,6 +30,18 @@ const MAX_VISIBLE = 4;
  */
 export function Breadcrumb({ items, className }: { items: Crumb[]; className?: string }) {
   const [expanded, setExpanded] = useState(false);
+
+  // Collapse again when the trail changes. "Expanded" is a decision about *this* path —
+  // somebody wanted to see the middle of where they were standing. Carrying it to the next
+  // page means every trail afterwards opens fully, including the ones short enough that the
+  // control is not even on screen to put back.
+  const signature = items.map((item) => item.label).join(" › ");
+  const [lastSignature, setLastSignature] = useState(signature);
+  if (signature !== lastSignature) {
+    setLastSignature(signature);
+    if (expanded) setExpanded(false);
+  }
+
   const collapsible = items.length > MAX_VISIBLE;
 
   // Keep the first and the last two; fold everything between them.

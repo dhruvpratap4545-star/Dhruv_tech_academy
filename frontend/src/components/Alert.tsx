@@ -32,6 +32,15 @@ export type AlertProps = {
   title?: string;
   children?: ReactNode;
   className?: string;
+  /**
+   * Shows a dismiss button when given.
+   *
+   * Only for notices that report something that already happened — "the role was deleted".
+   * A validation error has no dismiss button on purpose: the way to make it go away is to
+   * fix the field, and a close button invites people to clear the message and resubmit the
+   * same thing.
+   */
+  onDismiss?: () => void;
 };
 
 /**
@@ -39,14 +48,14 @@ export type AlertProps = {
  * soon as it renders. Informational notes use `role="status"`, which is polite and waits
  * for a pause rather than interrupting.
  */
-export function Alert({ tone = "info", title, children, className }: AlertProps) {
+export function Alert({ tone = "info", title, children, className, onDismiss }: AlertProps) {
   const style = TONES[tone];
   const assertive = tone === "danger" || tone === "warning";
 
   return (
     <div
       role={assertive ? "alert" : "status"}
-      className={cn("flex gap-3 rounded-lg border p-3 text-sm", style.box, className)}
+      className={cn("animate-fade flex gap-3 rounded-lg border p-3 text-sm", style.box, className)}
     >
       <svg
         viewBox="0 0 16 16"
@@ -56,10 +65,30 @@ export function Alert({ tone = "info", title, children, className }: AlertProps)
       >
         <path d={style.path} />
       </svg>
-      <div className="min-w-0 space-y-0.5">
+      <div className="min-w-0 flex-1 space-y-0.5">
         {title && <p className="font-semibold">{title}</p>}
         {children && <div className="text-fg-2 [&_p]:leading-relaxed">{children}</div>}
       </div>
+      {onDismiss && (
+        <button
+          type="button"
+          onClick={onDismiss}
+          aria-label="Dismiss"
+          className="-m-1 shrink-0 self-start rounded-md p-1 text-fg-3 transition-colors hover:text-fg"
+        >
+          <svg
+            viewBox="0 0 16 16"
+            className="size-3.5"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            aria-hidden
+          >
+            <path d="M4 4l8 8M12 4l-8 8" />
+          </svg>
+        </button>
+      )}
     </div>
   );
 }

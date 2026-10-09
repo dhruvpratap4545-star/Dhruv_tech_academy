@@ -74,7 +74,10 @@ export function DashboardPage() {
       />
 
       {canSeeStats && (
-        <section aria-label="Summary" className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        // `stagger`: the four cards arrive left to right rather than all at once, which
+        // reads as a row being laid down instead of a block appearing. 40ms apart, so the
+        // last one is on screen 120ms after the first.
+        <section aria-label="Summary" className="stagger grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
           <Stat
             label="People in scope"
             value={overview.data?.users_total}

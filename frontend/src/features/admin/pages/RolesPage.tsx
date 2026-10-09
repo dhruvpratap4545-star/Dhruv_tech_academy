@@ -5,16 +5,21 @@ import { Alert } from "@/components/Alert";
 import { Badge } from "@/components/Badge";
 import { Button } from "@/components/Button";
 import { Card } from "@/components/Card";
+import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { Icon } from "@/components/Icon";
 import { PageHeader } from "@/components/PageHeader";
 import { Spinner } from "@/components/Spinner";
 import {
   accessKeys,
+  fetchInstitutes,
   fetchPermissions,
   fetchRoles,
+  instituteKeys,
+  removeRole,
   setInstituteRolePermissions,
   updateRole,
 } from "@/features/admin/api";
+import type { RoleRemoval } from "@/features/admin/api";
 import { RoleEditor } from "@/features/admin/components/RoleEditor";
 import type { PermissionInfo, Role } from "@/features/auth/types";
 import { useAuth, useCan } from "@/features/auth/useAuth";
@@ -33,13 +38,42 @@ export function RolesPage() {
   const canManage = useCan("role:manage");
   const [editing, setEditing] = useState<Role | "new" | null>(null);
   const [toggleError, setToggleError] = useState<string | null>(null);
+  const [removalNote, setRemovalNote] = useState<RoleRemoval | null>(null);
 
-  // Which institute's view this is. Platform staff hold no institute, so they see the
-  // definitions; everyone else sees their own institute's version, which is what they
-  // meant by "what does Faculty allow?".
-  const institutes = (user?.roles ?? []).filter((r) => r.institute_id);
-  const [instituteId, setInstituteId] = useState<string>(institutes[0]?.institute_id ?? "");
-  const viewing = instituteId || undefined;
+  // Which institute's view this is, and it is the most important control on the page.
+  //
+  // Every role, built-in ones included, can be adjusted for one institute at a time: what
+  // Faculty allows at ABC College is ABC's business and changes nothing about Faculty
+  // anywhere else. The one thing nobody may edit is a built-in role's *platform-wide*
+  // definition, because that is what the word "Faculty" means everywhere, and a product
+  // where it varies per customer cannot be supported.
+  //
+  // That made the previous version of this page useless to exactly the people who needed
+  // it most. The institute list came from the caller's own role assignments, and platform
+  // staff hold none — so a Super Admin saw no selector at all, landed on the read-only
+  // platform view, and found every cell locked with nothing to explain why or what to do.
+  // Platform staff now get the full list of institutes to choose from.
+  const myInstitutes = (user?.roles ?? [])
+    .filter((role) => role.institute_id)
+    .map((role) => ({ id: role.institute_id!, name: role.institute_name ?? "Institute" }));
+
+  const isPlatformStaff = myInstitutes.length === 0;
+  const allInstitutes = useQuery({
+    queryKey: instituteKeys.list(),
+    queryFn: ({ signal }) => fetchInstitutes(signal),
+    enabled: isPlatformStaff,
+  });
+
+  const choices = isPlatformStaff
+    ? (allInstitutes.data?.items ?? []).map((row) => ({ id: row.id, name: row.name }))
+    : dedupe(myInstitutes);
+
+  // Platform staff start on the platform-wide definitions, because that is the view that
+  // belongs to them. Everyone else starts on their own institute, which is the only view
+  // that answers the question they came here with.
+  const [instituteId, setInstituteId] = useState<string>("");
+  const effectiveId = instituteId || (isPlatformStaff ? "" : (choices[0]?.id ?? ""));
+  const viewing = effectiveId || undefined;
 
   const queryClient = useQueryClient();
 
@@ -128,21 +162,41 @@ export function RolesPage() {
         }
       />
 
-      {institutes.length > 1 && (
-        <Card className="flex flex-wrap items-center gap-3 p-4">
+      {(choices.length > 1 || isPlatformStaff) && (
+        <Card className="animate-fade flex flex-wrap items-center gap-3 p-4">
           <span className="text-sm font-medium text-fg">Showing permissions for</span>
           <select
-            value={instituteId}
+            value={effectiveId}
             onChange={(event) => setInstituteId(event.target.value)}
-            className="h-9 rounded-sm border border-line bg-surface px-2.5 text-sm text-fg"
+            aria-label="Institute whose permissions are shown"
+            className="h-9 rounded-lg border border-line bg-surface px-2.5 text-sm text-fg"
           >
-            {institutes.map((r) => (
-              <option key={r.institute_id} value={r.institute_id!}>
-                {r.institute_name ?? "Institute"}
+            {/* Platform staff only. An institute administrator has no business reading the
+                platform-wide definitions, and offering the option would hand them a view
+                where everything is locked for reasons that are not theirs. */}
+            {isPlatformStaff && <option value="">Platform-wide definitions</option>}
+            {choices.map((row) => (
+              <option key={row.id} value={row.id}>
+                {row.name}
               </option>
             ))}
           </select>
+          <p className="text-xs text-fg-2">
+            {viewing
+              ? "Every role can be adjusted here. Changes apply to this institute only."
+              : "Read-only. Pick an institute to change what a role allows there."}
+          </p>
         </Card>
+      )}
+
+      {removalNote && (
+        <Alert
+          tone={removalNote.deleted ? "success" : "info"}
+          title={removalNote.deleted ? "Role deleted" : "Role retired"}
+          onDismiss={() => setRemovalNote(null)}
+        >
+          <p>{removalNote.message}</p>
+        </Alert>
       )}
 
       {toggleError && (
@@ -168,6 +222,7 @@ export function RolesPage() {
         canManage={canManage}
         onEdit={(role) => setEditing(role)}
         onCreate={() => setEditing("new")}
+        onRemoved={setRemovalNote}
       />
 
       {editing && (
@@ -176,6 +231,7 @@ export function RolesPage() {
           permissions={permissions.data}
           viewingInstituteId={viewing}
           onClose={() => setEditing(null)}
+          onRemoved={setRemovalNote}
         />
       )}
     </div>
@@ -319,7 +375,8 @@ function PermissionMatrix({
                         // nothing about Faculty anywhere else. Without one it follows
                         // `editable`, which is custom roles only — a built-in's own
                         // definition is read-only to everyone, Super Admin included.
-                        const canToggle = (instituteId ? role.customisable : role.editable) && !saving;
+                        const canToggle =
+                          (instituteId ? role.customisable : role.editable) && !saving;
 
                         return (
                           <td
@@ -375,19 +432,36 @@ function CustomRoles({
   canManage,
   onEdit,
   onCreate,
+  onRemoved,
 }: {
   roles: Role[];
   canManage: boolean;
   onEdit: (role: Role) => void;
   onCreate: () => void;
+  onRemoved: (outcome: RoleRemoval) => void;
 }) {
+  const queryClient = useQueryClient();
+  const [removing, setRemoving] = useState<Role | null>(null);
+
+  // Deleting from here as well as from inside the editor. Somebody who wants a role gone
+  // looks at the list of roles, not inside the dialog for changing one.
+  const remove = useMutation({
+    mutationFn: (role: Role) => removeRole(role.id),
+    onSuccess: async (outcome) => {
+      await queryClient.invalidateQueries({ queryKey: ["access", "roles"] });
+      setRemoving(null);
+      onRemoved(outcome);
+    },
+  });
+
   return (
     <Card>
       <div className="border-b border-line p-4">
         <h2 className="font-display text-base font-bold text-fg">Roles you have defined</h2>
         <p className="mt-0.5 text-sm text-fg-2">
-          The six built-in roles cannot be changed — they are what those names mean across the whole
-          platform. Roles you create here belong to your institute alone.
+          Roles you create here belong to your institute alone. The six built-in roles keep their
+          platform-wide meaning, but what each one allows can still be adjusted for your institute
+          in the table above.
         </p>
       </div>
 
@@ -425,14 +499,58 @@ function CustomRoles({
                 </p>
               </div>
               {role.editable && (
-                <Button size="sm" variant="secondary" onClick={() => onEdit(role)}>
-                  Edit
-                </Button>
+                <div className="flex gap-2">
+                  <Button
+                    size="sm"
+                    variant="secondary"
+                    className="press"
+                    onClick={() => onEdit(role)}
+                  >
+                    Edit
+                  </Button>
+                  {/* Only while nobody holds it. Removing a role out from under forty
+                      people is a different and much larger decision, and the server
+                      refuses it anyway — offering the button would just produce an error
+                      message where a disabled control would have explained itself. */}
+                  {role.holder_count === 0 && (
+                    <Button
+                      size="sm"
+                      variant="danger"
+                      className="press"
+                      onClick={() => setRemoving(role)}
+                    >
+                      Delete
+                    </Button>
+                  )}
+                </div>
               )}
             </li>
           ))}
         </ul>
       )}
+
+      <ConfirmDialog
+        open={removing !== null}
+        onClose={() => setRemoving(null)}
+        onConfirm={() => removing && remove.mutate(removing)}
+        title={`Delete ${removing?.name ?? "this role"}?`}
+        confirmLabel="Delete it"
+        pending={remove.isPending}
+        error={remove.error?.message ?? null}
+      >
+        <p>It stops being offered anywhere, immediately.</p>
+        <p>
+          If nobody has ever been given this role it is deleted outright, and the name{" "}
+          <strong className="font-semibold text-fg">{removing?.name}</strong> becomes free to use
+          again. If somebody has held it, the definition is kept instead so the activity log can
+          still say what it allowed.
+        </p>
+      </ConfirmDialog>
     </Card>
   );
+}
+
+/** One entry per institute. Somebody holding two roles at the same college appears twice. */
+function dedupe(rows: { id: string; name: string }[]) {
+  return [...new Map(rows.map((row) => [row.id, row])).values()];
 }

@@ -28,10 +28,23 @@ export type UserFilters = {
 export const userKeys = {
   all: ["users"] as const,
   list: (filters: UserFilters) => ["users", "list", filters] as const,
+  detail: (userId: string) => ["users", "detail", userId] as const,
 };
 
 export function fetchUsers(filters: UserFilters, signal?: AbortSignal) {
   return apiFetch<Page<UserSummary>>(`/users${query(filters)}`, { signal });
+}
+
+/**
+ * One user, with their roles as the server currently has them.
+ *
+ * The list page already holds a copy, but a dialog that edits someone's roles cannot read
+ * them from a row it was handed when it opened: take a role away and the row is stale,
+ * so the role the person just removed is still sitting there on screen. Reading the user
+ * back by id gives the dialog something that changes when it changes things.
+ */
+export function fetchUser(userId: string, signal?: AbortSignal) {
+  return apiFetch<UserSummary>(`/users/${userId}`, { signal });
 }
 
 export type InvitePayload = {
@@ -240,8 +253,28 @@ export function updateRole(
   return apiFetch<Role>(`/roles/${roleId}`, { method: "PATCH", body });
 }
 
-export function archiveRole(roleId: string) {
-  return apiFetch<Role>(`/roles/${roleId}/archive`, { method: "POST" });
+/** What happened when a custom role was removed. Two outcomes, behind one button. */
+export type RoleRemoval = {
+  id: string;
+  key: string;
+  name: string;
+  /** True when the row is gone. False when it was retired and the definition is kept. */
+  deleted: boolean;
+  /** A sentence for the person who pressed the button, saying which one they got. */
+  message: string;
+};
+
+/**
+ * Remove a custom role.
+ *
+ * The server decides between deleting and retiring, because only the server knows whether
+ * anybody has ever held it. A role nobody was ever given is deleted outright and its name
+ * becomes free again; one with a history is retired, so the audit log can still say what
+ * it allowed. The response says which, and the screen repeats it rather than claiming the
+ * one that sounds better.
+ */
+export function removeRole(roleId: string) {
+  return apiFetch<RoleRemoval>(`/roles/${roleId}`, { method: "DELETE" });
 }
 
 export function fetchGrants(userId: string, signal?: AbortSignal) {

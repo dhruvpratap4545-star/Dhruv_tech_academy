@@ -7,11 +7,12 @@ import { Checkbox, SelectField, TextField } from "@/components/Field";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { Modal } from "@/components/Modal";
 import {
-  archiveRole,
+  removeRole,
   createRole,
   setInstituteRolePermissions,
   updateRole,
 } from "@/features/admin/api";
+import type { RoleRemoval } from "@/features/admin/api";
 import type { PermissionInfo, Role } from "@/features/auth/types";
 import { useAuth } from "@/features/auth/useAuth";
 import { cn } from "@/lib/cn";
@@ -32,6 +33,7 @@ export function RoleEditor({
   permissions,
   viewingInstituteId,
   onClose,
+  onRemoved,
 }: {
   role: Role | null;
   permissions: PermissionInfo[];
@@ -39,6 +41,9 @@ export function RoleEditor({
    *  `instituteId` state below, which is the institute a *new* role is being created for. */
   viewingInstituteId?: string;
   onClose: () => void;
+  /** Called with what the server actually did, so the page can report it after the dialog
+   *  has closed. Deleting and retiring look identical from in here. */
+  onRemoved?: (outcome: RoleRemoval) => void;
 }) {
   const { user } = useAuth();
   const queryClient = useQueryClient();
@@ -67,7 +72,7 @@ export function RoleEditor({
   );
   const [chosen, setChosen] = useState<Set<string>>(new Set(role?.permissions ?? []));
   const [error, setError] = useState<string | null>(null);
-  const [confirmRetire, setConfirmRetire] = useState(false);
+  const [confirmRemove, setConfirmRemove] = useState(false);
 
   const done = () => {
     void queryClient.invalidateQueries({ queryKey: ["access", "roles"] });
@@ -96,9 +101,15 @@ export function RoleEditor({
     onError: (err: Error) => setError(err.message),
   });
 
-  const archive = useMutation({
-    mutationFn: () => archiveRole(role!.id),
-    onSuccess: done,
+  // Delete or retire — the server picks, because only the server knows whether anybody has
+  // ever held this role. The outcome is handed back to the page, which says which happened
+  // instead of announcing the one that sounds tidier.
+  const remove = useMutation({
+    mutationFn: () => removeRole(role!.id),
+    onSuccess: (outcome) => {
+      onRemoved?.(outcome);
+      done();
+    },
     onError: (err: Error) => setError(err.message),
   });
 
@@ -138,8 +149,8 @@ export function RoleEditor({
           {/* Retiring is about the role itself, so it has no place while adjusting one
               institute's view of a built-in. */}
           {editing && !adjusting && role.holder_count === 0 && (
-            <Button variant="danger" size="sm" onClick={() => setConfirmRetire(true)}>
-              Retire this role
+            <Button variant="danger" size="sm" onClick={() => setConfirmRemove(true)}>
+              Delete this role
             </Button>
           )}
           <div className="ml-auto flex gap-2">
@@ -281,19 +292,25 @@ export function RoleEditor({
       </div>
 
       <ConfirmDialog
-        open={confirmRetire}
-        onClose={() => setConfirmRetire(false)}
-        onConfirm={() => archive.mutate()}
-        title={`Retire ${role?.name ?? "this role"}?`}
-        confirmLabel="Retire it"
-        pending={archive.isPending}
-        error={archive.error?.message ?? null}
+        open={confirmRemove}
+        onClose={() => setConfirmRemove(false)}
+        onConfirm={() => remove.mutate()}
+        title={`Delete ${role?.name ?? "this role"}?`}
+        confirmLabel="Delete it"
+        pending={remove.isPending}
+        error={remove.error?.message ?? null}
       >
-        <p>It will stop being offered when giving someone a role.</p>
+        <p>It stops being offered anywhere, immediately.</p>
+        {/* Two outcomes, and which one applies is not ours to guess here — the count of
+            people who have *ever* held the role is not on this object. So the dialog
+            describes both, and the page reports afterwards which one happened. */}
         <p>
-          The name stays reserved and cannot be reused, so past records keep their meaning — if you
-          later want a role called <strong className="font-semibold text-fg">{role?.name}</strong>{" "}
-          again, it will need a different name.
+          If nobody has ever been given this role it is deleted outright, and the name{" "}
+          <strong className="font-semibold text-fg">{role?.name}</strong> becomes free to use again.
+        </p>
+        <p>
+          If somebody has held it, the definition is kept instead, so the activity log can still say
+          what it allowed at the time. The name stays reserved in that case.
         </p>
       </ConfirmDialog>
     </Modal>

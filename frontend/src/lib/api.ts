@@ -143,6 +143,15 @@ export async function apiFetch<T>(path: string, options: RequestOptions = {}): P
 export type Page<T> = {
   items: T[];
   next_cursor: string | null;
+  /**
+   * How many rows match the current filters across every page.
+   *
+   * Cursor paging produces no total of its own — that is the trade for its speed, and it
+   * is why "Next" is the only control such a list can honestly offer. The server counts
+   * separately so a screen can say "Page 3 of 7" and "Showing 41–60 of 134", which is what
+   * people actually want from a list: a sense of how much there is.
+   */
+  total: number;
 };
 
 /** Build a query string, dropping empty values so the URL stays readable. */

@@ -50,7 +50,10 @@ export function Button({
       aria-busy={loading || undefined}
       className={cn(
         "relative inline-flex items-center justify-center font-semibold whitespace-nowrap",
-        "transition-[background-color,box-shadow,opacity] duration-(--duration-fast)",
+        // `press` carries the colour transition *and* a one-pixel dip on click. The dip
+        // answers "did that register?" before the request comes back, which on a slow
+        // connection is the difference between waiting and clicking again.
+        "press",
         "disabled:pointer-events-none disabled:opacity-55",
         VARIANTS[variant],
         SIZES[size],

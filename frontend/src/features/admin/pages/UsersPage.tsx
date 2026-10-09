@@ -5,6 +5,7 @@ import { Alert } from "@/components/Alert";
 import { Badge, StatusBadge } from "@/components/Badge";
 import { Avatar } from "@/components/Logo";
 import { Button } from "@/components/Button";
+import { Pagination } from "@/components/Pagination";
 import { Checkbox } from "@/components/Field";
 import { Card } from "@/components/Card";
 import { SelectField, TextField } from "@/components/Field";
@@ -38,6 +39,9 @@ function useDebounced<T>(value: T, delay = 300): T {
   }, [value, delay]);
   return debounced;
 }
+
+/** One page of users. The query and the "page X of Y" arithmetic must agree. */
+const PAGE_SIZE = 20;
 
 export function UsersPage() {
   const queryClient = useQueryClient();
@@ -78,17 +82,24 @@ export function UsersPage() {
   // would mean acting on people the administrator can no longer see, which is exactly the
   // mistake a confirmation dialog cannot catch — and "Select everyone on this page" would
   // report itself unchecked while a hidden selection was still live.
+  //
+  // One block, not two. Two blocks keyed on overlapping values ran in an order that was
+  // only correct by accident: the filter reset sets `pageIndex` to 0, which changes the
+  // view key the block above had just recorded, so clearing the selection depended on
+  // which one happened to be written first.
   const viewKey = `${filterKey}|${pageIndex}`;
   const [lastView, setLastView] = useState(viewKey);
   if (viewKey !== lastView) {
-    setLastView(viewKey);
+    const filtersChanged = lastView.slice(0, lastView.lastIndexOf("|")) !== filterKey;
+    if (filtersChanged) {
+      // Page 3 of the old result set is meaningless against the new one.
+      setCursors([null]);
+      setPageIndex(0);
+      setLastView(`${filterKey}|0`);
+    } else {
+      setLastView(viewKey);
+    }
     if (selected.size > 0) setSelected(new Set());
-  }
-  const [lastFilterKey, setLastFilterKey] = useState(filterKey);
-  if (filterKey !== lastFilterKey) {
-    setLastFilterKey(filterKey);
-    setCursors([null]);
-    setPageIndex(0);
   }
 
   const filters: UserFilters = useMemo(
@@ -97,7 +108,7 @@ export function UsersPage() {
       status: status || undefined,
       role_key: role || undefined,
       cursor: cursors[pageIndex] ?? undefined,
-      limit: 20,
+      limit: PAGE_SIZE,
     }),
     [debouncedSearch, status, role, cursors, pageIndex],
   );
@@ -438,31 +449,20 @@ export function UsersPage() {
           />
         )}
 
-        {(pageIndex > 0 || hasNext) && (
-          <div className="flex items-center justify-between gap-2 border-t border-line px-4 py-3">
-            <Button
-              size="sm"
-              variant="secondary"
-              disabled={pageIndex === 0}
-              onClick={() => setPageIndex((index) => Math.max(0, index - 1))}
-            >
-              Previous
-            </Button>
-            <span className="text-xs text-fg-2">Page {pageIndex + 1}</span>
-            <Button
-              size="sm"
-              variant="secondary"
-              disabled={!hasNext}
-              onClick={() => {
-                const next = users.data?.next_cursor ?? null;
-                setCursors((trail) => (trail.length > pageIndex + 1 ? trail : [...trail, next]));
-                setPageIndex((index) => index + 1);
-              }}
-            >
-              Next
-            </Button>
-          </div>
-        )}
+        <Pagination
+          pageIndex={pageIndex}
+          pageSize={PAGE_SIZE}
+          total={users.data?.total ?? 0}
+          shown={visible.length}
+          hasNext={hasNext}
+          noun="users"
+          onPrevious={() => setPageIndex((index) => Math.max(0, index - 1))}
+          onNext={() => {
+            const next = users.data?.next_cursor ?? null;
+            setCursors((trail) => (trail.length > pageIndex + 1 ? trail : [...trail, next]));
+            setPageIndex((index) => index + 1);
+          }}
+        />
       </Card>
 
       <InviteUserModal

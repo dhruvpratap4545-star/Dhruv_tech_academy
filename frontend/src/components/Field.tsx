@@ -1,5 +1,5 @@
 import type { InputHTMLAttributes, ReactNode, SelectHTMLAttributes } from "react";
-import { useId } from "react";
+import { useId, useState } from "react";
 
 import { cn } from "@/lib/cn";
 
@@ -91,18 +91,68 @@ export type TextFieldProps = Omit<InputHTMLAttributes<HTMLInputElement>, "id"> &
 };
 
 export function TextField({ label, hint, error, action, className, ...rest }: TextFieldProps) {
+  // `type="password"` gets a reveal button, always. Typing a password blind is where
+  // sign-in failures come from that have nothing to do with the password being wrong —
+  // a capital letter held a moment too long, a phone keyboard that autocorrected, a
+  // character that is simply not where the person thought it was. The browser offers no
+  // such control of its own on most platforms, so the form has to.
+  const isPassword = rest.type === "password";
+  const [revealed, setRevealed] = useState(false);
+
   return (
     <Field label={label} hint={hint} error={error} required={rest.required} action={action}>
       {({ controlId, describedBy }) => (
-        <input
-          id={controlId}
-          aria-describedby={describedBy}
-          aria-invalid={error ? true : undefined}
-          className={controlClasses(Boolean(error), cn("h-11", className))}
-          {...rest}
-        />
+        <div className={isPassword ? "relative" : undefined}>
+          <input
+            id={controlId}
+            aria-describedby={describedBy}
+            aria-invalid={error ? true : undefined}
+            className={controlClasses(Boolean(error), cn("h-11", isPassword && "pr-11", className))}
+            {...rest}
+            type={isPassword && revealed ? "text" : rest.type}
+          />
+          {isPassword && (
+            <button
+              type="button"
+              // Not in the tab order. Someone filling in a form with the keyboard wants
+              // the next field, not a button they did not ask for between every password
+              // and the one after it. It stays reachable by pointer, and by screen
+              // readers, which navigate by element rather than by tab stop.
+              tabIndex={-1}
+              onClick={() => setRevealed((shown) => !shown)}
+              aria-label={revealed ? `Hide ${label.toLowerCase()}` : `Show ${label.toLowerCase()}`}
+              aria-pressed={revealed}
+              className={cn(
+                "absolute top-1/2 right-1 flex size-9 -translate-y-1/2 items-center justify-center",
+                "rounded-md text-fg-3 transition-colors hover:bg-surface-2 hover:text-fg",
+              )}
+            >
+              <EyeIcon off={revealed} />
+            </button>
+          )}
+        </div>
       )}
     </Field>
+  );
+}
+
+/** An eye, struck through once the password is on screen. */
+function EyeIcon({ off }: { off: boolean }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      className="size-4.5"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.7"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <path d="M2 12s3.6-6.5 10-6.5S22 12 22 12s-3.6 6.5-10 6.5S2 12 2 12z" />
+      <circle cx="12" cy="12" r="2.6" />
+      {off && <path d="M4 20 20 4" />}
+    </svg>
   );
 }
 

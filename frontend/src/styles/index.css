@@ -199,8 +199,36 @@
   h3,
   h4 {
     font-family: var(--font-display);
-    letter-spacing: -0.01em;
     text-wrap: balance;
+  }
+
+  /* Tracking against size. A display face set at 2rem with the same letter-spacing as
+     one set at 0.9rem looks loose at the top and cramped at the bottom — the larger the
+     type, the less air each letter needs. These are the three steps this interface
+     actually uses. */
+  h1 {
+    letter-spacing: -0.021em;
+  }
+  h2 {
+    letter-spacing: -0.015em;
+  }
+  h3,
+  h4 {
+    letter-spacing: -0.008em;
+  }
+
+  /* Stops a paragraph ending on a single word. Costs nothing and is ignored by browsers
+     that do not implement it. */
+  p {
+    text-wrap: pretty;
+  }
+
+  /* Proportional figures in running text, where a date or a count sits inside a
+     sentence and tabular spacing makes the digits look gapped. Tables and identifiers
+     opt back in with `.num`. */
+  body {
+    font-variant-numeric: proportional-nums;
+    font-feature-settings: "cv05" 1;
   }
 
   /* One focus treatment everywhere, visible on both themes and never removed —
@@ -256,5 +284,89 @@
     overflow: visible;
     clip: auto;
     white-space: normal;
+  }
+}
+
+/* ===========================================================================
+   Motion
+   ---------------------------------------------------------------------------
+   Two keyframes and four utilities, and that is the whole of it.
+
+   Every property animated here is `opacity` or `transform`. Those are the two
+   the browser can hand to the compositor, so they never trigger layout or
+   paint and never block the main thread — the animation costs the same whether
+   the page holds ten rows or a thousand. Animating `height`, `top` or
+   `margin` would not be free, which is why none of them appear.
+
+   Durations stay under 300ms. Past that an interface stops feeling responsive
+   and starts feeling slow, and the people using this screen all day are the
+   ones who would notice. `prefers-reduced-motion` is honoured in the base
+   layer above, where it cancels all of this outright.
+   =========================================================================== */
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 6px, 0);
+  }
+}
+
+@keyframes fade {
+  from {
+    opacity: 0;
+  }
+}
+
+@layer utilities {
+  /* A panel or card arriving. Backwards fill, so there is no flash of the
+     final state before the first frame. */
+  .animate-rise {
+    animation: rise 0.26s cubic-bezier(0.22, 0.8, 0.3, 1) both;
+  }
+
+  .animate-fade {
+    animation: fade 0.2s ease-out both;
+  }
+
+  /* Children arrive one after another rather than all at once, which reads as
+     a list being laid down instead of a block appearing. Capped at six: beyond
+     that the last item waits long enough to feel like a slow page.
+
+     Applied to the container, so adding a row to the list needs no change
+     here. */
+  .stagger > * {
+    animation: rise 0.26s cubic-bezier(0.22, 0.8, 0.3, 1) both;
+  }
+  .stagger > *:nth-child(1) {
+    animation-delay: 0ms;
+  }
+  .stagger > *:nth-child(2) {
+    animation-delay: 40ms;
+  }
+  .stagger > *:nth-child(3) {
+    animation-delay: 80ms;
+  }
+  .stagger > *:nth-child(4) {
+    animation-delay: 120ms;
+  }
+  .stagger > *:nth-child(5) {
+    animation-delay: 160ms;
+  }
+  .stagger > *:nth-child(n + 6) {
+    animation-delay: 200ms;
+  }
+
+  /* Press feedback. A button that moves one pixel under the pointer answers
+     "did that register?" before the request does. */
+  .press {
+    transition:
+      transform 0.12s ease,
+      box-shadow 0.12s ease,
+      background-color 0.12s ease,
+      border-color 0.12s ease,
+      color 0.12s ease;
+  }
+  .press:active:not(:disabled) {
+    transform: translate3d(0, 1px, 0);
   }
 }

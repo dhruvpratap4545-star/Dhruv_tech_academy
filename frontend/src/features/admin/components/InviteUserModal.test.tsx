@@ -41,7 +41,7 @@ beforeEach(() => {
     this.open = false;
   });
 
-  vi.mocked(fetchInstitutes).mockResolvedValue({ items: [], next_cursor: null });
+  vi.mocked(fetchInstitutes).mockResolvedValue({ items: [], next_cursor: null, total: 0 });
   vi.mocked(fetchBranches).mockResolvedValue({
     items: [
       {
@@ -56,6 +56,7 @@ beforeEach(() => {
       },
     ],
     next_cursor: null,
+    total: 0,
   });
   vi.mocked(fetchClasses).mockResolvedValue({
     items: [
@@ -72,6 +73,7 @@ beforeEach(() => {
       },
     ],
     next_cursor: null,
+    total: 0,
   });
   vi.mocked(inviteUser).mockResolvedValue({
     user: {

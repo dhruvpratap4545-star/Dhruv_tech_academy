@@ -1,26 +1,11 @@
 import { z } from "zod";
 
+import { isCommonPassword } from "@/features/auth/commonPasswords";
+
 /**
  * Mirrors the backend rules (PRD §7.1) so the user is told immediately rather than after a
  * round trip. The backend validates independently — this is for speed, not for safety.
  */
-
-const COMMON_PASSWORDS = new Set([
-  "password",
-  "password1",
-  "password123",
-  "12345678",
-  "123456789",
-  "1234567890",
-  "qwerty123",
-  "abc12345",
-  "iloveyou",
-  "admin123",
-  "welcome1",
-  "letmein1",
-  "dhruv123",
-  "academy123",
-]);
 
 /**
  * The four rules, as one list.
@@ -43,9 +28,6 @@ export const PASSWORD_RULES = [
   { label: "One special character", test: (v: string) => /[^\p{L}\p{Nd}]/u.test(v) },
 ] as const;
 
-/** Strip the decoration before the common check: "password123!" is not a new password. */
-const undecorate = (value: string) => value.replace(/[^\p{L}\p{Nd}]/gu, "").toLowerCase();
-
 export const password = z
   .string()
   .max(128, "Use at most 128 characters.")
@@ -57,8 +39,8 @@ export const password = z
     }
   })
   .refine(
-    (value) => !COMMON_PASSWORDS.has(value.toLowerCase()) && !COMMON_PASSWORDS.has(undecorate(value)),
-    "That password is too common.",
+    (value) => !isCommonPassword(value),
+    "That password is too common. Please choose a different one.",
   );
 
 export const email = z
