@@ -17,7 +17,7 @@ from app.modules.auth.models import RefreshToken
 async def _as(client: AsyncClient, user) -> AsyncClient:
     client.cookies.clear()
     response = await client.post(
-        "/api/v1/auth/login", json={"email": user.email, "password": "testpassword9"}
+        "/api/v1/auth/login", json={"email": user.email, "password": "testpassword9!"}
     )
     assert response.status_code == 200, response.text
     return client

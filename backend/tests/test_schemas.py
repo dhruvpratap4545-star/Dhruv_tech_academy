@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import re
+
 import pytest
 from pydantic import ValidationError
 
@@ -14,7 +16,7 @@ def _register(**overrides):
     payload = {
         "full_name": "Asha Rao",
         "email": "asha@example.com",
-        "password": "goodpassword9",
+        "password": "goodpassword9!",
         "accept_terms": True,
     }
     payload.update(overrides)
@@ -34,7 +36,7 @@ def test_consent_is_mandatory() -> None:
 def test_consent_cannot_be_omitted() -> None:
     with pytest.raises(ValidationError):
         auth_schemas.RegisterRequest(
-            full_name="Asha Rao", email="asha@example.com", password="goodpassword9"
+            full_name="Asha Rao", email="asha@example.com", password="goodpassword9!"
         )
 
 
@@ -156,3 +158,56 @@ def test_a_one_time_code_never_travels_in_a_url() -> None:
         for part in (message.html, message.text):
             for url in re.findall(r"https?://[^\s\"'<>]+", part):
                 assert code not in url, f"the code leaked into a link: {url}"
+
+
+# ------------------------------------------------------- password policy (PRD §7.1)
+
+
+@pytest.mark.parametrize(
+    ("value", "missing"),
+    [
+        ("Ab1!", "at least 8 characters"),
+        ("12345678!", "one letter"),
+        ("abcdefgh!", "one number"),
+        ("abcdefgh1", "one special character"),
+    ],
+)
+def test_each_password_rule_is_enforced(value: str, missing: str) -> None:
+    from app.modules.auth.schemas import validate_password_strength
+
+    with pytest.raises(ValueError, match=re.escape(missing)):
+        validate_password_strength(value)
+
+
+def test_a_password_breaking_several_rules_is_told_all_of_them() -> None:
+    """Being told one problem, fixing it, and being told the next is the interaction that
+    ends in somebody reusing an old password."""
+    from app.modules.auth.schemas import password_rule_failures
+
+    assert password_rule_failures("abc") == [
+        "at least 8 characters",
+        "one number",
+        "one special character",
+    ]
+
+
+@pytest.mark.parametrize(
+    "value",
+    ["Correct-Horse9", "Tr0ub4dor&3", "my dog is 7 years", "ಕನ್ನಡ123!"],
+)
+def test_reasonable_passwords_are_accepted(value: str) -> None:
+    """Including a space as the special character, and a non-Latin script — rejecting
+    either would exclude real people for no security gain."""
+    from app.modules.auth.schemas import validate_password_strength
+
+    assert validate_password_strength(value) == value
+
+
+@pytest.mark.parametrize("value", ["password123!", "Password123!", "admin123#", "welcome1!"])
+def test_a_common_password_is_refused_even_with_a_symbol_bolted_on(value: str) -> None:
+    """A character-class rule invites exactly one evasion. "password123!" is no stronger
+    than "password123" against anyone running a wordlist with mangling rules."""
+    from app.modules.auth.schemas import validate_password_strength
+
+    with pytest.raises(ValueError, match="too common"):
+        validate_password_strength(value)

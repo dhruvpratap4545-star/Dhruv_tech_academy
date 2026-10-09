@@ -8,6 +8,7 @@ import { Button } from "@/components/Button";
 import { TextField } from "@/components/Field";
 import { setupPassword } from "@/features/auth/api";
 import { AuthLayout } from "@/features/auth/components/AuthLayout";
+import { PasswordStrength } from "@/features/auth/components/PasswordStrength";
 import type { SetupValues } from "@/features/auth/schemas";
 import { setupSchema } from "@/features/auth/schemas";
 
@@ -90,10 +91,11 @@ export function SetupPasswordPage() {
           type="password"
           autoComplete="new-password"
           required
-          hint="At least 8 characters, with one letter and one number."
-          error={form.formState.errors.new_password?.message}
+            error={form.formState.errors.new_password?.message}
           {...form.register("new_password")}
         />
+
+        <PasswordStrength control={form.control} name="new_password" />
 
         <TextField
           label="Confirm password"

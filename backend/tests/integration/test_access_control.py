@@ -28,7 +28,7 @@ pytestmark = pytest.mark.asyncio
 async def _as(client: AsyncClient, user) -> AsyncClient:
     client.cookies.clear()
     response = await client.post(
-        "/api/v1/auth/login", json={"email": user.email, "password": "testpassword9"}
+        "/api/v1/auth/login", json={"email": user.email, "password": "testpassword9!"}
     )
     assert response.status_code == 200, response.text
     return client
@@ -703,3 +703,120 @@ async def test_the_change_takes_effect_without_waiting_out_the_cache(client, wor
     # No re-login, no cache expiry: the next request must already see it.
     await _as(client, world["teacher"])
     assert (await client.get("/api/v1/users")).status_code == 403
+
+
+# ----------------------------------------------------- the matrix, as the client asked
+
+
+async def test_a_system_role_is_read_only_for_everyone(client, world):
+    """Including a Super Admin. A built-in role is what its name means on every
+    installation of this product; a version of "Institute Admin" that varies per customer
+    cannot be documented, supported, or reasoned about in a security review."""
+    await _as(client, world["owner"])
+    roles = (await client.get("/api/v1/roles")).json()
+
+    for row in roles:
+        if row["is_system"]:
+            assert row["editable"] is False, f"{row['key']} reported itself editable"
+
+    faculty = next(r for r in roles if r["key"] == "faculty")
+    refused = await client.patch(
+        f"/api/v1/roles/{faculty['id']}",
+        json={"permissions": [*faculty["permissions"], "audit:read"]},
+    )
+    assert refused.status_code == 404
+
+
+async def test_a_custom_role_grants_exactly_what_it_was_given(client, world, make_user):
+    """The whole point of a custom role: the holder gets that set and nothing else."""
+    await _as(client, world["principal"])
+    created = await client.post(
+        "/api/v1/roles",
+        json={
+            "name": "Exam Clerk",
+            "scope_level": "branch",
+            "rank": 15,
+            "institute_id": str(world["abc"].id),
+            "permissions": ["class:read", "profile:read", "profile:update"],
+        },
+    )
+    assert created.status_code == 201, created.text
+
+    clerk = await make_user("student", institute_id=world["abc"].id)
+    assigned = await client.post(
+        f"/api/v1/users/{clerk.id}/roles",
+        json={
+            "role_key": created.json()["key"],
+            "institute_id": str(world["abc"].id),
+            "branch_id": str(world["mca"].id),
+        },
+    )
+    assert assigned.status_code == 201, assigned.text
+
+    await _as(client, clerk)
+    held = set((await client.get("/api/v1/me")).json()["permissions"])
+
+    # The student role they already had contributes its own permissions, so the test is
+    # that nothing *beyond* the two sets appeared — not that the sets are equal.
+    assert {"class:read", "profile:read", "profile:update"} <= held
+    assert "user:update_status" not in held
+    assert "role:manage" not in held
+    assert "audit:read" not in held
+
+
+async def test_toggling_a_permission_onto_a_custom_role_reaches_its_holders(
+    client, world, make_user
+):
+    """What the matrix does when a cell is clicked, and the cache invalidation behind it."""
+    await _as(client, world["principal"])
+    created = await client.post(
+        "/api/v1/roles",
+        json={
+            "name": "Exam Clerk",
+            "scope_level": "branch",
+            "rank": 15,
+            "institute_id": str(world["abc"].id),
+            "permissions": ["class:read"],
+        },
+    )
+    role = created.json()
+
+    clerk = await make_user("student", institute_id=world["abc"].id)
+    await client.post(
+        f"/api/v1/users/{clerk.id}/roles",
+        json={
+            "role_key": role["key"],
+            "institute_id": str(world["abc"].id),
+            "branch_id": str(world["mca"].id),
+        },
+    )
+
+    await _as(client, clerk)
+    assert "audit:read" not in (await client.get("/api/v1/me")).json()["permissions"]
+
+    await _as(client, world["principal"])
+    updated = await client.patch(
+        f"/api/v1/roles/{role['id']}", json={"permissions": ["class:read", "audit:read"]}
+    )
+    assert updated.status_code == 200, updated.text
+
+    # No re-login and no cache expiry: the holder sees it on their next request.
+    await _as(client, clerk)
+    assert "audit:read" in (await client.get("/api/v1/me")).json()["permissions"]
+
+
+async def test_a_custom_role_cannot_be_created_at_or_above_your_own_rank(client, world):
+    await _as(client, world["principal"])
+    mine = 70  # Institute Admin
+    for rank in (mine, mine + 1):
+        response = await client.post(
+            "/api/v1/roles",
+            json={
+                "name": f"Overreach {rank}",
+                "scope_level": "institute",
+                "rank": rank,
+                "institute_id": str(world["abc"].id),
+                "permissions": ["user:read"],
+            },
+        )
+        assert response.status_code == 403, f"rank {rank} should be refused"

@@ -5,13 +5,21 @@ import { Alert } from "@/components/Alert";
 import { Badge, StatusBadge } from "@/components/Badge";
 import { Avatar } from "@/components/Logo";
 import { Button } from "@/components/Button";
+import { Checkbox } from "@/components/Field";
 import { Card } from "@/components/Card";
 import { SelectField, TextField } from "@/components/Field";
 import { PageHeader } from "@/components/PageHeader";
 import type { Column } from "@/components/Table";
 import { EmptyState, Table } from "@/components/Table";
 import type { UserFilters } from "@/features/admin/api";
-import { fetchUsers, resendInvite, updateUserStatus, userKeys } from "@/features/admin/api";
+import type { BulkStatusResponse } from "@/features/admin/api";
+import {
+  bulkUpdateStatus,
+  fetchUsers,
+  resendInvite,
+  updateUserStatus,
+  userKeys,
+} from "@/features/admin/api";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { ChangeRoleModal } from "@/features/admin/components/ChangeRoleModal";
 import { InviteUserModal } from "@/features/admin/components/InviteUserModal";
@@ -48,6 +56,12 @@ export function UsersPage() {
   // asks first. Re-activation restores access and needs no ceremony.
   const [suspendTarget, setSuspendTarget] = useState<UserSummary | null>(null);
   const [invited, setInvited] = useState<string | null>(null);
+
+  // Selected ids, for the bulk actions. Held as ids rather than rows so a refetch that
+  // returns new objects does not silently empty the selection.
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [bulkIntent, setBulkIntent] = useState<"active" | "suspended" | null>(null);
+  const [bulkSummary, setBulkSummary] = useState<BulkStatusResponse | null>(null);
   const [role, setRole] = useState("");
   const [cursors, setCursors] = useState<(string | null)[]>([null]);
   const [pageIndex, setPageIndex] = useState(0);
@@ -59,6 +73,15 @@ export function UsersPage() {
   // React re-renders immediately without committing the stale page, so there is no flash
   // of the wrong results and no cascading effect.
   const filterKey = `${debouncedSearch}|${status}|${role}`;
+
+  // Changing filters or page changes who is on screen. Keeping a selection across that
+  // would mean acting on people the administrator can no longer see, which is exactly the
+  // mistake a confirmation dialog cannot catch.
+  const [lastView, setLastView] = useState(filterKey);
+  if (filterKey !== lastView) {
+    setLastView(filterKey);
+    if (selected.size > 0) setSelected(new Set());
+  }
   const [lastFilterKey, setLastFilterKey] = useState(filterKey);
   if (filterKey !== lastFilterKey) {
     setLastFilterKey(filterKey);
@@ -92,11 +115,64 @@ export function UsersPage() {
     },
   });
 
+  const bulk = useMutation({
+    mutationFn: (next: "active" | "suspended") => bulkUpdateStatus([...selected], next),
+    onSuccess: (summary) => {
+      void queryClient.invalidateQueries({ queryKey: userKeys.all });
+      setBulkSummary(summary);
+      setBulkIntent(null);
+      setSelected(new Set());
+    },
+  });
+
   const resend = useMutation({
     mutationFn: (id: string) => resendInvite(id),
   });
 
+  const visible = users.data?.items ?? [];
+  // Your own row is never selectable: the server refuses it anyway, and offering a
+  // checkbox that is guaranteed to come back "skipped" is just a trap.
+  const selectable = visible.filter((row) => row.id !== me?.id);
+  const allSelected = selectable.length > 0 && selectable.every((row) => selected.has(row.id));
+
+  function toggle(id: string) {
+    setSelected((current) => {
+      const next = new Set(current);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }
+
   const columns: Column<UserSummary>[] = [
+    ...(canChangeStatus
+      ? [
+          {
+            key: "select",
+            label: "Select",
+            className: "w-10",
+            header: (
+              <Checkbox
+                label=""
+                aria-label="Select everyone on this page"
+                checked={allSelected}
+                onChange={() =>
+                  setSelected(allSelected ? new Set() : new Set(selectable.map((r) => r.id)))
+                }
+              />
+            ),
+            cell: (row: UserSummary) =>
+              row.id === me?.id ? null : (
+                <Checkbox
+                  label=""
+                  aria-label={`Select ${row.full_name}`}
+                  checked={selected.has(row.id)}
+                  onChange={() => toggle(row.id)}
+                />
+              ),
+          } satisfies Column<UserSummary>,
+        ]
+      : []),
     {
       key: "person",
       primary: true,
@@ -221,14 +297,60 @@ export function UsersPage() {
       {invited && (
         <Alert tone="success" title={`${invited} has been invited`}>
           <p>
-            An email with a 6-digit setup code is on its way, valid for 48 hours. They set their
-            own password with it — nobody else sees it, including you.
+            An email with a 6-digit setup code is on its way, valid for 48 hours. They set their own
+            password with it — nobody else sees it, including you.
           </p>
           <p className="mt-1">
             If it does not arrive, check the address in the list below and use{" "}
             <strong className="font-semibold">Resend invite</strong> to send a fresh code.
           </p>
         </Alert>
+      )}
+
+      {bulkSummary && (
+        <Alert
+          tone={bulkSummary.skipped > 0 ? "warning" : "success"}
+          title={`${bulkSummary.succeeded} ${bulkSummary.succeeded === 1 ? "account" : "accounts"} updated`}
+        >
+          {bulkSummary.skipped > 0 && (
+            <>
+              <p>
+                {bulkSummary.skipped} {bulkSummary.skipped === 1 ? "was" : "were"} skipped:
+              </p>
+              <ul className="mt-1 list-disc space-y-0.5 pl-5">
+                {bulkSummary.results
+                  .filter((r) => r.outcome === "skipped")
+                  .map((r) => (
+                    <li key={r.user_id}>{r.reason}</li>
+                  ))}
+              </ul>
+            </>
+          )}
+          <button
+            type="button"
+            onClick={() => setBulkSummary(null)}
+            className="mt-2 text-xs font-semibold underline"
+          >
+            Dismiss
+          </button>
+        </Alert>
+      )}
+
+      {selected.size > 0 && (
+        <div className="flex flex-wrap items-center gap-3 rounded-md border border-accent/40 bg-accent-soft px-4 py-3">
+          <span className="text-sm font-semibold text-fg">{selected.size} selected</span>
+          <div className="ml-auto flex flex-wrap gap-2">
+            <Button size="sm" variant="secondary" onClick={() => setSelected(new Set())}>
+              Clear
+            </Button>
+            <Button size="sm" variant="secondary" onClick={() => setBulkIntent("active")}>
+              Activate
+            </Button>
+            <Button size="sm" variant="danger" onClick={() => setBulkIntent("suspended")}>
+              Suspend
+            </Button>
+          </div>
+        </div>
       )}
 
       {resend.isSuccess && (
@@ -357,6 +479,41 @@ export function UsersPage() {
         open={accessTarget !== null}
         onClose={() => setAccessTarget(null)}
       />
+
+      <ConfirmDialog
+        open={bulkIntent !== null}
+        onClose={() => {
+          setBulkIntent(null);
+          bulk.reset();
+        }}
+        onConfirm={() => bulkIntent && bulk.mutate(bulkIntent)}
+        title={
+          bulkIntent === "suspended"
+            ? `Suspend ${selected.size} ${selected.size === 1 ? "account" : "accounts"}?`
+            : `Re-activate ${selected.size} ${selected.size === 1 ? "account" : "accounts"}?`
+        }
+        confirmLabel={bulkIntent === "suspended" ? "Suspend them" : "Re-activate them"}
+        tone={bulkIntent === "suspended" ? "danger" : "primary"}
+        pending={bulk.isPending}
+        error={bulk.error?.message ?? null}
+      >
+        {bulkIntent === "suspended" ? (
+          <>
+            <p>
+              They will be signed out of every device straight away and will not be able to sign in
+              again. Nothing is deleted, and you can re-activate them at any time.
+            </p>
+            <p>
+              Anyone you are not allowed to suspend is skipped, and you will be told who and why.
+            </p>
+          </>
+        ) : (
+          <p>
+            They will be able to sign in again. Anyone who never set a password returns to "invited"
+            rather than active, so their invitation still has to be completed.
+          </p>
+        )}
+      </ConfirmDialog>
 
       <ConfirmDialog
         open={suspendTarget !== null}

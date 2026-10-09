@@ -188,6 +188,29 @@ async def resend_invite(
     return schemas.InviteUserResponse(user=schemas.UserOut.model_validate(row))
 
 
+@router.post(
+    "/bulk-status",
+    response_model=schemas.BulkStatusResponse,
+    summary="Suspend or re-activate up to 100 users at once",
+    description="Each person is checked individually against the same rules as the single "
+    "endpoint — your permission, your scope, and their role being strictly below yours — "
+    "and you can never change your own status. Anyone you may not act on is skipped with "
+    "the reason, rather than failing the whole request.",
+)
+async def bulk_update_status(
+    payload: schemas.BulkStatusRequest,
+    request: Request,
+    db: DbSession,
+    guard: Annotated[Authorized, Depends(require_permission("user:update_status"))],
+) -> schemas.BulkStatusResponse:
+    results = await users.bulk_update_status(db, guard=guard, payload=payload, meta=_meta(request))
+    return schemas.BulkStatusResponse(
+        results=results,
+        succeeded=sum(1 for r in results if r.outcome == "succeeded"),
+        skipped=sum(1 for r in results if r.outcome == "skipped"),
+    )
+
+
 @router.patch(
     "/{user_id}/status",
     response_model=schemas.UserOut,

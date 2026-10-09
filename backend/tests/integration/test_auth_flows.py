@@ -17,7 +17,7 @@ from app.modules.users.models import User
 SIGNUP = {
     "full_name": "Asha Rao",
     "email": "asha@example.com",
-    "password": "goodpassword9",
+    "password": "goodpassword9!",
     "accept_terms": True,
 }
 
@@ -57,7 +57,7 @@ async def test_signup_then_login_then_me(client: AsyncClient) -> None:
     await client.post("/api/v1/auth/logout")
 
     login = await client.post(
-        "/api/v1/auth/login", json={"email": "asha@example.com", "password": "goodpassword9"}
+        "/api/v1/auth/login", json={"email": "asha@example.com", "password": "goodpassword9!"}
     )
     assert login.status_code == 200
 
@@ -70,7 +70,7 @@ async def test_signup_then_login_then_me(client: AsyncClient) -> None:
 async def test_login_is_case_insensitive_on_email(client: AsyncClient) -> None:
     await client.post("/api/v1/auth/register", json=SIGNUP)
     response = await client.post(
-        "/api/v1/auth/login", json={"email": "ASHA@Example.com", "password": "goodpassword9"}
+        "/api/v1/auth/login", json={"email": "ASHA@Example.com", "password": "goodpassword9!"}
     )
     assert response.status_code == 200
 
@@ -103,7 +103,7 @@ async def test_five_failures_lock_the_account_for_fifteen_minutes(
 
     # The sixth attempt is refused even with the correct password.
     locked = await client.post(
-        "/api/v1/auth/login", json={"email": "asha@example.com", "password": "goodpassword9"}
+        "/api/v1/auth/login", json={"email": "asha@example.com", "password": "goodpassword9!"}
     )
     assert locked.status_code == 429
 
@@ -134,7 +134,7 @@ async def test_a_successful_login_resets_the_failure_counter(
             "/api/v1/auth/login", json={"email": "asha@example.com", "password": "wrongpassword9"}
         )
     await client.post(
-        "/api/v1/auth/login", json={"email": "asha@example.com", "password": "goodpassword9"}
+        "/api/v1/auth/login", json={"email": "asha@example.com", "password": "goodpassword9!"}
     )
 
     user = await db.scalar(select(User).where(User.email == "asha@example.com"))
@@ -244,7 +244,7 @@ async def test_a_suspended_user_cannot_log_in(client: AsyncClient, db: AsyncSess
     await db.commit()
 
     response = await client.post(
-        "/api/v1/auth/login", json={"email": "asha@example.com", "password": "goodpassword9"}
+        "/api/v1/auth/login", json={"email": "asha@example.com", "password": "goodpassword9!"}
     )
     assert response.status_code == 403
 

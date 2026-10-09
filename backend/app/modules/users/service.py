@@ -382,6 +382,38 @@ async def update_status(
     meta: RequestMeta,
 ) -> User:
     """Suspend or re-activate. Suspension revokes every session immediately (PRD §13.9)."""
+    user = await _apply_status(
+        db,
+        guard=guard,
+        user_id=user_id,
+        status=payload.status,
+        reason=payload.reason,
+        meta=meta,
+    )
+    await db.commit()
+    return user
+
+
+async def _apply_status(
+    db: AsyncSession,
+    *,
+    guard: Authorized,
+    user_id: uuid.UUID,
+    status: str,
+    reason: str | None,
+    meta: RequestMeta,
+) -> User:
+    """Every rule that governs changing somebody's status, in one place.
+
+    Single and bulk both go through here, which is the point: a bulk endpoint that
+    re-implements the checks is a bulk endpoint that will eventually disagree with the
+    single one, and the disagreement will be in the permissive direction.
+
+    Raises rather than returning a verdict, so the single endpoint gets its 403/404 for
+    free and the bulk caller can turn each exception into a per-user reason.
+
+    Does not commit. The caller decides the transaction boundary — one row or a hundred.
+    """
     if user_id == guard.user_id:
         raise Forbidden("You cannot change your own account status.")
 
@@ -390,7 +422,7 @@ async def update_status(
     scope = await _primary_scope_of(db, user_id)
     guard.ensure_can_grant(target_rank, scope)
 
-    if payload.status == "suspended":
+    if status == "suspended":
         user.status = "suspended"
         await auth_repo.revoke_all_user_tokens(db, user.id, "suspended")
         action = events.USER_SUSPENDED
@@ -411,10 +443,58 @@ async def update_status(
         institute_id=scope.institute_id,
         ip=meta.ip,
         user_agent=meta.user_agent,
-        extra={"reason": payload.reason} if payload.reason else None,
+        extra={"reason": reason} if reason else None,
     )
-    await db.commit()
     return user
+
+
+async def bulk_update_status(
+    db: AsyncSession,
+    *,
+    guard: Authorized,
+    payload: schemas.BulkStatusRequest,
+    meta: RequestMeta,
+) -> list[schemas.BulkStatusResult]:
+    """Apply a status change to many people, checking each one individually.
+
+    Deliberately **not** all-or-nothing. An administrator selecting thirty students should
+    not have the whole action fail because one of them turned out to be a colleague they
+    may not touch — they would have no way to tell which one, and would end up unpicking
+    the selection by hand. Each person is judged on their own and the caller is told
+    exactly who was skipped and why.
+
+    Every refusal is a reason somebody can act on, never a bare "failed": the message is
+    the same one the single endpoint would have given.
+    """
+    results: list[schemas.BulkStatusResult] = []
+
+    for user_id in payload.user_ids:
+        try:
+            user = await _apply_status(
+                db,
+                guard=guard,
+                user_id=user_id,
+                status=payload.status,
+                reason=payload.reason,
+                meta=meta,
+            )
+        except (Forbidden, NotFound, Conflict, ValidationFailed) as refusal:
+            # A refusal is a verdict on one person, not a failure of the request. Nothing
+            # was written for them, so the rest of the batch is unaffected.
+            results.append(
+                schemas.BulkStatusResult(
+                    user_id=user_id, outcome="skipped", reason=str(refusal.message)
+                )
+            )
+        else:
+            results.append(
+                schemas.BulkStatusResult(
+                    user_id=user_id, outcome="succeeded", email=user.email, reason=None
+                )
+            )
+
+    await db.commit()
+    return results
 
 
 async def _highest_rank_of(db: AsyncSession, user_id: uuid.UUID) -> int:

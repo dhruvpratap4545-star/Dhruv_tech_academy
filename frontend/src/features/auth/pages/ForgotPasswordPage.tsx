@@ -9,6 +9,7 @@ import { Button } from "@/components/Button";
 import { TextField } from "@/components/Field";
 import { forgotPassword, resetPassword, verifyOtp } from "@/features/auth/api";
 import { AuthLayout } from "@/features/auth/components/AuthLayout";
+import { PasswordStrength } from "@/features/auth/components/PasswordStrength";
 import type { ForgotValues, NewPasswordValues, OtpValues } from "@/features/auth/schemas";
 import { forgotSchema, newPasswordSchema, otpSchema } from "@/features/auth/schemas";
 
@@ -257,10 +258,11 @@ function PasswordStep({ resetToken, onDone }: { resetToken: string; onDone: () =
         autoComplete="new-password"
         autoFocus
         required
-        hint="At least 8 characters, with one letter and one number."
         error={form.formState.errors.new_password?.message}
         {...form.register("new_password")}
       />
+
+      <PasswordStrength control={form.control} name="new_password" />
 
       <TextField
         label="Confirm new password"

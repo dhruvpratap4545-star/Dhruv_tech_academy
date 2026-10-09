@@ -22,13 +22,44 @@ const COMMON_PASSWORDS = new Set([
   "academy123",
 ]);
 
+/**
+ * The four rules, as one list.
+ *
+ * Exported so the live checklist and the zod schema cannot drift: a form that ticks every
+ * box and then fails validation is worse than no checklist at all. The backend enforces
+ * the same four in `app/modules/auth/schemas.py` — this copy exists to give immediate
+ * feedback, never to be the decision.
+ */
+export const PASSWORD_RULES = [
+  { label: "At least 8 characters", test: (v: string) => v.length >= 8 },
+  // Unicode classes, not ASCII ones. This platform is Indian: `[A-Za-z]` would tell
+  // somebody whose password is in Kannada or Devanagari that it has no letter, and then
+  // count those same letters as special characters. The backend uses Python's `str`
+  // methods, which are Unicode-aware for the same reason.
+  { label: "One letter", test: (v: string) => /\p{L}/u.test(v) },
+  { label: "One number", test: (v: string) => /\p{N}/u.test(v) },
+  // Anything that is neither, spaces included. Listing "allowed symbols" is how a
+  // password manager's output gets rejected for a character nobody thought of.
+  { label: "One special character", test: (v: string) => /[^\p{L}\p{N}]/u.test(v) },
+] as const;
+
+/** Strip the decoration before the common check: "password123!" is not a new password. */
+const undecorate = (value: string) => value.replace(/[^\p{L}\p{N}]/gu, "").toLowerCase();
+
 export const password = z
   .string()
-  .min(8, "Use at least 8 characters.")
   .max(128, "Use at most 128 characters.")
-  .refine((value) => /[A-Za-z]/.test(value), "Include at least one letter.")
-  .refine((value) => /\d/.test(value), "Include at least one number.")
-  .refine((value) => !COMMON_PASSWORDS.has(value.toLowerCase()), "That password is too common.");
+  .superRefine((value, ctx) => {
+    for (const rule of PASSWORD_RULES) {
+      if (!rule.test(value)) {
+        ctx.addIssue({ code: "custom", message: `Password needs: ${rule.label.toLowerCase()}.` });
+      }
+    }
+  })
+  .refine(
+    (value) => !COMMON_PASSWORDS.has(value.toLowerCase()) && !COMMON_PASSWORDS.has(undecorate(value)),
+    "That password is too common.",
+  );
 
 export const email = z
   .string()

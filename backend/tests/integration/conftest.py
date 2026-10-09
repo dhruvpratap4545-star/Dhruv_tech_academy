@@ -187,7 +187,7 @@ async def make_user(db: AsyncSession, seeded: AsyncSession):
         institute_id: uuid.UUID | None = None,
         branch_id: uuid.UUID | None = None,
         email: str | None = None,
-        password: str = "testpassword9",
+        password: str = "testpassword9!",
         status: str = "active",
     ) -> User:
         user = User(
@@ -221,7 +221,7 @@ async def make_user(db: AsyncSession, seeded: AsyncSession):
 async def login_as(client: AsyncClient):
     """Log a user in on the shared client and leave the cookies in place."""
 
-    async def _login(email: str, password: str = "testpassword9") -> AsyncClient:
+    async def _login(email: str, password: str = "testpassword9!") -> AsyncClient:
         response = await client.post(
             "/api/v1/auth/login", json={"email": email, "password": password}
         )

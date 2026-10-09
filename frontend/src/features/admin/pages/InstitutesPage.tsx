@@ -4,6 +4,8 @@ import { Link, useSearchParams } from "react-router-dom";
 
 import { Alert } from "@/components/Alert";
 import { Badge, StatusBadge } from "@/components/Badge";
+import type { Crumb } from "@/components/Breadcrumb";
+import { Breadcrumb } from "@/components/Breadcrumb";
 import { Card } from "@/components/Card";
 import { Icon } from "@/components/Icon";
 import type { IconName } from "@/components/Icon";
@@ -194,7 +196,7 @@ export function InstitutesPage() {
 
           <Card className="self-start">
             {active ? (
-              <Detail node={active} data={byInstitute} />
+              <Detail node={active} data={byInstitute} nodes={nodes} onSelect={setSelected} />
             ) : (
               <div className="px-4 py-10 text-center text-sm text-fg-2">
                 You do not belong to any institute yet.
@@ -276,13 +278,48 @@ function buildTree(institutes: Institute[], data: Map<string, InstituteBundle>):
   return nodes;
 }
 
-function Detail({ node, data }: { node: TreeNode; data: Map<string, InstituteBundle> }) {
+function Detail({
+  node,
+  data,
+  nodes,
+  onSelect,
+}: {
+  node: TreeNode;
+  data: Map<string, InstituteBundle>;
+  nodes: TreeNode[];
+  onSelect: (key: string) => void;
+}) {
   const bundle = node.instituteId ? data.get(node.instituteId) : undefined;
+
+  /**
+   * The path from the top of the tree down to this node.
+   *
+   * Taken from the rendered tree rather than rebuilt from ids: the tree already knows the
+   * ancestry, and deriving it twice is how the two end up disagreeing. Every ancestor is
+   * clickable, which is the thing that makes a breadcrumb worth more than a label.
+   */
+  const trail: Crumb[] = (() => {
+    const index = nodes.findIndex((n) => n.key === node.key);
+    if (index < 0) return [];
+    const path: TreeNode[] = [node];
+    let depth = node.depth;
+    for (let i = index - 1; i >= 0 && depth > 0; i--) {
+      if (nodes[i]!.depth < depth) {
+        path.unshift(nodes[i]!);
+        depth = nodes[i]!.depth;
+      }
+    }
+    return path.map((n, i) => ({
+      label: n.label,
+      // The last crumb is where you already are, so it is not a link.
+      onSelect: i === path.length - 1 ? undefined : () => onSelect(n.key),
+    }));
+  })();
 
   if (node.kind === "platform") {
     return (
       <>
-        <Head title="Dhruv Online Academy" kind="platform" />
+        <Head title="Dhruv Online Academy" kind="platform" trail={trail} />
         <Facts
           rows={[
             ["Institutes", String(data.size)],
@@ -302,7 +339,7 @@ function Detail({ node, data }: { node: TreeNode; data: Map<string, InstituteBun
         <Head
           title={institute.name}
           kind="institute"
-          path={institute.code}
+          trail={trail}
           badge={<StatusBadge status={institute.status} />}
         />
         <Facts
@@ -333,7 +370,7 @@ function Detail({ node, data }: { node: TreeNode; data: Map<string, InstituteBun
         <Head
           title={branch.name}
           kind="branch"
-          path={`${bundle.institute.name} / ${branch.name}`}
+          trail={trail}
           badge={<StatusBadge status={branch.status} />}
         />
         <Facts
@@ -355,7 +392,7 @@ function Detail({ node, data }: { node: TreeNode; data: Map<string, InstituteBun
         <Head
           title={session.name}
           kind="session"
-          path={bundle.institute.name}
+          trail={trail}
           badge={session.is_current ? <Badge tone="accent">Current</Badge> : undefined}
         />
         <Facts
@@ -377,7 +414,7 @@ function Detail({ node, data }: { node: TreeNode; data: Map<string, InstituteBun
         <Head
           title={row.name}
           kind="class"
-          path={`${bundle.institute.name} / ${branch?.name ?? "—"}`}
+          trail={trail}
           badge={<StatusBadge status={row.status} />}
         />
         <Facts
@@ -396,19 +433,21 @@ function Detail({ node, data }: { node: TreeNode; data: Map<string, InstituteBun
 function Head({
   title,
   kind,
-  path,
+  trail,
   badge,
 }: {
   title: string;
   kind: NodeKind;
-  path?: string;
+  /** The full path to this node. Rendered as a breadcrumb, which scrolls inside itself
+   *  and folds its middle away rather than letting the page slide sideways. */
+  trail?: Crumb[];
   badge?: React.ReactNode;
 }) {
   return (
     <div className="flex flex-wrap items-start justify-between gap-2 border-b border-line p-4">
-      <div className="min-w-0">
+      <div className="min-w-0 flex-1">
         <h2 className="font-display text-lg font-bold text-fg">{title}</h2>
-        {path && <p className="mt-0.5 truncate text-sm text-fg-2">{path}</p>}
+        {trail && trail.length > 0 && <Breadcrumb items={trail} className="mt-1" />}
       </div>
       <div className="flex shrink-0 items-center gap-2">
         {badge}

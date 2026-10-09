@@ -69,6 +69,36 @@ export function revokeRole(userId: string, body: RoleChange) {
   return apiFetch<void>(`/users/${userId}/roles`, { method: "DELETE", body });
 }
 
+export type BulkStatusResult = {
+  user_id: string;
+  outcome: "succeeded" | "skipped";
+  reason: string | null;
+  email: string | null;
+};
+
+export type BulkStatusResponse = {
+  results: BulkStatusResult[];
+  succeeded: number;
+  skipped: number;
+};
+
+/**
+ * Suspend or re-activate several people at once.
+ *
+ * The server checks each person separately and skips the ones the caller may not touch,
+ * so a 200 does not mean everything applied — read `succeeded` and `skipped`.
+ */
+export function bulkUpdateStatus(
+  userIds: string[],
+  status: "active" | "suspended",
+  reason?: string,
+) {
+  return apiFetch<BulkStatusResponse>("/users/bulk-status", {
+    method: "POST",
+    body: { user_ids: userIds, status, reason },
+  });
+}
+
 export function updateUserStatus(userId: string, status: "active" | "suspended", reason?: string) {
   return apiFetch<UserSummary>(`/users/${userId}/status`, {
     method: "PATCH",

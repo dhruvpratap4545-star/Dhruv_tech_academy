@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Fragment, useState } from "react";
 
 import { Alert } from "@/components/Alert";
@@ -8,7 +8,7 @@ import { Card } from "@/components/Card";
 import { Icon } from "@/components/Icon";
 import { PageHeader } from "@/components/PageHeader";
 import { Spinner } from "@/components/Spinner";
-import { accessKeys, fetchPermissions, fetchRoles } from "@/features/admin/api";
+import { accessKeys, fetchPermissions, fetchRoles, updateRole } from "@/features/admin/api";
 import { RoleEditor } from "@/features/admin/components/RoleEditor";
 import type { PermissionInfo, Role } from "@/features/auth/types";
 import { useAuth, useCan } from "@/features/auth/useAuth";
@@ -26,6 +26,7 @@ export function RolesPage() {
   const { user } = useAuth();
   const canManage = useCan("role:manage");
   const [editing, setEditing] = useState<Role | "new" | null>(null);
+  const [toggleError, setToggleError] = useState<string | null>(null);
 
   // Which institute's view this is. Platform staff hold no institute, so they see the
   // definitions; everyone else sees their own institute's version, which is what they
@@ -33,6 +34,31 @@ export function RolesPage() {
   const institutes = (user?.roles ?? []).filter((r) => r.institute_id);
   const [instituteId, setInstituteId] = useState<string>(institutes[0]?.institute_id ?? "");
   const viewing = instituteId || undefined;
+
+  const queryClient = useQueryClient();
+
+  /**
+   * Toggling one cell sends the role's whole permission set, not a delta.
+   *
+   * The endpoint takes a set, and sending one is what makes the write idempotent: a
+   * double-click, or two administrators on the same row, converge on the same answer
+   * instead of adding and removing the same permission twice. On success the roles query
+   * is invalidated, so the table shows the server's answer rather than an optimistic guess
+   * that might have been refused.
+   */
+  const toggle = useMutation({
+    mutationFn: ({ role, permission, next }: { role: Role; permission: string; next: boolean }) => {
+      const permissions = next
+        ? [...role.permissions, permission]
+        : role.permissions.filter((p) => p !== permission);
+      return updateRole(role.id, { permissions });
+    },
+    onSuccess: () => {
+      setToggleError(null);
+      void queryClient.invalidateQueries({ queryKey: ["access", "roles"] });
+    },
+    onError: (error: Error) => setToggleError(error.message),
+  });
 
   const roles = useQuery({
     queryKey: accessKeys.roles(viewing),
@@ -98,6 +124,12 @@ export function RolesPage() {
         </Card>
       )}
 
+      {toggleError && (
+        <Alert tone="danger" title="That change was not applied">
+          <p>{toggleError}</p>
+        </Alert>
+      )}
+
       <RoleSummary roles={builtIn} myRank={myRank} />
 
       <PermissionMatrix
@@ -106,6 +138,8 @@ export function RolesPage() {
         myRank={myRank}
         instituteId={viewing}
         onCustomise={setEditing}
+        onToggle={(role, permission, next) => toggle.mutate({ role, permission, next })}
+        saving={toggle.isPending}
       />
 
       <CustomRoles
@@ -170,12 +204,16 @@ function PermissionMatrix({
   myRank,
   instituteId,
   onCustomise,
+  onToggle,
+  saving,
 }: {
   roles: Role[];
   permissions: PermissionInfo[];
   myRank: number;
   instituteId?: string;
   onCustomise: (role: Role) => void;
+  onToggle: (role: Role, permission: string, next: boolean) => void;
+  saving: boolean;
 }) {
   const groups = [...new Set(permissions.map((p) => p.group))];
   const held = new Map(roles.map((role) => [role.id, new Set(role.permissions)]));
@@ -253,27 +291,51 @@ function PermissionMatrix({
                         <span className="mono text-xs text-fg">{permission.key}</span>
                         <span className="block text-xs text-fg-3">{permission.description}</span>
                       </td>
-                      {roles.map((role) => (
-                        <td
-                          key={role.id}
-                          className={cn(
-                            "px-2 py-2 text-center",
-                            role.rank === myRank && "bg-accent-soft/50",
-                          )}
-                        >
-                          {held.get(role.id)?.has(permission.key) ? (
-                            <Icon
-                              name="check"
-                              className="mx-auto size-4 text-ok"
-                              title={`${role.name} may ${permission.description.toLowerCase()}`}
-                            />
-                          ) : (
-                            <span className="text-fg-3" aria-label="not allowed">
-                              —
-                            </span>
-                          )}
-                        </td>
-                      ))}
+                      {roles.map((role) => {
+                        const allowed = held.get(role.id)?.has(permission.key) ?? false;
+                        // A cell is editable only where the role itself is. System roles
+                        // mean the same thing on every installation, so their definitions
+                        // are read-only for everyone — including a Super Admin.
+                        const canToggle = role.editable && !saving;
+
+                        return (
+                          <td
+                            key={role.id}
+                            className={cn(
+                              "px-2 py-2 text-center",
+                              role.rank === myRank && "bg-accent-soft/50",
+                            )}
+                          >
+                            {canToggle ? (
+                              <button
+                                type="button"
+                                role="switch"
+                                aria-checked={allowed}
+                                aria-label={`${role.name}: ${permission.description}`}
+                                onClick={() => onToggle(role, permission.key, !allowed)}
+                                className={cn(
+                                  "mx-auto flex size-6 items-center justify-center rounded-sm",
+                                  "hover:ring-2 hover:ring-accent focus-visible:ring-2",
+                                  "focus-visible:ring-accent focus-visible:outline-none",
+                                  allowed ? "text-ok" : "text-fg-3 hover:text-fg-2",
+                                )}
+                              >
+                                {allowed ? <Icon name="check" className="size-4" /> : "—"}
+                              </button>
+                            ) : allowed ? (
+                              <Icon
+                                name="check"
+                                className="mx-auto size-4 text-ok"
+                                title={`${role.name} may ${permission.description.toLowerCase()}`}
+                              />
+                            ) : (
+                              <span className="text-fg-3" aria-label="not allowed">
+                                —
+                              </span>
+                            )}
+                          </td>
+                        );
+                      })}
                     </tr>
                   ))}
               </Fragment>

@@ -18,7 +18,7 @@ from app.modules.users.models import User
 SIGNUP = {
     "full_name": "Asha Rao",
     "email": "asha@example.com",
-    "password": "goodpassword9",
+    "password": "goodpassword9!",
     "accept_terms": True,
 }
 
@@ -79,7 +79,7 @@ async def test_the_full_reset_journey(
 
     reset = await client.post(
         "/api/v1/auth/password/reset",
-        json={"reset_token": token, "new_password": "brandnewpass8"},
+        json={"reset_token": token, "new_password": "brandnewpass8!"},
     )
     assert reset.status_code == 200
 
@@ -87,14 +87,14 @@ async def test_the_full_reset_journey(
     assert (
         await client.post(
             "/api/v1/auth/login",
-            json={"email": "asha@example.com", "password": "brandnewpass8"},
+            json={"email": "asha@example.com", "password": "brandnewpass8!"},
         )
     ).status_code == 200
     await client.post("/api/v1/auth/logout")
     assert (
         await client.post(
             "/api/v1/auth/login",
-            json={"email": "asha@example.com", "password": "goodpassword9"},
+            json={"email": "asha@example.com", "password": "goodpassword9!"},
         )
     ).status_code == 401
 
@@ -113,7 +113,7 @@ async def test_a_reset_logs_every_device_out_and_warns_the_user(
     ).json()["reset_token"]
     await client.post(
         "/api/v1/auth/password/reset",
-        json={"reset_token": token, "new_password": "brandnewpass8"},
+        json={"reset_token": token, "new_password": "brandnewpass8!"},
     )
 
     live = (
@@ -150,12 +150,12 @@ async def test_a_code_cannot_be_used_twice(
     ).json()["reset_token"]
 
     first = await client.post(
-        "/api/v1/auth/password/reset", json={"reset_token": token, "new_password": "firstpass11"}
+        "/api/v1/auth/password/reset", json={"reset_token": token, "new_password": "firstpass11!"}
     )
     assert first.status_code == 200
 
     second = await client.post(
-        "/api/v1/auth/password/reset", json={"reset_token": token, "new_password": "secondpass22"}
+        "/api/v1/auth/password/reset", json={"reset_token": token, "new_password": "secondpass22!"}
     )
     assert second.status_code == 401
 
@@ -215,7 +215,7 @@ async def test_changing_a_password_requires_the_current_one(client: AsyncClient)
     await client.post("/api/v1/auth/register", json=SIGNUP)
     response = await client.post(
         "/api/v1/auth/password/change",
-        json={"current_password": "wrongpassword9", "new_password": "brandnewpass8"},
+        json={"current_password": "wrongpassword9", "new_password": "brandnewpass8!"},
     )
     assert response.status_code == 422
 
@@ -224,7 +224,7 @@ async def test_the_new_password_must_differ(client: AsyncClient) -> None:
     await client.post("/api/v1/auth/register", json=SIGNUP)
     response = await client.post(
         "/api/v1/auth/password/change",
-        json={"current_password": "goodpassword9", "new_password": "goodpassword9"},
+        json={"current_password": "goodpassword9!", "new_password": "goodpassword9!"},
     )
     assert response.status_code == 422
 
@@ -235,7 +235,7 @@ async def test_changing_a_password_works_and_ends_sessions(
     await client.post("/api/v1/auth/register", json=SIGNUP)
     response = await client.post(
         "/api/v1/auth/password/change",
-        json={"current_password": "goodpassword9", "new_password": "brandnewpass8"},
+        json={"current_password": "goodpassword9!", "new_password": "brandnewpass8!"},
     )
     assert response.status_code == 200
     assert (await client.get("/api/v1/me")).status_code == 401
@@ -243,7 +243,7 @@ async def test_changing_a_password_works_and_ends_sessions(
     assert (
         await client.post(
             "/api/v1/auth/login",
-            json={"email": "asha@example.com", "password": "brandnewpass8"},
+            json={"email": "asha@example.com", "password": "brandnewpass8!"},
         )
     ).status_code == 200
 
@@ -251,7 +251,7 @@ async def test_changing_a_password_works_and_ends_sessions(
 async def test_an_anonymous_caller_cannot_change_a_password(client: AsyncClient) -> None:
     response = await client.post(
         "/api/v1/auth/password/change",
-        json={"current_password": "goodpassword9", "new_password": "brandnewpass8"},
+        json={"current_password": "goodpassword9!", "new_password": "brandnewpass8!"},
     )
     assert response.status_code == 401
 
@@ -267,7 +267,7 @@ async def test_an_invited_user_sets_a_password_and_becomes_active(
     admin = await make_user("institute_admin", institute_id=inst.id)
 
     await client.post(
-        "/api/v1/auth/login", json={"email": admin.email, "password": "testpassword9"}
+        "/api/v1/auth/login", json={"email": admin.email, "password": "testpassword9!"}
     )
     invited = await client.post(
         "/api/v1/users/invite",
@@ -287,7 +287,7 @@ async def test_an_invited_user_sets_a_password_and_becomes_active(
 
     setup = await client.post(
         "/api/v1/auth/password/setup",
-        json={"email": "ravi@example.com", "code": code, "new_password": "ravispassword7"},
+        json={"email": "ravi@example.com", "code": code, "new_password": "ravispassword7!"},
     )
     assert setup.status_code == 200
 
@@ -297,7 +297,7 @@ async def test_an_invited_user_sets_a_password_and_becomes_active(
     assert (
         await client.post(
             "/api/v1/auth/login",
-            json={"email": "ravi@example.com", "password": "ravispassword7"},
+            json={"email": "ravi@example.com", "password": "ravispassword7!"},
         )
     ).status_code == 200
 
@@ -354,13 +354,13 @@ async def test_the_seeded_super_admin_can_get_into_their_account(
     ).json()["reset_token"]
     reset = await client.post(
         "/api/v1/auth/password/reset",
-        json={"reset_token": token, "new_password": "ownerpassword9"},
+        json={"reset_token": token, "new_password": "ownerpassword9!"},
     )
     assert reset.status_code == 200
 
     # And now they can actually get in — this is the step that used to dead-end.
     login = await client.post(
-        "/api/v1/auth/login", json={"email": "owner@example.com", "password": "ownerpassword9"}
+        "/api/v1/auth/login", json={"email": "owner@example.com", "password": "ownerpassword9!"}
     )
     assert login.status_code == 200, login.text
 
@@ -388,7 +388,7 @@ async def test_a_completed_reset_activates_an_invited_account(
     ).json()["reset_token"]
     await client.post(
         "/api/v1/auth/password/reset",
-        json={"reset_token": token, "new_password": "newbiepass11"},
+        json={"reset_token": token, "new_password": "newbiepass11!"},
     )
 
     refreshed = await db.scalar(select(User).where(User.email == "newbie@example.com"))

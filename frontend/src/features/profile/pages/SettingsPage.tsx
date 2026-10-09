@@ -7,6 +7,7 @@ import { z } from "zod";
 import { Alert } from "@/components/Alert";
 import { Button } from "@/components/Button";
 import { Card, CardBody, CardHeader } from "@/components/Card";
+import { PasswordStrength } from "@/features/auth/components/PasswordStrength";
 import { TextField } from "@/components/Field";
 import { PageHeader } from "@/components/PageHeader";
 import { changePassword, updateProfile } from "@/features/auth/api";
@@ -192,10 +193,11 @@ function PasswordCard() {
             type="password"
             autoComplete="new-password"
             required
-            hint="At least 8 characters, with one letter and one number."
-            error={form.formState.errors.new_password?.message}
+                error={form.formState.errors.new_password?.message}
             {...form.register("new_password")}
           />
+
+          <PasswordStrength control={form.control} name="new_password" />
 
           <TextField
             label="Confirm new password"

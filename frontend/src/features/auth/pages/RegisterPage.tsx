@@ -8,6 +8,7 @@ import { Button } from "@/components/Button";
 import { Checkbox, TextField } from "@/components/Field";
 import { register as registerAccount } from "@/features/auth/api";
 import { AuthLayout } from "@/features/auth/components/AuthLayout";
+import { PasswordStrength } from "@/features/auth/components/PasswordStrength";
 import type { RegisterValues } from "@/features/auth/schemas";
 import { registerSchema } from "@/features/auth/schemas";
 import { useInvalidateMe } from "@/features/auth/useAuth";
@@ -85,10 +86,11 @@ export function RegisterPage() {
           type="password"
           autoComplete="new-password"
           required
-          hint="At least 8 characters, with one letter and one number."
-          error={form.formState.errors.password?.message}
+            error={form.formState.errors.password?.message}
           {...form.register("password")}
         />
+
+        <PasswordStrength control={form.control} name="password" />
 
         <Checkbox
           error={form.formState.errors.accept_terms?.message}

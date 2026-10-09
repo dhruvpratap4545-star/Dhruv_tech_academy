@@ -6,18 +6,44 @@ being silently ignored — which is how "I set remember_me and it did nothing" b
 
 from __future__ import annotations
 
-import re
 from typing import Annotated, Literal
 
 from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator
 
 from app.core.config import settings
 
-# Deliberately permissive on characters and strict on composition (PRD §7.1). Length does
-# more for strength than a character-class checklist, which mostly teaches people to end
-# passwords with "1!".
+# PRD §7.1: at least 8 characters, with a letter, a number and a special character.
+#
+# A character-class checklist is a weaker rule than length alone — it mostly teaches people
+# to end a password with "1!" — but it is the rule the client asked for, it is the one most
+# users already expect, and it is checkable live as somebody types, which is worth more in
+# practice than a strength score nobody can act on. The common-password list below is what
+# actually catches the worst choices.
 MIN_PASSWORD_LENGTH = 8
 MAX_PASSWORD_LENGTH = 128
+
+
+# The three character classes, defined in Unicode terms rather than ASCII.
+#
+# This platform is Indian. `[A-Za-z]` would tell somebody whose password is in Kannada,
+# Devanagari or Tamil that it contains no letter, and `[^A-Za-z0-9]` would then count
+# every one of those letters as a "special character" — so "ಕನ್ನಡ123" would pass a rule it
+# should not and fail one it should. Python's `str` methods already know the whole of
+# Unicode; a hand-written character class does not.
+def _has_letter(value: str) -> bool:
+    return any(ch.isalpha() for ch in value)
+
+
+def _has_digit(value: str) -> bool:
+    return any(ch.isdigit() for ch in value)
+
+
+def _has_special(value: str) -> bool:
+    """Anything that is neither a letter nor a digit, spaces included. Enumerating an
+    allowed-symbols set is how a password manager's output gets rejected for a character
+    nobody thought of."""
+    return any(not ch.isalnum() for ch in value)
+
 
 # Passwords seen constantly in breach corpora. A full breach-list check belongs in a later
 # milestone; this catches the worst offenders at zero cost.
@@ -48,10 +74,34 @@ class StrictModel(BaseModel):
     model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
 
 
+def password_rule_failures(value: str) -> list[str]:
+    """Which of the four rules this password breaks, in the order they are displayed.
+
+    Returned as a list rather than raised one at a time so the message can name every
+    problem at once. Being told "needs a number", fixing it, and then being told "needs a
+    symbol" is the interaction that makes people give up and reuse an old password.
+    """
+    failures: list[str] = []
+    if len(value) < MIN_PASSWORD_LENGTH:
+        failures.append(f"at least {MIN_PASSWORD_LENGTH} characters")
+    if not _has_letter(value):
+        failures.append("one letter")
+    if not _has_digit(value):
+        failures.append("one number")
+    if not _has_special(value):
+        failures.append("one special character")
+    return failures
+
+
 def validate_password_strength(value: str) -> str:
-    if not re.search(r"[A-Za-z]", value) or not re.search(r"\d", value):
-        raise ValueError("Password must contain at least one letter and one number.")
-    if value.lower() in _COMMON_PASSWORDS:
+    failures = password_rule_failures(value)
+    if failures:
+        raise ValueError("Password needs " + ", ".join(failures) + ".")
+    # Compare with the decoration stripped. A character-class rule invites exactly one
+    # evasion — take a breached password and bolt a symbol on the end — and "password123!"
+    # is no stronger than "password123" against anyone running a list with mangling rules.
+    stripped = "".join(ch for ch in value if ch.isalnum()).lower()
+    if value.lower() in _COMMON_PASSWORDS or stripped in _COMMON_PASSWORDS:
         raise ValueError("That password is too common. Please choose a different one.")
     return value
 
@@ -137,7 +187,7 @@ GENERIC_LOGIN_FAILED = "Email or password is incorrect."
 def password_policy_text() -> str:
     return (
         f"{MIN_PASSWORD_LENGTH}-{MAX_PASSWORD_LENGTH} characters, "
-        "with at least one letter and one number."
+        "with at least one letter, one number and one special character."
     )
 
 

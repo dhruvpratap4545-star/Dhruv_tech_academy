@@ -11,7 +11,7 @@ import uuid
 from datetime import datetime
 from typing import Annotated, Literal
 
-from pydantic import BaseModel, ConfigDict, EmailStr, Field
+from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator
 
 UserStatus = Literal["invited", "active", "suspended"]
 Theme = Literal["light", "dark", "system"]
@@ -65,6 +65,49 @@ class RevokeRoleRequest(StrictModel):
 class UpdateStatusRequest(StrictModel):
     status: Literal["active", "suspended"]
     reason: str | None = Field(default=None, max_length=255)
+
+
+class BulkStatusRequest(StrictModel):
+    """Suspend or re-activate several people at once (PRD §8).
+
+    Capped at 100. The limit is not arbitrary: each person costs a permission context, a
+    rank lookup and a scope resolution, and an uncapped list would let one request hold a
+    database connection for as long as it liked. A hundred is more than any real selection
+    on a paginated screen and small enough to stay well inside the request budget.
+    """
+
+    user_ids: Annotated[list[uuid.UUID], Field(min_length=1, max_length=100)]
+    status: Literal["active", "suspended"]
+    reason: str | None = Field(default=None, max_length=255)
+
+    @field_validator("user_ids")
+    @classmethod
+    def _unique_ids(cls, value: list[uuid.UUID]) -> list[uuid.UUID]:
+        # The same person twice would be applied twice and reported twice, which makes the
+        # summary wrong in a way nobody would think to question.
+        if len(set(value)) != len(value):
+            raise ValueError("The same user is listed more than once.")
+        return value
+
+
+class BulkStatusResult(BaseModel):
+    """What happened to one person in a bulk change.
+
+    A skip carries the reason the single endpoint would have given, because "3 skipped"
+    with no explanation leaves an administrator with no idea whether they hit a permission
+    boundary or a typo.
+    """
+
+    user_id: uuid.UUID
+    outcome: Literal["succeeded", "skipped"]
+    reason: str | None = None
+    email: str | None = None
+
+
+class BulkStatusResponse(BaseModel):
+    results: list[BulkStatusResult]
+    succeeded: int
+    skipped: int
 
 
 class UpdateProfileRequest(StrictModel):
