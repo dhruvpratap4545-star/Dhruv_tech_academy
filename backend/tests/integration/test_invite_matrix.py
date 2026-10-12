@@ -574,8 +574,6 @@ async def test_an_invited_super_admin_does_not_count_as_the_survivor(
     administrator could revoke their own role and lock everybody out of the platform with no
     way back — which is exactly what happened on the live stack before this was fixed.
     """
-    from sqlalchemy import select
-
     from app.modules.rbac import repository as rbac_repo
     from app.modules.rbac.models import UserRoleAssignment
     from app.modules.users.models import User
@@ -590,7 +588,7 @@ async def test_an_invited_super_admin_does_not_count_as_the_survivor(
     )
     assert invited.status_code == 201, invited.text
 
-    successor = await db.scalar(select(User).where(User.email == "successor@example.com"))
+    successor = await db.find_one(User, {"email": "successor@example.com"})
     assert successor is not None
     assert successor.status == "invited" and successor.password_hash is None
 

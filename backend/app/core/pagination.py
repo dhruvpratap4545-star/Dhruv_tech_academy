@@ -1,11 +1,11 @@
 """Keyset (cursor) pagination.
 
-OFFSET pagination degrades linearly: page 500 makes PostgreSQL walk 10,000 rows it then
+OFFSET pagination degrades linearly: page 500 makes the database walk 10,000 rows it then
 throws away, and rows shifting between requests cause duplicates and gaps. Keyset paging
 asks for "the next N rows after this exact position", which is one index seek regardless of
 depth and is stable while the table changes underneath.
 
-The sort key is ``(created_at, id)``. ``created_at`` alone is not unique, so ``id`` breaks
+The sort key is ``(created_at, _id)``. ``created_at`` alone is not unique, so ``id`` breaks
 ties and makes the ordering total — without it a page boundary landing inside a group of
 rows sharing a timestamp would skip or repeat records.
 """
@@ -19,10 +19,10 @@ import uuid
 from datetime import UTC, datetime
 from typing import Any
 
+from beanie import Document
 from pydantic import BaseModel, Field
-from sqlalchemy import ColumnElement, Select, and_, func, or_, select
-from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.db import Db
 from app.core.errors import ValidationFailed
 
 DEFAULT_LIMIT = 20
@@ -72,94 +72,55 @@ def clamp_limit(limit: int | None) -> int:
     return min(limit, MAX_LIMIT)
 
 
-def apply_keyset(
-    stmt: Select[Any],
-    *,
-    created_at_col: ColumnElement[datetime],
-    id_col: ColumnElement[uuid.UUID],
-    cursor: str | None,
-    limit: int,
-    descending: bool = True,
-) -> Select[Any]:
-    """Order the statement and seek past the cursor.
+def keyset_filter(cursor: str | None, *, descending: bool = True) -> dict[str, Any]:
+    """The condition that seeks past ``cursor`` on ``(created_at, _id)``.
 
-    One row more than ``limit`` is fetched so the caller can tell whether another page
-    exists without a second COUNT query. Use :func:`split_page` to trim it.
+    Strict lexicographic comparison: the same timestamp falls back to the id, so no
+    document is ever visited twice or skipped.
     """
-    if cursor:
-        after_time, after_id = decode_cursor(cursor)
-        # Strict lexicographic comparison on (created_at, id): same timestamp falls back
-        # to the id, so no row is ever visited twice or skipped.
-        if descending:
-            stmt = stmt.where(
-                or_(
-                    created_at_col < after_time,
-                    and_(created_at_col == after_time, id_col < after_id),
-                )
-            )
-        else:
-            stmt = stmt.where(
-                or_(
-                    created_at_col > after_time,
-                    and_(created_at_col == after_time, id_col > after_id),
-                )
-            )
-
-    order = (created_at_col.desc(), id_col.desc()) if descending else (created_at_col, id_col)
-    return stmt.order_by(*order).limit(limit + 1)
+    if not cursor:
+        return {}
+    after_time, after_id = decode_cursor(cursor)
+    op = "$lt" if descending else "$gt"
+    return {
+        "$or": [
+            {"created_at": {op: after_time}},
+            {"created_at": after_time, "_id": {op: after_id}},
+        ]
+    }
 
 
-async def count_matching(db: AsyncSession, stmt: Select[Any]) -> int:
-    """How many rows the filters match in total, ignoring the page window.
-
-    Keyset paging gives no total of its own — that is the trade for its speed, and it is
-    why "Next" is the only control a cursor-paged list can honestly offer. A separate
-    COUNT buys back "page 3 of 7", which is what people actually want from a list of
-    users: a sense of how much there is, and the ability to jump.
-
-    The cost is one extra aggregate per request over the same filtered set. At this
-    product's scale that is a few milliseconds; if a table ever grows past the point where
-    it is not, the fix is an estimate for large results, not removing the number.
-
-    Ordering, limit and offset are stripped first: they change nothing about the count, and
-    PostgreSQL rejects ORDER BY inside the subquery when the sort column is not selected.
-    """
-    counted = stmt.order_by(None).limit(None).offset(None)
-    return await db.scalar(select(func.count()).select_from(counted.subquery())) or 0
-
-
-async def paginate(
-    db: AsyncSession,
-    stmt: Select[Any],
+async def paginate[D: Document](
+    db: Db,
+    model: type[D],
+    match: dict[str, Any],
     *,
-    created_at_col: ColumnElement[datetime],
-    id_col: ColumnElement[uuid.UUID],
     cursor: str | None,
     limit: int,
     descending: bool = True,
     include_total: bool = True,
-) -> tuple[list[Any], str | None, int]:
+) -> tuple[list[D], str | None, int]:
     """Count, seek, fetch and trim — the whole of one page, in one call.
 
-    The count is taken from ``stmt`` *before* the cursor condition is added, so it stays
-    the total for the filters rather than "everything after row 60".
+    The count is taken over ``match`` *before* the cursor condition is added, so it stays
+    the total for the filters rather than "everything after row 60". One document more
+    than ``limit`` is fetched so the caller can tell whether another page exists.
 
-    ``include_total=False`` skips the aggregate for callers that throw it away. Global
-    search is the one that matters: it fires on every keystroke over an ``ILIKE '%term%'``
-    that cannot use an index, and counting the matches as well as fetching the first ten
-    doubles the cost of the most latency-sensitive query in the application, to produce a
-    number nothing displays.
+    ``include_total=False`` skips the count for callers that throw it away. Global search is
+    the one that matters: it fires on every keystroke over a case-insensitive *contains*
+    match that cannot use an index, and counting the matches as well as fetching the first
+    ten doubles the cost of the most latency-sensitive query in the application.
     """
-    total = await count_matching(db, stmt) if include_total else 0
-    windowed = apply_keyset(
-        stmt,
-        created_at_col=created_at_col,
-        id_col=id_col,
-        cursor=cursor,
-        limit=limit,
-        descending=descending,
+    total = await db.count(model, match) if include_total else 0
+    seek = keyset_filter(cursor, descending=descending)
+    windowed = {"$and": [match, seek]} if seek and match else (seek or match)
+    direction = -1 if descending else 1
+    rows = await db.find(
+        model,
+        windowed,
+        sort=[("created_at", direction), ("_id", direction)],
+        limit=limit + 1,
     )
-    rows = list((await db.execute(windowed)).scalars().all())
     page, next_cursor = split_page(rows, limit)
     return page, next_cursor, total
 
@@ -171,19 +132,3 @@ def split_page(rows: list[Any], limit: int) -> tuple[list[Any], str | None]:
     page = rows[:limit]
     last = page[-1]
     return page, encode_cursor(last.created_at, last.id)
-
-
-def like_pattern(term: str) -> str:
-    """A ``LIKE`` pattern that matches the characters somebody actually typed.
-
-    ``%`` and ``_`` are wildcards, so dropping a search term straight into
-    ``f"%{term}%"`` means a search for ``%`` matches every row and a search for ``a_c``
-    matches "abc". Nothing is injectable — the pattern is still a bound parameter — but
-    the results are wrong, and they are wrong in the direction of showing more than was
-    asked for.
-
-    Escaped with a backslash, which PostgreSQL uses for ``LIKE`` by default. The backslash
-    itself has to go first, or escaping the wildcards would then escape the escapes.
-    """
-    escaped = term.strip().replace("\\", r"\\").replace("%", r"\%").replace("_", r"\_")
-    return f"%{escaped}%"

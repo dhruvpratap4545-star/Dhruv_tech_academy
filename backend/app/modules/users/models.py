@@ -1,4 +1,4 @@
-"""User and preference tables (PRD §6).
+"""User and preference collections (PRD §6).
 
 A user is one person, identified by email, independent of how many roles they hold or how
 many institutes they belong to. Roles live in ``user_role_assignments`` (rbac), never here.
@@ -8,67 +8,65 @@ from __future__ import annotations
 
 import uuid
 from datetime import datetime
+from typing import Annotated, Literal
 
-from sqlalchemy import (
-    CheckConstraint,
-    DateTime,
-    ForeignKey,
-    Index,
-    Integer,
-    String,
-    func,
-)
-from sqlalchemy.orm import Mapped, mapped_column
+from pydantic import Field, StringConstraints
+from pymongo import ASCENDING, DESCENDING, IndexModel
 
-from app.core.db import Base, MediumStr, ShortStr, TimestampMixin, Uuid, UuidPkMixin
+from app.core.db import TimestampedDocument
 
 USER_STATUSES = ("invited", "active", "suspended", "deleted")
 THEMES = ("light", "dark", "system")
 
+# Lowercased on the way in, so the plain unique index on `email` is case-insensitive in
+# effect — the job the `lower(email)` index did in PostgreSQL.
+Email = Annotated[str, StringConstraints(strip_whitespace=True, to_lower=True, max_length=120)]
 
-class User(UuidPkMixin, TimestampMixin, Base):
-    __tablename__ = "users"
-    __table_args__ = (
-        CheckConstraint(
-            "status IN ('invited', 'active', 'suspended', 'deleted')", name="users_status"
-        ),
-        # Case-insensitive uniqueness. Emails are also lowercased on write, so this is
-        # belt and braces — it stops a direct SQL insert creating a duplicate identity.
-        Index("uq_users_lower_email", func.lower(ShortStr.__class__ and "email"), unique=True),
-    )
 
-    email: Mapped[str] = mapped_column(ShortStr, nullable=False)
-    password_hash: Mapped[str | None] = mapped_column(MediumStr)
-    full_name: Mapped[str] = mapped_column(ShortStr, nullable=False)
-    phone: Mapped[str | None] = mapped_column(String(20))
-    status: Mapped[str] = mapped_column(String(16), nullable=False, default="invited")
+class User(TimestampedDocument):
+    email: Email
+    password_hash: str | None = Field(default=None, max_length=255)
+    full_name: str = Field(max_length=120)
+    phone: str | None = Field(default=None, max_length=20)
+    status: Literal["invited", "active", "suspended", "deleted"] = "invited"
 
-    # Login protection (PRD §7.4). Counters live on the row so a lockout survives a restart
-    # and applies across every instance, unlike an in-memory counter.
-    failed_login_count: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
-    locked_until: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
-    password_changed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
-    last_login_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    # Login protection (PRD §7.4). Counters live on the document so a lockout survives a
+    # restart and applies across every instance, unlike an in-memory counter.
+    failed_login_count: int = Field(default=0, ge=0)
+    locked_until: datetime | None = None
+    password_changed_at: datetime | None = None
+    last_login_at: datetime | None = None
 
     # DPDP consent (PRD §11): recorded once, at sign-up, with what was agreed to.
-    consent_accepted_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
-    consent_version: Mapped[str | None] = mapped_column(String(20))
+    consent_accepted_at: datetime | None = None
+    consent_version: str | None = Field(default=None, max_length=20)
 
     @property
     def is_active(self) -> bool:
         return self.status == "active"
 
+    class Settings:
+        name = "users"
+        use_state_management = True
+        validate_on_save = True
+        indexes = [  # noqa: RUF012 - Beanie reads this class attribute as configuration
+            IndexModel([("email", ASCENDING)], unique=True, name="uq_users_email"),
+            # Keyset pagination: newest first, id as the tie-breaker.
+            IndexModel([("created_at", DESCENDING), ("_id", DESCENDING)], name="ix_users_page"),
+        ]
 
-class UserPreference(TimestampMixin, Base):
-    """One row per user. The user id is the primary key — there is nothing else to key on."""
 
-    __tablename__ = "user_preferences"
-    __table_args__ = (
-        CheckConstraint("theme IN ('light', 'dark', 'system')", name="user_preferences_theme"),
-    )
+class UserPreference(TimestampedDocument):
+    """One per user."""
 
-    user_id: Mapped[uuid.UUID] = mapped_column(
-        Uuid, ForeignKey("users.id", ondelete="CASCADE"), primary_key=True
-    )
-    theme: Mapped[str] = mapped_column(String(10), nullable=False, default="system")
-    language: Mapped[str] = mapped_column(String(10), nullable=False, default="en")
+    user_id: uuid.UUID
+    theme: Literal["light", "dark", "system"] = "system"
+    language: str = Field(default="en", max_length=10)
+
+    class Settings:
+        name = "user_preferences"
+        use_state_management = True
+        validate_on_save = True
+        indexes = [  # noqa: RUF012
+            IndexModel([("user_id", ASCENDING)], unique=True, name="uq_user_preferences_user"),
+        ]

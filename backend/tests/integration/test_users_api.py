@@ -7,9 +7,8 @@ from __future__ import annotations
 
 import pytest_asyncio
 from httpx import AsyncClient
-from sqlalchemy import select
-from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.db import Db
 from app.modules.audit.models import AuditLog
 from app.modules.auth.models import RefreshToken
 
@@ -138,7 +137,7 @@ async def test_resending_an_invite_too_soon_is_refused(client: AsyncClient, org)
 
 
 async def test_resending_an_invite_after_the_cooldown_sends_a_new_code(
-    client: AsyncClient, org, outbox, db: AsyncSession
+    client: AsyncClient, org, outbox, db: Db
 ) -> None:
     from datetime import UTC, datetime, timedelta
 
@@ -158,7 +157,7 @@ async def test_resending_an_invite_after_the_cooldown_sends_a_new_code(
     assert first is not None
 
     # Age the code past the cooldown instead of sleeping for a minute.
-    otp = await db.scalar(select(PasswordOtp).where(PasswordOtp.purpose == "setup"))
+    otp = await db.find_one(PasswordOtp, {"purpose": "setup"})
     assert otp is not None
     otp.created_at = datetime.now(UTC) - timedelta(minutes=5)
     await db.commit()
@@ -290,9 +289,7 @@ async def test_the_last_super_admin_cannot_be_removed(client: AsyncClient, make_
 # ------------------------------------------------------------------------- suspend
 
 
-async def test_suspending_a_user_ends_their_sessions(
-    client: AsyncClient, org, db: AsyncSession
-) -> None:
+async def test_suspending_a_user_ends_their_sessions(client: AsyncClient, org, db: Db) -> None:
     await _as(client, org["faculty"])  # the faculty now holds a live session
     await _as(client, org["admin"])
 
@@ -301,18 +298,7 @@ async def test_suspending_a_user_ends_their_sessions(
     )
     assert response.status_code == 200
 
-    live = (
-        (
-            await db.execute(
-                select(RefreshToken).where(
-                    RefreshToken.user_id == org["faculty"].id,
-                    RefreshToken.revoked_at.is_(None),
-                )
-            )
-        )
-        .scalars()
-        .all()
-    )
+    live = await db.find(RefreshToken, {"user_id": org["faculty"].id, "revoked_at": None})
     assert live == []
 
 
@@ -333,9 +319,7 @@ async def test_reactivating_a_user_who_never_set_a_password_returns_them_to_invi
 # --------------------------------------------------------------------------- audit
 
 
-async def test_every_sensitive_action_writes_an_audit_row(
-    client: AsyncClient, org, db: AsyncSession
-) -> None:
+async def test_every_sensitive_action_writes_an_audit_row(client: AsyncClient, org, db: Db) -> None:
     """PRD §13 criterion 11."""
     await _as(client, org["admin"])
     await client.post(
@@ -349,14 +333,14 @@ async def test_every_sensitive_action_writes_an_audit_row(
     )
     await client.patch(f"/api/v1/users/{org['faculty'].id}/status", json={"status": "suspended"})
 
-    actions = set((await db.execute(select(AuditLog.action))).scalars())
+    actions = set(await db.distinct(AuditLog, "action", {}))
     assert {"login_success", "user_invited", "user_suspended"} <= actions
 
 
-async def test_audit_rows_carry_the_request_id(client: AsyncClient, org, db: AsyncSession) -> None:
+async def test_audit_rows_carry_the_request_id(client: AsyncClient, org, db: Db) -> None:
     """Lets a support question be traced from a log line to the exact action."""
     await _as(client, org["admin"])
-    row = await db.scalar(select(AuditLog).where(AuditLog.action == "login_success").limit(1))
+    row = await db.find_one(AuditLog, {"action": "login_success"})
     assert row is not None and row.request_id
 
 
@@ -454,7 +438,7 @@ async def test_running_one_college_does_not_widen_a_branch_role_in_another(
 
     # One person, two hats: the whole of First College, one branch of Second College.
     wearer = await make_user("institute_admin", institute_id=first.id)
-    branch_admin_role = await db.scalar(select(Role).where(Role.key == "branch_admin"))
+    branch_admin_role = await db.find_one(Role, {"key": "branch_admin"})
     db.add(
         UserRoleAssignment(
             user_id=wearer.id,

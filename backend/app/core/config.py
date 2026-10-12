@@ -48,13 +48,11 @@ class Settings(BaseSettings):
     app_name: str = "Dhruv Online Academy API"
     api_v1_prefix: str = "/api/v1"
 
-    # Database
-    database_url: str = "postgresql+asyncpg://app:app@localhost:5432/app"
-    test_database_url: str | None = None
-    db_pool_size: int = 5
-    db_max_overflow: int = 10
-    db_pool_recycle_seconds: int = 1800
-    db_echo: bool = False
+    # Database: MongoDB (Atlas in every environment). Required at startup; declared optional
+    # only so that importing settings — in unit tests, in the CLI's --help — does not need it.
+    mongodb_url: SecretStr | None = None
+    mongodb_db_name: str = "dhruv"
+    mongodb_timeout_ms: int = 10_000
 
     # Tokens (PRD §7.2) — ES256 PEM key pair, rotated via jwt_key_id
     jwt_private_key: SecretStr = SecretStr("")
@@ -124,18 +122,6 @@ class Settings(BaseSettings):
     def _unescape_private_key(cls, value: str | SecretStr) -> str:
         raw = value.get_secret_value() if isinstance(value, SecretStr) else value
         return _normalise_pem(raw)
-
-    @field_validator("database_url", "test_database_url")
-    @classmethod
-    def _use_async_driver(cls, value: str | None) -> str | None:
-        """Render supplies ``postgres://…``; SQLAlchemy async needs ``postgresql+asyncpg://…``."""
-        if not value:
-            return value
-        if value.startswith("postgres://"):
-            return value.replace("postgres://", "postgresql+asyncpg://", 1)
-        if value.startswith("postgresql://"):
-            return value.replace("postgresql://", "postgresql+asyncpg://", 1)
-        return value
 
     @property
     def is_production(self) -> bool:

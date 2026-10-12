@@ -12,19 +12,15 @@ jobs:
       run:
         working-directory: backend
     services:
-      postgres:
-        image: postgres:16
-        env:
-          POSTGRES_USER: app
-          POSTGRES_PASSWORD: app
-          POSTGRES_DB: app_test
-        ports: ["5432:5432"]
+      mongo:
+        image: mongo:8.0
+        ports: ["27017:27017"]
         options: >-
-          --health-cmd "pg_isready -U app" --health-interval 5s --health-timeout 5s --health-retries 10
+          --health-cmd "mongosh --quiet --eval 'db.adminCommand(\"ping\").ok'"
+          --health-interval 5s --health-timeout 5s --health-retries 10
     env:
       ENVIRONMENT: test
-      DATABASE_URL: postgresql+asyncpg://app:app@localhost:5432/app_test
-      TEST_DATABASE_URL: postgresql+asyncpg://app:app@localhost:5432/app_test
+      TEST_MONGODB_URL: mongodb://localhost:27017
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5

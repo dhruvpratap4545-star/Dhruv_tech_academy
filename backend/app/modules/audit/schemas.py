@@ -29,8 +29,8 @@ class AuditLogOut(BaseModel):
     @field_validator("ip", mode="before")
     @classmethod
     def _address_to_text(cls, value: object) -> str | None:
-        """PostgreSQL ``INET`` comes back from asyncpg as an ``IPv4Address`` object, not a
-        string, and Pydantic will not coerce one into ``str`` on its own.
+        """Addresses are stored as text, but a caller may still hand over an
+        ``IPv4Address`` object, and Pydantic will not coerce one into ``str`` on its own.
 
         Worth the explicit conversion rather than typing the field as ``IPvAnyAddress``:
         the API contract is a plain string, and an address that somehow fails to parse

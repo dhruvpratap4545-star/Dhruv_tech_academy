@@ -20,8 +20,7 @@ from __future__ import annotations
 import uuid
 from urllib.parse import quote
 
-from sqlalchemy.ext.asyncio import AsyncSession
-
+from app.core.db import Db
 from app.modules.org import repository as org_repo
 from app.modules.org import service as org
 from app.modules.rbac.catalog import FACULTY, STUDENT
@@ -33,7 +32,7 @@ from app.modules.users import service as users
 PER_GROUP = 5
 
 
-def _guard(db: AsyncSession, context: AuthContext, permission: str) -> Authorized | None:
+def _guard(db: Db, context: AuthContext, permission: str) -> Authorized | None:
     """An ``Authorized`` for a permission the caller actually holds, else ``None``.
 
     Built by hand rather than through ``require_permission`` because search asks about
@@ -62,7 +61,7 @@ async def _scope_sets(
     return institutes, branches
 
 
-async def search(db: AsyncSession, *, context: AuthContext, term: str) -> schemas.SearchResults:
+async def search(db: Db, *, context: AuthContext, term: str) -> schemas.SearchResults:
     term = term.strip()
     groups: list[schemas.SearchGroup] = []
     if len(term) < 2:
@@ -76,7 +75,7 @@ async def search(db: AsyncSession, *, context: AuthContext, term: str) -> schema
     return schemas.SearchResults(query=term, groups=[g for g in groups if g.items])
 
 
-async def _people(db: AsyncSession, context: AuthContext, term: str) -> list[schemas.SearchGroup]:
+async def _people(db: Db, context: AuthContext, term: str) -> list[schemas.SearchGroup]:
     guard = _guard(db, context, "user:read")
     if guard is None:
         return []
@@ -111,9 +110,7 @@ async def _people(db: AsyncSession, context: AuthContext, term: str) -> list[sch
     ]
 
 
-async def _institutes(
-    db: AsyncSession, context: AuthContext, term: str
-) -> list[schemas.SearchGroup]:
+async def _institutes(db: Db, context: AuthContext, term: str) -> list[schemas.SearchGroup]:
     guard = _guard(db, context, "institute:read")
     if guard is None:
         return []
@@ -143,7 +140,7 @@ async def _institutes(
     ]
 
 
-async def _branches(db: AsyncSession, context: AuthContext, term: str) -> list[schemas.SearchGroup]:
+async def _branches(db: Db, context: AuthContext, term: str) -> list[schemas.SearchGroup]:
     guard = _guard(db, context, "branch:read")
     if guard is None:
         return []
@@ -168,7 +165,7 @@ async def _branches(db: AsyncSession, context: AuthContext, term: str) -> list[s
     ]
 
 
-async def _classes(db: AsyncSession, context: AuthContext, term: str) -> list[schemas.SearchGroup]:
+async def _classes(db: Db, context: AuthContext, term: str) -> list[schemas.SearchGroup]:
     guard = _guard(db, context, "class:read")
     if guard is None:
         return []

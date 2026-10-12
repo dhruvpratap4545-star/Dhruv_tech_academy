@@ -15,8 +15,7 @@ from __future__ import annotations
 import logging
 import uuid
 
-from sqlalchemy.ext.asyncio import AsyncSession
-
+from app.core.db import Db
 from app.core.errors import Forbidden, NotFound
 from app.modules.rbac import repository
 from app.modules.rbac.catalog import FACULTY, STUDENT, grantable_ceiling
@@ -31,7 +30,7 @@ _permission_modules: dict[str, str] = {}
 _core_modules: frozenset[str] = frozenset()
 
 
-async def get_context(db: AsyncSession, user_id: uuid.UUID) -> AuthContext:
+async def get_context(db: Db, user_id: uuid.UUID) -> AuthContext:
     """Cached authorization context for a user.
 
     Two queries, not one: role grants and the per-user allow/deny layer. They
@@ -53,7 +52,7 @@ def invalidate_context(user_id: uuid.UUID) -> None:
     context_cache.invalidate(user_id)
 
 
-async def _module_for(db: AsyncSession, permission: str) -> str | None:
+async def _module_for(db: Db, permission: str) -> str | None:
     global _permission_modules, _core_modules
     if permission not in _permission_modules:
         _permission_modules = await repository.load_permission_modules(db)
@@ -61,7 +60,7 @@ async def _module_for(db: AsyncSession, permission: str) -> str | None:
     return _permission_modules.get(permission)
 
 
-async def _module_allows(db: AsyncSession, permission: str, scope: Scope) -> bool:
+async def _module_allows(db: Db, permission: str, scope: Scope) -> bool:
     """PRD §5.2 step 5. Core is always on, and platform-scoped actions have no institute
     to check against, so both short-circuit before touching the database."""
     module_key = await _module_for(db, permission)
@@ -73,7 +72,7 @@ async def _module_allows(db: AsyncSession, permission: str, scope: Scope) -> boo
 
 
 async def can(
-    db: AsyncSession,
+    db: Db,
     context: AuthContext,
     permission: str,
     scope: Scope,
@@ -87,7 +86,7 @@ async def can(
     return await _module_allows(db, permission, scope)
 
 
-async def _class_membership_ok(db: AsyncSession, context: AuthContext, class_id: uuid.UUID) -> bool:
+async def _class_membership_ok(db: Db, context: AuthContext, class_id: uuid.UUID) -> bool:
     """PRD §5.2 step 4.
 
     Only Faculty and Student are membership-gated. An admin holding the permission at
@@ -107,7 +106,7 @@ async def _class_membership_ok(db: AsyncSession, context: AuthContext, class_id:
     )
 
 
-async def resolve_class_scope(db: AsyncSession, class_id: uuid.UUID) -> Scope:
+async def resolve_class_scope(db: Db, class_id: uuid.UUID) -> Scope:
     found = await repository.class_scope(db, class_id)
     if found is None:
         raise NotFound("That class does not exist.")
@@ -126,7 +125,7 @@ class Authorized:
 
     __slots__ = ("_db", "context", "permission")
 
-    def __init__(self, db: AsyncSession, context: AuthContext, permission: str) -> None:
+    def __init__(self, db: Db, context: AuthContext, permission: str) -> None:
         self._db = db
         self.context = context
         self.permission = permission

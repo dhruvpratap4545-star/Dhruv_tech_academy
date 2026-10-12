@@ -11,9 +11,8 @@ from collections.abc import Callable, Coroutine
 from typing import Annotated, Any
 
 from fastapi import Depends, Request
-from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.db import get_db
+from app.core.db import Db, get_db
 from app.core.errors import Forbidden, Unauthorized
 from app.modules.auth.tokens import decode_access_token
 from app.modules.rbac import service
@@ -21,7 +20,7 @@ from app.modules.rbac.context import AuthContext
 from app.modules.rbac.service import Authorized
 from app.modules.users.models import User
 
-DbSession = Annotated[AsyncSession, Depends(get_db)]
+DbSession = Annotated[Db, Depends(get_db)]
 
 
 async def get_current_user(request: Request, db: DbSession) -> User:
@@ -29,7 +28,7 @@ async def get_current_user(request: Request, db: DbSession) -> User:
 
     The user row is re-read on every request rather than trusted from the token. That is
     what makes a suspension take effect immediately (PRD §7.2 "instant effect") — the cost
-    is one primary-key lookup, which PostgreSQL serves from cache.
+    is one primary-key lookup on `_id`.
     """
     from app.core.security import ACCESS_COOKIE
 

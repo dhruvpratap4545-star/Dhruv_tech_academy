@@ -58,6 +58,9 @@ def configure_logging() -> None:
     root.handlers = [handler]
     root.setLevel(logging.DEBUG if settings.environment == "local" else logging.INFO)
     # Uvicorn installs its own handlers; make them go through ours instead.
+    # PyMongo logs every connection checkout and command at DEBUG, which buries the
+    # application's own lines under hundreds of driver messages per request.
+    logging.getLogger("pymongo").setLevel(logging.WARNING)
     for name in ("uvicorn", "uvicorn.error", "uvicorn.access"):
         logging.getLogger(name).handlers = []
         logging.getLogger(name).propagate = True

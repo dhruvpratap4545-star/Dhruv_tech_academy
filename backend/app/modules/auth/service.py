@@ -19,9 +19,8 @@ import uuid
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
 
-from sqlalchemy.ext.asyncio import AsyncSession
-
 from app.core.config import settings
+from app.core.db import Db
 from app.core.errors import Conflict, Forbidden, RateLimited, Unauthorized, ValidationFailed
 from app.core.security import (
     generate_otp,
@@ -84,7 +83,7 @@ def _refresh_ttl(remembered: bool) -> timedelta:
 
 
 def _issue_session(
-    db: AsyncSession,
+    db: Db,
     user: User,
     meta: RequestMeta,
     *,
@@ -122,7 +121,7 @@ def _issue_session(
 
 
 async def register_direct_learner(
-    db: AsyncSession, *, full_name: str, email: str, password: str, meta: RequestMeta
+    db: Db, *, full_name: str, email: str, password: str, meta: RequestMeta
 ) -> LoginResult:
     """PRD §4.1. Creates an active Student in the built-in "Direct" institute."""
     if not settings.direct_signup_enabled:
@@ -179,7 +178,7 @@ async def register_direct_learner(
 
 
 async def login(
-    db: AsyncSession, *, email: str, password: str, remember_me: bool, meta: RequestMeta
+    db: Db, *, email: str, password: str, remember_me: bool, meta: RequestMeta
 ) -> LoginResult:
     """PRD §4.3 and §7.4.
 
@@ -260,7 +259,7 @@ async def login(
     return LoginResult(user=user, session=session, institute_count=len(context.institute_ids))
 
 
-async def _register_failed_login(db: AsyncSession, user: User, meta: RequestMeta) -> None:
+async def _register_failed_login(db: Db, user: User, meta: RequestMeta) -> None:
     """Count the failure and lock the account at the threshold (PRD §7.4).
 
     The counter lives on the user row, so the lock holds across restarts and instances.
@@ -289,9 +288,7 @@ async def _register_failed_login(db: AsyncSession, user: User, meta: RequestMeta
 # --------------------------------------------------------------------------- refresh
 
 
-async def refresh_session(
-    db: AsyncSession, *, refresh_token: str, meta: RequestMeta
-) -> LoginResult:
+async def refresh_session(db: Db, *, refresh_token: str, meta: RequestMeta) -> LoginResult:
     """Rotate the refresh token, detecting reuse (PRD §7.2).
 
     Presenting a token that was already rotated away means the cookie leaked: the legitimate
@@ -341,7 +338,7 @@ async def refresh_session(
     return LoginResult(user=user, session=session, institute_count=len(context.institute_ids))
 
 
-async def logout(db: AsyncSession, *, refresh_token: str | None, user_id: uuid.UUID | None) -> None:
+async def logout(db: Db, *, refresh_token: str | None, user_id: uuid.UUID | None) -> None:
     """End one session. Idempotent: logging out twice is not an error."""
     if refresh_token:
         stored = await repo.get_refresh_token(db, hash_refresh_token(refresh_token))
@@ -352,7 +349,7 @@ async def logout(db: AsyncSession, *, refresh_token: str | None, user_id: uuid.U
     await db.commit()
 
 
-async def logout_everywhere(db: AsyncSession, *, user: User, meta: RequestMeta) -> int:
+async def logout_everywhere(db: Db, *, user: User, meta: RequestMeta) -> int:
     count = await repo.revoke_all_user_tokens(db, user.id, "logout_all")
     audit.record(
         db,
@@ -371,7 +368,7 @@ async def logout_everywhere(db: AsyncSession, *, user: User, meta: RequestMeta) 
 # ------------------------------------------------------------------------------ OTPs
 
 
-async def _guard_otp_quota(db: AsyncSession, user: User, purpose: str) -> None:
+async def _guard_otp_quota(db: Db, user: User, purpose: str) -> None:
     """Per-account cooldown and hourly cap (PRD §7.3).
 
     Enforced in the database so it cannot be sidestepped by rotating IP addresses, which is
@@ -390,7 +387,7 @@ async def _guard_otp_quota(db: AsyncSession, user: User, purpose: str) -> None:
 
 
 async def issue_otp(
-    db: AsyncSession, *, user: User, purpose: str, meta: RequestMeta
+    db: Db, *, user: User, purpose: str, meta: RequestMeta
 ) -> tuple[PasswordOtp, str]:
     """Create a code, superseding any previous one. Returns the row and the plaintext.
 
@@ -415,9 +412,7 @@ async def issue_otp(
     return row, code
 
 
-async def forgot_password(
-    db: AsyncSession, *, email: str, meta: RequestMeta
-) -> EmailMessage | None:
+async def forgot_password(db: Db, *, email: str, meta: RequestMeta) -> EmailMessage | None:
     """PRD §4.4. Returns the email to send, or None when the address is unknown.
 
     The router responds identically either way, so this is not an existence oracle.
@@ -449,7 +444,7 @@ async def forgot_password(
     return templates.password_reset(user.email, user.full_name, code)
 
 
-async def _consume_attempt(db: AsyncSession, otp: PasswordOtp) -> None:
+async def _consume_attempt(db: Db, otp: PasswordOtp) -> None:
     """Count a wrong attempt (PRD §7.3: max 5 per code).
 
     The row is deliberately *not* superseded at the cap. The attempt counter alone blocks
@@ -461,7 +456,7 @@ async def _consume_attempt(db: AsyncSession, otp: PasswordOtp) -> None:
     await db.commit()
 
 
-async def verify_reset_otp(db: AsyncSession, *, email: str, code: str, meta: RequestMeta) -> str:
+async def verify_reset_otp(db: Db, *, email: str, code: str, meta: RequestMeta) -> str:
     """Exchange a valid code for a short-lived reset token."""
     generic = ValidationFailed("That code is not valid or has expired. Please request a new one.")
 
@@ -483,7 +478,7 @@ async def verify_reset_otp(db: AsyncSession, *, email: str, code: str, meta: Req
 
 
 async def reset_password(
-    db: AsyncSession, *, reset_token: str, new_password: str, meta: RequestMeta
+    db: Db, *, reset_token: str, new_password: str, meta: RequestMeta
 ) -> EmailMessage | None:
     """PRD §4.4 final step: set the password, end every session, send a security email."""
     claims = decode_reset_token(reset_token)
@@ -511,7 +506,7 @@ async def reset_password(
 
 
 async def setup_password(
-    db: AsyncSession, *, email: str, code: str, new_password: str, meta: RequestMeta
+    db: Db, *, email: str, code: str, new_password: str, meta: RequestMeta
 ) -> EmailMessage | None:
     """PRD §4.2: an invited user verifies the setup OTP and sets their first password."""
     generic = ValidationFailed("That code is not valid or has expired. Please ask for a new one.")
@@ -537,7 +532,7 @@ async def setup_password(
 
 
 async def change_password(
-    db: AsyncSession, *, user: User, current_password: str, new_password: str, meta: RequestMeta
+    db: Db, *, user: User, current_password: str, new_password: str, meta: RequestMeta
 ) -> EmailMessage | None:
     """PRD §8 ``/auth/password/change``. Requires the current password."""
     if not verify_password(current_password, user.password_hash):
@@ -561,7 +556,7 @@ async def change_password(
 
 
 async def _apply_new_password(
-    db: AsyncSession, *, user: User, new_password: str, meta: RequestMeta, action: str
+    db: Db, *, user: User, new_password: str, meta: RequestMeta, action: str
 ) -> EmailMessage | None:
     """The one place a password is written.
 
@@ -602,13 +597,6 @@ async def _apply_new_password(
     return templates.password_changed(user.email, user.full_name)
 
 
-async def live_sessions(db: AsyncSession, user_id: uuid.UUID) -> list[RefreshToken]:
+async def live_sessions(db: Db, user_id: uuid.UUID) -> list[RefreshToken]:
     """Not exposed in M1; kept here because the device list is the obvious next request."""
-    from sqlalchemy import select
-
-    stmt = select(RefreshToken).where(
-        RefreshToken.user_id == user_id,
-        RefreshToken.revoked_at.is_(None),
-        RefreshToken.expires_at > datetime.now(UTC),
-    )
-    return list((await db.execute(stmt)).scalars().all())
+    return await repo.live_sessions(db, user_id)
