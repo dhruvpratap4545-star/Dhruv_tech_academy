@@ -10,7 +10,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import aliased
 
 from app.modules.auth.models import RefreshToken  # noqa: F401  (FK target for metadata)
-from app.modules.org.models import Class, ClassEnrollment, ClassFaculty
+from app.modules.org.models import Class, ClassEnrollment, ClassFaculty, Institute
 from app.modules.rbac.models import (
     InstituteModule,
     InstituteRolePermission,
@@ -22,8 +22,15 @@ from app.modules.rbac.models import (
     UserRoleAssignment,
 )
 
-GrantRow = tuple[str, str, int, uuid.UUID | None, uuid.UUID | None, str]
-PersonalGrantRow = tuple[str, str, uuid.UUID | None, uuid.UUID | None]
+# (role key, role name, rank, organisation, institute, branch, permission key)
+#
+# The organisation travels with every row, including rows for institute- and branch-level
+# assignments, where it is the organisation that institute belongs to. That is not
+# decoration: a *denial* written at organisation level has to overlap an institute-level
+# grant inside it, and `Scope.intersects` can only see that if the grant's scope names the
+# organisation. Leave it off and the deny is silently ignored.
+GrantRow = tuple[str, str, int, uuid.UUID | None, uuid.UUID | None, uuid.UUID | None, str]
+PersonalGrantRow = tuple[str, str, uuid.UUID | None, uuid.UUID | None, uuid.UUID | None]
 
 
 def _live_assignments(user_id: uuid.UUID) -> Select[tuple[UserRoleAssignment]]:
@@ -51,11 +58,16 @@ async def load_grants(db: AsyncSession, user_id: uuid.UUID) -> Sequence[GrantRow
             Role.key,
             Role.name,
             Role.rank,
+            # The assignment's own organisation when it is organisation-scoped, otherwise
+            # the organisation of the institute it names. Either way the scope ends up
+            # carrying its full path, which is what organisation-level denials need.
+            func.coalesce(UserRoleAssignment.organisation_id, Institute.organisation_id),
             UserRoleAssignment.institute_id,
             UserRoleAssignment.branch_id,
             Permission.key,
         )
         .join(Role, Role.id == UserRoleAssignment.role_id)
+        .outerjoin(Institute, Institute.id == UserRoleAssignment.institute_id)
         # Outer, so a role that currently grants nothing still produces one row naming the
         # assignment and its scope. An inner join drops it entirely, and then an institute
         # that adds a permission to an empty role has nothing for the addition to attach
@@ -74,12 +86,12 @@ async def load_grants(db: AsyncSession, user_id: uuid.UUID) -> Sequence[GrantRow
 
     overrides = await _role_overrides_for_user(db, user_id)
     if not overrides:
-        return [row for row in rows if row[5] is not None]
+        return [row for row in rows if row[6] is not None]
     return _apply_role_overrides(rows, overrides)
 
 
 # (role_key, role_name, rank, institute_id, branch_id) -> the assignment a grant came from
-_Assignment = tuple[str, str, int, uuid.UUID | None, uuid.UUID | None]
+_Assignment = tuple[str, str, int, uuid.UUID | None, uuid.UUID | None, uuid.UUID | None]
 
 
 async def _role_overrides_for_user(
@@ -137,8 +149,8 @@ def _apply_role_overrides(
     assignments: set[_Assignment] = set()
 
     for row in rows:
-        role_key, role_name, rank, institute_id, branch_id, permission_key = row
-        assignments.add((role_key, role_name, rank, institute_id, branch_id))
+        role_key, role_name, rank, organisation_id, institute_id, branch_id, permission_key = row
+        assignments.add((role_key, role_name, rank, organisation_id, institute_id, branch_id))
         if permission_key is None:
             # The outer join's placeholder for a role that grants nothing. Its only job was
             # to put the assignment above into `assignments`.
@@ -151,7 +163,7 @@ def _apply_role_overrides(
             kept.append(row)
             seen.add(row)
 
-    for role_key, role_name, rank, institute_id, branch_id in assignments:
+    for role_key, role_name, rank, organisation_id, institute_id, branch_id in assignments:
         if institute_id is None:
             continue
         for permission_key, effect in overrides.get((institute_id, role_key), {}).items():
@@ -161,6 +173,7 @@ def _apply_role_overrides(
                 role_key,
                 role_name,
                 rank,
+                organisation_id,
                 institute_id,
                 branch_id,
                 permission_key,
@@ -185,10 +198,14 @@ async def load_personal_grants(db: AsyncSession, user_id: uuid.UUID) -> Sequence
         select(
             Permission.key,
             UserPermissionGrant.effect,
+            # Same reasoning as the role grants: the organisation travels with the scope,
+            # so an organisation-level deny overlaps an institute-level allow inside it.
+            func.coalesce(UserPermissionGrant.organisation_id, Institute.organisation_id),
             UserPermissionGrant.institute_id,
             UserPermissionGrant.branch_id,
         )
         .join(Permission, Permission.id == UserPermissionGrant.permission_id)
+        .outerjoin(Institute, Institute.id == UserPermissionGrant.institute_id)
         .where(
             UserPermissionGrant.user_id == user_id,
             UserPermissionGrant.revoked_at.is_(None),
@@ -603,3 +620,32 @@ async def delete_role(db: AsyncSession, role: Role) -> None:
     """Remove a role row outright. Only safe once `ever_assigned_count` is zero."""
     await db.delete(role)
     await db.flush()
+
+
+async def organisation_membership(
+    db: AsyncSession, organisation_ids: set[uuid.UUID]
+) -> dict[uuid.UUID, frozenset[uuid.UUID]]:
+    """organisation id -> the institutes inside it, for the organisations given.
+
+    Only the ones the caller actually holds a scope in, so a platform with a thousand
+    organisations still loads a handful of rows. Returns an entry for every id asked for,
+    empty when the organisation has no institutes yet — the caller should not have to tell
+    "no institutes" apart from "I forgot to ask".
+    """
+    if not organisation_ids:
+        return {}
+
+    rows = await db.execute(
+        select(Institute.organisation_id, Institute.id).where(
+            Institute.organisation_id.in_(organisation_ids)
+        )
+    )
+    found: dict[uuid.UUID, set[uuid.UUID]] = {oid: set() for oid in organisation_ids}
+    for organisation_id, institute_id in rows.all():
+        found.setdefault(organisation_id, set()).add(institute_id)
+    return {oid: frozenset(ids) for oid, ids in found.items()}
+
+
+async def organisation_of_institute(db: AsyncSession, institute_id: uuid.UUID) -> uuid.UUID | None:
+    """Which organisation an institute belongs to, or ``None`` when it stands alone."""
+    return await db.scalar(select(Institute.organisation_id).where(Institute.id == institute_id))

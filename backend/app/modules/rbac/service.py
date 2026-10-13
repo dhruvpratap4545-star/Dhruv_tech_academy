@@ -21,7 +21,7 @@ from app.core.errors import Forbidden, NotFound
 from app.modules.rbac import repository
 from app.modules.rbac.catalog import FACULTY, STUDENT, grantable_ceiling
 from app.modules.rbac.context import AuthContext, build_context, context_cache
-from app.modules.rbac.scopes import Scope
+from app.modules.rbac.scopes import ORGANISATION, PLATFORM, Scope
 
 logger = logging.getLogger(__name__)
 
@@ -43,7 +43,16 @@ async def get_context(db: AsyncSession, user_id: uuid.UUID) -> AuthContext:
         return cached
     rows = await repository.load_grants(db, user_id)
     personal = await repository.load_personal_grants(db, user_id)
-    context = build_context(user_id, rows, personal)
+
+    # Which institutes sit inside the organisations this person has a scope in. Needed
+    # because list endpoints filter on institute ids, and an organisation-wide grant names
+    # no institute. Skipped entirely — no third query — for the overwhelming majority of
+    # users, who are in no organisation at all.
+    organisation_ids = {row[3] for row in rows if row[3] is not None}
+    organisation_ids |= {row[2] for row in personal if row[2] is not None}
+    membership = await repository.organisation_membership(db, organisation_ids)
+
+    context = build_context(user_id, rows, personal, membership)
     context_cache.put(user_id, context)
     return context
 
@@ -107,12 +116,36 @@ async def _class_membership_ok(db: AsyncSession, context: AuthContext, class_id:
     )
 
 
+async def resolve_scope(
+    db: AsyncSession,
+    *,
+    institute_id: uuid.UUID | None = None,
+    branch_id: uuid.UUID | None = None,
+    organisation_id: uuid.UUID | None = None,
+) -> Scope:
+    """Build a target scope that carries its whole path.
+
+    An institute inside an organisation has to be compared *as* an institute of that
+    organisation, or an organisation-wide grant will not reach it. Everywhere a scope is
+    built from ids that came off a request, it comes through here so the organisation is
+    filled in from the database rather than assumed.
+
+    Getting it wrong fails closed — a missing organisation id refuses an organisation-wide
+    grant — so a forgotten call shows up as "why can't I see my own college?" rather than
+    as a silent leak. That is the right way round, but it is still worth not forgetting.
+    """
+    if institute_id is None:
+        return Scope(organisation_id=organisation_id, branch_id=None)
+    owner = organisation_id or await repository.organisation_of_institute(db, institute_id)
+    return Scope(organisation_id=owner, institute_id=institute_id, branch_id=branch_id)
+
+
 async def resolve_class_scope(db: AsyncSession, class_id: uuid.UUID) -> Scope:
     found = await repository.class_scope(db, class_id)
     if found is None:
         raise NotFound("That class does not exist.")
     institute_id, branch_id = found
-    return Scope(institute_id=institute_id, branch_id=branch_id)
+    return await resolve_scope(db, institute_id=institute_id, branch_id=branch_id)
 
 
 class Authorized:
@@ -165,11 +198,25 @@ class Authorized:
         return tuple(s for s in granted if not any(b.intersects(s) for b in blocked))
 
     def visible_institute_ids(self) -> frozenset[uuid.UUID] | None:
-        """Institutes this permission still reaches, or ``None`` for platform-wide reach."""
+        """Institutes this permission still reaches, or ``None`` for platform-wide reach.
+
+        The test is ``level == PLATFORM``, and it has to be. It used to read
+        ``institute_id is None``, which was the same thing while platform was the only
+        scope without an institute — and stopped being the same thing the moment the
+        organisation level existed. An organisation grant also names no institute, so the
+        old test would have read it as platform-wide and handed one organisation's
+        administrator every institute in the product. Exactly the kind of escalation that
+        arrives by adding a level rather than by changing a check.
+        """
         scopes = self.usable_scopes()
-        if any(s.institute_id is None for s in scopes):
+        if any(s.level == PLATFORM for s in scopes):
             return None
-        return frozenset(s.institute_id for s in scopes if s.institute_id)
+
+        reachable = {s.institute_id for s in scopes if s.institute_id is not None}
+        for scope in scopes:
+            if scope.level == ORGANISATION:
+                reachable |= self.context.institutes_of(scope.organisation_id)
+        return frozenset(reachable)
 
     def scopes_within(self, institute_id: uuid.UUID) -> tuple[Scope, ...]:
         """The caller's usable grants for this permission that reach into ``institute_id``.
@@ -186,9 +233,25 @@ class Authorized:
         return tuple(
             scope
             for scope in self.context.scopes_for(self.permission)
-            if (scope.institute_id is None or scope.institute_id == institute_id)
+            if self._reaches(scope, institute_id)
             and not any(block.intersects(scope) for block in blocked)
         )
+
+    def _reaches(self, scope: Scope, institute_id: uuid.UUID) -> bool:
+        """Does this one grant reach into ``institute_id``?
+
+        Extracted because the organisation case cannot be written as a comparison. The
+        test used to be ``scope.institute_id is None or scope.institute_id == institute``,
+        where the first half meant "platform, so everything". An organisation grant also
+        has no institute id, so that reading would have let the administrator of one
+        organisation list the classes, users and sessions of every institute on the
+        platform.
+        """
+        if scope.level == PLATFORM:
+            return True
+        if scope.level == ORGANISATION:
+            return institute_id in self.context.institutes_of(scope.organisation_id)
+        return scope.institute_id == institute_id
 
     async def ensure_within(self, institute_id: uuid.UUID) -> tuple[Scope, ...]:
         """Authorise *reading a collection* inside an institute.

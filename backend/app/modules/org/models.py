@@ -1,4 +1,4 @@
-"""Organisation hierarchy: Platform → Institute → Branch → Academic Session → Class (PRD §2).
+"""The hierarchy: Platform → Organisation → Institute → Branch → Academic Session → Class.
 
 Every institute-scoped table carries ``institute_id`` even where it could be derived through
 a join. That is deliberate: tenant isolation becomes one predicate on every query, so a
@@ -30,6 +30,32 @@ ORG_STATUSES = ("active", "archived")
 ENROLLMENT_STATUSES = ("active", "left")
 
 
+class Organisation(UuidPkMixin, TimestampMixin, Base):
+    """A group of institutes under one owner — "JSPM Group of Institutes", "MIT".
+
+    Optional, and most institutes will never belong to one. A standalone coaching centre
+    has no organisation, and everything that existed before this level keeps working with
+    ``institutes.organisation_id`` left null.
+
+    It exists for one reason: a trust or university running four colleges wants one
+    administrator who can see all four, without being given the whole platform. Without
+    this level the only way to express that is four separate Institute Admin assignments,
+    which then have to be remembered every time a fifth college is added.
+    """
+
+    __tablename__ = "organisations"
+    __table_args__ = (
+        CheckConstraint("status IN ('active', 'archived')", name="organisations_status"),
+        UniqueConstraint("code", name="uq_organisations_code"),
+    )
+
+    name: Mapped[str] = mapped_column(ShortStr, nullable=False)
+    code: Mapped[str] = mapped_column(CodeStr, nullable=False)
+    status: Mapped[str] = mapped_column(String(16), nullable=False, default="active")
+    logo_url: Mapped[str | None] = mapped_column(MediumStr)
+    contact_email: Mapped[str | None] = mapped_column(ShortStr)
+
+
 class Institute(UuidPkMixin, TimestampMixin, Base):
     __tablename__ = "institutes"
     __table_args__ = (
@@ -38,8 +64,15 @@ class Institute(UuidPkMixin, TimestampMixin, Base):
         ),
         CheckConstraint("status IN ('active', 'archived')", name="institutes_status"),
         UniqueConstraint("code", name="uq_institutes_code"),
+        Index("ix_institutes_organisation_id", "organisation_id"),
     )
 
+    # Nullable, because belonging to an organisation is the exception rather than the rule.
+    # RESTRICT rather than CASCADE: deleting an organisation must never silently take four
+    # colleges and everybody in them with it.
+    organisation_id: Mapped[uuid.UUID | None] = mapped_column(
+        Uuid, ForeignKey("organisations.id", ondelete="RESTRICT")
+    )
     name: Mapped[str] = mapped_column(ShortStr, nullable=False)
     code: Mapped[str] = mapped_column(CodeStr, nullable=False)
     type: Mapped[str] = mapped_column(String(16), nullable=False)

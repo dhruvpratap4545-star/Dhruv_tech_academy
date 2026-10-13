@@ -18,6 +18,7 @@ ScopeLevel = Literal["platform", "institute", "branch"]
 
 SUPER_ADMIN = "super_admin"
 PLATFORM_ADMIN = "platform_admin"
+ORG_ADMIN = "org_admin"
 INSTITUTE_ADMIN = "institute_admin"
 BRANCH_ADMIN = "branch_admin"
 FACULTY = "faculty"
@@ -63,6 +64,9 @@ class PermissionDef:
 ROLES: tuple[RoleDef, ...] = (
     RoleDef(SUPER_ADMIN, "Super Admin", "platform", 100),
     RoleDef(PLATFORM_ADMIN, "Platform Admin", "platform", 90),
+    # Between Platform Admin and Institute Admin: everything an Institute Admin can do,
+    # across every institute in one organisation, and nothing outside it.
+    RoleDef(ORG_ADMIN, "Organisation Admin", "organisation", 80),
     RoleDef(INSTITUTE_ADMIN, "Institute Admin", "institute", 70),
     RoleDef(BRANCH_ADMIN, "Branch Admin", "branch", 50),
     RoleDef(FACULTY, "Faculty", "branch", 30),
@@ -71,31 +75,40 @@ ROLES: tuple[RoleDef, ...] = (
     RoleDef(PARENT, "Parent / Guardian", "institute", 20, is_active=False),
 )
 
-ORGANISATION = "Organisation"
+# The heading these permissions appear under in the matrix. Called "Structure" rather
+# than "Organisation" because Organisation is now a level in the hierarchy, and one word
+# meaning two things in the same screen is how an administrator ticks the wrong box.
+STRUCTURE = "Structure"
 PEOPLE = "People"
 ACCESS = "Access control"
 AUDIT = "Audit"
 ACCOUNT = "Your account"
 
 PERMISSIONS: tuple[PermissionDef, ...] = (
-    PermissionDef("institute:create", CORE_MODULE, "Create an institute", ORGANISATION),
-    PermissionDef("institute:read", CORE_MODULE, "View institute profile", ORGANISATION),
-    PermissionDef("institute:update", CORE_MODULE, "Edit institute profile", ORGANISATION),
-    PermissionDef("institute:archive", CORE_MODULE, "Archive an institute", ORGANISATION),
+    PermissionDef("organisation:create", CORE_MODULE, "Create an organisation", STRUCTURE),
     PermissionDef(
-        "module:enable", CORE_MODULE, "Enable or disable a module for an institute", ORGANISATION
+        "organisation:read", CORE_MODULE, "View an organisation and its institutes", STRUCTURE
     ),
-    PermissionDef("branch:create", CORE_MODULE, "Create a branch", ORGANISATION),
-    PermissionDef("branch:read", CORE_MODULE, "View branches", ORGANISATION),
-    PermissionDef("branch:update", CORE_MODULE, "Edit a branch", ORGANISATION),
-    PermissionDef("branch:archive", CORE_MODULE, "Archive a branch", ORGANISATION),
-    PermissionDef("session:create", CORE_MODULE, "Create an academic session", ORGANISATION),
-    PermissionDef("session:read", CORE_MODULE, "View academic sessions", ORGANISATION),
-    PermissionDef("session:update", CORE_MODULE, "Edit an academic session", ORGANISATION),
-    PermissionDef("class:create", CORE_MODULE, "Create a class or batch", ORGANISATION),
-    PermissionDef("class:read", CORE_MODULE, "View classes", ORGANISATION),
-    PermissionDef("class:update", CORE_MODULE, "Edit a class", ORGANISATION),
-    PermissionDef("class:archive", CORE_MODULE, "Archive a class", ORGANISATION),
+    PermissionDef("organisation:update", CORE_MODULE, "Edit an organisation", STRUCTURE),
+    PermissionDef("organisation:archive", CORE_MODULE, "Archive an organisation", STRUCTURE),
+    PermissionDef("institute:create", CORE_MODULE, "Create an institute", STRUCTURE),
+    PermissionDef("institute:read", CORE_MODULE, "View institute profile", STRUCTURE),
+    PermissionDef("institute:update", CORE_MODULE, "Edit institute profile", STRUCTURE),
+    PermissionDef("institute:archive", CORE_MODULE, "Archive an institute", STRUCTURE),
+    PermissionDef(
+        "module:enable", CORE_MODULE, "Enable or disable a module for an institute", STRUCTURE
+    ),
+    PermissionDef("branch:create", CORE_MODULE, "Create a branch", STRUCTURE),
+    PermissionDef("branch:read", CORE_MODULE, "View branches", STRUCTURE),
+    PermissionDef("branch:update", CORE_MODULE, "Edit a branch", STRUCTURE),
+    PermissionDef("branch:archive", CORE_MODULE, "Archive a branch", STRUCTURE),
+    PermissionDef("session:create", CORE_MODULE, "Create an academic session", STRUCTURE),
+    PermissionDef("session:read", CORE_MODULE, "View academic sessions", STRUCTURE),
+    PermissionDef("session:update", CORE_MODULE, "Edit an academic session", STRUCTURE),
+    PermissionDef("class:create", CORE_MODULE, "Create a class or batch", STRUCTURE),
+    PermissionDef("class:read", CORE_MODULE, "View classes", STRUCTURE),
+    PermissionDef("class:update", CORE_MODULE, "Edit a class", STRUCTURE),
+    PermissionDef("class:archive", CORE_MODULE, "Archive a class", STRUCTURE),
     PermissionDef("user:invite", CORE_MODULE, "Invite a user", PEOPLE),
     PermissionDef("user:read", CORE_MODULE, "View users in scope", PEOPLE),
     PermissionDef("user:update_status", CORE_MODULE, "Suspend or re-activate a user", PEOPLE),
@@ -129,6 +142,14 @@ _ALL = tuple(p.key for p in PERMISSIONS)
 ROLE_PERMISSIONS: dict[str, tuple[str, ...]] = {
     SUPER_ADMIN: _ALL,
     PLATFORM_ADMIN: tuple(k for k in _ALL if k != "platform_admin:manage"),
+    # Everything an Institute Admin may do, plus the organisation itself and the right to
+    # add an institute to it. Derived from INSTITUTE_ADMIN below rather than retyped, so a
+    # permission given to an Institute Admin in a later release is not silently withheld
+    # from the person who runs four of them.
+    #
+    # `organisation:create` is deliberately absent: creating a *new* organisation is a
+    # platform decision, not something one organisation's administrator does.
+    ORG_ADMIN: (),  # filled in below, once INSTITUTE_ADMIN exists
     INSTITUTE_ADMIN: (
         "institute:read",
         "institute:update",
@@ -216,6 +237,17 @@ ROLES_BY_KEY = {role.key: role for role in ROLES}
 # Built-in institute that holds self-registered learners (PRD §2).
 DIRECT_INSTITUTE_CODE = "DIRECT"
 DIRECT_INSTITUTE_NAME = "Dhruv Online Academy – Direct"
+
+
+# Resolved here rather than inline, because a dict literal cannot read its own entries.
+ROLE_PERMISSIONS[ORG_ADMIN] = (
+    "organisation:read",
+    "organisation:update",
+    # Adding a fifth college to JSPM is the organisation administrator's job, not the
+    # platform's. The scope check confines it to their own organisation.
+    "institute:create",
+    *ROLE_PERMISSIONS[INSTITUTE_ADMIN],
+)
 
 
 def max_grantable_rank(holder_rank: int) -> int:

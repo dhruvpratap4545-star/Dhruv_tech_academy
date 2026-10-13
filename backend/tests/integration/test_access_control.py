@@ -418,7 +418,7 @@ async def test_the_permission_catalogue_is_grouped_and_complete(client, world):
     assert response.status_code == 200
     body = response.json()
     assert len(body) == len(PERMISSIONS)
-    assert {p["group"] for p in body} >= {"Organisation", "People", "Access control"}
+    assert {p["group"] for p in body} >= {"Structure", "People", "Access control"}
 
 
 async def test_a_faculty_member_cannot_read_the_role_catalogue(client, world):

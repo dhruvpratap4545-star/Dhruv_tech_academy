@@ -73,7 +73,8 @@ class Role(UuidPkMixin, TimestampMixin, Base):
     __tablename__ = "roles"
     __table_args__ = (
         CheckConstraint(
-            "scope_level IN ('platform', 'institute', 'branch')", name="roles_scope_level"
+            "scope_level IN ('platform', 'organisation', 'institute', 'branch')",
+            name="roles_scope_level",
         ),
         CheckConstraint("rank > 0", name="roles_rank_positive"),
         # A built-in role belongs to no institute; a custom one must belong to exactly one.
@@ -173,6 +174,14 @@ class UserRoleAssignment(UuidPkMixin, TimestampMixin, Base):
             "branch_id IS NULL OR institute_id IS NOT NULL",
             name="user_role_assignments_branch_needs_institute",
         ),
+        # An assignment sits at exactly one level. An organisation-scoped one names the
+        # organisation and nothing below it; naming both would be two different grants
+        # written in one row, and every containment test would then disagree about which
+        # one it is.
+        CheckConstraint(
+            "organisation_id IS NULL OR institute_id IS NULL",
+            name="user_role_assignments_one_level",
+        ),
         # The hot path is "every live assignment for this user". Partial index keeps it
         # small: revoked rows are history and are never read by the permission check.
         Index(
@@ -180,6 +189,7 @@ class UserRoleAssignment(UuidPkMixin, TimestampMixin, Base):
             "user_id",
             postgresql_where=text("revoked_at IS NULL"),
         ),
+        Index("ix_user_role_assignments_organisation_id", "organisation_id"),
         Index("ix_user_role_assignments_institute_id", "institute_id"),
         Index("ix_user_role_assignments_branch_id", "branch_id"),
     )
@@ -189,6 +199,9 @@ class UserRoleAssignment(UuidPkMixin, TimestampMixin, Base):
     )
     role_id: Mapped[uuid.UUID] = mapped_column(
         Uuid, ForeignKey("roles.id", ondelete="RESTRICT"), nullable=False
+    )
+    organisation_id: Mapped[uuid.UUID | None] = mapped_column(
+        Uuid, ForeignKey("organisations.id", ondelete="CASCADE")
     )
     institute_id: Mapped[uuid.UUID | None] = mapped_column(
         Uuid, ForeignKey("institutes.id", ondelete="CASCADE")
@@ -223,6 +236,14 @@ class UserPermissionGrant(UuidPkMixin, TimestampMixin, Base):
     __tablename__ = "user_permission_grants"
     __table_args__ = (
         CheckConstraint("effect IN ('allow', 'deny')", name="user_permission_grants_effect"),
+        # Same rule as an assignment: a personal grant sits at exactly one level, so a
+        # Super Admin can deny a permission across a whole organisation in one row rather
+        # than one row per institute — and so the deny cannot be half-applied when a fifth
+        # college joins the organisation later.
+        CheckConstraint(
+            "organisation_id IS NULL OR institute_id IS NULL",
+            name="user_permission_grants_one_level",
+        ),
         CheckConstraint(
             "branch_id IS NULL OR institute_id IS NOT NULL",
             name="user_permission_grants_branch_needs_institute",
@@ -234,6 +255,7 @@ class UserPermissionGrant(UuidPkMixin, TimestampMixin, Base):
             "user_id",
             postgresql_where=text("revoked_at IS NULL"),
         ),
+        Index("ix_user_permission_grants_organisation_id", "organisation_id"),
         Index("ix_user_permission_grants_institute_id", "institute_id"),
     )
 
@@ -244,6 +266,9 @@ class UserPermissionGrant(UuidPkMixin, TimestampMixin, Base):
         Uuid, ForeignKey("permissions.id", ondelete="CASCADE"), nullable=False
     )
     effect: Mapped[str] = mapped_column(String(8), nullable=False, default="allow")
+    organisation_id: Mapped[uuid.UUID | None] = mapped_column(
+        Uuid, ForeignKey("organisations.id", ondelete="CASCADE")
+    )
     institute_id: Mapped[uuid.UUID | None] = mapped_column(
         Uuid, ForeignKey("institutes.id", ondelete="CASCADE")
     )

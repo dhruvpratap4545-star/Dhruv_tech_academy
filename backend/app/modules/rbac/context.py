@@ -57,6 +57,19 @@ class AuthContext:
     # "why can I do this?" screen can show an exception *as* an exception; the engine
     # itself never consults it, because by then the distinction does not matter.
     direct: frozenset[str] = frozenset()
+    # organisation id -> the institutes inside it, for every organisation this user holds
+    # a scope in. List endpoints filter on institute ids, and an organisation-wide grant
+    # names no institute at all, so without this the filter has nothing to match on.
+    #
+    # A snapshot, refreshed whenever the context is. Adding an institute to an
+    # organisation invalidates the contexts of everyone who administers it, which is the
+    # same thing that already happens when a role changes.
+    organisation_institutes: Mapping[uuid.UUID, frozenset[uuid.UUID]] = field(default_factory=dict)
+
+    def institutes_of(self, organisation_id: uuid.UUID | None) -> frozenset[uuid.UUID]:
+        if organisation_id is None:
+            return frozenset()
+        return self.organisation_institutes.get(organisation_id, frozenset())
 
     @property
     def permissions(self) -> frozenset[str]:
@@ -147,8 +160,9 @@ class AuthContext:
 
 def build_context(
     user_id: uuid.UUID,
-    rows: Iterable[tuple[str, str, int, uuid.UUID | None, uuid.UUID | None, str]],
-    personal: Iterable[tuple[str, str, uuid.UUID | None, uuid.UUID | None]] = (),
+    rows: Iterable[tuple[str, str, int, uuid.UUID | None, uuid.UUID | None, uuid.UUID | None, str]],
+    personal: Iterable[tuple[str, str, uuid.UUID | None, uuid.UUID | None, uuid.UUID | None]] = (),
+    organisation_institutes: Mapping[uuid.UUID, frozenset[uuid.UUID]] | None = None,
 ) -> AuthContext:
     """Fold the flat join results into a context.
 
@@ -163,8 +177,10 @@ def build_context(
     deny_sets: dict[str, set[Scope]] = {}
     assignments: dict[tuple[str, Scope], Assignment] = {}
 
-    for role_key, role_name, rank, institute_id, branch_id, permission_key in rows:
-        scope = Scope(institute_id=institute_id, branch_id=branch_id)
+    for role_key, role_name, rank, organisation_id, institute_id, branch_id, permission_key in rows:
+        scope = Scope(
+            organisation_id=organisation_id, institute_id=institute_id, branch_id=branch_id
+        )
         grant_sets.setdefault(permission_key, set()).add(scope)
         assignments.setdefault(
             (role_key, scope),
@@ -172,8 +188,10 @@ def build_context(
         )
 
     direct: set[str] = set()
-    for permission_key, effect, institute_id, branch_id in personal:
-        scope = Scope(institute_id=institute_id, branch_id=branch_id)
+    for permission_key, effect, organisation_id, institute_id, branch_id in personal:
+        scope = Scope(
+            organisation_id=organisation_id, institute_id=institute_id, branch_id=branch_id
+        )
         if effect == "deny":
             deny_sets.setdefault(permission_key, set()).add(scope)
         else:
@@ -186,6 +204,7 @@ def build_context(
         assignments=tuple(assignments.values()),
         denials={key: tuple(scopes) for key, scopes in deny_sets.items()},
         direct=frozenset(direct),
+        organisation_institutes=dict(organisation_institutes or {}),
     )
 
 
