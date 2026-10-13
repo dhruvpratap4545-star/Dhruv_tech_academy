@@ -52,12 +52,18 @@ class InviteUserRequest(StrictModel):
 
 class AssignRoleRequest(StrictModel):
     role_key: str = Field(max_length=40)
+    #: For an organisation-level role. Mutually exclusive with ``institute_id`` — a role
+    #: is given either across an organisation or inside one institute, never both.
+    organisation_id: uuid.UUID | None = None
     institute_id: uuid.UUID | None = None
     branch_id: uuid.UUID | None = None
 
 
 class RevokeRoleRequest(StrictModel):
     role_key: str = Field(max_length=40)
+    #: For an organisation-level role. Mutually exclusive with ``institute_id`` — a role
+    #: is given either across an organisation or inside one institute, never both.
+    organisation_id: uuid.UUID | None = None
     institute_id: uuid.UUID | None = None
     branch_id: uuid.UUID | None = None
 

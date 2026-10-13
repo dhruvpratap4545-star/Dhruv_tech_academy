@@ -24,7 +24,7 @@ from dataclasses import dataclass, field
 from time import monotonic
 
 from app.core.config import settings
-from app.modules.rbac.scopes import Scope
+from app.modules.rbac.scopes import ORGANISATION, Scope
 
 
 @dataclass(frozen=True, slots=True)
@@ -153,9 +153,25 @@ class AuthContext:
         branch A must not be able to grant roles in branch B just because of their rank.
         """
         return max(
-            (a.rank for a in self.assignments if a.scope.contains(target)),
+            (a.rank for a in self.assignments if self._assignment_reaches(a.scope, target)),
             default=0,
         )
+
+    def _assignment_reaches(self, held: Scope, target: Scope) -> bool:
+        """Does an assignment at ``held`` cover ``target``?
+
+        Not simply ``held.contains(target)``, because assignments are deliberately *not*
+        spread across their institutes the way grants are — one organisation assignment
+        stays one row so the screens can say "Organisation Admin at JSPM" rather than
+        listing four colleges. The expansion the grants get for free has to be done here
+        instead, or the rank check would refuse an Organisation Admin every action inside
+        their own colleges.
+        """
+        if held.contains(target):
+            return True
+        if held.level != ORGANISATION or target.institute_id is None:
+            return False
+        return target.institute_id in self.institutes_of(held.organisation_id)
 
 
 def build_context(
@@ -177,11 +193,38 @@ def build_context(
     deny_sets: dict[str, set[Scope]] = {}
     assignments: dict[tuple[str, Scope], Assignment] = {}
 
+    members = dict(organisation_institutes or {})
+
+    def spread(scope: Scope) -> list[Scope]:
+        """An organisation scope, plus one scope per institute inside it.
+
+        This is what lets every existing call site keep working. A route asking
+        ``guard.ensure(Scope(institute_id=X))`` names no organisation — it has no reason
+        to know the level exists — so an organisation grant would never match it. Rather
+        than resolve the organisation at all twenty-odd of those call sites, and have the
+        twenty-first silently refuse an administrator their own college, the grant is
+        widened once, here, to the institutes it actually covers.
+
+        The organisation scope itself stays in the set, because the organisation record is
+        a thing one can act on in its own right.
+        """
+        if scope.level != ORGANISATION:
+            return [scope]
+        return [
+            scope,
+            *(
+                Scope(organisation_id=scope.organisation_id, institute_id=institute)
+                for institute in members.get(scope.organisation_id, frozenset())
+            ),
+        ]
+
     for role_key, role_name, rank, organisation_id, institute_id, branch_id, permission_key in rows:
         scope = Scope(
             organisation_id=organisation_id, institute_id=institute_id, branch_id=branch_id
         )
-        grant_sets.setdefault(permission_key, set()).add(scope)
+        grant_sets.setdefault(permission_key, set()).update(spread(scope))
+        # The *assignment* is not spread. It is what the screens show and what the rank
+        # check reads, and "Organisation Admin at JSPM" is one fact, not four.
         assignments.setdefault(
             (role_key, scope),
             Assignment(role_key=role_key, role_name=role_name, rank=rank, scope=scope),
@@ -193,9 +236,9 @@ def build_context(
             organisation_id=organisation_id, institute_id=institute_id, branch_id=branch_id
         )
         if effect == "deny":
-            deny_sets.setdefault(permission_key, set()).add(scope)
+            deny_sets.setdefault(permission_key, set()).update(spread(scope))
         else:
-            grant_sets.setdefault(permission_key, set()).add(scope)
+            grant_sets.setdefault(permission_key, set()).update(spread(scope))
             direct.add(permission_key)
 
     return AuthContext(

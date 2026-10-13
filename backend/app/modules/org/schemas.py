@@ -45,10 +45,40 @@ def normalise_code(value: str) -> str:
 # --------------------------------------------------------------------------- institutes
 
 
+class OrganisationCreate(StrictModel):
+    name: Name
+    code: Code
+    contact_email: EmailStr | None = None
+    logo_url: str | None = Field(default=None, max_length=255)
+
+    _code = field_validator("code")(normalise_code)
+
+
+class OrganisationUpdate(StrictModel):
+    name: Name | None = None
+    contact_email: EmailStr | None = None
+    logo_url: str | None = Field(default=None, max_length=255)
+
+
+class OrganisationOut(OrmModel):
+    id: uuid.UUID
+    name: str
+    code: str
+    status: str
+    contact_email: str | None
+    logo_url: str | None
+    created_at: datetime
+    #: How many institutes sit inside it. Shown so nobody archives an organisation
+    #: without seeing that four colleges hang off it.
+    institute_count: int = 0
+
+
 class InstituteCreate(StrictModel):
     name: Name
     code: Code
     type: InstituteType
+    #: Optional. Most institutes stand alone; one inside a group names it here.
+    organisation_id: uuid.UUID | None = None
     contact_email: EmailStr | None = None
     logo_url: str | None = Field(default=None, max_length=255)
 
@@ -64,6 +94,7 @@ class InstituteUpdate(StrictModel):
 
 class InstituteOut(OrmModel):
     id: uuid.UUID
+    organisation_id: uuid.UUID | None
     name: str
     code: str
     type: str

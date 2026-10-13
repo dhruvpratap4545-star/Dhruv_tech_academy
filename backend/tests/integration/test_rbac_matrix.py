@@ -88,10 +88,16 @@ async def test_platform_admin_sees_every_institute(client: AsyncClient, world) -
 
 
 async def test_an_admin_cannot_read_another_institute(client: AsyncClient, world) -> None:
-    """PRD §13 criterion 8: two institutes cannot see each other's data."""
+    """PRD §13 criterion 8: two institutes cannot see each other's data.
+
+    404 rather than 403, as of the organisation work. A 403 means "this exists and is not
+    yours", so anybody with an account could walk a list of ids and learn which institutes
+    are on the platform — a customer list given away by the status code. The users module
+    already answered this way; institutes now match it.
+    """
     await _as(client, world["abc_admin"])
     response = await client.get(f"/api/v1/institutes/{world['xyz'].id}")
-    assert response.status_code == 403
+    assert response.status_code == 404
 
 
 async def test_an_admin_cannot_edit_another_institute(client: AsyncClient, world) -> None:

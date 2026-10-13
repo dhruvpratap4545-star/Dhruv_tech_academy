@@ -31,14 +31,31 @@ depends_on: None = None
 def upgrade() -> None:
     op.create_table(
         "organisations",
-        sa.Column("id", sa.Uuid(), nullable=False),
+        # Server-side defaults, matching every other table: the id and the timestamps are
+        # PostgreSQL's job, so an insert never needs a round trip to find out what they are.
+        sa.Column(
+            "id",
+            sa.Uuid(),
+            server_default=sa.text("gen_random_uuid()"),
+            nullable=False,
+        ),
         sa.Column("name", sa.String(length=120), nullable=False),
-        sa.Column("code", sa.String(length=32), nullable=False),
-        sa.Column("status", sa.String(length=16), nullable=False),
+        sa.Column("code", sa.String(length=40), nullable=False),
+        sa.Column("status", sa.String(length=16), nullable=False, server_default="active"),
         sa.Column("logo_url", sa.String(length=512), nullable=True),
         sa.Column("contact_email", sa.String(length=120), nullable=True),
-        sa.Column("created_at", sa.DateTime(timezone=True), nullable=False),
-        sa.Column("updated_at", sa.DateTime(timezone=True), nullable=False),
+        sa.Column(
+            "created_at",
+            sa.DateTime(timezone=True),
+            server_default=sa.text("now()"),
+            nullable=False,
+        ),
+        sa.Column(
+            "updated_at",
+            sa.DateTime(timezone=True),
+            server_default=sa.text("now()"),
+            nullable=False,
+        ),
         sa.PrimaryKeyConstraint("id", name=op.f("pk_organisations")),
         sa.UniqueConstraint("code", name="uq_organisations_code"),
         sa.CheckConstraint("status IN ('active', 'archived')", name="organisations_status"),

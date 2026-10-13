@@ -21,7 +21,7 @@ from app.core.errors import Forbidden, NotFound
 from app.modules.rbac import repository
 from app.modules.rbac.catalog import FACULTY, STUDENT, grantable_ceiling
 from app.modules.rbac.context import AuthContext, build_context, context_cache
-from app.modules.rbac.scopes import ORGANISATION, PLATFORM, Scope
+from app.modules.rbac.scopes import PLATFORM, Scope
 
 logger = logging.getLogger(__name__)
 
@@ -212,11 +212,11 @@ class Authorized:
         if any(s.level == PLATFORM for s in scopes):
             return None
 
-        reachable = {s.institute_id for s in scopes if s.institute_id is not None}
-        for scope in scopes:
-            if scope.level == ORGANISATION:
-                reachable |= self.context.institutes_of(scope.organisation_id)
-        return frozenset(reachable)
+        # No special case for organisations: an organisation grant was already spread
+        # across its institutes when the context was built, so those ids are simply in the
+        # list. One mechanism rather than two, in the function where getting it wrong hands
+        # somebody every institute on the platform.
+        return frozenset(s.institute_id for s in scopes if s.institute_id is not None)
 
     def scopes_within(self, institute_id: uuid.UUID) -> tuple[Scope, ...]:
         """The caller's usable grants for this permission that reach into ``institute_id``.
@@ -249,8 +249,6 @@ class Authorized:
         """
         if scope.level == PLATFORM:
             return True
-        if scope.level == ORGANISATION:
-            return institute_id in self.context.institutes_of(scope.organisation_id)
         return scope.institute_id == institute_id
 
     async def ensure_within(self, institute_id: uuid.UUID) -> tuple[Scope, ...]:

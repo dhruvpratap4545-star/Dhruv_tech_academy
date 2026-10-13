@@ -35,10 +35,28 @@ from app.modules.users.models import User, UserPreference
 FACULTY_RANK = ROLES_BY_KEY[FACULTY].rank
 
 
-def _scope_of(institute_id: uuid.UUID | None, branch_id: uuid.UUID | None) -> Scope:
+async def _scope_of(
+    db: AsyncSession,
+    institute_id: uuid.UUID | None,
+    branch_id: uuid.UUID | None,
+    organisation_id: uuid.UUID | None = None,
+) -> Scope:
+    """The scope a request is asking to act at, with its organisation filled in.
+
+    Async now, because an institute scope has to carry the organisation that institute
+    belongs to or an organisation-wide grant will not reach it. `rbac.resolve_scope` does
+    that lookup in one place rather than every caller remembering to.
+    """
     if branch_id is not None and institute_id is None:
         raise ValidationFailed("A branch role must also name its institute.")
-    return Scope(institute_id=institute_id, branch_id=branch_id)
+    if organisation_id is not None and institute_id is not None:
+        raise ValidationFailed(
+            "A role is given either across an organisation or inside one institute, "
+            "not both at once."
+        )
+    return await rbac.resolve_scope(
+        db, institute_id=institute_id, branch_id=branch_id, organisation_id=organisation_id
+    )
 
 
 async def _require_role(db: AsyncSession, role_key: str):
@@ -59,10 +77,15 @@ def _validate_scope_for_role(role, scope: Scope) -> None:
       member effective across every branch of the institute — the exact escalation the
       hierarchy exists to prevent.
     """
-    if role.scope_level == "platform" and scope.institute_id is not None:
+    if role.scope_level == "platform" and scope.level != "platform":
         raise ValidationFailed(
-            f"{role.name} is a platform role and cannot be given to one institute."
+            f"{role.name} is a platform role and cannot be given to one organisation or institute."
         )
+    if role.scope_level == "organisation" and scope.level != "organisation":
+        # Exactly at the organisation, not above and not below. Above would hand the
+        # holder every organisation; below would make "Organisation Admin" the name of
+        # somebody who administers one college, which is what Institute Admin is for.
+        raise ValidationFailed(f"{role.name} must be given across one whole organisation.")
     if role.scope_level == "institute" and scope.institute_id is None:
         raise ValidationFailed(f"{role.name} must be given within an institute.")
     # An institute-level role granted *with* a branch is allowed on purpose, and it is
@@ -148,7 +171,9 @@ async def invite_user(
     Idempotent-ish by design: inviting an email that already exists is a conflict rather
     than a silent second account, because one person is one user row (PRD §2 rule 4).
     """
-    scope = _scope_of(payload.institute_id, payload.branch_id)
+    scope = await _scope_of(
+        db, payload.institute_id, payload.branch_id, getattr(payload, "organisation_id", None)
+    )
     await guard.ensure(scope)
 
     role = await _require_role(db, payload.role_key)
@@ -323,7 +348,9 @@ async def assign_role(
     payload: schemas.AssignRoleRequest,
     meta: RequestMeta,
 ) -> UserRoleAssignment:
-    scope = _scope_of(payload.institute_id, payload.branch_id)
+    scope = await _scope_of(
+        db, payload.institute_id, payload.branch_id, getattr(payload, "organisation_id", None)
+    )
     await guard.ensure(scope)
 
     role = await _require_role(db, payload.role_key)
@@ -362,7 +389,9 @@ async def revoke_role(
     payload: schemas.RevokeRoleRequest,
     meta: RequestMeta,
 ) -> None:
-    scope = _scope_of(payload.institute_id, payload.branch_id)
+    scope = await _scope_of(
+        db, payload.institute_id, payload.branch_id, getattr(payload, "organisation_id", None)
+    )
     await guard.ensure(scope)
 
     role = await _require_role(db, payload.role_key)
@@ -589,7 +618,15 @@ async def _highest_rank_of(db: AsyncSession, user_id: uuid.UUID) -> int:
 async def _live_scopes_of(db: AsyncSession, user_id: uuid.UUID) -> list[Scope]:
     """Every scope this person currently holds a role at."""
     assignments = await rbac_repo.live_assignments_for_user(db, user_id)
-    return [Scope(institute_id=a.institute_id, branch_id=a.branch_id) for a in assignments]
+    return [
+        await rbac.resolve_scope(
+            db,
+            institute_id=a.institute_id,
+            branch_id=a.branch_id,
+            organisation_id=a.organisation_id,
+        )
+        for a in assignments
+    ]
 
 
 async def _primary_scope_of(db: AsyncSession, user_id: uuid.UUID) -> Scope:
@@ -615,7 +652,12 @@ async def _primary_scope_of(db: AsyncSession, user_id: uuid.UUID) -> Scope:
         assignments,
         key=lambda a: (roles[a.role_id].rank if a.role_id in roles else 0, str(a.id)),
     )
-    return Scope(institute_id=senior.institute_id, branch_id=senior.branch_id)
+    return await rbac.resolve_scope(
+        db,
+        institute_id=senior.institute_id,
+        branch_id=senior.branch_id,
+        organisation_id=senior.organisation_id,
+    )
 
 
 # -------------------------------------------------------------------------- reading
@@ -669,6 +711,7 @@ def _visible_scope(guard: Authorized, scopes, institute_id: uuid.UUID | None) ->
         return {institute_id: None} if institute_id else None
 
     scope: dict[uuid.UUID, frozenset[uuid.UUID] | None] = {}
+
     for s in scopes:
         if s.institute_id is None:
             continue

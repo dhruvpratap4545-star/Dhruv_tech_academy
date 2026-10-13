@@ -15,11 +15,13 @@ from app.core.errors import Forbidden
 from app.core.pagination import Page, clamp_limit
 from app.modules.auth.service import RequestMeta
 from app.modules.notifications.email import send_email
+from app.modules.org import repository as org_repo
 from app.modules.org import schemas
 from app.modules.org import service as org
 from app.modules.rbac.deps import DbSession, client_ip, require_permission, user_agent
 from app.modules.rbac.service import Authorized
 
+organisations_router = APIRouter()
 institutes_router = APIRouter()
 branches_router = APIRouter()
 classes_router = APIRouter()
@@ -466,3 +468,111 @@ async def unenrol_student(
         db, guard=guard, class_id=class_id, user_id=user_id, meta=_meta(request)
     )
     await db.commit()
+
+
+# ------------------------------------------------------------------------ organisations
+
+
+@organisations_router.get(
+    "",
+    response_model=Page[schemas.OrganisationOut],
+    summary="List organisations in your scope",
+)
+async def list_organisations(
+    db: DbSession,
+    guard: Annotated[Authorized, Depends(require_permission("organisation:read"))],
+    search: str | None = None,
+    status_filter: Annotated[str | None, Query(alias="status")] = None,
+    cursor: str | None = None,
+    limit: int | None = None,
+) -> Page[schemas.OrganisationOut]:
+    size = clamp_limit(limit)
+    rows, next_cursor, total, counts = await org.list_organisations(
+        db, guard=guard, search=search, status=status_filter, cursor=cursor, limit=size
+    )
+    return Page[schemas.OrganisationOut](
+        items=[
+            schemas.OrganisationOut.model_validate(row).model_copy(
+                update={"institute_count": counts.get(row.id, 0)}
+            )
+            for row in rows
+        ],
+        next_cursor=next_cursor,
+        total=total,
+    )
+
+
+@organisations_router.post(
+    "",
+    response_model=schemas.OrganisationOut,
+    status_code=status.HTTP_201_CREATED,
+    summary="Create an organisation",
+    description="Platform staff only. An organisation groups institutes under one owner — "
+    "a university with several colleges, or a trust running several schools.",
+)
+async def create_organisation(
+    payload: schemas.OrganisationCreate,
+    request: Request,
+    db: DbSession,
+    guard: Annotated[Authorized, Depends(require_permission("organisation:create"))],
+) -> schemas.OrganisationOut:
+    row = await org.create_organisation(db, guard=guard, payload=payload, meta=_meta(request))
+    return schemas.OrganisationOut.model_validate(row)
+
+
+@organisations_router.get(
+    "/{organisation_id}",
+    response_model=schemas.OrganisationOut,
+    summary="Read one organisation",
+)
+async def get_organisation(
+    organisation_id: uuid.UUID,
+    db: DbSession,
+    guard: Annotated[Authorized, Depends(require_permission("organisation:read"))],
+) -> schemas.OrganisationOut:
+    row = await org.get_organisation(db, guard=guard, organisation_id=organisation_id)
+    counts = await org_repo.institute_counts(db, [row.id])
+    return schemas.OrganisationOut.model_validate(row).model_copy(
+        update={"institute_count": counts.get(row.id, 0)}
+    )
+
+
+@organisations_router.patch(
+    "/{organisation_id}",
+    response_model=schemas.OrganisationOut,
+    summary="Edit an organisation",
+)
+async def update_organisation(
+    organisation_id: uuid.UUID,
+    payload: schemas.OrganisationUpdate,
+    request: Request,
+    db: DbSession,
+    guard: Annotated[Authorized, Depends(require_permission("organisation:update"))],
+) -> schemas.OrganisationOut:
+    row = await org.update_organisation(
+        db,
+        guard=guard,
+        organisation_id=organisation_id,
+        payload=payload,
+        meta=_meta(request),
+    )
+    return schemas.OrganisationOut.model_validate(row)
+
+
+@organisations_router.post(
+    "/{organisation_id}/archive",
+    response_model=schemas.OrganisationOut,
+    summary="Archive an organisation",
+    description="Refused while institutes still belong to it — move or archive those first, "
+    "or four colleges end up pointing at something retired.",
+)
+async def archive_organisation(
+    organisation_id: uuid.UUID,
+    request: Request,
+    db: DbSession,
+    guard: Annotated[Authorized, Depends(require_permission("organisation:archive"))],
+) -> schemas.OrganisationOut:
+    row = await org.archive_organisation(
+        db, guard=guard, organisation_id=organisation_id, meta=_meta(request)
+    )
+    return schemas.OrganisationOut.model_validate(row)

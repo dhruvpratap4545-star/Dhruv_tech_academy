@@ -28,6 +28,7 @@ from app.modules.org.models import (
     ClassEnrollment,
     ClassFaculty,
     Institute,
+    Organisation,
 )
 from app.modules.rbac.scopes import Scope
 from app.modules.rbac.service import Authorized
@@ -168,6 +169,9 @@ async def list_institutes(
     Derived from the permission's own usable scopes, so a deny on ``institute:read``
     removes that institute from the list instead of only from the detail endpoint.
     """
+    # `visible_institute_ids` already expands an organisation grant into the institutes
+    # inside it, so an Organisation Admin sees their four colleges and nothing else
+    # without this function knowing the level exists.
     visible = guard.visible_institute_ids()
     return await repo.list_institutes(
         db,
@@ -183,8 +187,17 @@ async def list_institutes(
 async def get_institute(
     db: AsyncSession, *, guard: Authorized, institute_id: uuid.UUID
 ) -> Institute:
-    await guard.ensure(Scope(institute_id=institute_id))
-    return await _require_institute(db, institute_id)
+    """404, not 403, when the institute is outside the caller's scope.
+
+    The same rule the users module already follows, and it matters more here. A 403 means
+    "this exists and is not yours", so anybody with an account could walk a list of ids
+    and learn which institutes are on the platform — a customer list, handed out by the
+    error code. 404 says nothing either way.
+    """
+    institute = await _require_institute(db, institute_id)
+    if not guard.context.can(guard.permission, Scope(institute_id=institute_id)):
+        raise NotFound("That institute does not exist.")
+    return institute
 
 
 # ----------------------------------------------------------------------------- branches
@@ -673,3 +686,150 @@ async def _require_user_in_institute(
     )
     if not await db.scalar(stmt):
         raise NotFound("That user is not part of this institute.")
+
+
+# ------------------------------------------------------------------------ organisations
+
+
+async def create_organisation(
+    db: AsyncSession,
+    *,
+    guard: Authorized,
+    payload: schemas.OrganisationCreate,
+    meta: RequestMeta,
+) -> Organisation:
+    """Platform-only. Creating a *new* organisation decides who else exists on the
+    platform, which is not something one organisation's administrator does."""
+    await guard.ensure(Scope())
+
+    if await repo.organisation_code_taken(db, payload.code):
+        raise Conflict("An organisation with that code already exists.")
+
+    organisation = Organisation(
+        name=payload.name,
+        code=payload.code,
+        contact_email=payload.contact_email,
+        logo_url=payload.logo_url,
+        status="active",
+    )
+    db.add(organisation)
+    await db.flush()
+
+    audit.record(
+        db,
+        action=events.ORGANISATION_CREATED,
+        actor_user_id=guard.user_id,
+        target_type="organisation",
+        target_id=organisation.id,
+        ip=meta.ip,
+        user_agent=meta.user_agent,
+        extra={"code": organisation.code},
+    )
+    await db.commit()
+    return organisation
+
+
+async def list_organisations(
+    db: AsyncSession,
+    *,
+    guard: Authorized,
+    search: str | None,
+    status: str | None,
+    cursor: str | None,
+    limit: int,
+) -> tuple[Sequence[Organisation], str | None, int, dict[uuid.UUID, int]]:
+    """Platform staff see every organisation; everyone else sees only theirs.
+
+    Derived from the permission's own usable scopes, so a deny on ``organisation:read``
+    removes it from the list and not only from the detail endpoint.
+    """
+    scopes = guard.usable_scopes()
+    if any(s.level == "platform" for s in scopes):
+        visible: frozenset[uuid.UUID] | None = None
+    else:
+        visible = frozenset(s.organisation_id for s in scopes if s.organisation_id is not None)
+
+    rows, cursor_out, total = await repo.list_organisations(
+        db, visible_ids=visible, search=search, status=status, cursor=cursor, limit=limit
+    )
+    counts = await repo.institute_counts(db, [row.id for row in rows])
+    return rows, cursor_out, total, counts
+
+
+async def get_organisation(
+    db: AsyncSession, *, guard: Authorized, organisation_id: uuid.UUID
+) -> Organisation:
+    organisation = await repo.get_organisation(db, organisation_id)
+    if organisation is None:
+        raise NotFound("That organisation does not exist.")
+    # 404 rather than 403 from here on: confirming that an organisation exists to somebody
+    # outside it tells them something about a customer they have no business knowing.
+    if not guard.context.can(guard.permission, Scope(organisation_id=organisation_id)):
+        raise NotFound("That organisation does not exist.")
+    return organisation
+
+
+async def update_organisation(
+    db: AsyncSession,
+    *,
+    guard: Authorized,
+    organisation_id: uuid.UUID,
+    payload: schemas.OrganisationUpdate,
+    meta: RequestMeta,
+) -> Organisation:
+    organisation = await get_organisation(db, guard=guard, organisation_id=organisation_id)
+    await guard.ensure(Scope(organisation_id=organisation_id))
+
+    for field in ("name", "contact_email", "logo_url"):
+        value = getattr(payload, field)
+        if value is not None:
+            setattr(organisation, field, value)
+
+    audit.record(
+        db,
+        action=events.ORGANISATION_UPDATED,
+        actor_user_id=guard.user_id,
+        target_type="organisation",
+        target_id=organisation.id,
+        ip=meta.ip,
+        user_agent=meta.user_agent,
+    )
+    await db.commit()
+    return organisation
+
+
+async def archive_organisation(
+    db: AsyncSession,
+    *,
+    guard: Authorized,
+    organisation_id: uuid.UUID,
+    meta: RequestMeta,
+) -> Organisation:
+    """Refused while institutes still hang off it.
+
+    Archiving the group would leave four colleges pointing at something retired, and the
+    administrator who did it would have no idea until somebody could not sign in. Move or
+    archive the institutes first, deliberately.
+    """
+    await guard.ensure(Scope())
+    organisation = await get_organisation(db, guard=guard, organisation_id=organisation_id)
+
+    remaining = await repo.organisation_has_institutes(db, organisation_id)
+    if remaining:
+        raise Conflict(
+            f"{remaining} {'institute belongs' if remaining == 1 else 'institutes belong'} "
+            f"to this organisation. Move or archive them first."
+        )
+
+    organisation.status = "archived"
+    audit.record(
+        db,
+        action=events.ORGANISATION_ARCHIVED,
+        actor_user_id=guard.user_id,
+        target_type="organisation",
+        target_id=organisation.id,
+        ip=meta.ip,
+        user_agent=meta.user_agent,
+    )
+    await db.commit()
+    return organisation

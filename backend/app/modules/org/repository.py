@@ -23,6 +23,7 @@ from app.modules.org.models import (
     ClassEnrollment,
     ClassFaculty,
     Institute,
+    Organisation,
 )
 from app.modules.rbac.catalog import DIRECT_INSTITUTE_CODE
 
@@ -356,3 +357,75 @@ async def search_classes(
         stmt = stmt.where(Class.id.in_(class_ids))
     stmt = stmt.order_by(Class.name).limit(limit)
     return (await db.execute(stmt)).scalars().all()
+
+
+# ------------------------------------------------------------------------ organisations
+
+
+async def organisation_code_taken(db: AsyncSession, code: str) -> bool:
+    found = await db.scalar(
+        select(Organisation.id).where(func.lower(Organisation.code) == code.strip().lower())
+    )
+    return found is not None
+
+
+async def get_organisation(db: AsyncSession, organisation_id: uuid.UUID) -> Organisation | None:
+    return await db.get(Organisation, organisation_id)
+
+
+async def list_organisations(
+    db: AsyncSession,
+    *,
+    visible_ids: frozenset[uuid.UUID] | None,
+    search: str | None = None,
+    status: str | None = None,
+    cursor: str | None = None,
+    limit: int = 20,
+) -> tuple[Sequence[Organisation], str | None, int]:
+    """``visible_ids=None`` means platform staff, who see every organisation."""
+    stmt: Select[tuple[Organisation]] = select(Organisation)
+    if visible_ids is not None:
+        if not visible_ids:
+            return [], None, 0
+        stmt = stmt.where(Organisation.id.in_(visible_ids))
+    if status:
+        stmt = stmt.where(Organisation.status == status)
+    if search:
+        pattern = like_pattern(search)
+        stmt = stmt.where(or_(Organisation.name.ilike(pattern), Organisation.code.ilike(pattern)))
+
+    return await paginate(
+        db,
+        stmt,
+        created_at_col=Organisation.created_at,
+        id_col=Organisation.id,
+        cursor=cursor,
+        limit=limit,
+    )
+
+
+async def institute_counts(
+    db: AsyncSession, organisation_ids: Sequence[uuid.UUID]
+) -> dict[uuid.UUID, int]:
+    """How many institutes each organisation holds, in one query rather than per row."""
+    if not organisation_ids:
+        return {}
+    rows = await db.execute(
+        select(Institute.organisation_id, func.count())
+        .where(Institute.organisation_id.in_(organisation_ids))
+        .group_by(Institute.organisation_id)
+    )
+    return dict(rows.all())  # type: ignore[arg-type]
+
+
+async def organisation_has_institutes(db: AsyncSession, organisation_id: uuid.UUID) -> int:
+    return (
+        await db.scalar(
+            select(func.count())
+            .select_from(Institute)
+            .where(
+                Institute.organisation_id == organisation_id,
+                Institute.status != "archived",
+            )
+        )
+    ) or 0

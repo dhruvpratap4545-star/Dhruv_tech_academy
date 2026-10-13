@@ -210,6 +210,7 @@ async def make_user(db: AsyncSession, seeded: AsyncSession):
     async def _make(
         role_key: str,
         *,
+        organisation_id: uuid.UUID | None = None,
         institute_id: uuid.UUID | None = None,
         branch_id: uuid.UUID | None = None,
         email: str | None = None,
@@ -232,6 +233,7 @@ async def make_user(db: AsyncSession, seeded: AsyncSession):
             UserRoleAssignment(
                 user_id=user.id,
                 role_id=role.id,
+                organisation_id=organisation_id,
                 institute_id=institute_id,
                 branch_id=branch_id,
             )
@@ -275,5 +277,45 @@ async def institute(db: AsyncSession, seeded: AsyncSession):
             await db.flush()
         await db.commit()
         return row, branch
+
+    return _make
+
+
+@pytest_asyncio.fixture
+async def organisation(db: AsyncSession, seeded: AsyncSession):
+    """An organisation holding however many institutes the test asks for.
+
+    Returns ``(organisation, [institutes...])``. Core modules are enabled on each, exactly
+    as `create_institute` does, so permission checks are not refused for the unrelated
+    reason that a module is switched off.
+    """
+    from app.modules.org.models import Institute, Organisation
+    from app.modules.rbac.models import InstituteModule
+
+    async def _make(name: str, code: str, *, institutes: tuple[str, ...] = ()):
+        row = Organisation(name=name, code=code.upper(), status="active")
+        db.add(row)
+        await db.flush()
+
+        made = []
+        for institute_code in institutes:
+            institute = Institute(
+                organisation_id=row.id,
+                name=f"{name} {institute_code}",
+                code=institute_code.upper(),
+                type="college",
+                status="active",
+            )
+            db.add(institute)
+            await db.flush()
+            db.add(
+                InstituteModule(
+                    institute_id=institute.id, module_key=catalog.CORE_MODULE, enabled=True
+                )
+            )
+            made.append(institute)
+
+        await db.commit()
+        return row, made
 
     return _make
