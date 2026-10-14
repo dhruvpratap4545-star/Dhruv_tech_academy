@@ -13,9 +13,15 @@ import { makeUser, roleAssignment } from "@/test/utils";
  */
 describe("navigation registry", () => {
   it("gives a Super Admin every destination", () => {
+    // The permissions are read off the registry rather than listed here. A hand-written
+    // list silently stops meaning "every destination" the moment one is added — which is
+    // exactly what happened when Organisations arrived, and the test then failed for a
+    // reason that had nothing to do with the behaviour it is about.
     const owner = makeUser({
       roles: [roleAssignment("super_admin")],
-      permissions: ["user:read", "institute:read", "audit:read", "role:read"],
+      permissions: ALL_NAV_ITEMS.map((item) => item.permission).filter(
+        (permission): permission is NonNullable<typeof permission> => Boolean(permission),
+      ),
     });
     const items = visibleNavigation(owner).flatMap((group) => group.items);
     expect(items).toHaveLength(ALL_NAV_ITEMS.length);

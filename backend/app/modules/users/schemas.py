@@ -139,8 +139,10 @@ class RoleAssignmentOut(BaseModel):
     # so a hardcoded key->rank table there would silently score them zero and get every
     # "who outranks whom" decision wrong.
     rank: int = 0
+    organisation_id: uuid.UUID | None = None
     institute_id: uuid.UUID | None
     branch_id: uuid.UUID | None
+    organisation_name: str | None = None
     institute_name: str | None = None
     branch_name: str | None = None
 

@@ -14,7 +14,7 @@ from sqlalchemy import Select, and_, exists, false, func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.pagination import like_pattern, paginate
-from app.modules.org.models import Branch, Institute
+from app.modules.org.models import Branch, Institute, Organisation
 from app.modules.rbac.models import Role, UserRoleAssignment
 from app.modules.users.models import User, UserPreference
 
@@ -144,7 +144,17 @@ async def list_users(
     )
 
 
-RoleRow = tuple[str, str, int, uuid.UUID | None, uuid.UUID | None, str | None, str | None]
+RoleRow = tuple[
+    str,  # role key
+    str,  # role name
+    int,  # rank
+    uuid.UUID | None,  # organisation id
+    uuid.UUID | None,  # institute id
+    uuid.UUID | None,  # branch id
+    str | None,  # organisation name
+    str | None,  # institute name
+    str | None,  # branch name
+]
 
 
 async def roles_for_users(
@@ -164,12 +174,15 @@ async def roles_for_users(
             Role.key,
             Role.name,
             Role.rank,
+            UserRoleAssignment.organisation_id,
             UserRoleAssignment.institute_id,
             UserRoleAssignment.branch_id,
+            Organisation.name,
             Institute.name,
             Branch.name,
         )
         .join(Role, Role.id == UserRoleAssignment.role_id)
+        .outerjoin(Organisation, Organisation.id == UserRoleAssignment.organisation_id)
         # Outer joins: a platform role has no institute, and an institute role no branch.
         .outerjoin(Institute, Institute.id == UserRoleAssignment.institute_id)
         .outerjoin(Branch, Branch.id == UserRoleAssignment.branch_id)
@@ -179,10 +192,9 @@ async def roles_for_users(
         )
     )
     grouped: dict[uuid.UUID, list[RoleRow]] = {}
-    for user_id, key, name, rank, institute_id, branch_id, inst, branch in await db.execute(stmt):
-        grouped.setdefault(user_id, []).append(
-            (key, name, rank, institute_id, branch_id, inst, branch)
-        )
+    for row in await db.execute(stmt):
+        user_id, *rest = row
+        grouped.setdefault(user_id, []).append(tuple(rest))  # type: ignore[arg-type]
     return grouped
 
 

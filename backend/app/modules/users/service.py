@@ -806,12 +806,14 @@ async def attach_roles(
                 role_key=key,
                 role_name=name,
                 rank=rank,
+                organisation_id=org,
                 institute_id=inst,
                 branch_id=branch,
+                organisation_name=org_name,
                 institute_name=inst_name,
                 branch_name=branch_name,
             )
-            for key, name, rank, inst, branch, inst_name, branch_name in rows
+            for key, name, rank, org, inst, branch, org_name, inst_name, branch_name in rows
         ]
         for user_id, rows in grouped.items()
     }
@@ -846,7 +848,13 @@ async def build_me(db: AsyncSession, user: User) -> schemas.MeOut:
     context = await rbac.get_context(db, user.id)
     preferences = await repo.upsert_preferences(db, user.id)
     named = await attach_roles(db, [user])
-    by_scope = {(r.role_key, r.institute_id, r.branch_id): r for r in named.get(user.id, [])}
+    # Keyed on the whole scope, organisation included. Two assignments of the same role
+    # can differ only by their organisation, and a key that ignores it would hand both the
+    # same name.
+    by_scope = {
+        (r.role_key, r.organisation_id, r.institute_id, r.branch_id): r
+        for r in named.get(user.id, [])
+    }
     return schemas.MeOut(
         id=user.id,
         email=user.email,
@@ -856,11 +864,17 @@ async def build_me(db: AsyncSession, user: User) -> schemas.MeOut:
         permissions=sorted(context.permissions),
         roles=[
             by_scope.get(
-                (a.role_key, a.scope.institute_id, a.scope.branch_id),
+                (
+                    a.role_key,
+                    a.scope.organisation_id if a.scope.level == "organisation" else None,
+                    a.scope.institute_id,
+                    a.scope.branch_id,
+                ),
                 schemas.RoleAssignmentOut(
                     role_key=a.role_key,
                     role_name=a.role_name,
                     rank=a.rank,
+                    organisation_id=a.scope.organisation_id,
                     institute_id=a.scope.institute_id,
                     branch_id=a.scope.branch_id,
                 ),

@@ -28,11 +28,25 @@ export type RoleAssignment = {
   /** Comes from the server. A custom role has a key this build has never seen, so rank
    * can never be looked up locally. */
   rank: number;
+  /** Set only for an organisation-wide role. Mutually exclusive with `institute_id`. */
+  organisation_id: string | null;
   institute_id: string | null;
   branch_id: string | null;
   /** Names travel with the ids so a list needs no lookup request per row. */
+  organisation_name: string | null;
   institute_name: string | null;
   branch_name: string | null;
+};
+
+export type Organisation = {
+  id: string;
+  name: string;
+  code: string;
+  status: "active" | "archived";
+  contact_email: string | null;
+  logo_url: string | null;
+  institute_count: number;
+  created_at: string;
 };
 
 /** `GET /me/overview` — real counts for the dashboard, scoped to the caller. */
@@ -104,6 +118,7 @@ export type UserSummary = UserProfile & { roles: RoleAssignment[] };
 
 export type Institute = {
   id: string;
+  organisation_id: string | null;
   name: string;
   code: string;
   type: "school" | "college" | "coaching" | "academy";
@@ -150,10 +165,9 @@ export type ClassRow = {
 export type AssignableRole = {
   key: RoleKey;
   name: string;
-  scope_level: "platform" | "institute" | "branch";
+  scope_level: "platform" | "organisation" | "institute" | "branch";
   rank: number;
 };
-
 
 // ----------------------------------------------------------------- access control
 
@@ -163,7 +177,7 @@ export type Role = {
   key: RoleKey;
   name: string;
   description: string | null;
-  scope_level: "platform" | "institute" | "branch";
+  scope_level: "platform" | "organisation" | "institute" | "branch";
   rank: number;
   is_system: boolean;
   is_active: boolean;

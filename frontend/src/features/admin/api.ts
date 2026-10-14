@@ -5,6 +5,7 @@ import type {
   Grant,
   Institute,
   MyAccess,
+  Organisation,
   PermissionInfo,
   Role,
   RoleKey,
@@ -69,6 +70,7 @@ export function resendInvite(userId: string) {
 }
 
 export type RoleChange = {
+  organisation_id?: string;
   role_key: RoleKey;
   institute_id?: string;
   branch_id?: string;
@@ -120,6 +122,42 @@ export function updateUserStatus(userId: string, status: "active" | "suspended",
 }
 
 // ------------------------------------------------------------------ organisation
+
+export const organisationKeys = {
+  all: ["organisations"] as const,
+  list: () => ["organisations", "list"] as const,
+  detail: (id: string) => ["organisations", id] as const,
+};
+
+export function fetchOrganisations(signal?: AbortSignal) {
+  return apiFetch<Page<Organisation>>(`/organisations${query({ limit: 100 })}`, { signal });
+}
+
+export function fetchOrganisation(organisationId: string, signal?: AbortSignal) {
+  return apiFetch<Organisation>(`/organisations/${organisationId}`, { signal });
+}
+
+export type OrganisationPayload = {
+  name: string;
+  code: string;
+  contact_email?: string;
+  logo_url?: string;
+};
+
+export function createOrganisation(body: OrganisationPayload) {
+  return apiFetch<Organisation>("/organisations", { method: "POST", body });
+}
+
+export function updateOrganisation(
+  organisationId: string,
+  body: Partial<Omit<OrganisationPayload, "code">>,
+) {
+  return apiFetch<Organisation>(`/organisations/${organisationId}`, { method: "PATCH", body });
+}
+
+export function archiveOrganisation(organisationId: string) {
+  return apiFetch<Organisation>(`/organisations/${organisationId}/archive`, { method: "POST" });
+}
 
 export const instituteKeys = {
   all: ["institutes"] as const,

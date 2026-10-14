@@ -6,6 +6,7 @@ import { NotFoundPage } from "@/app/pages/NotFoundPage";
 import { AuditPage } from "@/features/admin/pages/AuditPage";
 import { CreateInstitutePage } from "@/features/admin/pages/CreateInstitutePage";
 import { InstitutesPage } from "@/features/admin/pages/InstitutesPage";
+import { OrganisationsPage } from "@/features/admin/pages/OrganisationsPage";
 import { RolesPage } from "@/features/admin/pages/RolesPage";
 import { UsersPage } from "@/features/admin/pages/UsersPage";
 import { ForgotPasswordPage } from "@/features/auth/pages/ForgotPasswordPage";
@@ -58,6 +59,14 @@ export function AppRoutes() {
           element={
             <RequirePermission permission="user:read">
               <UsersPage />
+            </RequirePermission>
+          }
+        />
+        <Route
+          path="/organisations"
+          element={
+            <RequirePermission permission="organisation:read">
+              <OrganisationsPage />
             </RequirePermission>
           }
         />

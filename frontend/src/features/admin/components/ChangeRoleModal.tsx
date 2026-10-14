@@ -10,8 +10,10 @@ import {
   assignRole,
   fetchBranches,
   fetchInstitutes,
+  fetchOrganisations,
   fetchUser,
   instituteKeys,
+  organisationKeys,
   revokeRole,
   userKeys,
 } from "@/features/admin/api";
@@ -53,6 +55,7 @@ export function ChangeRoleModal({
 }) {
   const queryClient = useQueryClient();
   const [roleKey, setRoleKey] = useState("");
+  const [organisationId, setOrganisationId] = useState("");
   const [instituteId, setInstituteId] = useState("");
   const [branchId, setBranchId] = useState("");
 
@@ -73,8 +76,18 @@ export function ChangeRoleModal({
   });
 
   const chosen = roles.data?.find((role) => role.key === roleKey);
-  const needsInstitute = chosen ? chosen.scope_level !== "platform" : false;
+  // Which scope the chosen role has to be given at. An organisation role is given across
+  // one whole organisation and names no institute; everything below it names an institute.
+  const needsOrganisation = chosen?.scope_level === "organisation";
+  const needsInstitute =
+    chosen !== undefined && chosen.scope_level !== "platform" && !needsOrganisation;
   const needsBranch = chosen?.scope_level === "branch";
+
+  const organisations = useQuery({
+    queryKey: organisationKeys.list(),
+    queryFn: ({ signal }) => fetchOrganisations(signal),
+    enabled: open && needsOrganisation,
+  });
 
   const institutes = useQuery({
     queryKey: instituteKeys.list(),
@@ -104,6 +117,7 @@ export function ChangeRoleModal({
 
   const reset = () => {
     setRoleKey("");
+    setOrganisationId("");
     setInstituteId("");
     setBranchId("");
   };
@@ -113,6 +127,7 @@ export function ChangeRoleModal({
       if (!user || !chosen) return;
       await assignRole(user.id, {
         role_key: roleKey as RoleKey,
+        organisation_id: needsOrganisation ? organisationId : undefined,
         institute_id: needsInstitute ? instituteId : undefined,
         branch_id: needsBranch ? branchId : undefined,
       });
@@ -138,6 +153,7 @@ export function ChangeRoleModal({
   // Everything the chosen role needs has been named.
   const ready =
     Boolean(chosen) &&
+    (!needsOrganisation || Boolean(organisationId)) &&
     (!needsInstitute || Boolean(instituteId)) &&
     (!needsBranch || Boolean(branchId));
 
@@ -226,6 +242,7 @@ export function ChangeRoleModal({
               // a place the new one could also sit. It is right far more often than it is
               // wrong, and it is a select, so being wrong costs one click.
               const suggestion = suggestScope(held, event.target.value, roles.data ?? []);
+              setOrganisationId(suggestion.organisationId);
               setInstituteId(suggestion.instituteId);
               setBranchId(suggestion.branchId);
             }}
@@ -233,6 +250,32 @@ export function ChangeRoleModal({
           />
 
           {roles.data?.length === 0 && <Badge tone="warning">You cannot give out any roles.</Badge>}
+
+          {needsOrganisation && (
+            <SelectField
+              label="Organisation"
+              placeholder={organisations.isLoading ? "Loading…" : "Choose an organisation"}
+              hint={`${chosen?.name} applies across every institute in one organisation.`}
+              disabled={organisations.isLoading}
+              value={organisationId}
+              onChange={(event) => setOrganisationId(event.target.value)}
+              options={(organisations.data?.items ?? []).map((row) => ({
+                value: row.id,
+                label: `${row.name} · ${row.institute_count} ${
+                  row.institute_count === 1 ? "institute" : "institutes"
+                }`,
+              }))}
+            />
+          )}
+
+          {needsOrganisation && organisations.data?.items.length === 0 && (
+            <Alert tone="warning" title="There are no organisations yet">
+              <p>
+                An organisation groups several institutes under one owner. Create one first, then
+                this role can be given across it.
+              </p>
+            </Alert>
+          )}
 
           {needsInstitute && (
             <SelectField
@@ -299,17 +342,36 @@ function suggestScope(
   held: RoleAssignment[],
   roleKey: string,
   catalogue: AssignableRole[],
-): { instituteId: string; branchId: string } {
+): { organisationId: string; instituteId: string; branchId: string } {
   const level = catalogue.find((role) => role.key === roleKey)?.scope_level;
-  if (!level || level === "platform") return { instituteId: "", branchId: "" };
+  if (!level || level === "platform") {
+    return { organisationId: "", instituteId: "", branchId: "" };
+  }
+
+  if (level === "organisation") {
+    const held_here = held.find((role) => role.organisation_id);
+    return {
+      organisationId: held_here?.organisation_id ?? "",
+      instituteId: "",
+      branchId: "",
+    };
+  }
 
   if (level === "branch") {
     const withBranch = held.find((role) => role.branch_id && role.institute_id);
     if (withBranch) {
-      return { instituteId: withBranch.institute_id!, branchId: withBranch.branch_id! };
+      return {
+        organisationId: "",
+        instituteId: withBranch.institute_id!,
+        branchId: withBranch.branch_id!,
+      };
     }
   }
 
   const withInstitute = held.find((role) => role.institute_id);
-  return { instituteId: withInstitute?.institute_id ?? "", branchId: "" };
+  return {
+    organisationId: "",
+    instituteId: withInstitute?.institute_id ?? "",
+    branchId: "",
+  };
 }

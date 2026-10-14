@@ -28,7 +28,12 @@ export function roleAssignment(
   role_key: RoleKey,
   institute_id: string | null = null,
   branch_id: string | null = null,
-  names: { institute_name?: string | null; branch_name?: string | null } = {},
+  names: {
+    institute_name?: string | null;
+    branch_name?: string | null;
+    organisation_id?: string | null;
+    organisation_name?: string | null;
+  } = {},
 ): RoleAssignment {
   return {
     role_key,
@@ -36,8 +41,11 @@ export function roleAssignment(
     // Mirrors the server, which now sends the rank with every assignment so custom roles
     // are ranked correctly.
     rank: ROLE_RANK[role_key] ?? 0,
+    organisation_id: names.organisation_id ?? null,
     institute_id,
     branch_id,
+    organisation_name:
+      names.organisation_name ?? (names.organisation_id ? "Test Organisation" : null),
     institute_name: names.institute_name ?? (institute_id ? "Test Institute" : null),
     branch_name: names.branch_name ?? (branch_id ? "Test Branch" : null),
   };

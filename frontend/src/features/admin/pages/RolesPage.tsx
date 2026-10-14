@@ -268,6 +268,7 @@ function RoleSummary({ roles, myRank }: { roles: Role[]; myRank: number }) {
 
 const SCOPE_WORD: Record<string, string> = {
   platform: "Whole platform",
+  organisation: "One organisation",
   institute: "One institute",
   branch: "One branch",
 };

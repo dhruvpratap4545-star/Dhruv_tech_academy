@@ -51,6 +51,14 @@ export const NAVIGATION: NavGroup[] = [
     label: "Administration",
     items: [
       {
+        id: "organisations",
+        to: "/organisations",
+        label: "Organisations",
+        icon: "building",
+        permission: "organisation:read",
+        blurb: "Groups of institutes under one owner — a university, a trust, a chain.",
+      },
+      {
         id: "hierarchy",
         to: "/institutes",
         label: "Hierarchy",

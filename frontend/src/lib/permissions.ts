@@ -13,6 +13,10 @@
 import type { CurrentUser } from "@/features/auth/types";
 
 export type Permission =
+  | "organisation:create"
+  | "organisation:read"
+  | "organisation:update"
+  | "organisation:archive"
   | "institute:create"
   | "institute:read"
   | "institute:update"
@@ -72,6 +76,7 @@ export const ROLE_RANK: Record<string, number> = {
 export const ROLE_LABEL: Record<string, string> = {
   super_admin: "Super Admin",
   platform_admin: "Platform Admin",
+  org_admin: "Organisation Admin",
   institute_admin: "Institute Admin",
   branch_admin: "Branch Admin",
   faculty: "Faculty",
@@ -91,6 +96,7 @@ export const ROLE_REQUIREMENTS: Record<
 > = {
   super_admin: { institute: false, branch: false, classes: "none" },
   platform_admin: { institute: false, branch: false, classes: "none" },
+  org_admin: { institute: false, branch: false, classes: "none" },
   institute_admin: { institute: true, branch: false, classes: "none" },
   branch_admin: { institute: true, branch: true, classes: "none" },
   faculty: { institute: true, branch: true, classes: "optional" },
@@ -129,14 +135,22 @@ export function isFacultyOnly(user: CurrentUser | null | undefined): boolean {
  * The names come from the API alongside the ids, so this never needs a lookup request.
  */
 export function roleScopeLabel(role: {
+  organisation_id?: string | null;
   institute_id: string | null;
   branch_id: string | null;
+  organisation_name?: string | null;
   institute_name?: string | null;
   branch_name?: string | null;
 }): string {
-  if (!role.institute_id) return "Platform";
-  const institute = role.institute_name ?? "Institute";
-  return role.branch_name ? `${institute} · ${role.branch_name}` : institute;
+  // Innermost first, because that is what the role actually is. An organisation-wide role
+  // names no institute, which is not the same as naming no scope at all — reading it as
+  // "Platform" would tell somebody running four colleges that they run the product.
+  if (role.institute_id) {
+    const institute = role.institute_name ?? "Institute";
+    return role.branch_name ? `${institute} · ${role.branch_name}` : institute;
+  }
+  if (role.organisation_id) return role.organisation_name ?? "Organisation";
+  return "Platform";
 }
 
 /** The caller's own scope, for the sidebar. Their most senior role wins. */
