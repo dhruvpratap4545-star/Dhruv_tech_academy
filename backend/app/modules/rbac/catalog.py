@@ -71,8 +71,7 @@ ROLES: tuple[RoleDef, ...] = (
     RoleDef(BRANCH_ADMIN, "Branch Admin", "branch", 50),
     RoleDef(FACULTY, "Faculty", "branch", 30),
     RoleDef(STUDENT, "Student", "institute", 10),
-    # Reserved for Kids Zone (PRD §3): designed now, not granted in M1.
-    RoleDef(PARENT, "Parent / Guardian", "institute", 20, is_active=False),
+    RoleDef(PARENT, "Parent / Guardian", "institute", 20),
 )
 
 # The heading these permissions appear under in the matrix. Called "Structure" rather
@@ -227,6 +226,13 @@ ROLE_PERMISSIONS: dict[str, tuple[str, ...]] = {
         "profile:update",
     ),
     PARENT: (
+        # Deliberately narrow. A parent reads their own children and nothing else, and the
+        # narrowing is not done by this list — `user:read` here would otherwise mean every
+        # student in the institute. The guardian link is what confines it, exactly as the
+        # class link confines a faculty member (PRD §5.2 step 4).
+        "user:read",
+        "institute:read",
+        "class:read",
         "profile:read",
         "profile:update",
     ),

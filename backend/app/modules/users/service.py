@@ -24,15 +24,38 @@ from app.modules.notifications import templates
 from app.modules.notifications.email import EmailMessage
 from app.modules.rbac import repository as rbac_repo
 from app.modules.rbac import service as rbac
-from app.modules.rbac.catalog import FACULTY, ROLES_BY_KEY, STUDENT
+from app.modules.rbac.catalog import FACULTY, PARENT, ROLES_BY_KEY, STUDENT
 from app.modules.rbac.models import UserRoleAssignment
 from app.modules.rbac.scopes import Scope
 from app.modules.rbac.service import Authorized
 from app.modules.users import repository as repo
 from app.modules.users import schemas
-from app.modules.users.models import User, UserPreference
+from app.modules.users.models import Guardian, User, UserPreference
 
 FACULTY_RANK = ROLES_BY_KEY[FACULTY].rank
+
+#: Roles whose reach is decided by a membership row rather than by their scope alone.
+#: Somebody holding *only* these sees exactly what they are linked to.
+MEMBERSHIP_NARROWED_ROLES = frozenset({FACULTY, STUDENT, PARENT})
+
+
+async def _membership_visible_ids(
+    db: AsyncSession, user_id: uuid.UUID, role_keys: set[str]
+) -> frozenset[uuid.UUID]:
+    """The people somebody sees purely because of a link, not because of a scope.
+
+    Faculty: the students of the classes they teach. Parent: the children they are the
+    recorded guardian of. Someone who is both — a teacher whose own child attends the same
+    school — sees the union, which is the right answer and the reason this is one function
+    rather than two branches.
+    """
+    visible: set[uuid.UUID] = set()
+    if FACULTY in role_keys:
+        class_ids = await rbac_repo.faculty_class_ids(db, user_id)
+        visible |= await _students_in_classes(db, class_ids)
+    if PARENT in role_keys:
+        visible |= await repo.children_of(db, user_id)
+    return frozenset(visible)
 
 
 async def _scope_of(
@@ -164,12 +187,21 @@ def _refuse_platform_role_for_unproven_account(role, user: User) -> None:
 
 
 async def invite_user(
-    db: AsyncSession, *, guard: Authorized, payload: schemas.InviteUserRequest, meta: RequestMeta
+    db: AsyncSession,
+    *,
+    guard: Authorized,
+    payload: schemas.InviteUserRequest,
+    meta: RequestMeta,
+    commit: bool = True,
 ) -> tuple[User, EmailMessage | None]:
     """PRD §4.2. Creates an ``invited`` user, grants the role, emails a setup code.
 
     Idempotent-ish by design: inviting an email that already exists is a conflict rather
     than a silent second account, because one person is one user row (PRD §2 rule 4).
+
+    ``commit=False`` for callers that are building something larger in one transaction —
+    attaching a guardian invites the adult *and* writes the link, and the two must land
+    together or a parent exists with no child and no way to be found.
     """
     scope = await _scope_of(
         db, payload.institute_id, payload.branch_id, getattr(payload, "organisation_id", None)
@@ -221,7 +253,10 @@ async def invite_user(
             "branch_id": str(scope.branch_id) if scope.branch_id else None,
         },
     )
-    await db.commit()
+    if commit:
+        await db.commit()
+    else:
+        await db.flush()
     return user, templates.password_setup(
         user.email, user.full_name, code, inviter.full_name if inviter else None
     )
@@ -689,6 +724,18 @@ async def _require_visible_user(db: AsyncSession, guard: Authorized, user_id: uu
     mine = guard.usable_scopes()
     if not any(s.contains(target) for s in mine for target in target_scopes):
         raise NotFound("That user does not exist.")
+
+    # Scope is not the whole answer for a role narrowed by membership. A parent holds
+    # `user:read` across the institute their child attends, and a faculty member across
+    # their branch — so scope alone would let either open any student there by id, while
+    # the list correctly shows them only their own. The list and the detail endpoint
+    # answering differently is the same defect that has turned up twice before in this
+    # file, and for a parent reading another family's child it is the worst version of it.
+    role_keys = {a.role_key for a in guard.context.assignments}
+    if role_keys and role_keys <= MEMBERSHIP_NARROWED_ROLES and user_id != guard.user_id:
+        linked = await _membership_visible_ids(db, guard.user_id, role_keys)
+        if user_id not in linked:
+            raise NotFound("That user does not exist.")
     return user
 
 
@@ -749,10 +796,12 @@ async def list_users(
     scopes = guard.usable_scopes()
     role_keys = {a.role_key for a in guard.context.assignments}
 
-    # Faculty see only students of the classes they teach.
-    if role_keys and role_keys <= {FACULTY, STUDENT}:
-        class_ids = await rbac_repo.faculty_class_ids(db, guard.user_id)
-        user_ids = await _students_in_classes(db, class_ids)
+    # Faculty see only students of the classes they teach; a parent sees only the children
+    # they are the recorded guardian of. Both are membership narrowings on top of a role
+    # whose permission list is institute-wide — without them, "Parent" would mean "may
+    # read every child in the school", which is the opposite of what the word means.
+    if role_keys and role_keys <= MEMBERSHIP_NARROWED_ROLES:
+        user_ids = await _membership_visible_ids(db, guard.user_id, role_keys)
         return await repo.list_users(
             db,
             scope=None,
@@ -923,10 +972,9 @@ async def build_overview(db: AsyncSession, *, guard: Authorized) -> schemas.Over
     # that disagrees with the list below it is worse than no number, because the reader has
     # no way to tell which one is lying.
     role_keys = {a.role_key for a in guard.context.assignments}
-    if role_keys and role_keys <= {FACULTY, STUDENT}:
-        class_ids = await rbac_repo.faculty_class_ids(db, guard.user_id)
-        visible_ids = await _students_in_classes(db, class_ids) | {guard.user_id}
-        base = base.where(User.id.in_(visible_ids))
+    if role_keys and role_keys <= MEMBERSHIP_NARROWED_ROLES:
+        visible_ids = await _membership_visible_ids(db, guard.user_id, role_keys)
+        base = base.where(User.id.in_(visible_ids | {guard.user_id}))
     elif scope is not None:
         if not scope:
             return schemas.OverviewOut(
@@ -986,3 +1034,161 @@ async def build_overview(db: AsyncSession, *, guard: Authorized) -> schemas.Over
         institutes_total=institutes,
         security_events_24h=await count(events_stmt),
     )
+
+
+# --------------------------------------------------------------------------- guardians
+
+
+async def link_guardian(
+    db: AsyncSession,
+    *,
+    guard: Authorized,
+    student_id: uuid.UUID,
+    payload: schemas.GuardianLinkRequest,
+    meta: RequestMeta,
+) -> tuple[User, EmailMessage | None]:
+    """Attach an adult to a learner, inviting them if they are new.
+
+    Two cases, deliberately handled as one call. Most of the time the parent has no
+    account yet and the school is typing them in from a form; sometimes the parent already
+    exists because their elder child is on the platform. Making the caller find out which
+    before choosing an endpoint is asking them to do the system's work, and it is how the
+    same parent ends up with two accounts and two passwords.
+    """
+    student = await _require_visible_user(db, guard, student_id)
+
+    # The authority to attach a guardian is the authority over the child: you may do it
+    # for a learner you can already manage, and for nobody else.
+    scopes = await _live_scopes_of(db, student_id) or [await _primary_scope_of(db, student_id)]
+    for scope in scopes:
+        await guard.ensure(scope)
+
+    email = payload.email.strip().lower()
+    if email == student.email.lower():
+        raise ValidationFailed(
+            "A learner cannot be their own guardian. Use the parent's own email address."
+        )
+
+    parent = await repo.get_user_by_email(db, email)
+    message: EmailMessage | None = None
+
+    if parent is None:
+        # A new adult. Invited at the same scope the child sits in, so the parent role is
+        # confined to the institute their child attends.
+        parent, message = await invite_user(
+            db,
+            guard=guard,
+            payload=schemas.InviteUserRequest(
+                full_name=payload.full_name or "Parent / Guardian",
+                email=email,
+                role_key=PARENT,
+                institute_id=scopes[0].institute_id,
+            ),
+            meta=meta,
+            commit=False,
+        )
+    elif parent.status == "deleted":
+        raise ValidationFailed("That account has been removed. Use a different address.")
+
+    if await repo.guardian_link(db, parent.id, student_id) is not None:
+        raise Conflict(f"{parent.full_name} is already recorded as a guardian of this learner.")
+
+    db.add(
+        Guardian(
+            parent_user_id=parent.id,
+            student_user_id=student_id,
+            relationship=payload.relationship,
+            is_primary=payload.is_primary,
+            linked_by=guard.user_id,
+            # Verified only once the adult has completed setup themselves. An existing,
+            # active account has already done that.
+            verified_at=datetime.now(UTC) if parent.password_hash else None,
+        )
+    )
+
+    rbac.invalidate_context(parent.id)
+    audit.record(
+        db,
+        action=events.GUARDIAN_LINKED,
+        actor_user_id=guard.user_id,
+        target_type="user",
+        target_id=student_id,
+        institute_id=scopes[0].institute_id,
+        ip=meta.ip,
+        user_agent=meta.user_agent,
+        extra={"parent_user_id": str(parent.id), "relationship": payload.relationship},
+    )
+    await db.commit()
+    return parent, message
+
+
+async def unlink_guardian(
+    db: AsyncSession,
+    *,
+    guard: Authorized,
+    student_id: uuid.UUID,
+    parent_id: uuid.UUID,
+    meta: RequestMeta,
+) -> None:
+    """Remove the link. The parent's account is untouched — they may have other children."""
+    await _require_visible_user(db, guard, student_id)
+    scopes = await _live_scopes_of(db, student_id) or [await _primary_scope_of(db, student_id)]
+    for scope in scopes:
+        await guard.ensure(scope)
+
+    link = await repo.guardian_link(db, parent_id, student_id)
+    if link is None:
+        raise NotFound("That person is not recorded as a guardian of this learner.")
+
+    await db.delete(link)
+    rbac.invalidate_context(parent_id)
+    audit.record(
+        db,
+        action=events.GUARDIAN_UNLINKED,
+        actor_user_id=guard.user_id,
+        target_type="user",
+        target_id=student_id,
+        institute_id=scopes[0].institute_id,
+        ip=meta.ip,
+        user_agent=meta.user_agent,
+        extra={"parent_user_id": str(parent_id)},
+    )
+    await db.commit()
+
+
+async def list_guardians(
+    db: AsyncSession, *, guard: Authorized, student_id: uuid.UUID
+) -> list[schemas.GuardianOut]:
+    await _require_visible_user(db, guard, student_id)
+    links = await repo.guardians_of(db, student_id)
+    people = {u.id: u for u in await repo.get_users(db, [link.parent_user_id for link in links])}
+    return [
+        schemas.GuardianOut(
+            user_id=link.parent_user_id,
+            full_name=people[link.parent_user_id].full_name,
+            email=people[link.parent_user_id].email,
+            status=people[link.parent_user_id].status,
+            relationship=link.relationship,
+            is_primary=link.is_primary,
+            verified_at=link.verified_at,
+        )
+        for link in links
+        if link.parent_user_id in people
+    ]
+
+
+async def list_my_children(db: AsyncSession, *, user_id: uuid.UUID) -> list[schemas.ChildOut]:
+    """What a parent sees when they sign in. No permission needed: it is their own family."""
+    links = await repo.guardians_for_parent(db, user_id)
+    people = {u.id: u for u in await repo.get_users(db, [link.student_user_id for link in links])}
+    return [
+        schemas.ChildOut(
+            user_id=link.student_user_id,
+            full_name=people[link.student_user_id].full_name,
+            email=people[link.student_user_id].email,
+            status=people[link.student_user_id].status,
+            relationship=link.relationship,
+        )
+        for link in links
+        if link.student_user_id in people
+    ]

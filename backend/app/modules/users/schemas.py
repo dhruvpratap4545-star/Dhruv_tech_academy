@@ -210,3 +210,41 @@ class RoleOut(OrmModel):
     name: str
     scope_level: str
     rank: int
+
+
+class GuardianLinkRequest(StrictModel):
+    """Attach an adult to a learner.
+
+    The adult is named by email, not by id, because the person doing this has a school
+    record in front of them and not a user list. If no account exists for that address one
+    is invited; if one does, it is linked rather than duplicated.
+    """
+
+    email: EmailStr
+    full_name: Annotated[str, Field(min_length=2, max_length=120)] | None = None
+    relationship: Annotated[str, Field(max_length=40)] | None = None
+    is_primary: bool = False
+
+
+class GuardianOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    user_id: uuid.UUID
+    full_name: str
+    email: str
+    status: str
+    relationship: str | None
+    is_primary: bool
+    #: Null until the adult has completed setup at their own address. Until then the link
+    #: exists but the consent behind it is only asserted, not demonstrated.
+    verified_at: datetime | None
+
+
+class ChildOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    user_id: uuid.UUID
+    full_name: str
+    email: str
+    status: str
+    relationship: str | None

@@ -26,6 +26,8 @@ USER_SUSPENDED: Final = "user_suspended"
 USER_REACTIVATED: Final = "user_reactivated"
 INVITE_RESENT: Final = "invite_resent"
 
+GUARDIAN_LINKED: Final = "guardian_linked"
+GUARDIAN_UNLINKED: Final = "guardian_unlinked"
 ROLE_ASSIGNED: Final = "role_assigned"
 ROLE_REVOKED: Final = "role_revoked"
 

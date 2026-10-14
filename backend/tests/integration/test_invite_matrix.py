@@ -141,13 +141,17 @@ async def test_an_unknown_role_is_rejected(client: AsyncClient, world) -> None:
     assert response.status_code == 422
 
 
-async def test_the_reserved_parent_role_cannot_be_granted(client: AsyncClient, world) -> None:
-    """Parent is designed in M1 but not active until Kids Zone (PRD §3, §12)."""
+async def test_a_parent_can_be_invited_into_an_institute(client: AsyncClient, world) -> None:
+    """Parent was reserved while there was no way to say which children it refers to.
+
+    What that link buys is the narrowing: the role carries `user:read` across an
+    institute, and the guardian rows are what stop it meaning every child in the school.
+    """
     await _as(client, world["super_admin"])
     response = await client.post(
         "/api/v1/users/invite", json=_invite(world, "parent", institute=world["abc"])
     )
-    assert response.status_code == 422
+    assert response.status_code == 201, response.text
 
 
 # ------------------------------------------------------------------------ Super Admin
@@ -511,9 +515,12 @@ async def test_a_branch_role_cannot_be_granted_without_a_branch(client: AsyncCli
 @pytest.mark.parametrize(
     "actor,expected",
     [
-        ("institute_admin", {"branch_admin", "faculty", "student"}),
-        ("branch_admin", {"faculty", "student"}),
-        ("faculty", {"student"}),
+        ("institute_admin", {"branch_admin", "faculty", "parent", "student"}),
+        ("branch_admin", {"faculty", "parent", "student"}),
+        # Faculty may invite a parent now that the role is live: it ranks below theirs, and
+        # a class teacher inviting the parent of a child they teach is the ordinary case.
+        # Their own scope still confines it to their assigned classes.
+        ("faculty", {"parent", "student"}),
     ],
 )
 async def test_the_assignable_role_catalogue_matches_the_matrix(

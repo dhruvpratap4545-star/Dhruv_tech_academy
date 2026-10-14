@@ -16,7 +16,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.pagination import like_pattern, paginate
 from app.modules.org.models import Branch, Institute, Organisation
 from app.modules.rbac.models import Role, UserRoleAssignment
-from app.modules.users.models import User, UserPreference
+from app.modules.users.models import Guardian, User, UserPreference
 
 
 async def get_user(db: AsyncSession, user_id: uuid.UUID) -> User | None:
@@ -201,3 +201,71 @@ async def roles_for_users(
 async def email_taken(db: AsyncSession, email: str) -> bool:
     stmt = select(User.id).where(func.lower(User.email) == email.strip().lower()).limit(1)
     return await db.scalar(stmt) is not None
+
+
+# --------------------------------------------------------------------------- guardians
+
+
+async def children_of(db: AsyncSession, parent_user_id: uuid.UUID) -> frozenset[uuid.UUID]:
+    """The learners this adult is responsible for. Empty for everybody else."""
+    rows = await db.execute(
+        select(Guardian.student_user_id).where(Guardian.parent_user_id == parent_user_id)
+    )
+    return frozenset(rows.scalars())
+
+
+async def guardians_of(db: AsyncSession, student_user_id: uuid.UUID) -> Sequence[Guardian]:
+    rows = await db.execute(
+        select(Guardian)
+        .where(Guardian.student_user_id == student_user_id)
+        .order_by(Guardian.is_primary.desc(), Guardian.created_at)
+    )
+    return rows.scalars().all()
+
+
+async def guardian_link(
+    db: AsyncSession, parent_user_id: uuid.UUID, student_user_id: uuid.UUID
+) -> Guardian | None:
+    return await db.scalar(
+        select(Guardian).where(
+            Guardian.parent_user_id == parent_user_id,
+            Guardian.student_user_id == student_user_id,
+        )
+    )
+
+
+async def mark_guardians_verified(db: AsyncSession, parent_user_id: uuid.UUID) -> int:
+    """Record that this adult has proved they control their own address.
+
+    Called once, when they complete password setup. Until then the link exists but the
+    consent behind it is only asserted by whoever typed the row in.
+    """
+    from sqlalchemy import update
+
+    result = await db.execute(
+        update(Guardian)
+        .where(Guardian.parent_user_id == parent_user_id, Guardian.verified_at.is_(None))
+        .values(verified_at=func.now())
+    )
+    return result.rowcount or 0
+
+
+async def get_user_by_email(db: AsyncSession, email: str) -> User | None:
+    return await db.scalar(select(User).where(func.lower(User.email) == email.strip().lower()))
+
+
+async def get_users(db: AsyncSession, user_ids: Sequence[uuid.UUID]) -> Sequence[User]:
+    """A page of users by id, in one query rather than one per row."""
+    if not user_ids:
+        return []
+    rows = await db.execute(select(User).where(User.id.in_(user_ids)))
+    return rows.scalars().all()
+
+
+async def guardians_for_parent(db: AsyncSession, parent_user_id: uuid.UUID) -> Sequence[Guardian]:
+    rows = await db.execute(
+        select(Guardian)
+        .where(Guardian.parent_user_id == parent_user_id)
+        .order_by(Guardian.created_at)
+    )
+    return rows.scalars().all()

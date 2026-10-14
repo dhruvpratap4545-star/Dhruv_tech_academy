@@ -62,6 +62,18 @@ async def get_my_access(db: DbSession, context: AuthContextDep) -> rbac_schemas.
     return await rbac_admin.build_my_access(db, context)
 
 
+@me_router.get(
+    "/children",
+    response_model=list[schemas.ChildOut],
+    summary="The learners you are responsible for",
+    description="A parent's own family. No permission is required because the answer is "
+    "about them: it lists exactly the learners they are the recorded guardian of, and is "
+    "empty for everybody else.",
+)
+async def my_children(db: DbSession, actor: CurrentUser) -> list[schemas.ChildOut]:
+    return await users.list_my_children(db, user_id=actor.id)
+
+
 @me_router.patch("", response_model=schemas.UserOut, summary="Update your own profile")
 async def update_me(
     payload: schemas.UpdateProfileRequest, user: CurrentUser, db: DbSession
@@ -300,3 +312,62 @@ async def list_assignable_roles(
         # offering a choice that would be rejected.
         and not (purpose == "invite" and r.scope_level == "platform")
     ]
+
+
+# --------------------------------------------------------------------------- guardians
+
+
+@router.get(
+    "/{user_id}/guardians",
+    response_model=list[schemas.GuardianOut],
+    summary="Who is responsible for this learner",
+)
+async def list_guardians(
+    user_id: uuid.UUID,
+    db: DbSession,
+    guard: Annotated[Authorized, Depends(require_permission("user:read"))],
+) -> list[schemas.GuardianOut]:
+    return await users.list_guardians(db, guard=guard, student_id=user_id)
+
+
+@router.post(
+    "/{user_id}/guardians",
+    response_model=schemas.UserOut,
+    status_code=status.HTTP_201_CREATED,
+    summary="Attach a parent or guardian to a learner",
+    description="Names the adult by email. If no account exists for that address one is "
+    "invited and emailed a setup code; if one does, it is linked rather than duplicated, "
+    "so a parent with two children at the school keeps one account.",
+)
+async def link_guardian(
+    user_id: uuid.UUID,
+    payload: schemas.GuardianLinkRequest,
+    request: Request,
+    background: BackgroundTasks,
+    db: DbSession,
+    guard: Annotated[Authorized, Depends(require_permission("user:invite"))],
+) -> schemas.UserOut:
+    parent, message = await users.link_guardian(
+        db, guard=guard, student_id=user_id, payload=payload, meta=_meta(request)
+    )
+    if message is not None:
+        background.add_task(send_email, message)
+    return schemas.UserOut.model_validate(parent)
+
+
+@router.delete(
+    "/{user_id}/guardians/{parent_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary="Remove a guardian from a learner",
+    description="The adult's account is untouched — they may be responsible for other learners.",
+)
+async def unlink_guardian(
+    user_id: uuid.UUID,
+    parent_id: uuid.UUID,
+    request: Request,
+    db: DbSession,
+    guard: Annotated[Authorized, Depends(require_permission("user:invite"))],
+) -> None:
+    await users.unlink_guardian(
+        db, guard=guard, student_id=user_id, parent_id=parent_id, meta=_meta(request)
+    )

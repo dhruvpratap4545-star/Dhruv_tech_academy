@@ -440,7 +440,7 @@ async def test_my_access_describes_the_caller_without_needing_a_permission(clien
     granted = {p["key"] for p in body["permissions"] if p["granted"]}
     assert "class:read" in granted
     assert "institute:create" not in granted
-    assert body["can_grant_roles"] == ["Student"]
+    assert body["can_grant_roles"] == ["Parent / Guardian", "Student"]
 
 
 async def test_my_access_marks_an_exception_as_an_exception(client, world):

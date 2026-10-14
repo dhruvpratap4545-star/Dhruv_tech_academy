@@ -54,11 +54,17 @@ async def test_seed_creates_the_direct_institute(db: AsyncSession, seeded) -> No
     assert direct.is_system is True
 
 
-async def test_parent_role_is_seeded_but_inactive(db: AsyncSession, seeded) -> None:
-    """PRD §3: designed in M1, not granted until Kids Zone."""
+async def test_parent_role_is_seeded_and_live(db: AsyncSession, seeded) -> None:
+    """Designed in M1 and reserved; switched on now that guardian links exist.
+
+    It stayed inactive while there was no way to say *which* children a parent is
+    responsible for. A Parent role without that link is either useless or far too wide —
+    "can read users in this institute" means every child in the school.
+    """
     parent = await db.scalar(select(Role).where(Role.key == catalog.PARENT))
     assert parent is not None
-    assert parent.is_active is False
+    assert parent.is_active is True
+    assert parent.scope_level == "institute"
 
 
 async def test_seed_is_idempotent(db: AsyncSession, seeded) -> None:

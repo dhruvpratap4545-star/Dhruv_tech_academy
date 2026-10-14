@@ -531,6 +531,15 @@ async def setup_password(
         raise generic
 
     otp.used_at = datetime.now(UTC)
+
+    # Completing setup is the moment an adult proves they control the address a school
+    # typed in for them. Under the DPDP Act that is what turns "the school says this is
+    # the parent" into verifiable parental consent, so it is recorded here rather than
+    # assumed when the row was first written.
+    from app.modules.users import repository as users_repo
+
+    await users_repo.mark_guardians_verified(db, user.id)
+
     return await _apply_new_password(
         db, user=user, new_password=new_password, meta=meta, action=events.PASSWORD_SETUP_COMPLETED
     )
