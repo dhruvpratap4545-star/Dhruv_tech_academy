@@ -315,6 +315,55 @@ export function removeRole(roleId: string) {
   return apiFetch<RoleRemoval>(`/roles/${roleId}`, { method: "DELETE" });
 }
 
+// --------------------------------------------------------------------------- guardians
+
+export type Guardian = {
+  user_id: string;
+  full_name: string;
+  email: string;
+  status: string;
+  relationship: string | null;
+  is_primary: boolean;
+  /** Null until the adult has completed setup at their own address. */
+  verified_at: string | null;
+};
+
+export type Child = {
+  user_id: string;
+  full_name: string;
+  email: string;
+  status: string;
+  relationship: string | null;
+};
+
+export const guardianKeys = {
+  of: (studentId: string) => ["users", studentId, "guardians"] as const,
+  mine: ["me", "children"] as const,
+};
+
+export function fetchGuardians(studentId: string, signal?: AbortSignal) {
+  return apiFetch<Guardian[]>(`/users/${studentId}/guardians`, { signal });
+}
+
+export type GuardianLink = {
+  email: string;
+  full_name?: string;
+  relationship?: string;
+  is_primary?: boolean;
+};
+
+export function linkGuardian(studentId: string, body: GuardianLink) {
+  return apiFetch<UserSummary>(`/users/${studentId}/guardians`, { method: "POST", body });
+}
+
+export function unlinkGuardian(studentId: string, parentId: string) {
+  return apiFetch<void>(`/users/${studentId}/guardians/${parentId}`, { method: "DELETE" });
+}
+
+export function fetchMyChildren(signal?: AbortSignal) {
+  return apiFetch<Child[]>("/me/children", { signal });
+}
+
 export function fetchGrants(userId: string, signal?: AbortSignal) {
   return apiFetch<Grant[]>(`/users/${userId}/grants`, { signal });
 }

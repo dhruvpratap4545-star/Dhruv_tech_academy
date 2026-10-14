@@ -24,6 +24,7 @@ import {
 } from "@/features/admin/api";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { ChangeRoleModal } from "@/features/admin/components/ChangeRoleModal";
+import { GuardiansModal } from "@/features/admin/components/GuardiansModal";
 import { InviteUserModal } from "@/features/admin/components/InviteUserModal";
 import { UserAccessModal } from "@/features/admin/components/UserAccessModal";
 import type { UserSummary } from "@/features/auth/types";
@@ -70,6 +71,7 @@ export function UsersPage() {
   const [status, setStatus] = useState("");
   const [inviteOpen, setInviteOpen] = useState(false);
   const [roleTarget, setRoleTarget] = useState<UserSummary | null>(null);
+  const [guardianTarget, setGuardianTarget] = useState<UserSummary | null>(null);
   const [accessTarget, setAccessTarget] = useState<UserSummary | null>(null);
   // Suspension signs the person out immediately and refuses their next sign-in, so it
   // asks first. Re-activation restores access and needs no ceremony.
@@ -265,6 +267,15 @@ export function UsersPage() {
               Change role
             </Button>
           )}
+          {/* Only for learners. Every other role has no guardian, and offering the
+              button everywhere would invite somebody to attach a parent to a teacher. */}
+          {row.id !== me?.id &&
+            canInvite &&
+            row.roles.some((role) => role.role_key === "student") && (
+              <Button size="sm" variant="ghost" onClick={() => setGuardianTarget(row)}>
+                Guardians
+              </Button>
+            )}
           {row.id !== me?.id && canGrant && (
             <Button size="sm" variant="ghost" onClick={() => setAccessTarget(row)}>
               Access
@@ -500,6 +511,11 @@ export function UsersPage() {
         open={inviteOpen}
         onClose={() => setInviteOpen(false)}
         onInvited={setInvited}
+      />
+      <GuardiansModal
+        student={guardianTarget}
+        open={guardianTarget !== null}
+        onClose={() => setGuardianTarget(null)}
       />
       <ChangeRoleModal
         user={roleTarget}

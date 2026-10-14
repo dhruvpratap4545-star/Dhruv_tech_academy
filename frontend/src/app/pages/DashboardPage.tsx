@@ -3,12 +3,15 @@ import { Link } from "react-router-dom";
 
 import { Badge } from "@/components/Badge";
 import { Card, CardBody, CardHeader } from "@/components/Card";
+import { Avatar } from "@/components/Logo";
 import { PageHeader } from "@/components/PageHeader";
 import { Skeleton } from "@/components/Spinner";
+import { fetchMyChildren, guardianKeys } from "@/features/admin/api";
 import { SigninChart } from "@/features/admin/components/SigninChart";
 import { fetchOverview, overviewKey } from "@/features/auth/api";
 import { useCurrentUser } from "@/features/auth/useAuth";
 import { cn } from "@/lib/cn";
+import { initials } from "@/lib/format";
 import type { Permission } from "@/lib/permissions";
 import { can, ROLE_LABEL, roleScopeLabel, scopeLabel } from "@/lib/permissions";
 
@@ -47,6 +50,16 @@ export function DashboardPage() {
   const user = useCurrentUser();
   const shortcuts = SHORTCUTS.filter((item) => !item.permission || can(user, item.permission));
   const canSeeStats = can(user, "user:read");
+
+  // A parent's dashboard is their family, not a set of counts. Asked for on every load
+  // because the endpoint answers about the caller: it comes back empty for anybody who is
+  // not a guardian, and checking "are you a parent?" first would cost a second round trip
+  // to learn something the first one already knows.
+  const children = useQuery({
+    queryKey: guardianKeys.mine,
+    queryFn: ({ signal }) => fetchMyChildren(signal),
+  });
+  const myChildren = children.data ?? [];
   // The chart reads the audit log, so it is only requested by someone who may read it.
   const canSeeAudit = can(user, "audit:read");
 
@@ -72,6 +85,33 @@ export function DashboardPage() {
             : "Your administrator has not given you a role yet."
         }
       />
+
+      {myChildren.length > 0 && (
+        <Card>
+          <div className="border-b border-line p-4">
+            <h2 className="font-display text-base font-bold text-fg">
+              {myChildren.length === 1 ? "Your child" : "Your children"}
+            </h2>
+            <p className="mt-0.5 text-sm text-fg-2">
+              You see only the learners you are recorded as a guardian of.
+            </p>
+          </div>
+          <ul className="divide-y divide-line">
+            {myChildren.map((child) => (
+              <li key={child.user_id} className="flex items-center gap-3 p-4">
+                <Avatar initials={initials(child.full_name)} />
+                <div className="min-w-0">
+                  <p className="font-medium text-fg">{child.full_name}</p>
+                  <p className="truncate text-xs text-fg-2">
+                    {child.relationship ? `${child.relationship} · ` : ""}
+                    {child.email}
+                  </p>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </Card>
+      )}
 
       {canSeeStats && (
         // `stagger`: the four cards arrive left to right rather than all at once, which
