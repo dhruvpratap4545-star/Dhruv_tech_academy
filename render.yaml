@@ -1,0 +1,66 @@
+# Render Blueprint for Dhruv Online Academy.
+#
+# ONE web service (`dhruv-app`) serves both the API and the web app on one URL. The database
+# is MongoDB Atlas, outside Render: its connection string is the MONGODB_URL secret.
+# The root Dockerfile builds frontend/ and bakes it into the API image; FastAPI serves it
+# (backend/app/core/spa.py). Same origin means no CORS and the auth cookies always travel —
+# which separate services on *.onrender.com URLs would break.
+#
+# The existing site that serves legacy/templates is NOT in this blueprint — it stays a
+# dashboard-managed service, so applying this file cannot disturb what is already live.
+#
+# NOTE: nothing here has been applied yet. Review every value against the Render dashboard
+# before the first `blueprint apply`.
+#
+# Secrets use `sync: false` and are entered in the Render dashboard, never committed.
+# Verify field names against the current Render Blueprint docs before applying.
+
+services:
+  - type: web
+    name: dhruv-app
+    runtime: docker
+    region: singapore
+    # FREE plan: sleeps after ~15 min idle (first request then takes ~1 min) and has no
+    # pre-deploy step, so the seed runs at container start (RUN_MIGRATIONS_ON_START).
+    # Moving to a paid plan: set `plan: starter`, delete RUN_MIGRATIONS_ON_START and add
+    #   preDeployCommand: python -m app.core.seed
+    plan: free
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    healthCheckPath: /healthz
+    envVars:
+      - key: ENVIRONMENT
+        value: production
+      # Atlas connection string. Add Render's outbound IPs to the Atlas IP access list.
+      - key: MONGODB_URL
+        sync: false
+      - key: MONGODB_DB_NAME
+        value: dhruv
+      # Same-origin deploy: no COOKIE_DOMAIN (host-only cookies) and no CORS_ORIGINS needed.
+      #
+      # FRONTEND_URL is still required even though the app is same-origin: the invitation
+      # and password-reset emails carry a link, and a background task composing one has no
+      # request to infer the host from. Point it at whatever people actually type.
+      - key: FRONTEND_URL
+        value: https://dhruvonlineacademy.com
+      - key: EMAIL_FROM
+        value: Dhruv Online Academy <noreply@dhruvonlineacademy.com>
+      - key: JWT_KEY_ID
+        value: k1
+      - key: WEB_CONCURRENCY
+        value: "1"           # free instance has 512 MB RAM; one worker is enough
+      - key: RUN_MIGRATIONS_ON_START
+        value: "1"
+      - key: JWT_PRIVATE_KEY
+        sync: false
+      - key: JWT_PUBLIC_KEY
+        sync: false
+      - key: OTP_PEPPER
+        sync: false
+      - key: RESEND_API_KEY
+        sync: false
+      - key: SEED_SUPERADMIN_EMAIL
+        sync: false
+      - key: SENTRY_DSN
+        sync: false
+
