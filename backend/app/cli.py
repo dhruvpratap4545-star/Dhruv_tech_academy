@@ -16,12 +16,21 @@ Run with the application's environment loaded::
     python -m app.cli grant-super-admin someone@example.com
     python -m app.cli revoke-super-admin someone@example.com
     python -m app.cli list-super-admins
+    ADMIN_PASSWORD=... python -m app.cli set-password someone@example.com
 
 On Cloud Run these are one job, executed with different arguments — see DEPLOYMENT.md.
 
 A granted account is *invited*, never given a password here: a password created by a
 command ends up in shell history, a deploy log or a screenshot. The person proves they
 control the mailbox through the normal Forgot password flow.
+
+`set-password` is the exception, and exists for one situation: email is not working yet,
+so there is no way to deliver a one-time code and nobody can get in at all. It takes the
+password from the ``ADMIN_PASSWORD`` environment variable rather than an argument,
+because an argument is recorded — in shell history, in a Cloud Run job's configuration,
+and in its execution history, where anybody with read access to the project can see it.
+An environment variable sourced from Secret Manager is not. Use it to open the door, then
+have the person change their password through the web app once email works.
 
 Both commands write an audit entry with no actor, marked ``via: cli``, because a shell has
 no session behind it. `revoke-super-admin` also ends the account's sessions.
@@ -172,6 +181,73 @@ async def revoke(email: str) -> None:
     print(f"Removed Super Admin from {email}, and ended their sessions.")
 
 
+async def set_password(email: str) -> None:
+    """Give an account a password directly, for when email cannot deliver a code yet.
+
+    Mirrors what the forgot-password flow does on success (`auth.service._apply_new_password`):
+    the same strength rules, the same hashing, the lock counters cleared, every existing
+    session ended, and `invited` promoted to `active` — an account left at `invited` has a
+    password it cannot log in with.
+
+    Ending the sessions matters even here. This command is also the way back in after a
+    compromise, and leaving the attacker's session alive while changing the password is
+    the oldest way to make a recovery useless.
+    """
+    import os
+
+    password = os.environ.get("ADMIN_PASSWORD", "")
+    if not password:
+        raise SystemExit(
+            "Set the password in the ADMIN_PASSWORD environment variable, not as an "
+            "argument — arguments are recorded in shell history and in a Cloud Run job's "
+            "execution history, where the password would stay readable afterwards."
+        )
+
+    from app.core.security import hash_password
+    from app.modules.auth.schemas import validate_password_strength
+
+    try:
+        validate_password_strength(password)
+    except ValueError as exc:
+        raise SystemExit(str(exc)) from exc
+
+    email = email.strip().lower()
+    await init_db()
+    db = Db()
+    user = await _find_user(db, email)
+    if user is None:
+        raise SystemExit(
+            f"No account exists for {email}. Create one first with "
+            f"`grant-super-admin {email} --create`, or run `seed`."
+        )
+    if user.status not in ("active", "invited"):
+        raise SystemExit(f"{email} is {user.status}; only an active or invited account may be set.")
+
+    now = datetime.now(UTC)
+    user.password_hash = hash_password(password)
+    user.password_changed_at = now
+    user.failed_login_count = 0
+    user.locked_until = None
+    if user.status == "invited":
+        user.status = "active"
+
+    await auth_repo.revoke_all_user_tokens(db, user.id, "password_changed")
+    rbac.invalidate_context(user.id)
+
+    audit.record(
+        db,
+        action=events.PASSWORD_CHANGED,
+        actor_user_id=None,
+        target_type="user",
+        target_id=user.id,
+        extra={"via": "cli", "email": email},
+    )
+    await db.commit()
+
+    print(f"Password set for {email}. They can sign in now.")
+    print("Have them change it from the web app once email is working.")
+
+
 async def seed_platform() -> None:
     """Create the roles, permissions, the built-in institute and the first administrator.
 
@@ -226,6 +302,12 @@ def build_parser() -> argparse.ArgumentParser:
 
     sub.add_parser("list-super-admins", help="Show who holds Super Admin.")
 
+    p = sub.add_parser(
+        "set-password",
+        help="Set an account's password from the ADMIN_PASSWORD environment variable.",
+    )
+    p.add_argument("email")
+
     sub.add_parser(
         "seed",
         help="Create the roles, permissions and first administrator. Safe to re-run.",
@@ -245,6 +327,8 @@ def main(argv: list[str] | None = None) -> None:
                 await revoke(args.email)
             elif args.command == "seed":
                 await seed_platform()
+            elif args.command == "set-password":
+                await set_password(args.email)
             else:
                 await listing()
         finally:

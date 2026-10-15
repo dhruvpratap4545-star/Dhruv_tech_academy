@@ -201,10 +201,14 @@ gcloud run deploy dhruv-app \
   --region=asia-south1 --platform=managed --allow-unauthenticated \
   --port=8000 --no-cpu-throttling --max-instances=4 --min-instances=0 \
   --memory=1Gi --cpu=1 --timeout=300 \
-  --set-env-vars=ENVIRONMENT=production,MONGODB_DB_NAME=dhruv,FRONTEND_URL=https://dhruvonlineacademy.com,JWT_KEY_ID=k1,SEED_SUPERADMIN_EMAIL=admin@example.com \
-  --set-env-vars='EMAIL_FROM=Dhruv Online Academy <noreply@dhruvonlineacademy.com>' \
+  --set-env-vars="^##^ENVIRONMENT=production##MONGODB_DB_NAME=dhruv##FRONTEND_URL=https://dhruvonlineacademy.com##JWT_KEY_ID=k1##SEED_SUPERADMIN_EMAIL=admin@example.com##EMAIL_FROM=Dhruv Online Academy <noreply@dhruvonlineacademy.com>" \
   --set-secrets=MONGODB_URL=MONGODB_URL:latest,JWT_PRIVATE_KEY=JWT_PRIVATE_KEY:latest,JWT_PUBLIC_KEY=JWT_PUBLIC_KEY:latest,OTP_PEPPER=OTP_PEPPER:latest,RESEND_API_KEY=RESEND_API_KEY:latest
 ```
+
+The `^##^` at the front changes the separator from a comma to `##`. Without it, gcloud
+splits `EMAIL_FROM` at the comma it does not contain today but will the moment someone
+writes `Dhruv Online Academy, Pune`. One `--set-env-vars` flag, not two: given the flag
+twice, gcloud keeps only the last and silently drops the rest.
 
 **Change `SEED_SUPERADMIN_EMAIL` to the real first administrator's address** before
 running this. Forget it and the deploy will succeed, everything will look healthy, and
@@ -322,6 +326,46 @@ Their status changes from `invited` to `active`.
 **If the code does not arrive:** email is not working yet. Check the Resend dashboard, and
 remember that before the domain is verified Resend only delivers to the address the Resend
 account itself was registered with.
+
+### If email is not working at all yet
+
+Then there is no way to deliver a code, and nobody can get in. `set-password` is the way
+round it, and the only command that writes a password directly.
+
+Put the password in Secret Manager first — never in the command:
+
+```bash
+gcloud secrets create ADMIN_PASSWORD --data-file=-     # paste once, Enter, Ctrl+D
+
+gcloud secrets add-iam-policy-binding ADMIN_PASSWORD \
+  --member="serviceAccount:$(gcloud projects describe $(gcloud config get-value project) \
+    --format='value(projectNumber)')-compute@developer.gserviceaccount.com" \
+  --role=roles/secretmanager.secretAccessor
+
+gcloud run jobs update dhruv-admin --region=asia-south1 \
+  --update-secrets=ADMIN_PASSWORD=ADMIN_PASSWORD:latest
+
+gcloud run jobs execute dhruv-admin --region=asia-south1 --wait \
+  --args=-m,app.cli,set-password,someone@example.com
+```
+
+It applies the same strength rules as the sign-up form, promotes `invited` to `active`,
+and ends every existing session.
+
+The password goes through an environment variable rather than an argument because
+arguments are kept: in shell history, in the job's configuration, and in its execution
+history, where anyone with read access to the project can still see them weeks later.
+
+Once email works, have that person change their password from inside the application, and
+remove the secret:
+
+```bash
+gcloud run jobs update dhruv-admin --region=asia-south1 --clear-secrets
+gcloud secrets delete ADMIN_PASSWORD
+```
+
+That `--clear-secrets` removes the others too, so re-attach them with the
+`--set-secrets` line from step 6.
 
 ### Adding another administrator later
 
