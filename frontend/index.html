@@ -21,6 +21,15 @@
     <link rel="icon" href="/favicon.ico" sizes="any" />
     <meta name="theme-color" content="#1e3a5f" />
 
+    <!-- Installable as an app: the manifest names it, sizes its icons and says it should
+         open without browser chrome. Safari still reads its own meta tags rather than the
+         manifest, which is why the two below are not redundant. -->
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Dhruv Academy" />
+
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link

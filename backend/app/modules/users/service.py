@@ -1046,6 +1046,7 @@ async def link_guardian(
     student_id: uuid.UUID,
     payload: schemas.GuardianLinkRequest,
     meta: RequestMeta,
+    commit: bool = True,
 ) -> tuple[User, EmailMessage | None]:
     """Attach an adult to a learner, inviting them if they are new.
 
@@ -1118,7 +1119,13 @@ async def link_guardian(
         user_agent=meta.user_agent,
         extra={"parent_user_id": str(parent.id), "relationship": payload.relationship},
     )
-    await db.commit()
+    # `commit=False` for the bulk import, where the learner and their parent are one
+    # savepoint: committing here would make the parent permanent while the child's row
+    # could still be rolled back.
+    if commit:
+        await db.commit()
+    else:
+        await db.flush()
     return parent, message
 
 

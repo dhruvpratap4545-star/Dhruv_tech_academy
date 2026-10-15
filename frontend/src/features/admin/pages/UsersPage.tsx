@@ -14,7 +14,7 @@ import { PageHeader } from "@/components/PageHeader";
 import type { Column } from "@/components/Table";
 import { EmptyState, Table } from "@/components/Table";
 import type { UserFilters } from "@/features/admin/api";
-import type { BulkStatusResponse } from "@/features/admin/api";
+import type { BulkInviteReport, BulkStatusResponse } from "@/features/admin/api";
 import {
   bulkUpdateStatus,
   fetchUsers,
@@ -25,6 +25,7 @@ import {
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { ChangeRoleModal } from "@/features/admin/components/ChangeRoleModal";
 import { GuardiansModal } from "@/features/admin/components/GuardiansModal";
+import { BulkInviteModal } from "@/features/admin/components/BulkInviteModal";
 import { InviteUserModal } from "@/features/admin/components/InviteUserModal";
 import { UserAccessModal } from "@/features/admin/components/UserAccessModal";
 import type { UserSummary } from "@/features/auth/types";
@@ -70,6 +71,8 @@ export function UsersPage() {
   }
   const [status, setStatus] = useState("");
   const [inviteOpen, setInviteOpen] = useState(false);
+  const [bulkInviteOpen, setBulkInviteOpen] = useState(false);
+  const [imported, setImported] = useState<BulkInviteReport | null>(null);
   const [roleTarget, setRoleTarget] = useState<UserSummary | null>(null);
   const [guardianTarget, setGuardianTarget] = useState<UserSummary | null>(null);
   const [accessTarget, setAccessTarget] = useState<UserSummary | null>(null);
@@ -324,9 +327,16 @@ export function UsersPage() {
         description="Everyone you can see and manage in your scope."
         actions={
           canInvite && (
-            <Button onClick={() => setInviteOpen(true)} icon={<PlusIcon />}>
-              Invite user
-            </Button>
+            <div className="flex flex-wrap gap-2">
+              {/* Second, not first: one person at a time is the common case, and a school
+                  loading a term's intake knows to go looking for the spreadsheet. */}
+              <Button variant="secondary" onClick={() => setBulkInviteOpen(true)}>
+                Invite from a spreadsheet
+              </Button>
+              <Button onClick={() => setInviteOpen(true)} icon={<PlusIcon />}>
+                Invite user
+              </Button>
+            </div>
           )
         }
       />
@@ -344,6 +354,28 @@ export function UsersPage() {
             If it does not arrive, check the address in the list below and use{" "}
             <strong className="font-semibold">Resend invite</strong> to send a fresh code.
           </p>
+        </Alert>
+      )}
+
+      {imported && (
+        <Alert
+          tone={imported.skipped > 0 ? "warning" : "success"}
+          title={`${imported.invited} ${imported.invited === 1 ? "learner" : "learners"} invited from your file`}
+          onDismiss={() => setImported(null)}
+        >
+          <p>
+            {imported.parents > 0
+              ? `${imported.parents} ${imported.parents === 1 ? "parent was" : "parents were"} linked and invited too. `
+              : ""}
+            Everyone gets a 6-digit setup code, valid for 48 hours.
+          </p>
+          {imported.skipped > 0 && (
+            <p className="mt-1">
+              {imported.skipped} {imported.skipped === 1 ? "row was" : "rows were"} skipped. Fix
+              them in the file and upload it again — the ones already invited are skipped the second
+              time round.
+            </p>
+          )}
         </Alert>
       )}
 
@@ -511,6 +543,11 @@ export function UsersPage() {
         open={inviteOpen}
         onClose={() => setInviteOpen(false)}
         onInvited={setInvited}
+      />
+      <BulkInviteModal
+        open={bulkInviteOpen}
+        onClose={() => setBulkInviteOpen(false)}
+        onDone={setImported}
       />
       <GuardiansModal
         student={guardianTarget}

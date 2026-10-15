@@ -141,7 +141,7 @@ export function GuardiansModal({
                     {/* Said plainly, because "invited" and "verified" are different
                         things and only one of them is consent. */}
                     {row.verified_at === null && (
-                      <p className="mt-0.5 text-xs text-warning-ink">
+                      <p className="mt-0.5 text-xs text-warn">
                         Has not signed in yet — they will confirm this themselves when they set
                         their password.
                       </p>

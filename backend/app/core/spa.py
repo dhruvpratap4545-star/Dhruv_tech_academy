@@ -31,6 +31,12 @@ _SHORT = "public, max-age=3600"
 # The shell must never be cached, or a deploy would leave browsers asking for old bundles.
 _NO_CACHE = "no-cache"
 
+# Files that decide what every *other* file does, so a stale copy outlives the deploy that
+# was meant to replace it. A service worker cached for an hour keeps serving the previous
+# app from inside the browser; a stale manifest keeps the old name and icons on a home
+# screen. Both are revalidated on every request instead.
+_ALWAYS_FRESH = frozenset({"sw.js", "manifest.webmanifest"})
+
 
 def build_csp(index_html: bytes) -> str:
     """CSP for the app shell, allowing exactly the inline scripts the shipped page contains.
@@ -89,7 +95,12 @@ class SinglePageApp:
             candidate = (self.root / relative).resolve()
             # resolve() collapses `..`, so this also rejects path traversal.
             if candidate.is_relative_to(self.root) and candidate.is_file():
-                cache = _IMMUTABLE if relative.startswith("assets/") else _SHORT
+                if relative in _ALWAYS_FRESH:
+                    cache = _NO_CACHE
+                elif relative.startswith("assets/"):
+                    cache = _IMMUTABLE
+                else:
+                    cache = _SHORT
                 return FileResponse(candidate, headers={"Cache-Control": cache})
             # A missing bundle must be a 404, not HTML the browser tries to run as JS.
             if relative.startswith("assets/"):

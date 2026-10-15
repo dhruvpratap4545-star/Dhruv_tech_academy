@@ -248,3 +248,43 @@ class ChildOut(BaseModel):
     email: str
     status: str
     relationship: str | None
+
+
+# ------------------------------------------------------------------- bulk invitation
+
+
+class BulkInviteRow(BaseModel):
+    """What happened to one line of the uploaded spreadsheet.
+
+    Every row comes back, including the ones nothing was done with. A school that uploads
+    five hundred learners and is told "487 invited" has no way to find the thirteen, and
+    will re-upload the whole file to try again.
+    """
+
+    #: The row number Excel shows, so the person can go and look at it.
+    row: int
+    full_name: str
+    email: str
+    outcome: Literal["invited", "ready", "skipped"]
+    reason: str | None = None
+    branch: str | None = None
+    class_name: str | None = None
+    parent_email: str | None = None
+    parent_outcome: Literal["invited", "linked", "ready", "skipped"] | None = None
+    parent_reason: str | None = None
+
+
+class BulkInviteResponse(BaseModel):
+    """The result of a preview or a real import — the same shape for both.
+
+    One shape on purpose: the screen that shows a preview and the screen that shows what
+    was done are the same screen, and an administrator comparing "what it said it would
+    do" against "what it did" should not have to read two different layouts.
+    """
+
+    dry_run: bool
+    institute_id: uuid.UUID
+    rows: list[BulkInviteRow]
+    invited: int
+    parents: int
+    skipped: int

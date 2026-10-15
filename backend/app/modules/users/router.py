@@ -5,8 +5,20 @@ from __future__ import annotations
 import uuid
 from typing import Annotated, Literal
 
-from fastapi import APIRouter, BackgroundTasks, Depends, Query, Request, status
+from fastapi import (
+    APIRouter,
+    BackgroundTasks,
+    Depends,
+    File,
+    Form,
+    Query,
+    Request,
+    UploadFile,
+    status,
+)
+from fastapi.responses import Response
 
+from app.core.errors import ValidationFailed
 from app.core.pagination import Page, clamp_limit
 from app.modules.auth.service import RequestMeta
 from app.modules.notifications.email import send_email
@@ -20,7 +32,7 @@ from app.modules.rbac.deps import (
     user_agent,
 )
 from app.modules.rbac.service import Authorized
-from app.modules.users import schemas
+from app.modules.users import bulk, schemas, spreadsheet
 from app.modules.users import service as users
 
 router = APIRouter()
@@ -28,6 +40,23 @@ me_router = APIRouter()
 
 Limit = Annotated[int, Query(ge=1, le=100, description="Rows per page (max 100).")]
 Cursor = Annotated[str | None, Query(description="Opaque cursor from the previous page.")]
+
+#: The media type Excel itself writes. Named once so the download header and the OpenAPI
+#: description cannot drift apart.
+_XLSX = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+
+
+async def _read_upload(file: UploadFile) -> bytes:
+    """The uploaded bytes, refused early if the file is obviously not a workbook.
+
+    The size is checked again inside the import, against the bytes actually read: a
+    `content-length` header is whatever the client said, and a streamed upload has none.
+    """
+    if file.size is not None and file.size > bulk.MAX_BYTES:
+        raise ValidationFailed(
+            "That file is too large. Export just the learner list as .xlsx and try again."
+        )
+    return await file.read()
 
 
 def _meta(request: Request) -> RequestMeta:
@@ -371,3 +400,78 @@ async def unlink_guardian(
     await users.unlink_guardian(
         db, guard=guard, student_id=user_id, parent_id=parent_id, meta=_meta(request)
     )
+
+
+# ------------------------------------------------------------------- bulk invitation
+
+
+@router.get(
+    "/bulk-invite/template",
+    summary="Download the spreadsheet to fill in",
+    description="One row per learner, with the parent's details beside the child's. Only "
+    "the name and email columns are required; branch, class and parent are used when they "
+    "are there.",
+    response_class=Response,
+    responses={200: {"content": {_XLSX: {}}, "description": "An .xlsx workbook."}},
+)
+async def bulk_invite_template(
+    _: Annotated[Authorized, Depends(require_permission("user:invite"))],
+) -> Response:
+    return Response(
+        content=spreadsheet.build_template(),
+        media_type=_XLSX,
+        headers={"Content-Disposition": 'attachment; filename="invite-learners.xlsx"'},
+    )
+
+
+@router.post(
+    "/bulk-invite/preview",
+    response_model=schemas.BulkInviteResponse,
+    summary="Check a spreadsheet without inviting anybody",
+    description="Reads the file and reports, row by row, what would happen. Nothing is "
+    "written and no email is sent.",
+)
+async def bulk_invite_preview(
+    request: Request,
+    db: DbSession,
+    guard: Annotated[Authorized, Depends(require_permission("user:invite"))],
+    file: Annotated[UploadFile, File(description="The filled-in .xlsx template.")],
+    institute_id: Annotated[uuid.UUID | None, Form()] = None,
+) -> schemas.BulkInviteResponse:
+    report, _ = await bulk.run(
+        db,
+        guard=guard,
+        data=await _read_upload(file),
+        institute_id=institute_id,
+        meta=_meta(request),
+        dry_run=True,
+    )
+    return report
+
+
+@router.post(
+    "/bulk-invite",
+    response_model=schemas.BulkInviteResponse,
+    summary="Invite everybody in a spreadsheet",
+    description="Each row is checked against the same rules as a single invitation, and a "
+    "row that fails is reported rather than taking the rest of the file down with it.",
+)
+async def bulk_invite(
+    request: Request,
+    background: BackgroundTasks,
+    db: DbSession,
+    guard: Annotated[Authorized, Depends(require_permission("user:invite"))],
+    file: Annotated[UploadFile, File(description="The filled-in .xlsx template.")],
+    institute_id: Annotated[uuid.UUID | None, Form()] = None,
+) -> schemas.BulkInviteResponse:
+    report, messages = await bulk.run(
+        db,
+        guard=guard,
+        data=await _read_upload(file),
+        institute_id=institute_id,
+        meta=_meta(request),
+        dry_run=False,
+    )
+    for message in messages:
+        background.add_task(send_email, message)
+    return report

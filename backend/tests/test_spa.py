@@ -26,6 +26,8 @@ def dist(tmp_path: Path) -> Path:
     (tmp_path / "index.html").write_bytes(INDEX_HTML)
     (tmp_path / "assets" / "index-abc123.js").write_text("console.log('app');")
     (tmp_path / "favicon.ico").write_bytes(b"\x00\x00\x01\x00")
+    (tmp_path / "sw.js").write_text("self.addEventListener('fetch', () => {});")
+    (tmp_path / "manifest.webmanifest").write_text('{"name": "Dhruv Online Academy"}')
     (tmp_path.parent / "secret.txt").write_text("outside dist")
     return tmp_path
 
@@ -123,3 +125,25 @@ def test_csp_covers_the_real_index_html() -> None:
 def test_missing_build_fails_fast(tmp_path: Path) -> None:
     with pytest.raises(RuntimeError, match="does not exist"):
         SinglePageApp(tmp_path, ("/api/v1",))
+
+
+@pytest.mark.parametrize("path", ["/sw.js", "/manifest.webmanifest"])
+async def test_the_pwa_files_are_never_cached(web: AsyncClient, path: str) -> None:
+    """Both decide what every *other* file does.
+
+    A service worker cached for an hour keeps serving the previous app from inside the
+    browser after the deploy that was meant to replace it; a stale manifest keeps the old
+    name and icons on somebody's home screen. Neither is a file a deploy can afford to
+    leave behind.
+    """
+    response = await web.get(path)
+    assert response.status_code == 200
+    assert response.headers["Cache-Control"] == "no-cache"
+
+
+async def test_the_service_worker_is_served_from_the_root_so_it_can_cover_the_app(
+    web: AsyncClient,
+) -> None:
+    """A worker's scope is the directory it is served from. At `/assets/sw.js` it could
+    only control `/assets/`, which is not the app."""
+    assert (await web.get("/sw.js")).status_code == 200

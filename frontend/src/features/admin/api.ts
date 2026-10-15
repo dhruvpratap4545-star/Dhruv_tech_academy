@@ -15,7 +15,7 @@ import type {
   UserSummary,
 } from "@/features/auth/types";
 import type { Page } from "@/lib/api";
-import { apiFetch, query } from "@/lib/api";
+import { apiDownload, apiFetch, query } from "@/lib/api";
 
 export type UserFilters = {
   search?: string;
@@ -393,4 +393,47 @@ export const searchKeys = {
 
 export function globalSearch(term: string, signal?: AbortSignal) {
   return apiFetch<SearchResults>(`/search${query({ q: term })}`, { signal });
+}
+
+// ---------------------------------------------------------------- bulk invitation
+
+export type BulkInviteRow = {
+  /** The row number Excel shows, so the person can go and look at it. */
+  row: number;
+  full_name: string;
+  email: string;
+  outcome: "invited" | "ready" | "skipped";
+  reason: string | null;
+  branch: string | null;
+  class_name: string | null;
+  parent_email: string | null;
+  parent_outcome: "invited" | "linked" | "ready" | "skipped" | null;
+  parent_reason: string | null;
+};
+
+export type BulkInviteReport = {
+  dry_run: boolean;
+  institute_id: string;
+  rows: BulkInviteRow[];
+  invited: number;
+  parents: number;
+  skipped: number;
+};
+
+export function downloadInviteTemplate() {
+  return apiDownload("/users/bulk-invite/template", "invite-learners.xlsx");
+}
+
+/**
+ * Upload the file. `preview` reads it and reports what would happen without writing
+ * anything; without it, the invitations are sent.
+ */
+export function bulkInvite(file: File, instituteId: string | null, preview: boolean) {
+  const body = new FormData();
+  body.append("file", file);
+  if (instituteId) body.append("institute_id", instituteId);
+  return apiFetch<BulkInviteReport>(`/users/bulk-invite${preview ? "/preview" : ""}`, {
+    method: "POST",
+    body,
+  });
 }
