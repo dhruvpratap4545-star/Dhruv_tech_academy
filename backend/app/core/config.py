@@ -53,6 +53,10 @@ class Settings(BaseSettings):
     mongodb_url: SecretStr | None = None
     mongodb_db_name: str = "dhruv"
     mongodb_timeout_ms: int = 10_000
+    #: Connections this process may open. The driver's own default is 100, which is a
+    #: hundred *per container* — see `app.core.db.build_client` for the arithmetic that
+    #: keeps a shared cluster from running out as the service scales out.
+    mongodb_max_pool_size: int = 20
 
     # Tokens (PRD §7.2) — ES256 PEM key pair, rotated via jwt_key_id
     jwt_private_key: SecretStr = SecretStr("")

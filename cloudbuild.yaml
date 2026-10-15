@@ -1,0 +1,82 @@
+# Build the application image and deploy it to Cloud Run.
+#
+# One service serves everything: the root Dockerfile compiles the React app and copies it
+# into the Python image, so the pages and the API answer on the same host. That is not a
+# packaging convenience — the sign-in cookies are SameSite=Lax, and splitting the two
+# across hostnames would make the browser drop them on every API call.
+#
+# Run it by hand the first time:
+#
+#   gcloud builds submit --config cloudbuild.yaml \
+#     --substitutions=_SERVICE_NAME=dhruv-app,_DEPLOY_REGION=asia-south1,_REPOSITORY=dhruv
+#
+# After that, connect the repository in Cloud Build → Triggers and it runs on every push.
+#
+# Secrets are NOT set here. They live in Secret Manager and are attached to the service
+# once, by hand (see DEPLOYMENT.md). A deploy must never be able to print them.
+
+substitutions:
+  _SERVICE_NAME: dhruv-app
+  _DEPLOY_REGION: asia-south1
+  _REPOSITORY: dhruv
+  # Raise this only alongside MONGODB_MAX_POOL_SIZE — see app/core/db.py for the
+  # arithmetic. instances × pool must stay under the Atlas cluster's connection limit.
+  _MAX_INSTANCES: "4"
+
+options:
+  logging: CLOUD_LOGGING_ONLY
+  machineType: E2_HIGHCPU_8
+
+images:
+  - "${_DEPLOY_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/${_SERVICE_NAME}:$COMMIT_SHA"
+
+steps:
+  # 1. Build. Tagged with the commit, so a rollback names an exact revision rather than
+  #    "the one before whatever :latest points at now".
+  - id: build
+    name: gcr.io/cloud-builders/docker
+    args:
+      - build
+      - -t
+      - "${_DEPLOY_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/${_SERVICE_NAME}:$COMMIT_SHA"
+      - -t
+      - "${_DEPLOY_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/${_SERVICE_NAME}:latest"
+      - .
+
+  - id: push
+    name: gcr.io/cloud-builders/docker
+    args:
+      - push
+      - --all-tags
+      - "${_DEPLOY_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/${_SERVICE_NAME}"
+
+  # 2. Deploy.
+  #
+  #    --no-cpu-throttling is required, not a tuning choice. Cloud Run cuts a container's
+  #    CPU to almost nothing once a response has been sent, and this application finishes
+  #    sending one-time codes and invitation emails after the response. Throttled, those
+  #    emails arrive late or not at all — and because a busy instance still has CPU, the
+  #    failure is intermittent and looks like "sometimes the OTP never comes".
+  #
+  #    --max-instances is a safety bound on database connections, not on traffic.
+  - id: deploy
+    name: gcr.io/google.com/cloudsdktool/cloud-sdk
+    entrypoint: gcloud
+    args:
+      - run
+      - deploy
+      - "${_SERVICE_NAME}"
+      - "--image=${_DEPLOY_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/${_SERVICE_NAME}:$COMMIT_SHA"
+      - "--region=${_DEPLOY_REGION}"
+      - --platform=managed
+      - --allow-unauthenticated
+      - --port=8000
+      - --no-cpu-throttling
+      - "--max-instances=${_MAX_INSTANCES}"
+      - --min-instances=0
+      - --memory=1Gi
+      - --cpu=1
+      - --timeout=300
+      - --revision-suffix=$SHORT_SHA
+
+timeout: 1800s

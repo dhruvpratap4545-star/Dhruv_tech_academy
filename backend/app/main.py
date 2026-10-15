@@ -83,7 +83,7 @@ def _verify_signing_keys() -> None:
     A malformed or mismatched key otherwise stays invisible until the first login, which
     means a bad deploy looks healthy — `/healthz` passes, and only real users find the 500.
     Signing and verifying one throwaway token at boot turns that into a failed deploy,
-    which is what Render's health check is for.
+    which is what the host's health check is for.
     """
     if settings.environment == "test":
         return
@@ -201,7 +201,7 @@ def create_app() -> FastAPI:
 
     app.include_router(api_router, prefix=settings.api_v1_prefix)
 
-    @app.get("/healthz", tags=["ops"], summary="Health check used by Render")
+    @app.get("/healthz", tags=["ops"], summary="Health check used by the host")
     async def healthz() -> dict[str, str]:
         # Deliberately does not touch the database: a slow query must not take the service
         # out of rotation and trigger a restart loop. Use /healthz/db for a deep check.
@@ -211,7 +211,7 @@ def create_app() -> FastAPI:
         "/healthz/db",
         tags=["ops"],
         summary="Deep health check",
-        description="Verifies the database is reachable. Not used as Render's health check.",
+        description="Verifies the database is reachable. Not used as the host's health check.",
     )
     async def healthz_db() -> dict[str, str]:
         from app.core.db import ping

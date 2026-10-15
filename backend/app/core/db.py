@@ -130,11 +130,29 @@ _database: AsyncDatabase | None = None
 
 def build_client(url: str) -> AsyncMongoClient:
     """``uuidRepresentation='standard'`` stores UUIDs as BSON subtype 4, readable by every
-    driver; ``tz_aware`` returns UTC-aware datetimes, matching ``datetime.now(UTC)``."""
+    driver; ``tz_aware`` returns UTC-aware datetimes, matching ``datetime.now(UTC)``.
+
+    **The pool is bounded, and the bound matters more than it looks.** The driver's own
+    default is a hundred connections *per process*. On a platform that starts a new
+    container whenever traffic rises, that is a hundred per container, multiplied by
+    however many are running — and a shared Atlas cluster allows a few hundred in total.
+    The failure arrives exactly when the product is going well: enough traffic to start a
+    third container, and requests begin failing because the cluster will not accept
+    another connection.
+
+    The arithmetic to hold to, when either number changes::
+
+        max_instances × MONGODB_MAX_POOL_SIZE  ≤  0.8 × the cluster's connection limit
+
+    Twenty is deliberately generous for one container — each request holds a connection
+    only while a query is in flight — and leaves room for ten containers against a free
+    tier's five hundred.
+    """
     return AsyncMongoClient(
         url,
         uuidRepresentation="standard",
         tz_aware=True,
+        maxPoolSize=settings.mongodb_max_pool_size,
         serverSelectionTimeoutMS=settings.mongodb_timeout_ms,
         appname=settings.app_name,
     )

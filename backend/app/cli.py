@@ -12,9 +12,12 @@ the server, which is a different and much smaller set of people.
 
 Run with the application's environment loaded::
 
+    python -m app.cli seed                                  # first deploy, and safe to re-run
     python -m app.cli grant-super-admin someone@example.com
     python -m app.cli revoke-super-admin someone@example.com
     python -m app.cli list-super-admins
+
+On Cloud Run these are one job, executed with different arguments — see DEPLOYMENT.md.
 
 A granted account is *invited*, never given a password here: a password created by a
 command ends up in shell history, a deploy log or a screenshot. The person proves they
@@ -52,7 +55,7 @@ from app.modules.users.models import User, UserPreference
 async def _super_admin_role(db: Db) -> Role:
     role = await db.find_one(Role, {"key": catalog.SUPER_ADMIN})
     if role is None:
-        raise SystemExit("The super_admin role is missing. Run `python -m app.core.seed` first.")
+        raise SystemExit("The super_admin role is missing. Run `python -m app.cli seed` first.")
     return role
 
 
@@ -169,6 +172,24 @@ async def revoke(email: str) -> None:
     print(f"Removed Super Admin from {email}, and ended their sessions.")
 
 
+async def seed_platform() -> None:
+    """Create the roles, permissions, the built-in institute and the first administrator.
+
+    The same routine the application can run at start-up, exposed here so a deployment
+    can run it **once, deliberately** instead of on every container boot. On a platform
+    that starts a second container when traffic rises, a start-up seed is several
+    processes inserting the same rows at the same moment; one wins and the others crash
+    on a unique index. Running it as a one-off job removes that race and gives whoever
+    deploys a visible success or failure, rather than a line buried in a container log.
+
+    Safe to re-run. It inserts what is missing, updates what changed, and deletes nothing.
+    """
+    from app.core.seed import seed
+
+    await seed()
+    print("Seed complete: roles, permissions, the Direct institute and the first admin.")
+
+
 async def listing() -> None:
     await init_db()
     db = Db()
@@ -204,6 +225,11 @@ def build_parser() -> argparse.ArgumentParser:
     r.add_argument("email")
 
     sub.add_parser("list-super-admins", help="Show who holds Super Admin.")
+
+    sub.add_parser(
+        "seed",
+        help="Create the roles, permissions and first administrator. Safe to re-run.",
+    )
     return parser
 
 
@@ -217,6 +243,8 @@ def main(argv: list[str] | None = None) -> None:
                 await grant(args.email, create_missing=args.create)
             elif args.command == "revoke-super-admin":
                 await revoke(args.email)
+            elif args.command == "seed":
+                await seed_platform()
             else:
                 await listing()
         finally:
