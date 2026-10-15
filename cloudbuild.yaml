@@ -6,7 +6,8 @@
 # across hostnames would make the browser drop them on every API call.
 #
 # This is for deploys AFTER the first one. Connect the repository in Cloud Build →
-# Triggers, pointing at this file, and every push rebuilds and ships.
+# Triggers on branch `main`, pointing at this file, and every push to `main` rebuilds and
+# ships. `main` is the deployed branch; everything else is work in progress.
 #
 # It cannot perform the *first* deploy, because it sets no secrets — and the application
 # will not start without the signing keys (app/main.py verifies the pair at boot, so that

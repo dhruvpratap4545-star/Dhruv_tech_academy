@@ -393,7 +393,11 @@ On the real address:
 ## Later deploys
 
 Once Cloud Build is connected to the repository (**Cloud Build → Triggers → Create**,
-pointing at `cloudbuild.yaml`), every push rebuilds and deploys by itself.
+branch `^main$`, pointing at `cloudbuild.yaml`), every push to `main` rebuilds and deploys
+by itself.
+
+`main` is the deployed branch. Everything else is work in progress, so a trigger on any
+other branch would put unfinished code in front of real users.
 
 Nothing needs re-running: the secrets and settings stay attached to the service. Run the
 seed again only after a release that adds new roles or permissions — and it is safe either
