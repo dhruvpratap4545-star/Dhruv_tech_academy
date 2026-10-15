@@ -269,16 +269,12 @@ async def test_completing_setup_records_the_consent_as_verified(
     at their own address" only when they complete setup."""
     import uuid as uuid_module
 
-    from sqlalchemy import select
-
     from app.modules.users.models import Guardian
 
     world = await family()
     parent_id = await _parent_of(client, world)
 
-    link = await db.scalar(
-        select(Guardian).where(Guardian.parent_user_id == uuid_module.UUID(parent_id))
-    )
+    link = await db.find_one(Guardian, {"parent_user_id": uuid_module.UUID(parent_id)})
     assert link.verified_at is None
 
     # Only the hash of a code is stored, so the plaintext the invitation emailed cannot be
@@ -300,5 +296,5 @@ async def test_completing_setup_records_the_consent_as_verified(
     )
     assert done.status_code == 200, done.text
 
-    await db.refresh(link)
+    link = await db.find_one(Guardian, {"_id": link.id})
     assert link.verified_at is not None

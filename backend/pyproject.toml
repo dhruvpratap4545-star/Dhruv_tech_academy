@@ -29,9 +29,9 @@ ignore = [
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
-# One event loop for the whole session. The database engine and its connection pool are
-# session-scoped, and an asyncpg connection cannot be shared across event loops — a
-# function-scoped loop would make every session-scoped async fixture unusable.
+# One event loop for the whole session. The MongoDB client is session-scoped and bound to
+# the loop it was created on, so a function-scoped loop would make every session-scoped
+# async fixture unusable.
 asyncio_default_fixture_loop_scope = "session"
 asyncio_default_test_loop_scope = "session"
 testpaths = ["tests"]

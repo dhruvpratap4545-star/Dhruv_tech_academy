@@ -42,5 +42,5 @@ EXPOSE 8000
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s \
     CMD curl -fsS "http://localhost:${PORT:-8000}/healthz" || exit 1
 
-# Render injects PORT. The script also runs migrations when RUN_MIGRATIONS_ON_START=1.
+# Render injects PORT. The script also runs the seed when RUN_MIGRATIONS_ON_START=1.
 CMD ["sh", "scripts/start.sh"]

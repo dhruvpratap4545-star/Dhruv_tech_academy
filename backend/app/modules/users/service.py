@@ -12,8 +12,7 @@ import uuid
 from collections.abc import Sequence
 from datetime import UTC, datetime
 
-from sqlalchemy.ext.asyncio import AsyncSession
-
+from app.core.db import Db, ids_in
 from app.core.errors import Conflict, Forbidden, NotFound, ValidationFailed
 from app.modules.audit import events
 from app.modules.audit import service as audit
@@ -40,7 +39,7 @@ MEMBERSHIP_NARROWED_ROLES = frozenset({FACULTY, STUDENT, PARENT})
 
 
 async def _membership_visible_ids(
-    db: AsyncSession, user_id: uuid.UUID, role_keys: set[str]
+    db: Db, user_id: uuid.UUID, role_keys: set[str]
 ) -> frozenset[uuid.UUID]:
     """The people somebody sees purely because of a link, not because of a scope.
 
@@ -59,7 +58,7 @@ async def _membership_visible_ids(
 
 
 async def _scope_of(
-    db: AsyncSession,
+    db: Db,
     institute_id: uuid.UUID | None,
     branch_id: uuid.UUID | None,
     organisation_id: uuid.UUID | None = None,
@@ -82,7 +81,7 @@ async def _scope_of(
     )
 
 
-async def _require_role(db: AsyncSession, role_key: str):
+async def _require_role(db: Db, role_key: str):
     role = await rbac_repo.get_role_by_key(db, role_key)
     if role is None or not role.is_active:
         raise ValidationFailed("That role does not exist.")
@@ -187,7 +186,7 @@ def _refuse_platform_role_for_unproven_account(role, user: User) -> None:
 
 
 async def invite_user(
-    db: AsyncSession,
+    db: Db,
     *,
     guard: Authorized,
     payload: schemas.InviteUserRequest,
@@ -279,7 +278,7 @@ def _require_classes_when_faculty(
 
 
 async def _link_classes(
-    db: AsyncSession,
+    db: Db,
     *,
     guard: Authorized,
     user: User,
@@ -305,7 +304,7 @@ async def _link_classes(
 
 
 async def resend_invitation(
-    db: AsyncSession, *, guard: Authorized, user_id: uuid.UUID, meta: RequestMeta
+    db: Db, *, guard: Authorized, user_id: uuid.UUID, meta: RequestMeta
 ) -> EmailMessage:
     user = await _require_visible_user(db, guard, user_id)
     if user.status != "invited":
@@ -331,7 +330,7 @@ async def resend_invitation(
 
 
 async def _grant_role(
-    db: AsyncSession,
+    db: Db,
     *,
     user_id: uuid.UUID,
     role,
@@ -362,7 +361,7 @@ async def _grant_role(
 
 
 async def grant_student_role(
-    db: AsyncSession, *, user_id: uuid.UUID, institute_id: uuid.UUID, granted_by: uuid.UUID | None
+    db: Db, *, user_id: uuid.UUID, institute_id: uuid.UUID, granted_by: uuid.UUID | None
 ) -> None:
     """Used by Direct Learner sign-up, which has no acting admin to authorise against."""
     role = await _require_role(db, STUDENT)
@@ -376,7 +375,7 @@ async def grant_student_role(
 
 
 async def assign_role(
-    db: AsyncSession,
+    db: Db,
     *,
     guard: Authorized,
     user_id: uuid.UUID,
@@ -417,7 +416,7 @@ async def assign_role(
 
 
 async def revoke_role(
-    db: AsyncSession,
+    db: Db,
     *,
     guard: Authorized,
     user_id: uuid.UUID,
@@ -472,7 +471,7 @@ async def revoke_role(
     await db.commit()
 
 
-async def _guard_last_super_admin(db: AsyncSession, role) -> None:
+async def _guard_last_super_admin(db: Db, role) -> None:
     """PRD §3: "At least one Super Admin must always exist".
 
     "Exist" has to mean "can sign in". An invited Super Admin who has not yet set a
@@ -494,7 +493,7 @@ async def _guard_last_super_admin(db: AsyncSession, role) -> None:
 
 
 async def update_status(
-    db: AsyncSession,
+    db: Db,
     *,
     guard: Authorized,
     user_id: uuid.UUID,
@@ -515,7 +514,7 @@ async def update_status(
 
 
 async def _apply_status(
-    db: AsyncSession,
+    db: Db,
     *,
     guard: Authorized,
     user_id: uuid.UUID,
@@ -597,7 +596,7 @@ async def _apply_status(
 
 
 async def bulk_update_status(
-    db: AsyncSession,
+    db: Db,
     *,
     guard: Authorized,
     payload: schemas.BulkStatusRequest,
@@ -645,12 +644,12 @@ async def bulk_update_status(
     return results
 
 
-async def _highest_rank_of(db: AsyncSession, user_id: uuid.UUID) -> int:
+async def _highest_rank_of(db: Db, user_id: uuid.UUID) -> int:
     context = await rbac.get_context(db, user_id)
     return context.max_rank
 
 
-async def _live_scopes_of(db: AsyncSession, user_id: uuid.UUID) -> list[Scope]:
+async def _live_scopes_of(db: Db, user_id: uuid.UUID) -> list[Scope]:
     """Every scope this person currently holds a role at."""
     assignments = await rbac_repo.live_assignments_for_user(db, user_id)
     return [
@@ -664,7 +663,7 @@ async def _live_scopes_of(db: AsyncSession, user_id: uuid.UUID) -> list[Scope]:
     ]
 
 
-async def _primary_scope_of(db: AsyncSession, user_id: uuid.UUID) -> Scope:
+async def _primary_scope_of(db: Db, user_id: uuid.UUID) -> Scope:
     """The scope a user's actions are audited against.
 
     Their most senior assignment, deliberately — not whichever row the database happened to
@@ -680,8 +679,8 @@ async def _primary_scope_of(db: AsyncSession, user_id: uuid.UUID) -> Scope:
     roles = {r.id: r for r in await rbac_repo.list_roles(db, include_inactive=True)}
     # Ties broken on the assignment's own id, so two roles at the same rank do not resolve
     # differently from one request to the next. `max` keeps whichever it saw first, and the
-    # query behind `live_assignments_for_user` has no ORDER BY, so "first" is whatever
-    # PostgreSQL felt like returning — a fault that shows up once a month and never
+    # query behind `live_assignments_for_user` has no sort, so "first" is whatever the
+    # database felt like returning — a fault that shows up once a month and never
     # reproduces.
     senior = max(
         assignments,
@@ -698,7 +697,7 @@ async def _primary_scope_of(db: AsyncSession, user_id: uuid.UUID) -> Scope:
 # -------------------------------------------------------------------------- reading
 
 
-async def _require_visible_user(db: AsyncSession, guard: Authorized, user_id: uuid.UUID) -> User:
+async def _require_visible_user(db: Db, guard: Authorized, user_id: uuid.UUID) -> User:
     """404, not 403, when the target is outside the caller's scope.
 
     Returning 403 would confirm the account exists, which is a cross-tenant information
@@ -739,7 +738,7 @@ async def _require_visible_user(db: AsyncSession, guard: Authorized, user_id: uu
     return user
 
 
-async def get_user(db: AsyncSession, *, guard: Authorized, user_id: uuid.UUID) -> User:
+async def get_user(db: Db, *, guard: Authorized, user_id: uuid.UUID) -> User:
     return await _require_visible_user(db, guard, user_id)
 
 
@@ -777,7 +776,7 @@ def _visible_scope(guard: Authorized, scopes, institute_id: uuid.UUID | None) ->
 
 
 async def list_users(
-    db: AsyncSession,
+    db: Db,
     *,
     guard: Authorized,
     search: str | None,
@@ -788,7 +787,7 @@ async def list_users(
     limit: int,
     include_total: bool = True,
 ) -> tuple[Sequence[User], str | None, int]:
-    """Scope the query to what the caller may see, then let PostgreSQL do the filtering.
+    """Scope the query to what the caller may see, then let the database do the filtering.
 
     ``usable_scopes`` rather than the raw grants: an explicit deny has to narrow
     the list as well as the per-row check, or the rows somebody blocked show up anyway.
@@ -826,26 +825,21 @@ async def list_users(
     )
 
 
-async def _students_in_classes(
-    db: AsyncSession, class_ids: frozenset[uuid.UUID]
-) -> frozenset[uuid.UUID]:
+async def _students_in_classes(db: Db, class_ids: frozenset[uuid.UUID]) -> frozenset[uuid.UUID]:
     if not class_ids:
         return frozenset()
-    from sqlalchemy import select
-
     from app.modules.org.models import ClassEnrollment
 
-    result = await db.execute(
-        select(ClassEnrollment.student_user_id).where(
-            ClassEnrollment.class_id.in_(class_ids),
-            ClassEnrollment.status == "active",
-        )
+    found = await db.distinct(
+        ClassEnrollment,
+        "student_user_id",
+        {"class_id": ids_in(class_ids), "status": "active"},
     )
-    return frozenset(result.scalars())
+    return frozenset(found)
 
 
 async def attach_roles(
-    db: AsyncSession, users: Sequence[User]
+    db: Db, users: Sequence[User]
 ) -> dict[uuid.UUID, list[schemas.RoleAssignmentOut]]:
     """One query for a whole page of users — see ``repository.roles_for_users``."""
     grouped = await repo.roles_for_users(db, [u.id for u in users])
@@ -871,9 +865,7 @@ async def attach_roles(
 # ------------------------------------------------------------- profile and preferences
 
 
-async def update_profile(
-    db: AsyncSession, *, user: User, payload: schemas.UpdateProfileRequest
-) -> User:
+async def update_profile(db: Db, *, user: User, payload: schemas.UpdateProfileRequest) -> User:
     changed = payload.model_dump(exclude_unset=True, exclude_none=True)
     for field, value in changed.items():
         setattr(user, field, value)
@@ -882,7 +874,7 @@ async def update_profile(
 
 
 async def update_preferences(
-    db: AsyncSession, *, user_id: uuid.UUID, payload: schemas.UpdatePreferencesRequest
+    db: Db, *, user_id: uuid.UUID, payload: schemas.UpdatePreferencesRequest
 ) -> UserPreference:
     """Theme follows the user across devices (PRD §4.6, §13 criterion 10)."""
     preferences = await repo.upsert_preferences(db, user_id)
@@ -893,7 +885,7 @@ async def update_preferences(
     return preferences
 
 
-async def build_me(db: AsyncSession, user: User) -> schemas.MeOut:
+async def build_me(db: Db, user: User) -> schemas.MeOut:
     context = await rbac.get_context(db, user.id)
     preferences = await repo.upsert_preferences(db, user.id)
     named = await attach_roles(db, [user])
@@ -938,15 +930,13 @@ async def build_me(db: AsyncSession, user: User) -> schemas.MeOut:
 # ---------------------------------------------------------------------- overview
 
 
-async def build_overview(db: AsyncSession, *, guard: Authorized) -> schemas.OverviewOut:
+async def build_overview(db: Db, *, guard: Authorized) -> schemas.OverviewOut:
     """Real counts for the dashboard tiles, over exactly the caller's scope.
 
     These are COUNTs, not the length of a first page: a tile reading "20 people" for an
     institute with four hundred would be worse than no tile at all.
     """
     from datetime import timedelta
-
-    from sqlalchemy import func, select
 
     from app.modules.audit.models import AuditLog
     from app.modules.org.models import Institute
@@ -964,7 +954,7 @@ async def build_overview(db: AsyncSession, *, guard: Authorized) -> schemas.Over
     scope = _visible_scope(guard, scopes, None)
     institute_ids = frozenset(scope) if scope is not None else frozenset()
 
-    base = select(func.count()).select_from(User).where(User.status != "deleted")
+    base: dict = {"status": {"$ne": "deleted"}}
 
     # The same short-circuit the user list applies. Faculty see the students of the classes
     # they teach and nobody else; without this the tile counted every branch-scoped person
@@ -974,7 +964,7 @@ async def build_overview(db: AsyncSession, *, guard: Authorized) -> schemas.Over
     role_keys = {a.role_key for a in guard.context.assignments}
     if role_keys and role_keys <= MEMBERSHIP_NARROWED_ROLES:
         visible_ids = await _membership_visible_ids(db, guard.user_id, role_keys)
-        base = base.where(User.id.in_(visible_ids | {guard.user_id}))
+        base["_id"] = ids_in(visible_ids | {guard.user_id})
     elif scope is not None:
         if not scope:
             return schemas.OverviewOut(
@@ -985,20 +975,23 @@ async def build_overview(db: AsyncSession, *, guard: Authorized) -> schemas.Over
                 institutes_total=0,
                 security_events_24h=0,
             )
-        base = base.where(repo.visible_users_filter(scope))
+        base["_id"] = ids_in(await repo.visible_user_ids(db, scope) or [])
 
-    async def count(stmt) -> int:
-        return int(await db.scalar(stmt) or 0)
+    # One grouped pass instead of four counts.
+    by_status = {
+        row["_id"]: row["n"]
+        for row in await db.aggregate(
+            User, [{"$match": base}, {"$group": {"_id": "$status", "n": {"$sum": 1}}}]
+        )
+    }
+    total = sum(by_status.values())
+    active = by_status.get("active", 0)
+    invited = by_status.get("invited", 0)
+    suspended = by_status.get("suspended", 0)
 
-    total = await count(base)
-    active = await count(base.where(User.status == "active"))
-    invited = await count(base.where(User.status == "invited"))
-    suspended = await count(base.where(User.status == "suspended"))
-
-    institutes_stmt = select(func.count()).select_from(Institute)
-    if scope is not None:
-        institutes_stmt = institutes_stmt.where(Institute.id.in_(institute_ids))
-    institutes = await count(institutes_stmt)
+    institutes = await db.count(
+        Institute, {"_id": ids_in(institute_ids)} if scope is not None else {}
+    )
 
     # The security tile reads the audit log, so it needs the permission that gates the
     # audit log. A Branch Admin deliberately does not hold `audit:read`, and a
@@ -1015,16 +1008,12 @@ async def build_overview(db: AsyncSession, *, guard: Authorized) -> schemas.Over
         )
 
     since = datetime.now(UTC) - timedelta(hours=24)
-    events_stmt = (
-        select(func.count())
-        .select_from(AuditLog)
-        .where(
-            AuditLog.created_at >= since,
-            AuditLog.action.in_(("login_failure", "account_locked", "token_reuse_detected")),
-        )
-    )
+    events_match: dict = {
+        "created_at": {"$gte": since},
+        "action": {"$in": ["login_failure", "account_locked", "token_reuse_detected"]},
+    }
     if scope is not None:
-        events_stmt = events_stmt.where(AuditLog.institute_id.in_(institute_ids))
+        events_match["institute_id"] = ids_in(institute_ids)
 
     return schemas.OverviewOut(
         users_total=total,
@@ -1032,7 +1021,7 @@ async def build_overview(db: AsyncSession, *, guard: Authorized) -> schemas.Over
         users_invited=invited,
         users_suspended=suspended,
         institutes_total=institutes,
-        security_events_24h=await count(events_stmt),
+        security_events_24h=await db.count(AuditLog, events_match),
     )
 
 
@@ -1040,7 +1029,7 @@ async def build_overview(db: AsyncSession, *, guard: Authorized) -> schemas.Over
 
 
 async def link_guardian(
-    db: AsyncSession,
+    db: Db,
     *,
     guard: Authorized,
     student_id: uuid.UUID,
@@ -1130,7 +1119,7 @@ async def link_guardian(
 
 
 async def unlink_guardian(
-    db: AsyncSession,
+    db: Db,
     *,
     guard: Authorized,
     student_id: uuid.UUID,
@@ -1164,7 +1153,7 @@ async def unlink_guardian(
 
 
 async def list_guardians(
-    db: AsyncSession, *, guard: Authorized, student_id: uuid.UUID
+    db: Db, *, guard: Authorized, student_id: uuid.UUID
 ) -> list[schemas.GuardianOut]:
     await _require_visible_user(db, guard, student_id)
     links = await repo.guardians_of(db, student_id)
@@ -1184,7 +1173,7 @@ async def list_guardians(
     ]
 
 
-async def list_my_children(db: AsyncSession, *, user_id: uuid.UUID) -> list[schemas.ChildOut]:
+async def list_my_children(db: Db, *, user_id: uuid.UUID) -> list[schemas.ChildOut]:
     """What a parent sees when they sign in. No permission needed: it is their own family."""
     links = await repo.guardians_for_parent(db, user_id)
     people = {u.id: u for u in await repo.get_users(db, [link.student_user_id for link in links])}

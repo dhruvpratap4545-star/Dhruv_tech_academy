@@ -110,12 +110,10 @@ async def test_an_admin_cannot_edit_another_institute(client: AsyncClient, world
 
 async def test_the_direct_institute_cannot_be_archived(client: AsyncClient, world, db) -> None:
     """PRD §2: the built-in institute holding self-registered learners is permanent."""
-    from sqlalchemy import select
-
     from app.modules.org.models import Institute
     from app.modules.rbac.catalog import DIRECT_INSTITUTE_CODE
 
-    direct = await db.scalar(select(Institute).where(Institute.code == DIRECT_INSTITUTE_CODE))
+    direct = await db.find_one(Institute, {"code": DIRECT_INSTITUTE_CODE})
     await _as(client, world["super_admin"])
     response = await client.post(f"/api/v1/institutes/{direct.id}/archive")
     assert response.status_code == 403

@@ -5,10 +5,11 @@ children's. Typing it into a form five hundred times is not a feature; reading t
 
 Three rules shape this module.
 
-**No row may take another row down with it.** Each learner is written inside a savepoint,
-so a duplicate email on line 212 rolls back line 212 and nothing else. Without that, one
-bad row at the end discards four hundred good ones and the school has no idea which to
-remove before trying again.
+**No row may take another row down with it.** Each learner is written inside
+``Db.savepoint``, so a duplicate email on line 212 rolls back line 212 and nothing else.
+Without that, one bad row at the end discards four hundred good ones and the school has no
+idea which to remove before trying again. Nothing reaches MongoDB until the whole run
+commits, so "rolling back a row" is discarding the writes it queued.
 
 **Nothing is written until it has been shown.** The preview runs exactly the same code with
 ``dry_run`` set, so what the screen promises and what the import does cannot drift apart.
@@ -25,9 +26,7 @@ import uuid
 from collections.abc import Sequence
 from dataclasses import dataclass
 
-from sqlalchemy import func, select
-from sqlalchemy.ext.asyncio import AsyncSession
-
+from app.core.db import Db, ids_in
 from app.core.errors import ValidationFailed
 from app.modules.auth.service import RequestMeta
 from app.modules.notifications.email import EmailMessage
@@ -81,20 +80,16 @@ class _Directory:
         return found[0], None
 
 
-async def _directory(db: AsyncSession, institute_id: uuid.UUID) -> _Directory:
+async def _directory(db: Db, institute_id: uuid.UUID) -> _Directory:
     branches: dict[str, list[Branch]] = {}
-    for branch in await db.scalars(
-        select(Branch).where(Branch.institute_id == institute_id, Branch.status == "active")
-    ):
+    for branch in await db.find(Branch, {"institute_id": institute_id, "status": "active"}):
         # Both the name and the code are accepted, because a school's own file is as
         # likely to say "MCA" as "Master of Computer Applications".
         for key in {branch.name.casefold(), branch.code.casefold()}:
             branches.setdefault(key, []).append(branch)
 
     classes: dict[uuid.UUID, dict[str, list[Class]]] = {}
-    for row in await db.scalars(
-        select(Class).where(Class.institute_id == institute_id, Class.status == "active")
-    ):
+    for row in await db.find(Class, {"institute_id": institute_id, "status": "active"}):
         for key in {row.name.casefold(), row.code.casefold()}:
             classes.setdefault(row.branch_id, {}).setdefault(key, []).append(row)
 
@@ -142,7 +137,7 @@ def _resolve_places(
 
 
 async def _invite_one(
-    db: AsyncSession,
+    db: Db,
     *,
     guard: Authorized,
     row: SheetRow,
@@ -153,9 +148,17 @@ async def _invite_one(
 ) -> tuple[schemas.BulkInviteRow, list[EmailMessage]]:
     """Write one learner and, if the row names one, their parent.
 
-    Both happen inside the caller's savepoint. A learner invited without the parent link
-    that was promised is worse than a skipped row: the school believes the parent has
-    been told, and nobody has.
+    The learner is committed before the parent is linked, and that ordering is forced by
+    MongoDB rather than chosen. Linking a guardian re-reads the student to check the
+    caller may see them, and a queued write is not yet in the database — so an uncommitted
+    learner looks like an account with no roles at all, and the link is refused with "that
+    user does not exist". PostgreSQL hid this: a flush inside the transaction was visible
+    to the next query in it.
+
+    Committing between the two is also the behaviour the row report promises. A parent who
+    fails is reported on their own line and does not undo the learner: the child is on the
+    platform either way, and the school can add the adult afterwards from the learner's
+    own screen.
     """
     result = schemas.BulkInviteRow(
         row=row.number,
@@ -185,15 +188,16 @@ async def _invite_one(
     if message is not None:
         messages.append(message)
 
+    # The learner lands here, inside the caller's savepoint: if anything above raised, the
+    # queue was discarded and this never runs.
+    await db.commit()
+
     if not row.has_parent:
         return result, messages
 
-    # A parent who fails is reported on their own line of the result and does not undo the
-    # learner: the child is on the platform either way, and the school can add the adult
-    # afterwards from the learner's own screen.
     existing = await repo.get_user_by_email(db, row.parent_email)
     try:
-        async with db.begin_nested():
+        async with db.savepoint():
             _, parent_message = await service.link_guardian(
                 db,
                 guard=guard,
@@ -206,6 +210,7 @@ async def _invite_one(
                 meta=meta,
                 commit=False,
             )
+            await db.commit()
     except Exception as exc:
         result.parent_outcome = "skipped"
         result.parent_reason = _reason(exc)
@@ -231,7 +236,7 @@ def _reason(exc: Exception) -> str:
 
 
 async def run(
-    db: AsyncSession,
+    db: Db,
     *,
     guard: Authorized,
     data: bytes,
@@ -304,7 +309,7 @@ async def run(
             continue
 
         try:
-            async with db.begin_nested():
+            async with db.savepoint():
                 result, sent = await _invite_one(
                     db,
                     guard=guard,
@@ -349,7 +354,7 @@ async def run(
     )
 
 
-async def _already_registered(db: AsyncSession, rows: Sequence[SheetRow]) -> set[str]:
+async def _already_registered(db: Db, rows: Sequence[SheetRow]) -> set[str]:
     """Which of the file's learner addresses already have an account.
 
     Asked once for the whole file. The invitation would refuse each of them anyway, but
@@ -360,7 +365,7 @@ async def _already_registered(db: AsyncSession, rows: Sequence[SheetRow]) -> set
     emails = [row.email for row in rows if row.email]
     if not emails:
         return set()
-    found = await db.scalars(
-        select(func.lower(User.email)).where(func.lower(User.email).in_(emails))
-    )
+    # Addresses are stored lower-cased, so a plain `$in` is the whole comparison — and it
+    # uses the unique index on email, which a case-folding expression would not.
+    found = await db.distinct(User, "email", {"email": ids_in(emails)})
     return set(found)

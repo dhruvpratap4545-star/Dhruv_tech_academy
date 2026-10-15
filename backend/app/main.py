@@ -124,11 +124,14 @@ async def lifespan(_: FastAPI):
         "api starting",
         extra={"environment": settings.environment, "rate_limits": settings.rate_limits_enabled},
     )
-    yield
-    # Close pooled database connections so a rolling deploy does not leave sockets behind.
-    from app.core.db import engine
+    # Connect and make sure every index exists before the first request. A missing unique
+    # index is a silent correctness bug (two accounts for one email), so it fails the boot.
+    from app.core.db import close_db, init_db
 
-    await engine.dispose()
+    await init_db()
+    yield
+    # Close pooled connections so a rolling deploy does not leave sockets behind.
+    await close_db()
     logger.info("api stopping")
 
 
@@ -211,12 +214,13 @@ def create_app() -> FastAPI:
         description="Verifies the database is reachable. Not used as Render's health check.",
     )
     async def healthz_db() -> dict[str, str]:
-        from sqlalchemy import text
+        from app.core.db import ping
+        from app.core.errors import ServiceUnavailable
 
-        from app.core.db import SessionLocal
-
-        async with SessionLocal() as session:
-            await session.execute(text("SELECT 1"))
+        try:
+            await ping()
+        except Exception as exc:
+            raise ServiceUnavailable("The database is not reachable.") from exc
         return {"status": "ok", "database": "reachable"}
 
     # Last, so every route above wins and only what is left falls through to the web app.

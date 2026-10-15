@@ -55,6 +55,12 @@ class Conflict(AppError):
     default_message = "This conflicts with something that already exists."
 
 
+class ServiceUnavailable(AppError):
+    status_code = 503
+    code = "SERVICE_UNAVAILABLE"
+    default_message = "A service this needs is not reachable right now."
+
+
 class RateLimited(AppError):
     status_code = 429
     code = "RATE_LIMITED"

@@ -1,4 +1,4 @@
-"""Idempotent seed, run as the Render pre-deploy command after ``alembic upgrade head``.
+"""Idempotent seed, run as the Render pre-deploy command.
 
 It must be safe to run on **every** deploy: insert what is missing, update what changed,
 delete nothing. A seed that is only safe the first time is a seed that will one day wipe
@@ -18,11 +18,8 @@ from __future__ import annotations
 import asyncio
 import logging
 
-from sqlalchemy import select
-from sqlalchemy.ext.asyncio import AsyncSession
-
 from app.core.config import settings
-from app.core.db import SessionLocal, engine
+from app.core.db import Db, close_db, init_db
 from app.core.logging import configure_logging
 from app.modules.org.models import Institute
 from app.modules.rbac import catalog
@@ -39,8 +36,8 @@ from app.modules.users.models import User, UserPreference
 logger = logging.getLogger(__name__)
 
 
-async def _seed_modules(db: AsyncSession) -> None:
-    existing = {m.key: m for m in (await db.execute(select(Module))).scalars()}
+async def _seed_modules(db: Db) -> None:
+    existing = {m.key: m for m in await db.find(Module, {})}
     if catalog.CORE_MODULE not in existing:
         db.add(
             Module(
@@ -52,8 +49,8 @@ async def _seed_modules(db: AsyncSession) -> None:
         )
 
 
-async def _seed_permissions(db: AsyncSession) -> dict[str, Permission]:
-    existing = {p.key: p for p in (await db.execute(select(Permission))).scalars()}
+async def _seed_permissions(db: Db) -> dict[str, Permission]:
+    existing = {p.key: p for p in await db.find(Permission, {})}
     for definition in catalog.PERMISSIONS:
         current = existing.get(definition.key)
         if current is None:
@@ -72,8 +69,8 @@ async def _seed_permissions(db: AsyncSession) -> dict[str, Permission]:
     return existing
 
 
-async def _seed_roles(db: AsyncSession) -> dict[str, Role]:
-    existing = {r.key: r for r in (await db.execute(select(Role))).scalars()}
+async def _seed_roles(db: Db) -> dict[str, Role]:
+    existing = {r.key: r for r in await db.find(Role, {})}
     for definition in catalog.ROLES:
         current = existing.get(definition.key)
         if current is None:
@@ -97,7 +94,7 @@ async def _seed_roles(db: AsyncSession) -> dict[str, Role]:
 
 
 async def _seed_role_permissions(
-    db: AsyncSession, roles: dict[str, Role], permissions: dict[str, Permission]
+    db: Db, roles: dict[str, Role], permissions: dict[str, Permission]
 ) -> None:
     """Reconcile the **built-in** roles to exactly what the catalogue says.
 
@@ -114,7 +111,7 @@ async def _seed_role_permissions(
     system_role_ids = {role.id for role in roles.values() if role.is_system}
     current_rows = {
         (row.role_id, row.permission_id)
-        for row in (await db.execute(select(RolePermission))).scalars()
+        for row in await db.find(RolePermission, {})
         if row.role_id in system_role_ids
     }
     wanted: set[tuple] = set()
@@ -137,28 +134,20 @@ async def _seed_role_permissions(
 
     stale = current_rows - wanted
     if stale:
-        from sqlalchemy import and_, delete, or_
-
-        await db.execute(
-            delete(RolePermission).where(
-                or_(
-                    *[
-                        and_(
-                            RolePermission.role_id == role_id,
-                            RolePermission.permission_id == permission_id,
-                        )
-                        for role_id, permission_id in stale
-                    ]
-                )
-            )
+        db.delete_many(
+            RolePermission,
+            {
+                "$or": [
+                    {"role_id": role_id, "permission_id": permission_id}
+                    for role_id, permission_id in stale
+                ]
+            },
         )
         logger.info("removed stale role permissions", extra={"count": len(stale)})
 
 
-async def _seed_direct_institute(db: AsyncSession) -> Institute:
-    institute = await db.scalar(
-        select(Institute).where(Institute.code == catalog.DIRECT_INSTITUTE_CODE)
-    )
+async def _seed_direct_institute(db: Db) -> Institute:
+    institute = await db.find_one(Institute, {"code": catalog.DIRECT_INSTITUTE_CODE})
     if institute is None:
         institute = Institute(
             name=catalog.DIRECT_INSTITUTE_NAME,
@@ -170,7 +159,9 @@ async def _seed_direct_institute(db: AsyncSession) -> Institute:
         db.add(institute)
         await db.flush()
 
-    enabled = await db.get(InstituteModule, (institute.id, catalog.CORE_MODULE))
+    enabled = await db.find_one(
+        InstituteModule, {"institute_id": institute.id, "module_key": catalog.CORE_MODULE}
+    )
     if enabled is None:
         db.add(
             InstituteModule(institute_id=institute.id, module_key=catalog.CORE_MODULE, enabled=True)
@@ -178,7 +169,7 @@ async def _seed_direct_institute(db: AsyncSession) -> Institute:
     return institute
 
 
-async def _seed_super_admin(db: AsyncSession, roles: dict[str, Role]) -> None:
+async def _seed_super_admin(db: Db, roles: dict[str, Role]) -> None:
     """Create the first Super Admin as an *invited* user with no password.
 
     No password is ever generated here: a seeded password would end up in a log, a terminal
@@ -195,9 +186,7 @@ async def _seed_super_admin(db: AsyncSession, roles: dict[str, Role]) -> None:
         logger.error("super_admin role missing; cannot seed the first administrator")
         return
 
-    from sqlalchemy import func
-
-    user = await db.scalar(select(User).where(func.lower(User.email) == email))
+    user = await db.find_one(User, {"email": email})
     if user is None:
         user = User(email=email, full_name="Super Admin", status="invited", password_hash=None)
         db.add(user)
@@ -208,13 +197,9 @@ async def _seed_super_admin(db: AsyncSession, roles: dict[str, Role]) -> None:
             extra={"user_id": str(user.id), "email": email},
         )
 
-    existing = await db.scalar(
-        select(UserRoleAssignment).where(
-            UserRoleAssignment.user_id == user.id,
-            UserRoleAssignment.role_id == role.id,
-            UserRoleAssignment.institute_id.is_(None),
-            UserRoleAssignment.revoked_at.is_(None),
-        )
+    existing = await db.find_one(
+        UserRoleAssignment,
+        {"user_id": user.id, "role_id": role.id, "institute_id": None, "revoked_at": None},
     )
     if existing is None:
         db.add(UserRoleAssignment(user_id=user.id, role_id=role.id))
@@ -222,15 +207,15 @@ async def _seed_super_admin(db: AsyncSession, roles: dict[str, Role]) -> None:
 
 
 async def seed() -> None:
-    async with SessionLocal() as db:
-        await _seed_modules(db)
-        await db.flush()
-        permissions = await _seed_permissions(db)
-        roles = await _seed_roles(db)
-        await _seed_role_permissions(db, roles, permissions)
-        await _seed_direct_institute(db)
-        await _seed_super_admin(db, roles)
-        await db.commit()
+    await init_db()
+    db = Db()
+    await _seed_modules(db)
+    permissions = await _seed_permissions(db)
+    roles = await _seed_roles(db)
+    await _seed_role_permissions(db, roles, permissions)
+    await _seed_direct_institute(db)
+    await _seed_super_admin(db, roles)
+    await db.commit()
 
     logger.info(
         "seed complete",
@@ -247,7 +232,7 @@ async def _run() -> None:
     try:
         await seed()
     finally:
-        await engine.dispose()
+        await close_db()
 
 
 if __name__ == "__main__":

@@ -139,8 +139,6 @@ async def test_lifting_a_block_restores_access_immediately(client, world):
 
 async def test_an_expired_grant_does_not_apply(client, world, db):
     """Expiry is the difference between covering someone's leave and a permanent promotion."""
-    from sqlalchemy import select
-
     from app.modules.rbac.context import context_cache
     from app.modules.rbac.models import UserPermissionGrant
 
@@ -161,9 +159,7 @@ async def test_an_expired_grant_does_not_apply(client, world, db):
     assert (await client.get("/api/v1/audit-logs")).status_code == 200
 
     # Wind the clock past the expiry rather than waiting a week for it.
-    grant = await db.scalar(
-        select(UserPermissionGrant).where(UserPermissionGrant.id == uuid.UUID(created.json()["id"]))
-    )
+    grant = await db.get(UserPermissionGrant, uuid.UUID(created.json()["id"]))
     grant.expires_at = datetime.now(UTC) - timedelta(minutes=1)
     await db.commit()
     context_cache.invalidate(world["teacher"].id)

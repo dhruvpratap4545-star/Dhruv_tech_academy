@@ -8,9 +8,8 @@ from __future__ import annotations
 import re
 
 from httpx import AsyncClient
-from sqlalchemy import select
-from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.db import Db
 from app.modules.auth.models import PasswordOtp, RefreshToken
 from app.modules.notifications.email import MemoryEmailProvider
 from app.modules.users.models import User
@@ -65,7 +64,7 @@ async def test_an_unknown_email_gets_the_same_answer_and_no_email(
 
 
 async def test_the_full_reset_journey(
-    client: AsyncClient, outbox: MemoryEmailProvider, db: AsyncSession
+    client: AsyncClient, outbox: MemoryEmailProvider, db: Db
 ) -> None:
     await _register(client)
     await client.post("/api/v1/auth/password/forgot", json={"email": "asha@example.com"})
@@ -100,7 +99,7 @@ async def test_the_full_reset_journey(
 
 
 async def test_a_reset_logs_every_device_out_and_warns_the_user(
-    client: AsyncClient, outbox: MemoryEmailProvider, db: AsyncSession
+    client: AsyncClient, outbox: MemoryEmailProvider, db: Db
 ) -> None:
     """PRD §13 criterion 3: other devices are logged out and a security email is sent."""
     await _register(client)
@@ -116,11 +115,7 @@ async def test_a_reset_logs_every_device_out_and_warns_the_user(
         json={"reset_token": token, "new_password": "Saffron-Kite8!"},
     )
 
-    live = (
-        (await db.execute(select(RefreshToken).where(RefreshToken.revoked_at.is_(None))))
-        .scalars()
-        .all()
-    )
+    live = await db.find(RefreshToken, {"revoked_at": None})
     assert live == []
 
     notice = outbox.last_to("asha@example.com")
@@ -179,7 +174,7 @@ async def test_a_sixth_attempt_is_blocked(client: AsyncClient, outbox: MemoryEma
 
 
 async def test_an_expired_code_is_rejected(
-    client: AsyncClient, outbox: MemoryEmailProvider, db: AsyncSession
+    client: AsyncClient, outbox: MemoryEmailProvider, db: Db
 ) -> None:
     from datetime import UTC, datetime, timedelta
 
@@ -187,7 +182,7 @@ async def test_an_expired_code_is_rejected(
     await client.post("/api/v1/auth/password/forgot", json={"email": "asha@example.com"})
     code = code_from(outbox, "asha@example.com")
 
-    otp = await db.scalar(select(PasswordOtp).where(PasswordOtp.purpose == "reset"))
+    otp = await db.find_one(PasswordOtp, {"purpose": "reset"})
     assert otp is not None
     otp.expires_at = datetime.now(UTC) - timedelta(minutes=1)
     await db.commit()
@@ -229,9 +224,7 @@ async def test_the_new_password_must_differ(client: AsyncClient) -> None:
     assert response.status_code == 422
 
 
-async def test_changing_a_password_works_and_ends_sessions(
-    client: AsyncClient, db: AsyncSession
-) -> None:
+async def test_changing_a_password_works_and_ends_sessions(client: AsyncClient, db: Db) -> None:
     await client.post("/api/v1/auth/register", json=SIGNUP)
     response = await client.post(
         "/api/v1/auth/password/change",
@@ -260,7 +253,7 @@ async def test_an_anonymous_caller_cannot_change_a_password(client: AsyncClient)
 
 
 async def test_an_invited_user_sets_a_password_and_becomes_active(
-    client: AsyncClient, outbox: MemoryEmailProvider, db: AsyncSession, make_user, institute
+    client: AsyncClient, outbox: MemoryEmailProvider, db: Db, make_user, institute
 ) -> None:
     """PRD §13 criterion 4: invited to active via the setup code."""
     inst, branch = await institute("ABC College", "ABC", with_branch="MCA")
@@ -291,7 +284,7 @@ async def test_an_invited_user_sets_a_password_and_becomes_active(
     )
     assert setup.status_code == 200
 
-    user = await db.scalar(select(User).where(User.email == "ravi@example.com"))
+    user = await db.find_one(User, {"email": "ravi@example.com"})
     assert user is not None and user.status == "active"
 
     assert (
@@ -316,7 +309,7 @@ async def test_an_invited_user_cannot_log_in_before_setting_a_password(
 
 
 async def test_the_seeded_super_admin_can_get_into_their_account(
-    client: AsyncClient, outbox: MemoryEmailProvider, db: AsyncSession, seeded
+    client: AsyncClient, outbox: MemoryEmailProvider, db: Db, seeded
 ) -> None:
     """The very first administrator has to be able to log in, or nothing can be set up.
 
@@ -324,12 +317,10 @@ async def test_the_seeded_super_admin_can_get_into_their_account(
     password would end up in a deploy log. There is no one above them to send an invitation,
     so forgot-password is their only way in, and it has to leave them able to log in.
     """
-    from sqlalchemy import select
-
     from app.modules.rbac.catalog import SUPER_ADMIN
     from app.modules.rbac.models import Role, UserRoleAssignment
 
-    role = await db.scalar(select(Role).where(Role.key == SUPER_ADMIN))
+    role = await db.find_one(Role, {"key": SUPER_ADMIN})
     assert role is not None
     owner = User(email="owner@example.com", full_name="Super Admin", status="invited")
     db.add(owner)
@@ -370,11 +361,9 @@ async def test_the_seeded_super_admin_can_get_into_their_account(
 
 
 async def test_a_completed_reset_activates_an_invited_account(
-    client: AsyncClient, outbox: MemoryEmailProvider, db: AsyncSession, make_user
+    client: AsyncClient, outbox: MemoryEmailProvider, db: Db, make_user
 ) -> None:
     """`invited` means "no password yet", so it must not survive setting one."""
-    from sqlalchemy import select
-
     invited = await make_user("student", status="invited", email="newbie@example.com")
     assert invited.status == "invited"
 
@@ -391,7 +380,7 @@ async def test_a_completed_reset_activates_an_invited_account(
         json={"reset_token": token, "new_password": "newbiepass11!"},
     )
 
-    refreshed = await db.scalar(select(User).where(User.email == "newbie@example.com"))
+    refreshed = await db.find_one(User, {"email": "newbie@example.com"})
     assert refreshed is not None
     assert refreshed.status == "active"
 

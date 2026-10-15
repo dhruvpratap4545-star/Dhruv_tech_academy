@@ -1,6 +1,7 @@
 # Render Blueprint for Dhruv Online Academy.
 #
-# ONE web service (`dhruv-app`) serves both the API and the web app on one URL, plus Postgres.
+# ONE web service (`dhruv-app`) serves both the API and the web app on one URL. The database
+# is MongoDB Atlas, outside Render: its connection string is the MONGODB_URL secret.
 # The root Dockerfile builds frontend/ and bakes it into the API image; FastAPI serves it
 # (backend/app/core/spa.py). Same origin means no CORS and the auth cookies always travel —
 # which separate services on *.onrender.com URLs would break.
@@ -20,9 +21,9 @@ services:
     runtime: docker
     region: singapore
     # FREE plan: sleeps after ~15 min idle (first request then takes ~1 min) and has no
-    # pre-deploy step, so migrations + seed run at container start (RUN_MIGRATIONS_ON_START).
+    # pre-deploy step, so the seed runs at container start (RUN_MIGRATIONS_ON_START).
     # Moving to a paid plan: set `plan: starter`, delete RUN_MIGRATIONS_ON_START and add
-    #   preDeployCommand: alembic upgrade head && python -m app.core.seed
+    #   preDeployCommand: python -m app.core.seed
     plan: free
     dockerfilePath: ./Dockerfile
     dockerContext: .
@@ -30,10 +31,11 @@ services:
     envVars:
       - key: ENVIRONMENT
         value: production
-      - key: DATABASE_URL
-        fromDatabase:
-          name: dhruv-db
-          property: connectionString
+      # Atlas connection string. Add Render's outbound IPs to the Atlas IP access list.
+      - key: MONGODB_URL
+        sync: false
+      - key: MONGODB_DB_NAME
+        value: dhruv
       # Same-origin deploy: no COOKIE_DOMAIN (host-only cookies) and no CORS_ORIGINS needed.
       #
       # FRONTEND_URL is still required even though the app is same-origin: the invitation
@@ -62,13 +64,3 @@ services:
       - key: SENTRY_DSN
         sync: false
 
-databases:
-  # WARNING: once this database exists, `name`, `region` and `postgresMajorVersion` are
-  # write-once. Render matches databases by name — renaming this creates a NEW, EMPTY
-  # database and orphans the old one. Region and version cannot be changed at all.
-  - name: dhruv-db
-    region: singapore
-    # FREE Postgres EXPIRES (30 days at the time of writing — check Render's docs) and is
-    # then deleted with its data. Upgrade to a paid plan before real users depend on it.
-    plan: free
-    postgresMajorVersion: "16"

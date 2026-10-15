@@ -21,8 +21,7 @@ import re
 import uuid
 from datetime import UTC, datetime
 
-from sqlalchemy.ext.asyncio import AsyncSession
-
+from app.core.db import Db, ids_in
 from app.core.errors import Conflict, Forbidden, NotFound, ValidationFailed
 from app.modules.audit import events
 from app.modules.audit import service as audit
@@ -64,7 +63,7 @@ def _scope_label(scope: Scope, names: dict[uuid.UUID, str] | None = None) -> str
     return f"{institute} · {names.get(scope.branch_id, 'one branch')}"
 
 
-async def _names_for(db: AsyncSession, scopes: list[Scope]) -> dict[uuid.UUID, str]:
+async def _names_for(db: Db, scopes: list[Scope]) -> dict[uuid.UUID, str]:
     """Resolve institute and branch ids to names, in two queries regardless of how many.
 
     Labels are built for display only, so a missing name degrades to a generic phrase
@@ -74,13 +73,11 @@ async def _names_for(db: AsyncSession, scopes: list[Scope]) -> dict[uuid.UUID, s
     branch_ids = {s.branch_id for s in scopes if s.branch_id}
     names: dict[uuid.UUID, str] = {}
     if institute_ids:
-        rows = await db.execute(
-            Institute.__table__.select().with_only_columns(Institute.id, Institute.name)
-        )
-        names.update({i: n for i, n in rows.all() if i in institute_ids})
+        rows = await db.raw(Institute, {"_id": ids_in(institute_ids)}, {"name": 1})
+        names.update({r["_id"]: r["name"] for r in rows})
     if branch_ids:
-        rows = await db.execute(Branch.__table__.select().with_only_columns(Branch.id, Branch.name))
-        names.update({i: n for i, n in rows.all() if i in branch_ids})
+        rows = await db.raw(Branch, {"_id": ids_in(branch_ids)}, {"name": 1})
+        names.update({r["_id"]: r["name"] for r in rows})
     return names
 
 
@@ -135,7 +132,7 @@ def _may_customise(role, context: AuthContext, institute_id: uuid.UUID | None) -
 
 
 async def list_roles(
-    db: AsyncSession, context: AuthContext, institute_id: uuid.UUID | None = None
+    db: Db, context: AuthContext, institute_id: uuid.UUID | None = None
 ) -> list[schemas.RoleOut]:
     """The role catalogue, seen from one institute.
 
@@ -203,7 +200,7 @@ def _check_subset(context: AuthContext, keys: list[str], scope: Scope) -> None:
 
 
 async def create_role(
-    db: AsyncSession,
+    db: Db,
     *,
     actor: User,
     guard: Authorized,
@@ -272,7 +269,7 @@ async def create_role(
 
 
 async def update_role(
-    db: AsyncSession,
+    db: Db,
     *,
     actor: User,
     guard: Authorized,
@@ -319,7 +316,7 @@ async def update_role(
 
 
 async def remove_role(
-    db: AsyncSession,
+    db: Db,
     *,
     actor: User,
     guard: Authorized,
@@ -379,9 +376,9 @@ async def remove_role(
     )
 
     if deleted:
-        # `role_permissions` and this institute's overrides cascade away with it. The
-        # foreign key from `user_role_assignments` is RESTRICT, so if anything was missed
-        # above, PostgreSQL refuses the delete rather than orphaning a person's history.
+        # `role_permissions` and every institute's overrides of it go in the same commit.
+        # `ever_assigned_count` above being zero is what makes this safe: no person's
+        # history names the role.
         await repository.delete_role(db, role)
     else:
         role.is_active = False
@@ -403,31 +400,21 @@ async def remove_role(
     )
 
 
-async def _invalidate_holders(db: AsyncSession, role_id: uuid.UUID) -> None:
+async def _invalidate_holders(db: Db, role_id: uuid.UUID) -> None:
     """Drop the cached context of everyone holding a role whose meaning just changed.
 
     Without this, a permission removed from a role keeps working for up to the cache TTL —
     which is precisely the window in which somebody is removing it because it is being
     misused.
     """
-    from sqlalchemy import select
-
-    from app.modules.rbac.models import UserRoleAssignment
-
-    rows = await db.execute(
-        select(UserRoleAssignment.user_id).where(
-            UserRoleAssignment.role_id == role_id,
-            UserRoleAssignment.revoked_at.is_(None),
-        )
-    )
-    for (user_id,) in rows.all():
+    for user_id in await repository.user_ids_holding_role(db, role_id):
         engine.invalidate_context(user_id)
 
 
 # -------------------------------------------------------------------- personal grants
 
 
-async def list_grants(db: AsyncSession, user_id: uuid.UUID) -> list[schemas.GrantOut]:
+async def list_grants(db: Db, user_id: uuid.UUID) -> list[schemas.GrantOut]:
     rows = await repository.live_grants_for_user(db, user_id)
     names = await _names_for(db, [scope_of(g.institute_id, g.branch_id) for g, _, _ in rows])
     now = datetime.now(UTC)
@@ -451,7 +438,7 @@ async def list_grants(db: AsyncSession, user_id: uuid.UUID) -> list[schemas.Gran
 
 
 async def create_grant(
-    db: AsyncSession,
+    db: Db,
     *,
     actor: User,
     guard: Authorized,
@@ -544,7 +531,7 @@ async def create_grant(
 
 
 async def revoke_grant(
-    db: AsyncSession,
+    db: Db,
     *,
     actor: User,
     guard: Authorized,
@@ -578,7 +565,7 @@ async def revoke_grant(
 # ------------------------------------------------------------------------- my own access
 
 
-async def build_my_access(db: AsyncSession, context: AuthContext) -> schemas.MyAccessOut:
+async def build_my_access(db: Db, context: AuthContext) -> schemas.MyAccessOut:
     """What the signed-in person can actually do, explained.
 
     Every permission in the catalogue appears, held or not. The unheld ones are the point:
@@ -653,7 +640,7 @@ def _widest_label(scopes: tuple[Scope, ...], names: dict[uuid.UUID, str]) -> str
 
 
 async def set_role_permissions_for_institute(
-    db: AsyncSession,
+    db: Db,
     *,
     actor: User,
     guard: Authorized,

@@ -1,16 +1,18 @@
-"""Fixtures for tests that drive the real API against a real PostgreSQL.
+"""Fixtures for tests that drive the real API against a real MongoDB.
 
-Isolation strategy: each test runs inside an outer transaction on a single connection,
-and the session the application uses is joined to it. The services still call ``commit()``
-normally — those become savepoint releases — and the outer transaction is rolled back when
-the test ends. Nothing is truncated between tests, so the suite stays fast as it grows.
+Isolation strategy: one throwaway database per test session, named ``test_dhruv_<random>``,
+dropped at the end; every collection is emptied after each test (indexes stay, so uniqueness
+is still tested). The name is generated here, never read from settings, so a run can never
+touch the real database.
 
-The schema is built by running the real Alembic migration, not ``metadata.create_all``.
-That way every test run also proves the migration produces the schema the models expect.
+The application gets a fresh unit of work per request, exactly as in production. Test code
+gets its own (``db``), which always reads from the database — so a test checking what a
+request wrote sees the committed result, never a stale in-memory copy.
 
-Skipped when no database is reachable, so unit tests still run on a laptop without one.
-In CI a missing database is a failure instead, because silently skipping the entire
-integration suite would make a red build look green.
+Point ``TEST_MONGODB_URL`` at a local MongoDB (``docker run -p 27018:27017 mongo:8.0``)
+rather than Atlas: the suite makes thousands of round trips, and Atlas latency turns
+minutes into the better part of an hour. Skipped when no database is reachable, except in
+CI, where silently skipping the entire integration suite would make a red build look green.
 """
 
 from __future__ import annotations
@@ -18,14 +20,16 @@ from __future__ import annotations
 import os
 import uuid
 from collections.abc import AsyncGenerator
+from typing import Any
 
 import pytest
 import pytest_asyncio
+from beanie import Document
 from httpx import ASGITransport, AsyncClient
-from sqlalchemy.ext.asyncio import AsyncConnection, AsyncSession, async_sessionmaker
+from pymongo.asynchronous.database import AsyncDatabase
 
-from app.core.config import settings
-from app.core.db import build_engine, get_db
+from app.core import db as db_module
+from app.core.db import Db
 from app.core.security import CSRF_HEADER, CSRF_HEADER_VALUE
 from app.main import create_app
 from app.modules.notifications import email as email_module
@@ -33,123 +37,69 @@ from app.modules.notifications.email import MemoryEmailProvider
 from app.modules.rbac import catalog
 from app.modules.rbac.context import context_cache
 
-TEST_DATABASE_URL = (
-    os.environ.get("TEST_DATABASE_URL")
-    or settings.test_database_url
-    or "postgresql+asyncpg://app:app@localhost:5433/app_test"
-)
+TEST_MONGODB_URL = os.environ.get("TEST_MONGODB_URL", "mongodb://localhost:27018")
 IN_CI = os.environ.get("CI", "").lower() == "true"
 
 
-def _refuse_unless_disposable(url: str) -> None:
-    """Refuse to wipe a database whose name does not say it is for tests.
+class FreshDb(Db):
+    """The test side's unit of work.
 
-    `_apply_migrations` drops the whole `public` schema. The URL it uses falls back to a
-    hard-coded default, so running pytest on a machine where `TEST_DATABASE_URL` is unset
-    but a database happens to sit on that host and port destroys it — every table, with no
-    prompt and no way back. A developer's local `app` database is exactly that shape.
-
-    The name is the only signal available before the drop, so the name has to carry the
-    consent: a database called `app_test`, `dhruv_test` or `test` is one somebody created
-    to be thrown away. Anything else stops the run with an explanation rather than a
-    restore from backup.
+    Every read goes to the database and replaces whatever copy was held, and ``flush()``
+    commits — tests set data up step by step and expect each step to be visible to the next
+    query, the way a flushed session row was.
     """
-    from urllib.parse import urlsplit
 
-    name = urlsplit(url).path.lstrip("/").split("?")[0]
-    if name == "test" or name.endswith("_test") or name.startswith("test_"):
-        return
-    raise pytest.UsageError(
-        f"Refusing to run: the integration tests erase every table in '{name}', and that "
-        f"name does not mark it as a test database. Point TEST_DATABASE_URL at a database "
-        f"named 'test', or ending in '_test', or starting with 'test_'."
-    )
+    __slots__ = ()
 
+    def track(self, doc):
+        self._identity[(type(doc), doc.id)] = doc
+        return doc
 
-async def _database_reachable(url: str) -> str | None:
-    engine = build_engine(url, pool_size=1, max_overflow=0)
-    try:
-        async with engine.connect():
-            return None
-    except Exception as exc:
-        return f"{type(exc).__name__}: {exc}"
-    finally:
-        await engine.dispose()
+    async def get(self, model, doc_id):
+        doc = await model.get(doc_id)
+        return self.track(doc) if doc is not None else None
+
+    async def flush(self) -> None:
+        await self.commit()
 
 
 @pytest_asyncio.fixture(scope="session")
-async def db_engine():
-    _refuse_unless_disposable(TEST_DATABASE_URL)
-    reason = await _database_reachable(TEST_DATABASE_URL)
-    if reason is not None:
+async def mongo() -> AsyncGenerator[AsyncDatabase]:
+    name = f"test_dhruv_{uuid.uuid4().hex[:8]}"
+    try:
+        database = await db_module.init_db(TEST_MONGODB_URL, name)
+        await db_module.ping()
+    except Exception as exc:
         message = (
-            f"No test database at {TEST_DATABASE_URL} ({reason}). "
-            "Start one with `docker compose up -d db_test`."
+            f"No test MongoDB at {TEST_MONGODB_URL} ({type(exc).__name__}). "
+            "Start one with `docker run -d -p 27018:27017 mongo:8.0`."
         )
         if IN_CI:
             pytest.fail(message)
         pytest.skip(message, allow_module_level=True)
 
-    engine = build_engine(TEST_DATABASE_URL)
-    await _apply_migrations(engine)
-    try:
-        yield engine
-    finally:
-        await engine.dispose()
+    yield database
 
-
-async def _apply_migrations(engine) -> None:
-    """Run Alembic against the test database, so the migration itself is under test."""
-    from alembic import command
-    from alembic.config import Config
-    from sqlalchemy import text
-
-    async with engine.begin() as conn:
-        # A clean slate each session: the previous run's schema may predate a new migration.
-        await conn.execute(text("DROP SCHEMA public CASCADE"))
-        await conn.execute(text("CREATE SCHEMA public"))
-
-    def _upgrade(connection) -> None:
-        config = Config("alembic.ini")
-        config.attributes["connection"] = connection
-        command.upgrade(config, "head")
-
-    async with engine.begin() as conn:
-        await conn.run_sync(_upgrade)
+    assert database.name.startswith("test_"), "refusing to drop a non-test database"
+    await database.client.drop_database(name)
+    await db_module.close_db()
 
 
 @pytest_asyncio.fixture
-async def db_connection(db_engine) -> AsyncGenerator[AsyncConnection]:
-    async with db_engine.connect() as connection:
-        transaction = await connection.begin()
-        try:
-            yield connection
-        finally:
-            await transaction.rollback()
-
-
-@pytest_asyncio.fixture
-async def db(db_connection: AsyncConnection) -> AsyncGenerator[AsyncSession]:
-    """A session joined to the test's outer transaction.
-
-    ``join_transaction_mode="create_savepoint"`` is what makes application ``commit()``
-    calls safe to roll back afterwards.
-    """
-    factory = async_sessionmaker(
-        bind=db_connection,
-        expire_on_commit=False,
-        autoflush=False,
-        join_transaction_mode="create_savepoint",
-    )
-    async with factory() as session:
-        yield session
+async def db(mongo: AsyncDatabase) -> AsyncGenerator[Db]:
+    yield FreshDb()
+    for model in db_module.document_models():
+        await model.get_pymongo_collection().delete_many({})
 
 
 @pytest_asyncio.fixture(autouse=True)
 async def _clean_process_state() -> AsyncGenerator[None]:
     """The permission cache and the outbox are process-global; a leak between tests would
     make results depend on ordering."""
+    from app.modules.rbac import service as rbac_service
+
     context_cache.clear()
+    rbac_service._permission_modules.clear()
     provider = MemoryEmailProvider()
     email_module.set_provider(provider)
     yield
@@ -164,14 +114,15 @@ def outbox() -> MemoryEmailProvider:
 
 
 @pytest_asyncio.fixture
-async def seeded(db: AsyncSession) -> AsyncSession:
+async def seeded(db: Db) -> Db:
     """Roles, permissions, the core module and the Direct institute."""
     from app.core import seed as seed_module
 
     await seed_module._seed_modules(db)
-    await db.flush()
+    await db.commit()
     permissions = await seed_module._seed_permissions(db)
     roles = await seed_module._seed_roles(db)
+    await db.commit()
     await seed_module._seed_role_permissions(db, roles, permissions)
     await seed_module._seed_direct_institute(db)
     await db.commit()
@@ -179,28 +130,34 @@ async def seeded(db: AsyncSession) -> AsyncSession:
 
 
 @pytest_asyncio.fixture
-async def client(db: AsyncSession, seeded: AsyncSession) -> AsyncGenerator[AsyncClient]:
-    """API client wired to the test's transaction-bound session."""
+async def client(db: Db, seeded: Db) -> AsyncGenerator[AsyncClient]:
+    """API client against the app, which opens its own unit of work per request."""
     app = create_app()
-
-    async def _override() -> AsyncGenerator[AsyncSession]:
-        yield db
-
-    app.dependency_overrides[get_db] = _override
     async with AsyncClient(
         transport=ASGITransport(app=app),
         base_url="http://test",
         headers={CSRF_HEADER: CSRF_HEADER_VALUE},
     ) as ac:
         yield ac
-    app.dependency_overrides.clear()
+
+
+# ------------------------------------------------------------------------- helpers
+
+
+async def one(db: Db, model: type[Document], match: dict[str, Any] | None = None):
+    """The first matching document, read fresh — the test-side ``scalar(select(...))``."""
+    return await db.find_one(model, match or {})
+
+
+async def all_of(db: Db, model: type[Document], match: dict[str, Any] | None = None):
+    return await db.find(model, match or {})
 
 
 # ------------------------------------------------------------------------- factories
 
 
 @pytest_asyncio.fixture
-async def make_user(db: AsyncSession, seeded: AsyncSession):
+async def make_user(db: Db, seeded: Db):
     """Create an active user holding one role at a scope."""
     from app.core.security import hash_password
     from app.modules.rbac import repository as rbac_repo
@@ -224,7 +181,6 @@ async def make_user(db: AsyncSession, seeded: AsyncSession):
             status=status,
         )
         db.add(user)
-        await db.flush()
         db.add(UserPreference(user_id=user.id))
 
         role = await rbac_repo.get_role_by_key(db, role_key)
@@ -260,7 +216,7 @@ async def login_as(client: AsyncClient):
 
 
 @pytest_asyncio.fixture
-async def institute(db: AsyncSession, seeded: AsyncSession):
+async def institute(db: Db, seeded: Db):
     """Create an institute with core enabled, plus an optional branch."""
     from app.modules.org.models import Branch, Institute
     from app.modules.rbac.models import InstituteModule
@@ -268,13 +224,11 @@ async def institute(db: AsyncSession, seeded: AsyncSession):
     async def _make(name: str, code: str, *, with_branch: str | None = None):
         row = Institute(name=name, code=code.upper(), type="college", status="active")
         db.add(row)
-        await db.flush()
         db.add(InstituteModule(institute_id=row.id, module_key=catalog.CORE_MODULE, enabled=True))
         branch = None
         if with_branch:
             branch = Branch(institute_id=row.id, name=with_branch, code=with_branch.upper())
             db.add(branch)
-            await db.flush()
         await db.commit()
         return row, branch
 
@@ -282,7 +236,7 @@ async def institute(db: AsyncSession, seeded: AsyncSession):
 
 
 @pytest_asyncio.fixture
-async def organisation(db: AsyncSession, seeded: AsyncSession):
+async def organisation(db: Db, seeded: Db):
     """An organisation holding however many institutes the test asks for.
 
     Returns ``(organisation, [institutes...])``. Core modules are enabled on each, exactly

@@ -5,7 +5,7 @@ Two tiers of test live here:
 * **Unit tests** exercise pure logic — scopes, the permission context, cursors, hashing,
   tokens, schema validation. They need nothing but Python and run everywhere.
 * **Integration tests** (``tests/integration/``) drive the real API against a real
-  PostgreSQL. They are skipped when no database is reachable, *except* in CI where a
+  MongoDB. They are skipped when no database is reachable, *except* in CI where a
   missing database is a failure rather than a reason to quietly pass.
 
 Keys are generated per session. A committed test key would eventually be copy-pasted into

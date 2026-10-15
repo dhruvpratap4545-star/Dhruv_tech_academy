@@ -13,7 +13,6 @@ import uuid
 import pytest
 import pytest_asyncio
 from httpx import AsyncClient
-from sqlalchemy import select
 
 pytestmark = pytest.mark.asyncio
 
@@ -275,7 +274,7 @@ async def test_a_status_change_needs_authority_over_every_scope_they_hold(
     _, cse = await institute_second_branch(db, world)
 
     both = await make_user("branch_admin", institute_id=world["abc"].id, branch_id=world["mca"].id)
-    role = await db.scalar(select(Role).where(Role.key == "branch_admin"))
+    role = await db.find_one(Role, {"key": "branch_admin"})
     db.add(
         UserRoleAssignment(
             user_id=both.id, role_id=role.id, institute_id=world["abc"].id, branch_id=cse.id

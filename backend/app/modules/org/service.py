@@ -13,8 +13,7 @@ import uuid
 from collections.abc import Sequence
 from datetime import date
 
-from sqlalchemy.ext.asyncio import AsyncSession
-
+from app.core.db import Db
 from app.core.errors import Conflict, Forbidden, NotFound, ValidationFailed
 from app.modules.audit import events
 from app.modules.audit import service as audit
@@ -34,23 +33,21 @@ from app.modules.rbac.scopes import Scope
 from app.modules.rbac.service import Authorized
 
 
-async def _require_institute(db: AsyncSession, institute_id: uuid.UUID) -> Institute:
+async def _require_institute(db: Db, institute_id: uuid.UUID) -> Institute:
     institute = await repo.get_institute(db, institute_id)
     if institute is None:
         raise NotFound("That institute does not exist.")
     return institute
 
 
-async def _require_branch(
-    db: AsyncSession, institute_id: uuid.UUID, branch_id: uuid.UUID
-) -> Branch:
+async def _require_branch(db: Db, institute_id: uuid.UUID, branch_id: uuid.UUID) -> Branch:
     branch = await repo.get_branch(db, branch_id, institute_id=institute_id)
     if branch is None:
         raise NotFound("That branch does not exist.")
     return branch
 
 
-async def _require_class(db: AsyncSession, class_id: uuid.UUID) -> Class:
+async def _require_class(db: Db, class_id: uuid.UUID) -> Class:
     found = await repo.get_class(db, class_id)
     if found is None:
         raise NotFound("That class does not exist.")
@@ -61,7 +58,7 @@ async def _require_class(db: AsyncSession, class_id: uuid.UUID) -> Class:
 
 
 async def create_institute(
-    db: AsyncSession, *, guard: Authorized, payload: schemas.InstituteCreate, meta: RequestMeta
+    db: Db, *, guard: Authorized, payload: schemas.InstituteCreate, meta: RequestMeta
 ) -> Institute:
     await guard.ensure(Scope())  # institute:create is platform-only (PRD §5.3)
 
@@ -94,7 +91,7 @@ async def create_institute(
     return institute
 
 
-async def enable_core_modules(db: AsyncSession, institute_id: uuid.UUID) -> None:
+async def enable_core_modules(db: Db, institute_id: uuid.UUID) -> None:
     """Core is on for every institute from the moment it exists — auth, org and users are
     not optional extras (PRD §5.2 step 5)."""
     from app.modules.rbac.catalog import CORE_MODULE
@@ -104,7 +101,7 @@ async def enable_core_modules(db: AsyncSession, institute_id: uuid.UUID) -> None
 
 
 async def update_institute(
-    db: AsyncSession,
+    db: Db,
     *,
     guard: Authorized,
     institute_id: uuid.UUID,
@@ -133,7 +130,7 @@ async def update_institute(
 
 
 async def archive_institute(
-    db: AsyncSession, *, guard: Authorized, institute_id: uuid.UUID, meta: RequestMeta
+    db: Db, *, guard: Authorized, institute_id: uuid.UUID, meta: RequestMeta
 ) -> Institute:
     await guard.ensure(Scope())
     institute = await _require_institute(db, institute_id)
@@ -155,7 +152,7 @@ async def archive_institute(
 
 
 async def list_institutes(
-    db: AsyncSession,
+    db: Db,
     *,
     guard: Authorized,
     search: str | None,
@@ -184,15 +181,15 @@ async def list_institutes(
     )
 
 
-async def get_institute(
-    db: AsyncSession, *, guard: Authorized, institute_id: uuid.UUID
-) -> Institute:
+async def get_institute(db: Db, *, guard: Authorized, institute_id: uuid.UUID) -> Institute:
     """404, not 403, when the institute is outside the caller's scope.
 
     The same rule the users module already follows, and it matters more here. A 403 means
     "this exists and is not yours", so anybody with an account could walk a list of ids
     and learn which institutes are on the platform — a customer list, handed out by the
     error code. 404 says nothing either way.
+
+    `guard.ensure` is deliberately not used: it answers 403, which is the leak.
     """
     institute = await _require_institute(db, institute_id)
     if not guard.context.can(guard.permission, Scope(institute_id=institute_id)):
@@ -204,7 +201,7 @@ async def get_institute(
 
 
 async def create_branch(
-    db: AsyncSession,
+    db: Db,
     *,
     guard: Authorized,
     institute_id: uuid.UUID,
@@ -242,7 +239,7 @@ async def create_branch(
 
 
 async def update_branch(
-    db: AsyncSession,
+    db: Db,
     *,
     guard: Authorized,
     institute_id: uuid.UUID,
@@ -273,7 +270,7 @@ async def update_branch(
 
 
 async def list_branches(
-    db: AsyncSession,
+    db: Db,
     *,
     guard: Authorized,
     institute_id: uuid.UUID,
@@ -303,7 +300,7 @@ async def list_branches(
 
 
 async def create_session(
-    db: AsyncSession,
+    db: Db,
     *,
     guard: Authorized,
     institute_id: uuid.UUID,
@@ -343,7 +340,7 @@ async def create_session(
 
 
 async def update_session(
-    db: AsyncSession,
+    db: Db,
     *,
     guard: Authorized,
     institute_id: uuid.UUID,
@@ -358,7 +355,7 @@ async def update_session(
 
     changed = payload.model_dump(exclude_unset=True, exclude_none=True)
     if changed.get("is_current"):
-        await repo.clear_current_session(db, institute_id)
+        await repo.clear_current_session(db, institute_id, keep=session.id)
     for field, value in changed.items():
         setattr(session, field, value)
 
@@ -384,7 +381,7 @@ def _validate_session_dates(start: date, end: date) -> None:
 
 
 async def list_sessions(
-    db: AsyncSession, *, guard: Authorized, institute_id: uuid.UUID, cursor: str | None, limit: int
+    db: Db, *, guard: Authorized, institute_id: uuid.UUID, cursor: str | None, limit: int
 ) -> tuple[Sequence[AcademicSession], str | None, int]:
     await guard.ensure_within(institute_id)
     return await repo.list_sessions(db, institute_id=institute_id, cursor=cursor, limit=limit)
@@ -394,7 +391,7 @@ async def list_sessions(
 
 
 async def create_class(
-    db: AsyncSession,
+    db: Db,
     *,
     guard: Authorized,
     branch_id: uuid.UUID,
@@ -441,7 +438,7 @@ async def create_class(
 
 
 async def update_class(
-    db: AsyncSession,
+    db: Db,
     *,
     guard: Authorized,
     class_id: uuid.UUID,
@@ -471,7 +468,7 @@ async def update_class(
 
 
 async def list_classes(
-    db: AsyncSession,
+    db: Db,
     *,
     guard: Authorized,
     institute_id: uuid.UUID,
@@ -521,7 +518,7 @@ async def list_classes(
 
 
 async def assign_faculty(
-    db: AsyncSession,
+    db: Db,
     *,
     guard: Authorized,
     class_id: uuid.UUID,
@@ -560,7 +557,7 @@ async def assign_faculty(
 
 
 async def remove_faculty(
-    db: AsyncSession,
+    db: Db,
     *,
     guard: Authorized,
     class_id: uuid.UUID,
@@ -590,7 +587,7 @@ async def remove_faculty(
 
 
 async def enrol_student(
-    db: AsyncSession,
+    db: Db,
     *,
     guard: Authorized,
     class_id: uuid.UUID,
@@ -627,7 +624,7 @@ async def enrol_student(
 
 
 async def unenrol_student(
-    db: AsyncSession,
+    db: Db,
     *,
     guard: Authorized,
     class_id: uuid.UUID,
@@ -649,7 +646,7 @@ async def unenrol_student(
 
 
 def _record_enrolment(
-    db: AsyncSession,
+    db: Db,
     guard: Authorized,
     target: Class,
     student_id: uuid.UUID,
@@ -669,22 +666,15 @@ def _record_enrolment(
     )
 
 
-async def _require_user_in_institute(
-    db: AsyncSession, user_id: uuid.UUID, institute_id: uuid.UUID
-) -> None:
+async def _require_user_in_institute(db: Db, user_id: uuid.UUID, institute_id: uuid.UUID) -> None:
     """Cross-tenant guard: you cannot attach a user from another institute to your class."""
-    from sqlalchemy import exists, select
-
     from app.modules.rbac.models import UserRoleAssignment
 
-    stmt = select(
-        exists().where(
-            UserRoleAssignment.user_id == user_id,
-            UserRoleAssignment.institute_id == institute_id,
-            UserRoleAssignment.revoked_at.is_(None),
-        )
+    member = await db.exists(
+        UserRoleAssignment,
+        {"user_id": user_id, "institute_id": institute_id, "revoked_at": None},
     )
-    if not await db.scalar(stmt):
+    if not member:
         raise NotFound("That user is not part of this institute.")
 
 
@@ -692,7 +682,7 @@ async def _require_user_in_institute(
 
 
 async def create_organisation(
-    db: AsyncSession,
+    db: Db,
     *,
     guard: Authorized,
     payload: schemas.OrganisationCreate,
@@ -730,7 +720,7 @@ async def create_organisation(
 
 
 async def list_organisations(
-    db: AsyncSession,
+    db: Db,
     *,
     guard: Authorized,
     search: str | None,
@@ -757,7 +747,7 @@ async def list_organisations(
 
 
 async def get_organisation(
-    db: AsyncSession, *, guard: Authorized, organisation_id: uuid.UUID
+    db: Db, *, guard: Authorized, organisation_id: uuid.UUID
 ) -> Organisation:
     organisation = await repo.get_organisation(db, organisation_id)
     if organisation is None:
@@ -770,7 +760,7 @@ async def get_organisation(
 
 
 async def update_organisation(
-    db: AsyncSession,
+    db: Db,
     *,
     guard: Authorized,
     organisation_id: uuid.UUID,
@@ -799,7 +789,7 @@ async def update_organisation(
 
 
 async def archive_organisation(
-    db: AsyncSession,
+    db: Db,
     *,
     guard: Authorized,
     organisation_id: uuid.UUID,

@@ -6,9 +6,8 @@ Covers acceptance criteria 1, 2 and 9 from PRD §13.
 from __future__ import annotations
 
 from httpx import AsyncClient
-from sqlalchemy import select
-from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.db import Db
 from app.core.security import ACCESS_COOKIE, REFRESH_COOKIE
 from app.modules.audit.models import AuditLog
 from app.modules.auth.models import RefreshToken
@@ -36,10 +35,10 @@ async def test_tokens_never_appear_in_the_response_body(client: AsyncClient) -> 
     assert "token" not in body
 
 
-async def test_signup_records_consent(client: AsyncClient, db: AsyncSession) -> None:
+async def test_signup_records_consent(client: AsyncClient, db: Db) -> None:
     """DPDP §11: the consent and its version must be on the record."""
     await client.post("/api/v1/auth/register", json=SIGNUP)
-    user = await db.scalar(select(User).where(User.email == "asha@example.com"))
+    user = await db.find_one(User, {"email": "asha@example.com"})
     assert user is not None
     assert user.consent_accepted_at is not None
     assert user.consent_version
@@ -90,7 +89,7 @@ async def test_a_wrong_password_and_an_unknown_email_look_identical(client: Asyn
 
 
 async def test_five_failures_lock_the_account_for_fifteen_minutes(
-    client: AsyncClient, db: AsyncSession
+    client: AsyncClient, db: Db
 ) -> None:
     """PRD §13 criterion 2."""
     await client.post("/api/v1/auth/register", json=SIGNUP)
@@ -107,27 +106,23 @@ async def test_five_failures_lock_the_account_for_fifteen_minutes(
     )
     assert locked.status_code == 429
 
-    user = await db.scalar(select(User).where(User.email == "asha@example.com"))
+    user = await db.find_one(User, {"email": "asha@example.com"})
     assert user is not None and user.locked_until is not None
 
 
-async def test_the_lockout_is_recorded_in_the_audit_log(
-    client: AsyncClient, db: AsyncSession
-) -> None:
+async def test_the_lockout_is_recorded_in_the_audit_log(client: AsyncClient, db: Db) -> None:
     await client.post("/api/v1/auth/register", json=SIGNUP)
     for _ in range(5):
         await client.post(
             "/api/v1/auth/login", json={"email": "asha@example.com", "password": "Marigold$Pepper9"}
         )
 
-    actions = set((await db.execute(select(AuditLog.action))).scalars())
+    actions = set(await db.distinct(AuditLog, "action", {}))
     assert "login_failure" in actions
     assert "account_locked" in actions
 
 
-async def test_a_successful_login_resets_the_failure_counter(
-    client: AsyncClient, db: AsyncSession
-) -> None:
+async def test_a_successful_login_resets_the_failure_counter(client: AsyncClient, db: Db) -> None:
     await client.post("/api/v1/auth/register", json=SIGNUP)
     for _ in range(3):
         await client.post(
@@ -137,7 +132,7 @@ async def test_a_successful_login_resets_the_failure_counter(
         "/api/v1/auth/login", json={"email": "asha@example.com", "password": "Kaveri#Delta88"}
     )
 
-    user = await db.scalar(select(User).where(User.email == "asha@example.com"))
+    user = await db.find_one(User, {"email": "asha@example.com"})
     assert user is not None and user.failed_login_count == 0
 
 
@@ -159,7 +154,7 @@ async def test_refresh_issues_a_new_token_and_keeps_the_session(client: AsyncCli
 
 
 async def test_replaying_a_rotated_token_kills_the_whole_family(
-    client: AsyncClient, db: AsyncSession
+    client: AsyncClient, db: Db
 ) -> None:
     """PRD §7.2 reuse detection: a replayed token means the cookie leaked."""
     await client.post("/api/v1/auth/register", json=SIGNUP)
@@ -175,14 +170,10 @@ async def test_replaying_a_rotated_token_kills_the_whole_family(
     replay = await client.post("/api/v1/auth/refresh")
     assert replay.status_code == 401
 
-    live = (
-        (await db.execute(select(RefreshToken).where(RefreshToken.revoked_at.is_(None))))
-        .scalars()
-        .all()
-    )
+    live = await db.find(RefreshToken, {"revoked_at": None})
     assert live == [], "reuse detection must revoke every token in the family"
 
-    actions = set((await db.execute(select(AuditLog.action))).scalars())
+    actions = set(await db.distinct(AuditLog, "action", {}))
     assert "token_reuse_detected" in actions
 
 
@@ -205,30 +196,24 @@ async def test_logout_is_idempotent(client: AsyncClient) -> None:
     assert (await client.post("/api/v1/auth/logout")).status_code == 200
 
 
-async def test_logout_all_revokes_every_session(client: AsyncClient, db: AsyncSession) -> None:
+async def test_logout_all_revokes_every_session(client: AsyncClient, db: Db) -> None:
     await client.post("/api/v1/auth/register", json=SIGNUP)
     response = await client.post("/api/v1/auth/logout-all")
     assert response.status_code == 200
 
-    live = (
-        (await db.execute(select(RefreshToken).where(RefreshToken.revoked_at.is_(None))))
-        .scalars()
-        .all()
-    )
+    live = await db.find(RefreshToken, {"revoked_at": None})
     assert live == []
 
 
 # ------------------------------------------------------------------------ suspension
 
 
-async def test_a_suspended_user_is_blocked_on_the_next_request(
-    client: AsyncClient, db: AsyncSession
-) -> None:
+async def test_a_suspended_user_is_blocked_on_the_next_request(client: AsyncClient, db: Db) -> None:
     """PRD §13 criterion 9. Status is checked per request, not trusted from the token."""
     await client.post("/api/v1/auth/register", json=SIGNUP)
     assert (await client.get("/api/v1/me")).status_code == 200
 
-    user = await db.scalar(select(User).where(User.email == "asha@example.com"))
+    user = await db.find_one(User, {"email": "asha@example.com"})
     assert user is not None
     user.status = "suspended"
     await db.commit()
@@ -236,9 +221,9 @@ async def test_a_suspended_user_is_blocked_on_the_next_request(
     assert (await client.get("/api/v1/me")).status_code == 403
 
 
-async def test_a_suspended_user_cannot_log_in(client: AsyncClient, db: AsyncSession) -> None:
+async def test_a_suspended_user_cannot_log_in(client: AsyncClient, db: Db) -> None:
     await client.post("/api/v1/auth/register", json=SIGNUP)
-    user = await db.scalar(select(User).where(User.email == "asha@example.com"))
+    user = await db.find_one(User, {"email": "asha@example.com"})
     assert user is not None
     user.status = "suspended"
     await db.commit()
@@ -249,10 +234,10 @@ async def test_a_suspended_user_cannot_log_in(client: AsyncClient, db: AsyncSess
     assert response.status_code == 403
 
 
-async def test_a_suspended_user_cannot_refresh(client: AsyncClient, db: AsyncSession) -> None:
+async def test_a_suspended_user_cannot_refresh(client: AsyncClient, db: Db) -> None:
     """Otherwise a suspension could be outlived by refreshing the session."""
     await client.post("/api/v1/auth/register", json=SIGNUP)
-    user = await db.scalar(select(User).where(User.email == "asha@example.com"))
+    user = await db.find_one(User, {"email": "asha@example.com"})
     assert user is not None
     user.status = "suspended"
     await db.commit()

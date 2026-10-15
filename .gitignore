@@ -32,3 +32,12 @@ Thumbs.db
 .vscode/*
 !.vscode/extensions.json
 .idea/
+
+# Secrets are never committed. A file named `env.text` on the mongodb branch held a live
+# JWT signing key and the OTP pepper, pushed to this repository — anyone who could read
+# the repo could forge an access token for any user, including Super Admin. Both have to
+# be rotated; these patterns stop the next one arriving the same way.
+env.text
+*.env.text
+secrets.*
+*.secrets

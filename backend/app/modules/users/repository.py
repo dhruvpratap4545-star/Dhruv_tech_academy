@@ -1,40 +1,51 @@
 """User queries.
 
 The list endpoint is the one with real performance pressure: an institute admin filtering
-thousands of users. It is written as a single statement with an EXISTS sub-query so the
-scope filter runs inside PostgreSQL, rather than fetching ids and filtering in Python.
+thousands of users. The scope test runs in MongoDB as a ``$lookup`` over live role
+assignments, rather than fetching ids and filtering in Python.
 """
 
 from __future__ import annotations
 
 import uuid
 from collections.abc import Sequence
+from typing import Any
 
-from sqlalchemy import Select, and_, exists, false, func, or_, select
-from sqlalchemy.ext.asyncio import AsyncSession
+from pymongo.errors import DuplicateKeyError
 
-from app.core.pagination import like_pattern, paginate
+from app.core.db import Db, ids_in, ilike, utcnow
+from app.core.pagination import paginate
 from app.modules.org.models import Branch, Institute, Organisation
 from app.modules.rbac.models import Role, UserRoleAssignment
 from app.modules.users.models import Guardian, User, UserPreference
 
 
-async def get_user(db: AsyncSession, user_id: uuid.UUID) -> User | None:
+async def get_user(db: Db, user_id: uuid.UUID) -> User | None:
     return await db.get(User, user_id)
 
 
-async def get_preferences(db: AsyncSession, user_id: uuid.UUID) -> UserPreference | None:
-    return await db.get(UserPreference, user_id)
+async def get_preferences(db: Db, user_id: uuid.UUID) -> UserPreference | None:
+    return await db.find_one(UserPreference, {"user_id": user_id})
 
 
-async def upsert_preferences(db: AsyncSession, user_id: uuid.UUID) -> UserPreference:
-    existing = await db.get(UserPreference, user_id)
+async def upsert_preferences(db: Db, user_id: uuid.UUID) -> UserPreference:
+    """The user's preferences, created with defaults on first use.
+
+    Written straight away rather than at commit: two first requests can race, and the
+    loser must read the winner's document instead of failing its whole request on the
+    unique index.
+    """
+    existing = await get_preferences(db, user_id)
     if existing is not None:
         return existing
     created = UserPreference(user_id=user_id)
-    db.add(created)
-    await db.flush()
-    return created
+    try:
+        await created.insert()
+    except DuplicateKeyError:
+        winner = await get_preferences(db, user_id)
+        assert winner is not None
+        return winner
+    return db.track(created)
 
 
 #: Which people a caller may see, as the caller's own scopes describe it.
@@ -45,53 +56,48 @@ async def upsert_preferences(db: AsyncSession, user_id: uuid.UUID) -> UserPrefer
 VisibleScope = dict[uuid.UUID, frozenset[uuid.UUID] | None] | None
 
 
-def visible_users_filter(scope: VisibleScope):
-    """The one definition of "which users may this caller see".
+def visible_assignment_filter(scope: VisibleScope) -> dict[str, Any] | None:
+    """The one definition of "which assignments put a user in this caller's view".
 
-    EXISTS over live assignments, so a user is visible if *any* of their roles sits in the
-    caller's scope. A correlated sub-query rather than a join, because a user holding three
-    roles must not appear three times.
+    A user is visible if *any* of their live roles sits in the caller's scope. Keyed per
+    institute: somebody who is Institute Admin of one college and Branch Admin of one
+    branch of another must not have the branch restriction lifted on the second college
+    just because the first one is theirs entirely.
 
-    Keyed per institute, which is the part that was wrong before. The old version carried
-    two flat sets — every institute, and every branch — plus a single "is any of this
-    institute-wide?" flag. Somebody who is Institute Admin of one college and Branch Admin
-    of one branch of another sets that flag, and the branch restriction was then dropped
-    for *both* colleges: the user list returned every member of staff at the second
-    college, while opening any of their rows answered "That user does not exist", because
-    the per-row check compares scopes properly. Reading a name and an email address is a
-    use of authority too, so the two now answer the same question.
-
-    Public because the dashboard counts the same people this filters, and it reached in and
-    used the private name to do it. Two callers with one rule between them is fine; two
-    callers where one is quietly depending on the other's internals is how the list and the
-    count drift apart and nobody notices until the numbers disagree on screen.
+    ``None`` means no restriction (platform staff); an empty ``$or`` is never produced —
+    a caller with no reachable institute gets a filter that matches nothing.
     """
-    base = [
-        UserRoleAssignment.user_id == User.id,
-        UserRoleAssignment.revoked_at.is_(None),
-    ]
     if scope is None:
-        return exists().where(*base)
-
-    per_institute = []
+        return {"revoked_at": None}
+    per_institute: list[dict[str, Any]] = []
     for institute_id, branch_ids in scope.items():
-        test = UserRoleAssignment.institute_id == institute_id
+        test: dict[str, Any] = {"institute_id": institute_id}
         if branch_ids is not None:
             # Branch only. Admitting assignments with no branch at all would hand a Branch
-            # Admin every institute-scoped member of staff, from every other branch, none
-            # of whom they can act on.
-            test = and_(test, UserRoleAssignment.branch_id.in_(branch_ids))
+            # Admin every institute-scoped member of staff, from every other branch.
+            test["branch_id"] = ids_in(branch_ids)
         per_institute.append(test)
-
     if not per_institute:
-        # No reachable institute at all. `false()` rather than an empty `or_()`, which
-        # SQLAlchemy renders as nothing and would quietly match every row.
-        return exists().where(*base, false())
-    return exists().where(*base, or_(*per_institute))
+        return None
+    return {"revoked_at": None, "$or": per_institute}
+
+
+async def visible_user_ids(db: Db, scope: VisibleScope) -> list[uuid.UUID] | None:
+    """User ids the caller may see, or ``None`` for "everybody" (platform staff).
+
+    Public because the dashboard counts the same people the list shows. Two callers with
+    one rule between them is how the list and the count stay in agreement.
+    """
+    if scope is None:
+        return None
+    match = visible_assignment_filter(scope)
+    if match is None:
+        return []
+    return await db.distinct(UserRoleAssignment, "user_id", match)
 
 
 async def list_users(
-    db: AsyncSession,
+    db: Db,
     *,
     scope: VisibleScope,
     user_ids: frozenset[uuid.UUID] | None = None,
@@ -103,41 +109,40 @@ async def list_users(
     include_total: bool = True,
 ) -> tuple[Sequence[User], str | None, int]:
     """``scope=None`` means platform staff, who see every user."""
-    stmt: Select[tuple[User]] = select(User).where(User.status != "deleted")
+    conditions: list[dict[str, Any]] = [{"status": {"$ne": "deleted"}}]
 
     if user_ids is not None:
         if not user_ids:
             return [], None, 0
-        stmt = stmt.where(User.id.in_(user_ids))
+        conditions.append({"_id": ids_in(user_ids)})
     elif scope is not None:
         if not scope:
             return [], None, 0
-        stmt = stmt.where(visible_users_filter(scope))
+        visible = await visible_user_ids(db, scope)
+        if not visible:
+            return [], None, 0
+        conditions.append({"_id": ids_in(visible)})
 
     if status:
-        stmt = stmt.where(User.status == status)
+        conditions.append({"status": status})
 
     if search:
-        pattern = like_pattern(search)
-        # ILIKE with a leading wildcard cannot use a btree index. Acceptable at this scale;
-        # the fix when it stops being acceptable is a pg_trgm index, not a rewrite.
-        stmt = stmt.where(or_(User.full_name.ilike(pattern), User.email.ilike(pattern)))
+        pattern = ilike(search)
+        conditions.append({"$or": [{"full_name": pattern}, {"email": pattern}]})
 
     if role_key:
-        stmt = stmt.where(
-            exists().where(
-                UserRoleAssignment.user_id == User.id,
-                UserRoleAssignment.revoked_at.is_(None),
-                UserRoleAssignment.role_id
-                == select(Role.id).where(Role.key == role_key).scalar_subquery(),
-            )
+        role = await db.find_one(Role, {"key": role_key})
+        if role is None:
+            return [], None, 0
+        holders = await db.distinct(
+            UserRoleAssignment, "user_id", {"role_id": role.id, "revoked_at": None}
         )
+        conditions.append({"_id": ids_in(holders)})
 
     return await paginate(
         db,
-        stmt,
-        created_at_col=User.created_at,
-        id_col=User.id,
+        User,
+        {"$and": conditions},
         cursor=cursor,
         limit=limit,
         include_total=include_total,
@@ -157,115 +162,118 @@ RoleRow = tuple[
 ]
 
 
-async def roles_for_users(
-    db: AsyncSession, user_ids: Sequence[uuid.UUID]
-) -> dict[uuid.UUID, list[RoleRow]]:
-    """Role assignments for a page of users, in one query.
+async def roles_for_users(db: Db, user_ids: Sequence[uuid.UUID]) -> dict[uuid.UUID, list[RoleRow]]:
+    """Role assignments for a page of users, in a fixed number of queries.
 
     This is the N+1 that list endpoints usually fall into: loading roles per user. One
-    IN-query for the whole page instead, grouped in Python.
+    query for the whole page's assignments, then one each for the roles, institutes and
+    branches they name, joined in Python.
     """
     if not user_ids:
         return {}
-
-    stmt = (
-        select(
-            UserRoleAssignment.user_id,
-            Role.key,
-            Role.name,
-            Role.rank,
-            UserRoleAssignment.organisation_id,
-            UserRoleAssignment.institute_id,
-            UserRoleAssignment.branch_id,
-            Organisation.name,
-            Institute.name,
-            Branch.name,
-        )
-        .join(Role, Role.id == UserRoleAssignment.role_id)
-        .outerjoin(Organisation, Organisation.id == UserRoleAssignment.organisation_id)
-        # Outer joins: a platform role has no institute, and an institute role no branch.
-        .outerjoin(Institute, Institute.id == UserRoleAssignment.institute_id)
-        .outerjoin(Branch, Branch.id == UserRoleAssignment.branch_id)
-        .where(
-            UserRoleAssignment.user_id.in_(user_ids),
-            UserRoleAssignment.revoked_at.is_(None),
-        )
+    assignments = await db.raw(
+        UserRoleAssignment,
+        {"user_id": ids_in(user_ids), "revoked_at": None},
+        {"user_id": 1, "role_id": 1, "organisation_id": 1, "institute_id": 1, "branch_id": 1},
     )
+    if not assignments:
+        return {}
+
+    role_ids = {a["role_id"] for a in assignments}
+    institute_ids = {a["institute_id"] for a in assignments if a.get("institute_id")}
+    branch_ids = {a["branch_id"] for a in assignments if a.get("branch_id")}
+    roles = {
+        r["_id"]: r
+        for r in await db.raw(Role, {"_id": ids_in(role_ids)}, {"key": 1, "name": 1, "rank": 1})
+    }
+    institutes = {
+        r["_id"]: r["name"]
+        for r in await db.raw(Institute, {"_id": ids_in(institute_ids)}, {"name": 1})
+    }
+    branches = {
+        r["_id"]: r["name"] for r in await db.raw(Branch, {"_id": ids_in(branch_ids)}, {"name": 1})
+    }
+    organisation_ids = {a["organisation_id"] for a in assignments if a.get("organisation_id")}
+    organisations = {
+        r["_id"]: r["name"]
+        for r in await db.raw(Organisation, {"_id": ids_in(organisation_ids)}, {"name": 1})
+    }
+
     grouped: dict[uuid.UUID, list[RoleRow]] = {}
-    for row in await db.execute(stmt):
-        user_id, *rest = row
-        grouped.setdefault(user_id, []).append(tuple(rest))  # type: ignore[arg-type]
+    for a in assignments:
+        role = roles.get(a["role_id"])
+        if role is None:
+            continue
+        organisation_id = a.get("organisation_id")
+        institute_id, branch_id = a.get("institute_id"), a.get("branch_id")
+        grouped.setdefault(a["user_id"], []).append(
+            (
+                role["key"],
+                role["name"],
+                role["rank"],
+                organisation_id,
+                institute_id,
+                branch_id,
+                organisations.get(organisation_id),
+                institutes.get(institute_id),
+                branches.get(branch_id),
+            )
+        )
     return grouped
 
 
-async def email_taken(db: AsyncSession, email: str) -> bool:
-    stmt = select(User.id).where(func.lower(User.email) == email.strip().lower()).limit(1)
-    return await db.scalar(stmt) is not None
+async def email_taken(db: Db, email: str) -> bool:
+    return await db.exists(User, {"email": email.strip().lower()})
+
+
+async def get_user_by_email(db: Db, email: str) -> User | None:
+    return await db.find_one(User, {"email": email.strip().lower()})
+
+
+async def get_users(db: Db, user_ids: Sequence[uuid.UUID]) -> Sequence[User]:
+    """A page of users by id, in one round trip rather than one per row."""
+    if not user_ids:
+        return []
+    return await db.find(User, {"_id": ids_in(user_ids)})
 
 
 # --------------------------------------------------------------------------- guardians
 
 
-async def children_of(db: AsyncSession, parent_user_id: uuid.UUID) -> frozenset[uuid.UUID]:
+async def children_of(db: Db, parent_user_id: uuid.UUID) -> frozenset[uuid.UUID]:
     """The learners this adult is responsible for. Empty for everybody else."""
-    rows = await db.execute(
-        select(Guardian.student_user_id).where(Guardian.parent_user_id == parent_user_id)
-    )
-    return frozenset(rows.scalars())
+    found = await db.distinct(Guardian, "student_user_id", {"parent_user_id": parent_user_id})
+    return frozenset(found)
 
 
-async def guardians_of(db: AsyncSession, student_user_id: uuid.UUID) -> Sequence[Guardian]:
-    rows = await db.execute(
-        select(Guardian)
-        .where(Guardian.student_user_id == student_user_id)
-        .order_by(Guardian.is_primary.desc(), Guardian.created_at)
+async def guardians_of(db: Db, student_user_id: uuid.UUID) -> Sequence[Guardian]:
+    return await db.find(
+        Guardian,
+        {"student_user_id": student_user_id},
+        sort=[("is_primary", -1), ("created_at", 1)],
     )
-    return rows.scalars().all()
+
+
+async def guardians_for_parent(db: Db, parent_user_id: uuid.UUID) -> Sequence[Guardian]:
+    return await db.find(Guardian, {"parent_user_id": parent_user_id}, sort=[("created_at", 1)])
 
 
 async def guardian_link(
-    db: AsyncSession, parent_user_id: uuid.UUID, student_user_id: uuid.UUID
+    db: Db, parent_user_id: uuid.UUID, student_user_id: uuid.UUID
 ) -> Guardian | None:
-    return await db.scalar(
-        select(Guardian).where(
-            Guardian.parent_user_id == parent_user_id,
-            Guardian.student_user_id == student_user_id,
-        )
+    return await db.find_one(
+        Guardian, {"parent_user_id": parent_user_id, "student_user_id": student_user_id}
     )
 
 
-async def mark_guardians_verified(db: AsyncSession, parent_user_id: uuid.UUID) -> int:
+async def mark_guardians_verified(db: Db, parent_user_id: uuid.UUID) -> int:
     """Record that this adult has proved they control their own address.
 
     Called once, when they complete password setup. Until then the link exists but the
     consent behind it is only asserted by whoever typed the row in.
     """
-    from sqlalchemy import update
-
-    result = await db.execute(
-        update(Guardian)
-        .where(Guardian.parent_user_id == parent_user_id, Guardian.verified_at.is_(None))
-        .values(verified_at=func.now())
-    )
-    return result.rowcount or 0
-
-
-async def get_user_by_email(db: AsyncSession, email: str) -> User | None:
-    return await db.scalar(select(User).where(func.lower(User.email) == email.strip().lower()))
-
-
-async def get_users(db: AsyncSession, user_ids: Sequence[uuid.UUID]) -> Sequence[User]:
-    """A page of users by id, in one query rather than one per row."""
-    if not user_ids:
-        return []
-    rows = await db.execute(select(User).where(User.id.in_(user_ids)))
-    return rows.scalars().all()
-
-
-async def guardians_for_parent(db: AsyncSession, parent_user_id: uuid.UUID) -> Sequence[Guardian]:
-    rows = await db.execute(
-        select(Guardian)
-        .where(Guardian.parent_user_id == parent_user_id)
-        .order_by(Guardian.created_at)
-    )
-    return rows.scalars().all()
+    match = {"parent_user_id": parent_user_id, "verified_at": None}
+    pending = await db.count(Guardian, match)
+    if pending:
+        db.update_many(Guardian, match, {"verified_at": utcnow()})
+    return pending

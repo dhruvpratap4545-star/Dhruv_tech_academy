@@ -10,7 +10,7 @@ Built one milestone at a time on a shared core. The current milestone is
 
 | Folder | What it is |
 |---|---|
-| `backend/` | FastAPI + SQLAlchemy 2 (async) + PostgreSQL API. Modular monolith: `app/core/` for infrastructure, `app/modules/` for `auth`, `org`, `rbac`, `users`, `audit`, `notifications`. Milestone 1 is complete: 55 endpoints, 18 tables, 312 tests. |
+| `backend/` | FastAPI + MongoDB (Atlas) API, using Beanie over PyMongo's async client. Modular monolith: `app/core/` for infrastructure, `app/modules/` for `auth`, `org`, `rbac`, `users`, `audit`, `notifications`. Milestone 1 is complete: 55 endpoints, 19 collections, 502 tests. |
 | `frontend/` | React + Vite + TypeScript web app. |
 | `legacy/` | The original site (19 HTML module pages and the Flask/FastAPI prototype). Design reference, still served by the current Render service. Frozen — see `legacy/README.md`. |
 | `docs/` | PRDs (`specs/`), decision records, progress log, Render migration guide. |
@@ -18,26 +18,22 @@ Built one milestone at a time on a shared core. The current milestone is
 
 ## Running it locally
 
-Needs Python 3.12+, Node.js 22.13+, Git, and PostgreSQL 16/17 (Docker or native).
+Needs Python 3.12+, Node.js 22.13+, Git, a MongoDB Atlas cluster, and Docker (for the
+test database only).
 
 ### 1. A database
 
-Either Docker, which is what the compose file and CI describe:
+The app uses MongoDB Atlas in every environment, local included. Create a database user in
+Atlas, add your IP under **Network Access**, and put the connection string in
+`backend/.env` as `MONGODB_URL` (URL-encode special characters in the password: `@` is
+`%40`). There is no schema to create: the API makes every collection and index at startup.
+
+The integration tests use a **local** MongoDB instead, because they make thousands of
+round trips and Atlas latency turns a two-minute run into most of an hour:
 
 ```bash
-docker compose up -d db db_test     # app on 5432, app_test on 5433
+docker compose up -d mongo_test     # or: docker run -d -p 27018:27017 mongo:8.0
 ```
-
-Or a native PostgreSQL install. Create the role and both databases once:
-
-```sql
-CREATE ROLE app LOGIN PASSWORD 'app' CREATEDB;
-CREATE DATABASE app      OWNER app;
-CREATE DATABASE app_test OWNER app;
-```
-
-Then point `DATABASE_URL` and `TEST_DATABASE_URL` in `backend/.env` at it. The test suite
-reads `TEST_DATABASE_URL` from the environment and falls back to the compose port (5433).
 
 ### 2. Backend — http://localhost:8000 (API docs at `/docs`)
 
@@ -48,10 +44,9 @@ python -m venv .venv
 pip install -r requirements-dev.txt
 
 copy .env.example .env            # Linux/macOS: cp .env.example .env
-#   then fill in JWT_PRIVATE_KEY, JWT_PUBLIC_KEY and OTP_PEPPER — the file
-#   has the exact commands for generating each one
+#   then fill in MONGODB_URL, JWT_PRIVATE_KEY, JWT_PUBLIC_KEY and OTP_PEPPER —
+#   the file has the exact commands for generating each one
 
-alembic upgrade head
 python -m app.core.seed           # roles, permissions, the Direct institute
 uvicorn app.main:app --reload
 ```
@@ -89,22 +84,23 @@ cd frontend && npm run lint && npm run test -- --run && npm run build && npm aud
 ```
 
 Backend tests come in two tiers. Unit tests need nothing and always run; integration tests
-drive the real API against PostgreSQL and **skip** when no database is reachable — except in
+drive the real API against MongoDB (`TEST_MONGODB_URL`, default `mongodb://localhost:27018`)
+and **skip** when no database is reachable — except in
 CI, where a missing database fails the build instead of quietly passing.
 
 Both suites run on every pull request via [GitHub Actions](.github/workflows/ci.yml).
 
 ## Deployment
 
-Render, from [`render.yaml`](render.yaml): one web service, `dhruv-app`, plus `dhruv-db`
-(PostgreSQL 16). The root [`Dockerfile`](Dockerfile) builds the frontend and bakes it into
+Render, from [`render.yaml`](render.yaml): one web service, `dhruv-app`, with the database
+on MongoDB Atlas (`MONGODB_URL`, entered in the Render dashboard). The root [`Dockerfile`](Dockerfile) builds the frontend and bakes it into
 the API image, and FastAPI serves it, so the whole platform runs on one URL with no CORS.
 Locally nothing changes: Vite serves the frontend and `FRONTEND_DIST_DIR` stays unset.
 
 Nothing in `render.yaml` has been applied yet, and the file is written so that applying
 it cannot disturb the site already running on the account. Read the comments in it before
-the first `blueprint apply`: the database name, region and Postgres version are write-once,
-and renaming the database later creates a new empty one rather than moving the old.
+the first `blueprint apply`, and add Render's outbound IP addresses to the Atlas IP access
+list, or the service will not be able to reach the database.
 
 ## Contributing
 
@@ -117,7 +113,8 @@ Work on a feature branch, never on `main`. The rules that are not negotiable:
 - **Authorization** goes through `require_permission("<resource>:<action>")`. Never compare
   role names inside route code.
 - **No hard deletes** of users, institutes, branches or classes — archive or change status.
-- **Every schema change is an Alembic migration**, with a working `downgrade()`. Never edit
-  a migration that has already run.
+- **Every uniqueness rule is a declared index** in the model's `Settings.indexes`; the
+  schema test fails if one never reached the database. A change to the *shape* of existing
+  documents ships with a one-off backfill script, because MongoDB will not do it for you.
 - **Tests with every feature.** Anything touching auth or permissions needs an allowed case
   *and* a denied one.

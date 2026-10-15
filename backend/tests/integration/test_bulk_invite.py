@@ -268,7 +268,7 @@ async def test_a_learner_listed_as_their_own_parent_is_caught_before_anything_is
 
 
 async def test_a_parent_that_fails_does_not_undo_the_child(
-    client: AsyncClient, college, make_user
+    client: AsyncClient, college, make_user, db
 ) -> None:
     """The learner is on the platform either way; the adult can be added afterwards.
 
@@ -280,6 +280,9 @@ async def test_a_parent_that_fails_does_not_undo_the_child(
         "parent", institute_id=world["institute"].id, email="meera@parent.example"
     )
     gone.status = "deleted"
+    # Written, not just set: the request runs in its own unit of work and reads the
+    # database, so an edit left in memory here would be invisible to it.
+    await db.flush()
     await _as(client, world["principal"])
 
     data = sheet(
@@ -361,9 +364,7 @@ async def test_a_named_class_enrols_the_learner(client: AsyncClient, college, db
 
     listed = await client.get("/api/v1/users", params={"search": "riya@vidya.example"})
     student_id = uuid.UUID(listed.json()["items"][0]["id"])
-    enrolment = await db.scalar(
-        ClassEnrollment.__table__.select().where(ClassEnrollment.student_user_id == student_id)
-    )
+    enrolment = await db.find_one(ClassEnrollment, {"student_user_id": student_id})
     assert enrolment is not None, "the class column has to actually enrol them"
 
 

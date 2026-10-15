@@ -9,9 +9,8 @@ from datetime import date
 
 import pytest_asyncio
 from httpx import AsyncClient
-from sqlalchemy import select
-from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.db import Db
 from app.modules.org.models import Class, ClassEnrollment
 
 
@@ -25,7 +24,7 @@ async def _as(client: AsyncClient, user) -> AsyncClient:
 
 
 @pytest_asyncio.fixture
-async def school(institute, make_user, db: AsyncSession):
+async def school(institute, make_user, db: Db):
     """ABC College with an MCA branch, a session, two classes and a faculty on one of them."""
     from app.modules.org.models import AcademicSession, ClassFaculty
 
@@ -137,7 +136,7 @@ async def test_an_admin_can_create_a_session_and_a_class(client: AsyncClient, sc
     assert created.status_code == 201, created.text
 
 
-async def test_only_one_session_is_current(client: AsyncClient, school, db: AsyncSession) -> None:
+async def test_only_one_session_is_current(client: AsyncClient, school, db: Db) -> None:
     from app.modules.org.models import AcademicSession
 
     await _as(client, school["admin"])
@@ -150,17 +149,8 @@ async def test_only_one_session_is_current(client: AsyncClient, school, db: Asyn
             "is_current": True,
         },
     )
-    rows = (
-        (
-            await db.execute(
-                select(AcademicSession).where(
-                    AcademicSession.institute_id == school["institute"].id,
-                    AcademicSession.is_current.is_(True),
-                )
-            )
-        )
-        .scalars()
-        .all()
+    rows = await db.find(
+        AcademicSession, {"institute_id": school["institute"].id, "is_current": True}
     )
     assert len(rows) == 1
 
@@ -274,9 +264,7 @@ async def test_enrolling_twice_is_refused(client: AsyncClient, school) -> None:
     assert second.status_code == 409
 
 
-async def test_removing_a_student_keeps_the_history(
-    client: AsyncClient, school, db: AsyncSession
-) -> None:
+async def test_removing_a_student_keeps_the_history(client: AsyncClient, school, db: Db) -> None:
     """PRD §2: moving classes keeps history, so the row is marked left, not deleted."""
     await _as(client, school["admin"])
     await client.post(
@@ -288,19 +276,15 @@ async def test_removing_a_student_keeps_the_history(
     )
     assert response.status_code == 204
 
-    row = await db.scalar(
-        select(ClassEnrollment).where(
-            ClassEnrollment.class_id == school["taught"].id,
-            ClassEnrollment.student_user_id == school["student"].id,
-        )
+    row = await db.find_one(
+        ClassEnrollment,
+        {"class_id": school["taught"].id, "student_user_id": school["student"].id},
     )
     assert row is not None, "the enrolment row must survive"
     assert row.status == "left"
 
 
-async def test_re_enrolling_reuses_the_existing_row(
-    client: AsyncClient, school, db: AsyncSession
-) -> None:
+async def test_re_enrolling_reuses_the_existing_row(client: AsyncClient, school, db: Db) -> None:
     await _as(client, school["admin"])
     body = {"user_id": str(school["student"].id)}
     await client.post(f"/api/v1/classes/{school['taught'].id}/students", json=body)
@@ -308,17 +292,9 @@ async def test_re_enrolling_reuses_the_existing_row(
     again = await client.post(f"/api/v1/classes/{school['taught'].id}/students", json=body)
     assert again.status_code == 201
 
-    rows = (
-        (
-            await db.execute(
-                select(ClassEnrollment).where(
-                    ClassEnrollment.class_id == school["taught"].id,
-                    ClassEnrollment.student_user_id == school["student"].id,
-                )
-            )
-        )
-        .scalars()
-        .all()
+    rows = await db.find(
+        ClassEnrollment,
+        {"class_id": school["taught"].id, "student_user_id": school["student"].id},
     )
     assert len(rows) == 1 and rows[0].status == "active"
 
@@ -345,9 +321,7 @@ async def test_an_admin_sees_every_class_in_their_institute(client: AsyncClient,
     assert codes == {"MCA1A", "MCA1B"}
 
 
-async def test_archiving_a_class_does_not_delete_it(
-    client: AsyncClient, school, db: AsyncSession
-) -> None:
+async def test_archiving_a_class_does_not_delete_it(client: AsyncClient, school, db: Db) -> None:
     await _as(client, school["admin"])
     response = await client.patch(
         f"/api/v1/classes/{school['taught'].id}", json={"status": "archived"}

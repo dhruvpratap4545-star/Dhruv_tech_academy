@@ -1,23 +1,15 @@
-# Local development only. Never use these credentials anywhere else.
+# Local development only.
+#
+# The app itself uses MongoDB Atlas (MONGODB_URL in backend/.env). This compose file gives
+# the integration tests a local MongoDB, because the suite makes thousands of round trips
+# and Atlas latency turns a two-minute run into most of an hour.
+#
+#   docker compose up -d mongo_test      # then TEST_MONGODB_URL=mongodb://localhost:27018
 services:
-  db:
-    image: postgres:16
-    environment:
-      POSTGRES_USER: app
-      POSTGRES_PASSWORD: app
-      POSTGRES_DB: app
-    ports: ["5432:5432"]
-    volumes: [pgdata:/var/lib/postgresql/data]
+  mongo_test:
+    image: mongo:8.0
+    ports: ["127.0.0.1:27018:27017"]
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U app"]
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping').ok"]
       interval: 5s
       retries: 10
-  db_test:
-    image: postgres:16
-    environment:
-      POSTGRES_USER: app
-      POSTGRES_PASSWORD: app
-      POSTGRES_DB: app_test
-    ports: ["5433:5432"]
-volumes:
-  pgdata:
