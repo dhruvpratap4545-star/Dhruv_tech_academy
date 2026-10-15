@@ -1,0 +1,10 @@
+# Generated from backend/scripts/make_common_passwords.py.
+#
+# Prettier and the generator disagree about one quoted key (`$`, which Prettier unquotes),
+# so formatting these makes the generator's own freshness check fail on an unrelated
+# commit. They are data, not code anybody reads for style.
+src/features/auth/commonPasswordList.ts
+src/features/auth/commonPasswords.fixture.json
+
+dist
+coverage

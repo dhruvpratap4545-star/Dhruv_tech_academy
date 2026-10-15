@@ -1,24 +1,46 @@
-# Python का आधिकारिक हल्का वर्ज़न लें
-FROM python:3.10-slim
+# Single-service image: the API also serves the built web app, so the platform runs on one
+# URL (see backend/app/core/spa.py). Build from the repo root:
+#   docker build -t dhruv .
+# backend/Dockerfile stays as the API-only image.
 
-# वर्किंग डायरेक्टरी सेट करें
+# --- Stage 1: build the frontend --------------------------------------------------------
+FROM node:24-slim AS web
+WORKDIR /web
+
+COPY frontend/package.json frontend/package-lock.json ./
+RUN npm ci
+
+COPY frontend/ ./
+# Relative: the browser calls the API on the same origin, whatever the host name is.
+ENV VITE_API_URL=/api/v1
+RUN npm run build
+
+# --- Stage 2: the API, carrying the built frontend --------------------------------------
+FROM python:3.12-slim
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PIP_NO_CACHE_DIR=1 \
+    FRONTEND_DIST_DIR=/app/web
+
 WORKDIR /app
 
-# जरूरी सिस्टम डिपेंडेंसी इंस्टॉल करें
-RUN apt-get update && apt-get install -y \
-    build-essential \
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends build-essential libpq-dev curl \
     && rm -rf /var/lib/apt/lists/*
 
-# पहले requirements फाइल कॉपी करें और इंस्टॉल करें (ताकि कैशिंग अच्छी रहे)
-COPY requirements.txt .
+COPY backend/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# बाकी सारा प्रोजेक्ट कोड कॉपी करें
-COPY . .
+COPY backend/ .
+COPY --from=web /web/dist ./web
 
-# Cloud Run के लिए पोर्ट 8080 सेट करें और ऐप रन करें (अगर streamlit है तो streamlit run app.py, या जो भी आपकी मुख्य फाइल हो)
-ENV PORT=8080
-EXPOSE 8080
+RUN useradd --create-home --uid 10001 appuser && chown -R appuser /app
+USER appuser
 
-# अपनी मुख्य फाइल का नाम यहाँ दें (जैसे app.py या main.py)
-CMD streamlit run app.py --server.port=8080 --server.address=0.0.0.0
+EXPOSE 8000
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s \
+    CMD curl -fsS "http://localhost:${PORT:-8000}/healthz" || exit 1
+
+# Render injects PORT. The script also runs the seed when RUN_MIGRATIONS_ON_START=1.
+CMD ["sh", "scripts/start.sh"]
