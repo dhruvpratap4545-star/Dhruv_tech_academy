@@ -643,6 +643,40 @@ rm jwt.pem
   भेजेगा जिससे Resend का खाता बना है
 - Cloud Run → `dhruv-app` → **LOGS** में `resend` ढूँढिए
 
+### अगर ईमेल अभी बिलकुल चालू ही नहीं है
+
+तब कोड भेजने का कोई रास्ता नहीं बचता, और कोई भी अंदर नहीं जा सकता। ऐसी स्थिति
+के लिए एक अलग command है, जो सीधे पासवर्ड सेट कर देती है।
+
+**पासवर्ड पहले तिजोरी में रखिए** — command में सीधे मत लिखिए:
+
+1. खोज बक्से में `Secret Manager` → **CREATE SECRET**
+2. Name: `ADMIN_PASSWORD`, और Secret value में वह पासवर्ड जो रखना है
+3. **CREATE SECRET**
+4. Cloud Run → **JOBS** → `dhruv-admin` → ऊपर **EDIT**
+5. **VARIABLES & SECRETS** → **+ REFERENCE A SECRET** → `ADMIN_PASSWORD` चुनिए,
+   Name भी `ADMIN_PASSWORD`, Version `latest` → **DONE** → **UPDATE**
+6. अब **EXECUTE** के बग़ल के तीर (▾) → **Execute with overrides** →
+   **Container arguments** में चार पंक्तियाँ:
+
+   ```
+   -m
+   app.cli
+   set-password
+   unka-email@example.com
+   ```
+
+7. **EXECUTE** दबाइए
+
+अब वह व्यक्ति उसी पासवर्ड से लॉगिन कर सकता है।
+
+> पासवर्ड को तिजोरी से क्यों लेते हैं, सीधे command में क्यों नहीं लिखते?
+> क्योंकि command में लिखी हर चीज़ Google अपने पास सहेज लेता है, और बाद में भी
+> कोई उसे पढ़ सकता है। तिजोरी वाली चीज़ें वहाँ दर्ज नहीं होतीं।
+
+**ईमेल चालू हो जाने के बाद:** उस व्यक्ति से कहिए कि वेबसाइट के अंदर जाकर अपना
+पासवर्ड बदल लें, और फिर Secret Manager से `ADMIN_PASSWORD` मिटा दीजिए।
+
 ---
 
 # Step 9 — बाद में और एडमिन कैसे जोड़ें

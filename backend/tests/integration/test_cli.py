@@ -200,3 +200,79 @@ async def test_revoking_ends_their_sessions_and_is_recorded(db, run_command, mak
     recorded = await db.find_one(AuditLog, {"target_id": second.id, "action": "role_revoked"})
     assert recorded is not None
     assert owner.email in await _holders(db)
+
+
+async def test_set_password_lets_an_invited_admin_sign_in(db, run_command, make_user, monkeypatch):
+    """The way in when email cannot deliver a code yet.
+
+    The first Super Admin is seeded `invited` with no password, and the only route to one
+    is a mailed OTP. Until the mail provider works that route is closed, and the platform
+    has nobody who can administer it.
+    """
+    from app.core.security import verify_password
+
+    person = await make_user("super_admin", status="invited")
+    assert person.password_hash is None, "an invited account starts with no password"
+
+    monkeypatch.setenv("ADMIN_PASSWORD", "Chandni#Bridge47")
+    await cli.set_password(person.email)
+
+    fresh = await db.find_one(User, {"_id": person.id})
+    assert fresh.status == "active", "an invited account cannot log in, password or not"
+    assert verify_password("Chandni#Bridge47", fresh.password_hash)
+    assert fresh.password_changed_at is not None
+
+
+async def test_set_password_refuses_a_password_given_as_an_argument(
+    db, run_command, make_user, monkeypatch
+):
+    """Arguments are recorded; a Cloud Run job's execution history keeps them readable."""
+    person = await make_user("super_admin")
+    monkeypatch.delenv("ADMIN_PASSWORD", raising=False)
+
+    with pytest.raises(SystemExit, match="ADMIN_PASSWORD"):
+        await cli.set_password(person.email)
+
+
+async def test_set_password_applies_the_same_strength_rules_as_the_web_app(
+    db, run_command, make_user, monkeypatch
+):
+    """A shell is not a reason to accept a password the sign-up form would reject."""
+    person = await make_user("super_admin")
+    monkeypatch.setenv("ADMIN_PASSWORD", "short")
+
+    with pytest.raises(SystemExit, match="Password needs"):
+        await cli.set_password(person.email)
+
+    unchanged = await db.find_one(User, {"_id": person.id})
+    assert unchanged.password_hash == person.password_hash
+
+
+async def test_set_password_ends_existing_sessions(db, run_command, make_user, monkeypatch):
+    """This is also the way back in after a compromise. Leaving the attacker's session
+    alive while changing the password makes the recovery pointless."""
+    from app.modules.auth.models import RefreshToken
+
+    person = await make_user("super_admin")
+    db.add(
+        RefreshToken(
+            user_id=person.id,
+            token_hash="b" * 64,
+            family_id=uuid.uuid4(),
+            session_id=uuid.uuid4(),
+            expires_at=datetime.now(UTC) + timedelta(days=7),
+        )
+    )
+    await db.flush()
+
+    monkeypatch.setenv("ADMIN_PASSWORD", "Chandni#Bridge47")
+    await cli.set_password(person.email)
+
+    live = await db.find(RefreshToken, {"user_id": person.id, "revoked_at": None})
+    assert not live
+
+
+async def test_set_password_refuses_an_unknown_address(db, run_command, monkeypatch):
+    monkeypatch.setenv("ADMIN_PASSWORD", "Chandni#Bridge47")
+    with pytest.raises(SystemExit, match="No account exists"):
+        await cli.set_password("nobody@example.com")
