@@ -5,6 +5,11 @@ as written; each one checks itself before the next begins.
 
 **Roughly 90 minutes**, plus waiting time for the email domain.
 
+> Doing this without `gcloud`, or handing it to somebody who does not write code?
+> [DEPLOYMENT-HINDI.md](DEPLOYMENT-HINDI.md) covers the same ground in Hindi, entirely
+> through the Google Cloud Console screens — every step is a form or a button, and it
+> explains what each setting is for. The two guides produce the same result.
+
 ---
 
 ## What you are building
@@ -179,19 +184,23 @@ Then **delete `jwt.pem`**.
 
 ## Step 5 — Build and deploy
 
-From the project folder:
+Build the image first, from the project folder. Thirty minutes of headroom, because the
+image compiles the React app before it installs Python:
 
 ```bash
-gcloud builds submit --config cloudbuild.yaml \
-  --substitutions=_SERVICE_NAME=dhruv-app,_DEPLOY_REGION=asia-south1,_REPOSITORY=dhruv
+gcloud builds submit --timeout=1800s \
+  --tag=asia-south1-docker.pkg.dev/YOUR_PROJECT_ID/dhruv/dhruv-app:first .
 ```
 
-This builds the container and deploys it. The first run takes five to ten minutes.
-
-Now attach the settings and the secrets to the service:
+Five to ten minutes. Then create the service, **with the secrets attached in the same
+command**:
 
 ```bash
-gcloud run services update dhruv-app \
+gcloud run deploy dhruv-app \
+  --image=asia-south1-docker.pkg.dev/YOUR_PROJECT_ID/dhruv/dhruv-app:first \
+  --region=asia-south1 --platform=managed --allow-unauthenticated \
+  --port=8000 --no-cpu-throttling --max-instances=4 --min-instances=0 \
+  --memory=1Gi --cpu=1 --timeout=300 \
   --set-env-vars=ENVIRONMENT=production,MONGODB_DB_NAME=dhruv,FRONTEND_URL=https://dhruvonlineacademy.com,JWT_KEY_ID=k1,SEED_SUPERADMIN_EMAIL=admin@example.com \
   --set-env-vars='EMAIL_FROM=Dhruv Online Academy <noreply@dhruvonlineacademy.com>' \
   --set-secrets=MONGODB_URL=MONGODB_URL:latest,JWT_PRIVATE_KEY=JWT_PRIVATE_KEY:latest,JWT_PUBLIC_KEY=JWT_PUBLIC_KEY:latest,OTP_PEPPER=OTP_PEPPER:latest,RESEND_API_KEY=RESEND_API_KEY:latest
@@ -200,6 +209,14 @@ gcloud run services update dhruv-app \
 **Change `SEED_SUPERADMIN_EMAIL` to the real first administrator's address** before
 running this. Forget it and the deploy will succeed, everything will look healthy, and
 there will be no way to sign in.
+
+The secrets go on in that same command rather than afterwards, because the application
+refuses to start without the signing keys — it signs and verifies a throwaway token at
+boot so that a broken key fails the deploy instead of surfacing as a 500 on somebody's
+first login. Deploy without them and the revision never turns healthy.
+
+`cloudbuild.yaml` is for *later* deploys, once this one has worked — it only replaces the
+image, and Cloud Run keeps the settings and secrets you attached here.
 
 ### Check it
 
