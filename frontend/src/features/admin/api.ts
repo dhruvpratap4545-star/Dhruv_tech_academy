@@ -58,15 +58,22 @@ export type InvitePayload = {
   class_ids?: string[];
 };
 
+/** What an invitation returns. `setup_link` is for the inviter to share by hand. */
+export type InviteResponse = {
+  user: UserSummary;
+  invitation_sent: boolean;
+  setup_link: string | null;
+};
+
 export function inviteUser(body: InvitePayload) {
-  return apiFetch<{ user: UserSummary; invitation_sent: boolean }>("/users/invite", {
+  return apiFetch<InviteResponse>("/users/invite", {
     method: "POST",
     body,
   });
 }
 
 export function resendInvite(userId: string) {
-  return apiFetch<{ user: UserSummary }>(`/users/${userId}/resend-invite`, { method: "POST" });
+  return apiFetch<InviteResponse>(`/users/${userId}/resend-invite`, { method: "POST" });
 }
 
 export type RoleChange = {
@@ -166,7 +173,27 @@ export const instituteKeys = {
   sessions: (instituteId: string) => ["institutes", instituteId, "sessions"] as const,
   classes: (instituteId: string, branchId?: string) =>
     ["institutes", instituteId, "classes", branchId ?? "all"] as const,
+  modules: (instituteId: string) => ["institutes", instituteId, "modules"] as const,
 };
+
+/** One optional module and whether an institute has it switched on (Phase 3). */
+export type InstituteModule = {
+  key: string;
+  name: string;
+  description: string | null;
+  enabled: boolean;
+};
+
+export function fetchInstituteModules(instituteId: string, signal?: AbortSignal) {
+  return apiFetch<InstituteModule[]>(`/institutes/${instituteId}/modules`, { signal });
+}
+
+export function setInstituteModule(instituteId: string, key: string, enabled: boolean) {
+  return apiFetch<InstituteModule>(`/institutes/${instituteId}/modules/${key}`, {
+    method: "PUT",
+    body: { enabled },
+  });
+}
 
 export function fetchInstitutes(signal?: AbortSignal) {
   return apiFetch<Page<Institute>>(`/institutes${query({ limit: 100 })}`, { signal });
@@ -204,10 +231,13 @@ export type CreateInstituteWithAdminPayload = {
 };
 
 export function createInstituteWithAdmin(body: CreateInstituteWithAdminPayload) {
-  return apiFetch<{ institute: Institute; admin_user_id: string; admin_email: string }>(
-    "/institutes/with-admin",
-    { method: "POST", body },
-  );
+  return apiFetch<{
+    institute: Institute;
+    admin_user_id: string;
+    admin_email: string;
+    invitation_sent: boolean;
+    setup_link: string | null;
+  }>("/institutes/with-admin", { method: "POST", body });
 }
 
 // ------------------------------------------------------------------------ audit

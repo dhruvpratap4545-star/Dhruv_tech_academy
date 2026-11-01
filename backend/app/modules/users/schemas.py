@@ -202,7 +202,11 @@ class MeOut(BaseModel):
 
 class InviteUserResponse(BaseModel):
     user: UserOut
+    #: False when email is not configured yet: the invitation was only logged, and the
+    #: inviter should share ``setup_link`` themselves.
     invitation_sent: bool = True
+    #: The one-time setup link, for sharing by hand. Shown only to the inviter.
+    setup_link: str | None = None
 
 
 class RoleOut(OrmModel):

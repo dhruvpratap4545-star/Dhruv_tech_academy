@@ -26,6 +26,40 @@ STUDENT = "student"
 PARENT = "parent"
 
 CORE_MODULE = "core"
+# Phase 3, Milestone 1. Each is switched on per institute (`InstituteModule`); a request for
+# a permission of a disabled module is refused by the engine without any route knowing.
+AI_MODULE = "ai"
+LIBRARY_MODULE = "library"
+HOMEWORK_MODULE = "homework"
+
+
+@dataclass(frozen=True)
+class ModuleDef:
+    key: str
+    name: str
+    description: str
+    is_core: bool = False
+
+
+MODULES: tuple[ModuleDef, ...] = (
+    ModuleDef(
+        CORE_MODULE,
+        "Core platform",
+        "Authentication, organisation, users and permissions.",
+        is_core=True,
+    ),
+    ModuleDef(AI_MODULE, "AI features", "AI tools under the Control Room's budgets and limits."),
+    ModuleDef(
+        LIBRARY_MODULE,
+        "Content library",
+        "Syllabus tree for CBSE, NEET, JEE and UPSC, with material.",
+    ),
+    ModuleDef(
+        HOMEWORK_MODULE, "Homework board", "Assign, submit and check homework; parents follow."
+    ),
+)
+
+MODULES_BY_KEY = {m.key: m for m in MODULES}
 
 
 @dataclass(frozen=True)
@@ -82,6 +116,9 @@ PEOPLE = "People"
 ACCESS = "Access control"
 AUDIT = "Audit"
 ACCOUNT = "Your account"
+AI = "AI"
+LIBRARY = "Library"
+HOMEWORK = "Homework"
 
 PERMISSIONS: tuple[PermissionDef, ...] = (
     PermissionDef("organisation:create", CORE_MODULE, "Create an organisation", STRUCTURE),
@@ -129,6 +166,25 @@ PERMISSIONS: tuple[PermissionDef, ...] = (
     PermissionDef("audit:read", CORE_MODULE, "Read the audit log for a scope", AUDIT),
     PermissionDef("profile:read", CORE_MODULE, "Read own profile", ACCOUNT),
     PermissionDef("profile:update", CORE_MODULE, "Update own profile and preferences", ACCOUNT),
+    # ------------------------------------------------------------- Phase 3, Milestone 1
+    PermissionDef(
+        "ai:manage", AI_MODULE, "Manage AI providers, models, budgets and kill switches", AI
+    ),
+    PermissionDef("ai:usage_read", AI_MODULE, "View AI usage and the institute's allocation", AI),
+    PermissionDef(
+        "library:read", LIBRARY_MODULE, "Browse the syllabus and study material", LIBRARY
+    ),
+    PermissionDef(
+        "library:contribute", LIBRARY_MODULE, "Upload study material as a draft for review", LIBRARY
+    ),
+    PermissionDef(
+        "library:manage", LIBRARY_MODULE, "Manage the syllabus tree and study material", LIBRARY
+    ),
+    PermissionDef("library:publish", LIBRARY_MODULE, "Review and publish study material", LIBRARY),
+    PermissionDef("homework:manage", HOMEWORK_MODULE, "Create, edit and check homework", HOMEWORK),
+    PermissionDef("homework:read", HOMEWORK_MODULE, "View homework and its status", HOMEWORK),
+    PermissionDef("homework:submit", HOMEWORK_MODULE, "Submit homework", HOMEWORK),
+    PermissionDef("homework:report", HOMEWORK_MODULE, "View homework completion reports", HOMEWORK),
 )
 
 PERMISSIONS_BY_KEY = {p.key: p for p in PERMISSIONS}
@@ -139,8 +195,10 @@ _ALL = tuple(p.key for p in PERMISSIONS)
 # the scope of its assignment plus the membership checks in PRD §5.2 steps 3–4 — the
 # "Own inst. / Own br. / Assigned" columns of the PRD matrix are scope, not separate keys.
 ROLE_PERMISSIONS: dict[str, tuple[str, ...]] = {
-    SUPER_ADMIN: _ALL,
-    PLATFORM_ADMIN: tuple(k for k in _ALL if k != "platform_admin:manage"),
+    # `homework:submit` belongs to learners only: a Super Admin handing in homework would be a
+    # submission with no enrolment behind it, so even the all-permissions role leaves it out.
+    SUPER_ADMIN: tuple(k for k in _ALL if k != "homework:submit"),
+    PLATFORM_ADMIN: tuple(k for k in _ALL if k not in ("platform_admin:manage", "homework:submit")),
     # Everything an Institute Admin may do, plus the organisation itself and the right to
     # add an institute to it. Derived from INSTITUTE_ADMIN below rather than retyped, so a
     # permission given to an Institute Admin in a later release is not silently withheld
@@ -176,6 +234,15 @@ ROLE_PERMISSIONS: dict[str, tuple[str, ...]] = {
         "audit:read",
         "profile:read",
         "profile:update",
+        # Phase 3. `ai:manage` stays platform-only: the money is Dhruv Academy's.
+        "ai:usage_read",
+        "library:read",
+        "library:contribute",
+        "library:manage",
+        "library:publish",
+        "homework:manage",
+        "homework:read",
+        "homework:report",
     ),
     BRANCH_ADMIN: (
         "institute:read",
@@ -206,6 +273,13 @@ ROLE_PERMISSIONS: dict[str, tuple[str, ...]] = {
         # that college alone.
         "profile:read",
         "profile:update",
+        "library:read",
+        "library:contribute",
+        "library:manage",
+        "library:publish",
+        "homework:manage",
+        "homework:read",
+        "homework:report",
     ),
     FACULTY: (
         "institute:read",
@@ -217,6 +291,11 @@ ROLE_PERMISSIONS: dict[str, tuple[str, ...]] = {
         "enrollment:manage",
         "profile:read",
         "profile:update",
+        # Confined to the classes they teach by the engine's membership step (PRD §5.2 s4).
+        "library:read",
+        "library:contribute",
+        "homework:manage",
+        "homework:read",
     ),
     STUDENT: (
         "institute:read",
@@ -224,6 +303,10 @@ ROLE_PERMISSIONS: dict[str, tuple[str, ...]] = {
         "user:read",
         "profile:read",
         "profile:update",
+        "library:read",
+        # Reads are always filtered to the student's own rows by the homework service.
+        "homework:read",
+        "homework:submit",
     ),
     PARENT: (
         # Deliberately narrow. A parent reads their own children and nothing else, and the
@@ -235,6 +318,10 @@ ROLE_PERMISSIONS: dict[str, tuple[str, ...]] = {
         "class:read",
         "profile:read",
         "profile:update",
+        "library:read",
+        # Institute-wide as held; the homework service narrows it to guardian-linked
+        # children, exactly as `user:read` is narrowed above.
+        "homework:read",
     ),
 }
 

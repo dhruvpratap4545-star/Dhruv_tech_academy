@@ -157,6 +157,16 @@ class AuthContext:
             default=0,
         )
 
+    def role_at(self, target: Scope) -> Assignment | None:
+        """The most senior assignment that reaches ``target``, or ``None``.
+
+        Used where a limit depends on the capacity somebody acts in — the AI daily request
+        limit is per role, and a teacher who is also a parent at the same school acts as the
+        teacher. Same reach rule as ``max_rank_within``, organisations included.
+        """
+        reaching = [a for a in self.assignments if self._assignment_reaches(a.scope, target)]
+        return max(reaching, key=lambda a: a.rank, default=None)
+
     def _assignment_reaches(self, held: Scope, target: Scope) -> bool:
         """Does an assignment at ``held`` cover ``target``?
 

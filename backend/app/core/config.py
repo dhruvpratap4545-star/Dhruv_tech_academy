@@ -112,6 +112,24 @@ class Settings(BaseSettings):
     # whole platform runs on one URL. Unset locally, where Vite serves the frontend.
     frontend_dist_dir: str | None = None
 
+    # AI providers (Phase 3, Module A). Keys come from Secret Manager in production and are
+    # never returned by the API — the Control Room reports only "configured: yes/no".
+    gemini_api_key: SecretStr = SecretStr("")
+    anthropic_api_key: SecretStr = SecretStr("")
+    ai_request_timeout_seconds: float = 30.0
+    #: No external calls at all: every request is answered by the deterministic fake
+    #: provider. Forced on under `test`, so no test can ever spend real money.
+    ai_fake_provider: bool = False
+
+    # File storage (Phase 3 shared groundwork). Cloud Run's disk is ephemeral, so anything
+    # uploaded in production goes to a private GCS bucket.
+    storage_backend: Literal["local", "gcs"] = "local"
+    gcs_bucket: str | None = None
+    local_storage_dir: str = ".uploads"
+    max_upload_mb: int = 10
+    #: How long a signed download link stays valid. Short, because it is a bearer link.
+    signed_url_ttl_seconds: int = 300
+
     # Seed + monitoring
     seed_superadmin_email: str | None = None
     sentry_dsn: str | None = None
@@ -130,6 +148,11 @@ class Settings(BaseSettings):
     @property
     def is_production(self) -> bool:
         return self.environment == "production"
+
+    @property
+    def use_fake_ai(self) -> bool:
+        """Tests never reach a real provider, whatever the environment file says."""
+        return self.ai_fake_provider or self.environment == "test"
 
     @property
     def cookie_secure(self) -> bool:

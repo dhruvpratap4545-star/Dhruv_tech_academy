@@ -26,6 +26,8 @@ substitutions:
   # Raise this only alongside MONGODB_MAX_POOL_SIZE — see app/core/db.py for the
   # arithmetic. instances × pool must stay under the Atlas cluster's connection limit.
   _MAX_INSTANCES: "4"
+  # Phase 3: the private uploads bucket (asia-south1). See DEPLOYMENT.md "Phase 3 additions".
+  _GCS_BUCKET: dhruv-prod-uploads
 
 options:
   logging: CLOUD_LOGGING_ONLY
@@ -82,5 +84,10 @@ steps:
       - --cpu=1
       - --timeout=300
       - --revision-suffix=$SHORT_SHA
+      # Non-secret Phase 3 settings. `--update-env-vars` adds or changes only these and
+      # keeps everything else attached to the service. GEMINI_API_KEY (and optionally
+      # ANTHROPIC_API_KEY) are secrets and are attached once with `--update-secrets` —
+      # never here, where the build log could print them.
+      - "--update-env-vars=STORAGE_BACKEND=gcs,GCS_BUCKET=${_GCS_BUCKET},AI_REQUEST_TIMEOUT_SECONDS=30,MAX_UPLOAD_MB=10,AI_FAKE_PROVIDER=false"
 
 timeout: 1800s

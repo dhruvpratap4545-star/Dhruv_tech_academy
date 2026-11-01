@@ -823,3 +823,91 @@ async def archive_organisation(
     )
     await db.commit()
     return organisation
+
+
+# ------------------------------------------------------------------- module switches
+
+
+async def list_institute_modules(
+    db: Db, *, guard: Authorized, institute_id: uuid.UUID
+) -> list[schemas.InstituteModuleOut]:
+    """Every optional module with this institute's switch. Core is never listed: it cannot
+    be turned off, so offering a switch for it would be a control that does nothing."""
+    from app.modules.rbac.models import InstituteModule, Module
+
+    await get_institute(db, guard=guard, institute_id=institute_id)  # 404 when out of scope
+    modules = await db.find(Module, {"is_core": False}, sort=[("key", 1)])
+    enabled = {
+        row["module_key"]
+        for row in await db.raw(
+            InstituteModule,
+            {"institute_id": institute_id, "enabled": True},
+            {"module_key": 1},
+        )
+    }
+    return [
+        schemas.InstituteModuleOut(
+            key=m.key, name=m.name, description=m.description, enabled=m.key in enabled
+        )
+        for m in modules
+    ]
+
+
+async def set_institute_module(
+    db: Db,
+    *,
+    guard: Authorized,
+    institute_id: uuid.UUID,
+    module_key: str,
+    enabled: bool,
+    meta: RequestMeta,
+) -> schemas.InstituteModuleOut:
+    """Switch an optional module on or off for one institute.
+
+    Allowed only from a platform- or organisation-level grant of `module:enable`. An
+    institute deciding for itself which paid modules it has would make the switch a
+    formality, so a grant held at institute level — which an institute could otherwise
+    give itself through Roles & permissions — is not enough.
+    """
+    from app.modules.rbac import service as rbac
+    from app.modules.rbac.models import InstituteModule, Module
+    from app.modules.rbac.scopes import ORGANISATION, PLATFORM
+
+    await _require_institute(db, institute_id)
+    target = await rbac.resolve_scope(db, institute_id=institute_id)
+    await guard.ensure(target)
+    if not any(
+        s.level in (PLATFORM, ORGANISATION) and s.contains(target) for s in guard.usable_scopes()
+    ):
+        raise Forbidden("Modules are switched on by the platform or the organisation.")
+
+    module = await db.find_one(Module, {"key": module_key})
+    if module is None:
+        raise NotFound("That module does not exist.")
+    if module.is_core:
+        raise ValidationFailed("The core platform is always on and cannot be switched off.")
+
+    row = await db.find_one(
+        InstituteModule, {"institute_id": institute_id, "module_key": module_key}
+    )
+    changed = row is None or row.enabled != enabled
+    if row is None:
+        db.add(InstituteModule(institute_id=institute_id, module_key=module_key, enabled=enabled))
+    else:
+        row.enabled = enabled
+
+    if changed:
+        audit.record(
+            db,
+            action=events.MODULE_ENABLED if enabled else events.MODULE_DISABLED,
+            actor_user_id=guard.user_id,
+            target_type="institute",
+            target_id=institute_id,
+            institute_id=institute_id,
+            ip=meta.ip,
+            user_agent=meta.user_agent,
+            extra={"module_key": module_key},
+        )
+    return schemas.InstituteModuleOut(
+        key=module.key, name=module.name, description=module.description, enabled=enabled
+    )

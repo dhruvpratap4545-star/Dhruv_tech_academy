@@ -88,12 +88,26 @@ def password_reset(to: str, full_name: str, code: str) -> EmailMessage:
     )
 
 
+def setup_link(email: str, code: str) -> str:
+    """The set-password page with the address filled in and the code in the *fragment*.
+
+    The fragment (after ``#``) is never sent to any server, so the code cannot reach an
+    access log, a proxy or an analytics referrer the way a query parameter would. The page
+    reads it, fills the form and removes it from the address bar. It is still a bearer link
+    — single-use and expiring with the code — and is shown only to the inviter.
+    """
+    from urllib.parse import quote
+
+    return f"{_link('/set-password', email)}#code={quote(code)}"
+
+
 def password_setup(
     to: str, full_name: str, code: str, invited_by: str | None = None
 ) -> EmailMessage:
     hours = settings.otp_setup_ttl_hours
     who = f" by {invited_by}" if invited_by else ""
     return EmailMessage(
+        setup_link=setup_link(to, code),
         to=to,
         subject=f"Set your {_BRAND} password",
         html=_wrap(
@@ -133,4 +147,151 @@ def password_changed(to: str, full_name: str) -> EmailMessage:
             "If this was not you, reset your password immediately and tell your "
             "administrator."
         ),
+    )
+
+
+def ai_budget_alert(
+    to: str,
+    full_name: str,
+    *,
+    scope_label: str,
+    threshold: int,
+    used_paise: int,
+    limit_paise: int | None,
+    used_tokens: int,
+    limit_tokens: int | None,
+    on_exceed: str,
+) -> EmailMessage:
+    """Sent once per threshold per budget month (Phase 3, Module A)."""
+    from html import escape
+
+    from app.modules.ai.pricing import format_inr
+
+    if limit_paise:
+        usage = f"{format_inr(used_paise)} of {format_inr(limit_paise)}"
+    else:
+        usage = f"{used_tokens:,} of {limit_tokens or 0:,} tokens"
+    if threshold >= 100:
+        effect = (
+            "AI requests under this budget are now being blocked."
+            if on_exceed == "block"
+            else "AI requests under this budget now use the cheaper backup model."
+        )
+    else:
+        effect = "Nothing has been switched off yet."
+    link = f"{settings.frontend_url.rstrip('/')}/ai"
+    return EmailMessage(
+        to=to,
+        subject=f"AI budget {threshold}% used — {_BRAND}",
+        html=_wrap(
+            f"Hello {escape(full_name)},",
+            f"<p><strong>{threshold}%</strong> of {escape(scope_label)} has been used "
+            f"({escape(usage)}).</p><p>{effect}</p>{_button(link, 'Open the AI Control Room')}",
+        ),
+        text=(
+            f"Hello {full_name},\n\n{threshold}% of {scope_label} has been used ({usage}).\n"
+            f"{effect}\n\nOpen the AI Control Room: {link}"
+        ),
+    )
+
+
+# ------------------------------------------------------------------------- homework
+
+
+def _ist(moment) -> str:
+    from app.modules.ai.pricing import IST
+
+    return moment.astimezone(IST).strftime("%d-%m-%Y %I:%M %p")
+
+
+def homework_published(
+    to: str, full_name: str, *, title: str, class_name: str, subject: str, due_at, link: str
+) -> EmailMessage:
+    """Sent to each student of the class when a homework is published (Phase 3, Module C)."""
+    from html import escape
+
+    due = _ist(due_at)
+    return EmailMessage(
+        to=to,
+        subject=f"New homework: {title}",
+        html=_wrap(
+            f"Hello {escape(full_name)},",
+            f"<p>New {escape(subject)} homework for {escape(class_name)}: "
+            f"<strong>{escape(title)}</strong>.</p><p>Due: {due}</p>"
+            f"{_button(link, 'Open the homework')}",
+        ),
+        text=(
+            f"Hello {full_name},\n\nNew {subject} homework for {class_name}: {title}.\n"
+            f"Due: {due}\n\nOpen it here: {link}"
+        ),
+    )
+
+
+def homework_reminder(
+    to: str, full_name: str, *, title: str, class_name: str, due_at, link: str
+) -> EmailMessage:
+    from html import escape
+
+    due = _ist(due_at)
+    return EmailMessage(
+        to=to,
+        subject=f"Reminder: {title}",
+        html=_wrap(
+            f"Hello {escape(full_name)},",
+            f"<p>Your teacher is reminding {escape(class_name)} to submit "
+            f"<strong>{escape(title)}</strong>.</p><p>Due: {due}</p>"
+            f"{_button(link, 'Submit your homework')}",
+        ),
+        text=(
+            f"Hello {full_name},\n\nYour teacher is reminding {class_name} to submit {title}.\n"
+            f"Due: {due}\n\nSubmit it here: {link}"
+        ),
+    )
+
+
+_DIGEST_STATUS = {
+    "pending": "Pending",
+    "overdue": "Overdue",
+    "submitted": "Submitted",
+    "checked": "Checked",
+    "redo": "Asked to redo",
+}
+
+
+def homework_digest(
+    to: str, full_name: str, children: list[tuple[str, list[dict]]]
+) -> EmailMessage:
+    """The weekly parent summary: each linked child's homework from the past week."""
+    from html import escape
+
+    html_parts, text_parts = [], []
+    for child_name, items in children:
+        html_rows, text_rows = [], []
+        for item in items:
+            status = _DIGEST_STATUS.get(item["status"], item["status"])
+            marks = ""
+            if item.get("marks") is not None:
+                total = f"/{item['total_marks']}" if item.get("total_marks") is not None else ""
+                marks = f" — {item['marks']:g}{total}"
+            line = (
+                f"{item['title']} ({item['subject']}), due {_ist(item['due_at'])}: {status}{marks}"
+            )
+            html_rows.append(f"<li>{escape(line)}</li>")
+            text_rows.append(f"  - {line}")
+        html_parts.append(
+            f"<p><strong>{escape(child_name)}</strong></p><ul>{''.join(html_rows)}</ul>"
+        )
+        text_parts.append(f"{child_name}\n" + "\n".join(text_rows))
+    link = f"{settings.frontend_url.rstrip('/')}/homework/children"
+    return EmailMessage(
+        to=to,
+        subject=f"This week's homework — {_BRAND}",
+        html=_wrap(
+            f"Hello {escape(full_name)},",
+            f"<p>Here is this week's homework.</p>{''.join(html_parts)}"
+            f"{_button(link, 'See full details')}",
+        ),
+        text=f"Hello {full_name},\n\nHere is this week's homework.\n\n"
+        + "\n\n".join(text_parts)
+        + f"\n\nSee full details: {link}",
     )

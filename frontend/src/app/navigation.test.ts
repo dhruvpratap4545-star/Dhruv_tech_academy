@@ -74,4 +74,13 @@ describe("navigation registry", () => {
     }
     expect(NAVIGATION.every((group) => group.items.length > 0)).toBe(true);
   });
+
+  it("offers the AI Control Room to holders of ai:usage_read only", () => {
+    const admin = makeUser({ permissions: ["ai:usage_read"] });
+    const student = makeUser({ permissions: ["library:read", "homework:submit"] });
+    const ids = (user: ReturnType<typeof makeUser>) =>
+      visibleNavigation(user).flatMap((group) => group.items.map((item) => item.id));
+    expect(ids(admin)).toContain("ai");
+    expect(ids(student)).not.toContain("ai");
+  });
 });

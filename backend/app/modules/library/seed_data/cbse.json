@@ -1,0 +1,1905 @@
+{
+ "track": "cbse",
+ "name": "CBSE",
+ "source": "NCERT textbooks (rationalised syllabus for Classes 9-12; new NEP 2020 textbooks for Classes 1-8: Joyful Mathematics, Maths Mela, Our Wondrous World, Ganita Prakash, Curiosity, Exploring Society: India and Beyond) and the CBSE curriculum",
+ "as_of": "2026-10-31",
+ "note": "Draft for subject-expert verification (prerequisite 9). Classes 1-8 follow the new NCERT books and list Mathematics, EVS/Science and Social Science; Classes 4, 5, 7 and 8 were replaced by new books from 2025 and Part 2 volumes may add chapters, so those levels especially need checking. The Class 4 and 5 EVS (Our Wondrous World) chapters are deliberately left empty for the expert to fill through the spreadsheet import rather than guessed. Languages (English, Hindi) are not seeded yet. Topics are seeded for Classes 9-12 Science and Mathematics.",
+ "exam_tags": [
+  "cbse"
+ ],
+ "levels": [
+  {
+   "name": "Class 1",
+   "code": "class-1",
+   "subjects": [
+    {
+     "name": "Mathematics",
+     "chapters": [
+      "Finding the Furry Cat!",
+      "What is Long? What is Round?",
+      "Mango Treat",
+      "Making 10",
+      "How Many?",
+      "Vegetable Farm",
+      "Lina's Family",
+      "Fun with Numbers",
+      "Utsav",
+      "How do I Spend my Day?",
+      "How Many Times?",
+      "How Much Can We Spend?",
+      "So Many Toys"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "Class 2",
+   "code": "class-2",
+   "subjects": [
+    {
+     "name": "Mathematics",
+     "chapters": [
+      "A Day at the Beach",
+      "Shapes Around Us",
+      "Fun with Numbers",
+      "Shadow Story",
+      "Playing with Lines",
+      "Decoration for Festival",
+      "Rani's Gift",
+      "Grouping and Sharing",
+      "Which Season is it?",
+      "Fun at the Fair",
+      "Data Handling"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "Class 3",
+   "code": "class-3",
+   "subjects": [
+    {
+     "name": "Mathematics",
+     "chapters": [
+      "What's in a Name?",
+      "Toy Joy",
+      "Double Century",
+      "Vacation with My Nani Maa",
+      "Fun with Shapes",
+      "House of Hundreds - I",
+      "Raksha Bandhan",
+      "Fair Share",
+      "House of Hundreds - II",
+      "Fun at the Class Party!",
+      "Filling and Lifting",
+      "Give and Take",
+      "Time Goes On",
+      "The Surajkund Fair"
+     ]
+    },
+    {
+     "name": "Environmental Studies (Our Wondrous World)",
+     "code": "evs",
+     "chapters": [
+      "Family and Friends",
+      "Going to the Mela",
+      "Celebrating Festivals",
+      "Getting to Know Plants",
+      "Plants and Animals Live Together",
+      "Living in Harmony",
+      "Water - A Precious Gift",
+      "Food We Eat",
+      "Staying Healthy and Happy",
+      "This World of Things",
+      "Making Things",
+      "Taking Charge of Waste"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "Class 4",
+   "code": "class-4",
+   "subjects": [
+    {
+     "name": "Mathematics",
+     "chapters": [
+      "Shapes Around Us",
+      "Hide and Seek",
+      "Pattern Around Us",
+      "Thousands Around Us",
+      "Sharing and Measuring",
+      "Measuring Length",
+      "The Cleanest Village",
+      "Weigh it, Pour it",
+      "Equal Groups",
+      "Elephants, Tigers, and Leopards",
+      "Fun with Symmetry",
+      "Ticking Clocks and Turning Calendar",
+      "The Transport Museum",
+      "Data Handling"
+     ]
+    },
+    {
+     "name": "Environmental Studies (Our Wondrous World)",
+     "code": "evs"
+    }
+   ]
+  },
+  {
+   "name": "Class 5",
+   "code": "class-5",
+   "subjects": [
+    {
+     "name": "Mathematics",
+     "chapters": [
+      "We the Travellers - I",
+      "Fractions",
+      "Angles as Turns",
+      "We the Travellers - II",
+      "Far and Near",
+      "The Dairy Farm",
+      "Shapes and Patterns",
+      "Weight and Capacity",
+      "Coconut Farm",
+      "Symmetrical Designs",
+      "Grandmother's Quilt",
+      "Racing Seconds",
+      "Animal Jumps",
+      "Maps and Locations",
+      "Data Through Pictures"
+     ]
+    },
+    {
+     "name": "Environmental Studies (Our Wondrous World)",
+     "code": "evs"
+    }
+   ]
+  },
+  {
+   "name": "Class 6",
+   "code": "class-6",
+   "subjects": [
+    {
+     "name": "Mathematics (Ganita Prakash)",
+     "code": "mathematics",
+     "chapters": [
+      "Patterns in Mathematics",
+      "Lines and Angles",
+      "Number Play",
+      "Data Handling and Presentation",
+      "Prime Time",
+      "Perimeter and Area",
+      "Fractions",
+      "Playing with Constructions",
+      "Symmetry",
+      "The Other Side of Zero"
+     ]
+    },
+    {
+     "name": "Science (Curiosity)",
+     "code": "science",
+     "chapters": [
+      "The Wonderful World of Science",
+      "Diversity in the Living World",
+      "Mindful Eating: A Path to a Healthy Body",
+      "Exploring Magnets",
+      "Measurement of Length and Motion",
+      "Materials Around Us",
+      "Temperature and its Measurement",
+      "A Journey through States of Water",
+      "Methods of Separation in Everyday Life",
+      "Living Creatures: Exploring their Characteristics",
+      "Nature's Treasures",
+      "Beyond Earth"
+     ]
+    },
+    {
+     "name": "Social Science (Exploring Society: India and Beyond)",
+     "code": "social-science",
+     "chapters": [
+      "Locating Places on the Earth",
+      "Oceans and Continents",
+      "Landforms and Life",
+      "Timeline and Sources of History",
+      "India, That Is Bharat",
+      "The Beginnings of Indian Civilisation",
+      "India's Cultural Roots",
+      "Unity in Diversity, or 'Many in the One'",
+      "Family and Community",
+      "Grassroots Democracy - Part 1: Governance",
+      "Grassroots Democracy - Part 2: Local Government in Rural Areas",
+      "Grassroots Democracy - Part 3: Local Government in Urban Areas",
+      "The Value of Work",
+      "Economic Activities Around Us"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "Class 7",
+   "code": "class-7",
+   "subjects": [
+    {
+     "name": "Mathematics (Ganita Prakash)",
+     "code": "mathematics",
+     "chapters": [
+      "Large Numbers Around Us",
+      "Arithmetic Expressions",
+      "A Peek Beyond the Point",
+      "Expressions using Letter-Numbers",
+      "Parallel and Intersecting Lines",
+      "Number Play",
+      "A Tale of Three Intersecting Lines",
+      "Working with Fractions"
+     ]
+    },
+    {
+     "name": "Science (Curiosity)",
+     "code": "science",
+     "chapters": [
+      "The Ever-Evolving World of Science",
+      "Exploring Substances: Acidic, Basic, and Neutral",
+      "Electricity: Circuits and their Components",
+      "The World of Metals and Non-metals",
+      "Changes Around Us: Physical and Chemical",
+      "Adolescence: A Stage of Growth and Change",
+      "Heat Transfer in Nature",
+      "Measurement of Time and Motion",
+      "Life Processes in Animals",
+      "Life Processes in Plants",
+      "Light: Shadows and Reflections",
+      "Earth, Moon, and the Sun"
+     ]
+    },
+    {
+     "name": "Social Science (Exploring Society: India and Beyond)",
+     "code": "social-science",
+     "chapters": [
+      "Geographical Diversity of India",
+      "Understanding the Weather",
+      "Climates of India",
+      "New Beginnings: Cities and States",
+      "The Rise of Empires",
+      "The Age of Reorganisation",
+      "The Gupta Era: An Age of Tireless Creativity",
+      "How the Land Becomes Sacred",
+      "From the Rulers to the Ruled: Types of Governments",
+      "The Constitution of India - An Introduction",
+      "From Barter to Money",
+      "Understanding Markets"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "Class 8",
+   "code": "class-8",
+   "subjects": [
+    {
+     "name": "Mathematics (Ganita Prakash)",
+     "code": "mathematics",
+     "chapters": [
+      "A Square and A Cube",
+      "Power Play",
+      "A Story of Numbers",
+      "Quadrilaterals",
+      "Number Play",
+      "We Distribute, Yet Things Multiply",
+      "Proportional Reasoning - 1",
+      "Fractions in Disguise",
+      "The Baudhayana-Pythagoras Theorem"
+     ]
+    },
+    {
+     "name": "Science (Curiosity)",
+     "code": "science",
+     "chapters": [
+      "Exploring the Investigative World of Science",
+      "The Invisible Living World: Beyond Our Naked Eye",
+      "Health: The Ultimate Treasure",
+      "Electricity: Magnetic and Heating Effects",
+      "Exploring Forces",
+      "Pressure, Winds, Storms, and Cyclones",
+      "Particulate Nature of Matter",
+      "Nature of Matter: Elements, Compounds, and Mixtures",
+      "The Amazing World of Solutes, Solvents, and Solutions",
+      "Light: Mirrors and Lenses",
+      "Keeping Time with the Skies",
+      "How Nature Works in Harmony",
+      "Our Home: Earth, a Unique Life Sustaining Planet"
+     ]
+    },
+    {
+     "name": "Social Science (Exploring Society: India and Beyond)",
+     "code": "social-science",
+     "chapters": [
+      "Natural Resources and Their Use",
+      "Reshaping India's Political Map",
+      "The Rise of the Marathas",
+      "The Colonial Era in India",
+      "Universal Franchise and India's Electoral System",
+      "The Parliamentary System: Legislature and Executive",
+      "Factors of Production"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "Class 9",
+   "code": "class-9",
+   "subjects": [
+    {
+     "name": "Mathematics",
+     "chapters": [
+      {
+       "name": "Number Systems",
+       "topics": [
+        "Irrational Numbers",
+        "Real Numbers and their Decimal Expansions",
+        "Operations on Real Numbers",
+        "Laws of Exponents for Real Numbers"
+       ]
+      },
+      {
+       "name": "Polynomials",
+       "topics": [
+        "Polynomials in One Variable",
+        "Zeroes of a Polynomial",
+        "Factorisation of Polynomials",
+        "Algebraic Identities"
+       ]
+      },
+      {
+       "name": "Coordinate Geometry",
+       "topics": [
+        "Cartesian System",
+        "Plotting a Point in the Plane"
+       ]
+      },
+      {
+       "name": "Linear Equations in Two Variables",
+       "topics": [
+        "Linear Equations",
+        "Solution of a Linear Equation"
+       ]
+      },
+      {
+       "name": "Introduction to Euclid's Geometry",
+       "topics": [
+        "Euclid's Definitions, Axioms and Postulates",
+        "Equivalent Versions of Euclid's Fifth Postulate"
+       ]
+      },
+      {
+       "name": "Lines and Angles",
+       "topics": [
+        "Basic Terms and Definitions",
+        "Intersecting and Non-intersecting Lines",
+        "Pairs of Angles",
+        "Lines Parallel to the Same Line",
+        "Angle Sum Property of a Triangle"
+       ]
+      },
+      {
+       "name": "Triangles",
+       "topics": [
+        "Congruence of Triangles",
+        "Criteria for Congruence of Triangles",
+        "Some Properties of a Triangle",
+        "Inequalities in a Triangle"
+       ]
+      },
+      {
+       "name": "Quadrilaterals",
+       "topics": [
+        "Properties of a Parallelogram",
+        "The Mid-point Theorem"
+       ]
+      },
+      {
+       "name": "Circles",
+       "topics": [
+        "Angle Subtended by a Chord at a Point",
+        "Perpendicular from the Centre to a Chord",
+        "Equal Chords and their Distances from the Centre",
+        "Cyclic Quadrilaterals"
+       ]
+      },
+      {
+       "name": "Heron's Formula",
+       "topics": [
+        "Area of a Triangle by Heron's Formula"
+       ]
+      },
+      {
+       "name": "Surface Areas and Volumes",
+       "topics": [
+        "Surface Area of a Right Circular Cone",
+        "Surface Area of a Sphere",
+        "Volume of a Right Circular Cone",
+        "Volume of a Sphere"
+       ]
+      },
+      {
+       "name": "Statistics",
+       "topics": [
+        "Collection and Presentation of Data",
+        "Graphical Representation of Data"
+       ]
+      }
+     ]
+    },
+    {
+     "name": "Science",
+     "chapters": [
+      {
+       "name": "Matter in Our Surroundings",
+       "topics": [
+        "Physical Nature of Matter",
+        "Characteristics of Particles of Matter",
+        "States of Matter",
+        "Change of State",
+        "Evaporation"
+       ]
+      },
+      {
+       "name": "Is Matter Around Us Pure?",
+       "topics": [
+        "Mixtures",
+        "Solutions, Suspensions and Colloids",
+        "Separating the Components of a Mixture",
+        "Physical and Chemical Changes",
+        "Types of Pure Substances"
+       ]
+      },
+      {
+       "name": "Atoms and Molecules",
+       "topics": [
+        "Laws of Chemical Combination",
+        "Atoms and Atomic Mass",
+        "Molecules",
+        "Writing Chemical Formulae",
+        "Molecular Mass and Mole Concept"
+       ]
+      },
+      {
+       "name": "Structure of the Atom",
+       "topics": [
+        "Charged Particles in Matter",
+        "Thomson, Rutherford and Bohr Models",
+        "Distribution of Electrons in Shells",
+        "Valency",
+        "Atomic Number, Mass Number, Isotopes and Isobars"
+       ]
+      },
+      {
+       "name": "The Fundamental Unit of Life",
+       "topics": [
+        "Discovery of the Cell",
+        "Plasma Membrane and Cell Wall",
+        "Nucleus",
+        "Cytoplasm and Cell Organelles",
+        "Cell Division"
+       ]
+      },
+      {
+       "name": "Tissues",
+       "topics": [
+        "Plant Tissues",
+        "Meristematic and Permanent Tissue",
+        "Animal Tissues"
+       ]
+      },
+      {
+       "name": "Motion",
+       "topics": [
+        "Describing Motion",
+        "Measuring the Rate of Motion",
+        "Rate of Change of Velocity",
+        "Graphical Representation of Motion",
+        "Equations of Motion",
+        "Uniform Circular Motion"
+       ]
+      },
+      {
+       "name": "Force and Laws of Motion",
+       "topics": [
+        "Balanced and Unbalanced Forces",
+        "First Law of Motion",
+        "Inertia and Mass",
+        "Second Law of Motion",
+        "Third Law of Motion"
+       ]
+      },
+      {
+       "name": "Gravitation",
+       "topics": [
+        "Universal Law of Gravitation",
+        "Free Fall",
+        "Mass and Weight",
+        "Thrust and Pressure",
+        "Archimedes' Principle"
+       ]
+      },
+      {
+       "name": "Work and Energy",
+       "topics": [
+        "Work",
+        "Energy",
+        "Kinetic and Potential Energy",
+        "Law of Conservation of Energy",
+        "Rate of Doing Work"
+       ]
+      },
+      {
+       "name": "Sound",
+       "topics": [
+        "Production and Propagation of Sound",
+        "Characteristics of a Sound Wave",
+        "Reflection of Sound and Echo",
+        "Range of Hearing",
+        "Applications of Ultrasound"
+       ]
+      },
+      {
+       "name": "Improvement in Food Resources",
+       "topics": [
+        "Improvement in Crop Yields",
+        "Crop Protection Management",
+        "Animal Husbandry"
+       ]
+      }
+     ]
+    },
+    {
+     "name": "Social Science",
+     "units": [
+      {
+       "name": "History (India and the Contemporary World - I)",
+       "code": "history",
+       "chapters": [
+        "The French Revolution",
+        "Socialism in Europe and the Russian Revolution",
+        "Nazism and the Rise of Hitler",
+        "Forest Society and Colonialism",
+        "Pastoralists in the Modern World"
+       ]
+      },
+      {
+       "name": "Geography (Contemporary India - I)",
+       "code": "geography",
+       "chapters": [
+        "India - Size and Location",
+        "Physical Features of India",
+        "Drainage",
+        "Climate",
+        "Natural Vegetation and Wildlife",
+        "Population"
+       ]
+      },
+      {
+       "name": "Political Science (Democratic Politics - I)",
+       "code": "political-science",
+       "chapters": [
+        "What is Democracy? Why Democracy?",
+        "Constitutional Design",
+        "Electoral Politics",
+        "Working of Institutions",
+        "Democratic Rights"
+       ]
+      },
+      {
+       "name": "Economics",
+       "code": "economics",
+       "chapters": [
+        "The Story of Village Palampur",
+        "People as Resource",
+        "Poverty as a Challenge",
+        "Food Security in India"
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "name": "Class 10",
+   "code": "class-10",
+   "subjects": [
+    {
+     "name": "Mathematics",
+     "chapters": [
+      {
+       "name": "Real Numbers",
+       "topics": [
+        "The Fundamental Theorem of Arithmetic",
+        "Revisiting Irrational Numbers"
+       ]
+      },
+      {
+       "name": "Polynomials",
+       "topics": [
+        "Geometrical Meaning of the Zeroes of a Polynomial",
+        "Relationship between Zeroes and Coefficients"
+       ]
+      },
+      {
+       "name": "Pair of Linear Equations in Two Variables",
+       "topics": [
+        "Graphical Method of Solution",
+        "Substitution Method",
+        "Elimination Method"
+       ]
+      },
+      {
+       "name": "Quadratic Equations",
+       "topics": [
+        "Solution by Factorisation",
+        "Quadratic Formula",
+        "Nature of Roots"
+       ]
+      },
+      {
+       "name": "Arithmetic Progressions",
+       "topics": [
+        "nth Term of an AP",
+        "Sum of First n Terms of an AP"
+       ]
+      },
+      {
+       "name": "Triangles",
+       "topics": [
+        "Similar Figures",
+        "Similarity of Triangles",
+        "Criteria for Similarity of Triangles",
+        "Basic Proportionality Theorem"
+       ]
+      },
+      {
+       "name": "Coordinate Geometry",
+       "topics": [
+        "Distance Formula",
+        "Section Formula"
+       ]
+      },
+      {
+       "name": "Introduction to Trigonometry",
+       "topics": [
+        "Trigonometric Ratios",
+        "Trigonometric Ratios of Some Specific Angles",
+        "Trigonometric Identities"
+       ]
+      },
+      {
+       "name": "Some Applications of Trigonometry",
+       "topics": [
+        "Heights and Distances"
+       ]
+      },
+      {
+       "name": "Circles",
+       "topics": [
+        "Tangent to a Circle",
+        "Number of Tangents from a Point on a Circle"
+       ]
+      },
+      {
+       "name": "Areas Related to Circles",
+       "topics": [
+        "Areas of Sector and Segment of a Circle"
+       ]
+      },
+      {
+       "name": "Surface Areas and Volumes",
+       "topics": [
+        "Surface Area of a Combination of Solids",
+        "Volume of a Combination of Solids"
+       ]
+      },
+      {
+       "name": "Statistics",
+       "topics": [
+        "Mean of Grouped Data",
+        "Mode of Grouped Data",
+        "Median of Grouped Data"
+       ]
+      },
+      {
+       "name": "Probability",
+       "topics": [
+        "Probability - A Theoretical Approach"
+       ]
+      }
+     ]
+    },
+    {
+     "name": "Science",
+     "chapters": [
+      {
+       "name": "Chemical Reactions and Equations",
+       "topics": [
+        "Chemical Equations",
+        "Balancing Chemical Equations",
+        "Types of Chemical Reactions",
+        "Oxidation and Reduction",
+        "Corrosion and Rancidity"
+       ]
+      },
+      {
+       "name": "Acids, Bases and Salts",
+       "topics": [
+        "Chemical Properties of Acids and Bases",
+        "Acids and Bases in Water Solution",
+        "Strength of Acid or Base: pH Scale",
+        "Salts and their Uses"
+       ]
+      },
+      {
+       "name": "Metals and Non-metals",
+       "topics": [
+        "Physical Properties",
+        "Chemical Properties of Metals",
+        "Reactivity Series",
+        "Ionic Compounds",
+        "Occurrence and Extraction of Metals",
+        "Corrosion"
+       ]
+      },
+      {
+       "name": "Carbon and its Compounds",
+       "topics": [
+        "Bonding in Carbon: The Covalent Bond",
+        "Versatile Nature of Carbon",
+        "Homologous Series and Functional Groups",
+        "Chemical Properties of Carbon Compounds",
+        "Ethanol and Ethanoic Acid",
+        "Soaps and Detergents"
+       ]
+      },
+      {
+       "name": "Life Processes",
+       "topics": [
+        "Nutrition",
+        "Respiration",
+        "Transportation",
+        "Excretion"
+       ]
+      },
+      {
+       "name": "Control and Coordination",
+       "topics": [
+        "Animals - Nervous System",
+        "Coordination in Plants",
+        "Hormones in Animals"
+       ]
+      },
+      {
+       "name": "How do Organisms Reproduce?",
+       "topics": [
+        "Modes of Reproduction used by Single Organisms",
+        "Sexual Reproduction",
+        "Reproduction in Human Beings",
+        "Reproductive Health"
+       ]
+      },
+      {
+       "name": "Heredity",
+       "topics": [
+        "Accumulation of Variation",
+        "Rules for the Inheritance of Traits: Mendel's Contributions",
+        "Sex Determination"
+       ]
+      },
+      {
+       "name": "Light - Reflection and Refraction",
+       "topics": [
+        "Reflection of Light",
+        "Spherical Mirrors",
+        "Mirror Formula and Magnification",
+        "Refraction of Light",
+        "Spherical Lenses and Lens Formula",
+        "Power of a Lens"
+       ]
+      },
+      {
+       "name": "The Human Eye and the Colourful World",
+       "topics": [
+        "The Human Eye",
+        "Defects of Vision and their Correction",
+        "Refraction through a Prism",
+        "Dispersion of White Light",
+        "Atmospheric Refraction",
+        "Scattering of Light"
+       ]
+      },
+      {
+       "name": "Electricity",
+       "topics": [
+        "Electric Current and Circuit",
+        "Electric Potential and Potential Difference",
+        "Ohm's Law",
+        "Factors on which Resistance Depends",
+        "Resistors in Series and Parallel",
+        "Heating Effect of Electric Current",
+        "Electric Power"
+       ]
+      },
+      {
+       "name": "Magnetic Effects of Electric Current",
+       "topics": [
+        "Magnetic Field and Field Lines",
+        "Magnetic Field due to a Current-carrying Conductor",
+        "Force on a Current-carrying Conductor in a Magnetic Field",
+        "Domestic Electric Circuits"
+       ]
+      },
+      {
+       "name": "Our Environment",
+       "topics": [
+        "Ecosystem and its Components",
+        "Food Chains and Webs",
+        "Environmental Problems: Ozone and Waste"
+       ]
+      }
+     ]
+    },
+    {
+     "name": "Social Science",
+     "units": [
+      {
+       "name": "History (India and the Contemporary World - II)",
+       "code": "history",
+       "chapters": [
+        "The Rise of Nationalism in Europe",
+        "Nationalism in India",
+        "The Making of a Global World",
+        "The Age of Industrialisation",
+        "Print Culture and the Modern World"
+       ]
+      },
+      {
+       "name": "Geography (Contemporary India - II)",
+       "code": "geography",
+       "chapters": [
+        "Resources and Development",
+        "Forest and Wildlife Resources",
+        "Water Resources",
+        "Agriculture",
+        "Minerals and Energy Resources",
+        "Manufacturing Industries",
+        "Lifelines of National Economy"
+       ]
+      },
+      {
+       "name": "Political Science (Democratic Politics - II)",
+       "code": "political-science",
+       "chapters": [
+        "Power-sharing",
+        "Federalism",
+        "Gender, Religion and Caste",
+        "Political Parties",
+        "Outcomes of Democracy"
+       ]
+      },
+      {
+       "name": "Economics (Understanding Economic Development)",
+       "code": "economics",
+       "chapters": [
+        "Development",
+        "Sectors of the Indian Economy",
+        "Money and Credit",
+        "Globalisation and the Indian Economy",
+        "Consumer Rights"
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "name": "Class 11",
+   "code": "class-11",
+   "subjects": [
+    {
+     "name": "Physics",
+     "exam_tags": [
+      "cbse",
+      "jee",
+      "neet"
+     ],
+     "chapters": [
+      {
+       "name": "Units and Measurements",
+       "topics": [
+        "The International System of Units",
+        "Significant Figures",
+        "Dimensions of Physical Quantities",
+        "Dimensional Analysis and its Applications"
+       ]
+      },
+      {
+       "name": "Motion in a Straight Line",
+       "topics": [
+        "Instantaneous Velocity and Speed",
+        "Acceleration",
+        "Kinematic Equations for Uniformly Accelerated Motion",
+        "Relative Velocity"
+       ]
+      },
+      {
+       "name": "Motion in a Plane",
+       "topics": [
+        "Scalars and Vectors",
+        "Addition and Resolution of Vectors",
+        "Projectile Motion",
+        "Uniform Circular Motion"
+       ]
+      },
+      {
+       "name": "Laws of Motion",
+       "topics": [
+        "Newton's Laws of Motion",
+        "Conservation of Momentum",
+        "Friction",
+        "Dynamics of Circular Motion"
+       ]
+      },
+      {
+       "name": "Work, Energy and Power",
+       "topics": [
+        "Work-Energy Theorem",
+        "Potential Energy of a Spring",
+        "Conservation of Mechanical Energy",
+        "Power",
+        "Collisions"
+       ]
+      },
+      {
+       "name": "System of Particles and Rotational Motion",
+       "topics": [
+        "Centre of Mass",
+        "Torque and Angular Momentum",
+        "Equilibrium of a Rigid Body",
+        "Moment of Inertia",
+        "Dynamics of Rotational Motion"
+       ]
+      },
+      {
+       "name": "Gravitation",
+       "topics": [
+        "Kepler's Laws",
+        "Universal Law of Gravitation",
+        "Acceleration due to Gravity",
+        "Gravitational Potential Energy",
+        "Escape Speed and Earth Satellites"
+       ]
+      },
+      {
+       "name": "Mechanical Properties of Solids",
+       "topics": [
+        "Stress and Strain",
+        "Hooke's Law",
+        "Elastic Moduli"
+       ]
+      },
+      {
+       "name": "Mechanical Properties of Fluids",
+       "topics": [
+        "Pressure and Pascal's Law",
+        "Streamline Flow and Bernoulli's Principle",
+        "Viscosity",
+        "Surface Tension"
+       ]
+      },
+      {
+       "name": "Thermal Properties of Matter",
+       "topics": [
+        "Thermal Expansion",
+        "Specific Heat Capacity",
+        "Calorimetry and Change of State",
+        "Heat Transfer"
+       ]
+      },
+      {
+       "name": "Thermodynamics",
+       "topics": [
+        "Zeroth Law of Thermodynamics",
+        "First Law of Thermodynamics",
+        "Thermodynamic Processes",
+        "Second Law of Thermodynamics",
+        "Carnot Engine"
+       ]
+      },
+      {
+       "name": "Kinetic Theory",
+       "topics": [
+        "Behaviour of Gases",
+        "Kinetic Theory of an Ideal Gas",
+        "Law of Equipartition of Energy",
+        "Mean Free Path"
+       ]
+      },
+      {
+       "name": "Oscillations",
+       "topics": [
+        "Periodic and Oscillatory Motions",
+        "Simple Harmonic Motion",
+        "Energy in SHM",
+        "The Simple Pendulum"
+       ]
+      },
+      {
+       "name": "Waves",
+       "topics": [
+        "Transverse and Longitudinal Waves",
+        "Speed of a Travelling Wave",
+        "Principle of Superposition",
+        "Standing Waves and Normal Modes",
+        "Beats"
+       ]
+      }
+     ]
+    },
+    {
+     "name": "Chemistry",
+     "exam_tags": [
+      "cbse",
+      "jee",
+      "neet"
+     ],
+     "chapters": [
+      {
+       "name": "Some Basic Concepts of Chemistry",
+       "topics": [
+        "Laws of Chemical Combinations",
+        "Atomic and Molecular Masses",
+        "Mole Concept and Molar Masses",
+        "Stoichiometry and Limiting Reagent",
+        "Concentration of Solutions"
+       ]
+      },
+      {
+       "name": "Structure of Atom",
+       "topics": [
+        "Sub-atomic Particles",
+        "Atomic Models",
+        "Bohr's Model for Hydrogen Atom",
+        "Quantum Mechanical Model of Atom",
+        "Electronic Configuration"
+       ]
+      },
+      {
+       "name": "Classification of Elements and Periodicity in Properties",
+       "topics": [
+        "Modern Periodic Law",
+        "Electronic Configurations and Types of Elements",
+        "Periodic Trends in Properties"
+       ]
+      },
+      {
+       "name": "Chemical Bonding and Molecular Structure",
+       "topics": [
+        "Ionic and Covalent Bonds",
+        "VSEPR Theory",
+        "Valence Bond Theory and Hybridisation",
+        "Molecular Orbital Theory",
+        "Hydrogen Bonding"
+       ]
+      },
+      {
+       "name": "Thermodynamics",
+       "topics": [
+        "Internal Energy, Work and Heat",
+        "Enthalpy",
+        "Hess's Law",
+        "Entropy and Spontaneity",
+        "Gibbs Energy"
+       ]
+      },
+      {
+       "name": "Equilibrium",
+       "topics": [
+        "Law of Chemical Equilibrium",
+        "Le Chatelier's Principle",
+        "Ionic Equilibrium",
+        "pH Scale",
+        "Buffer Solutions and Solubility Product"
+       ]
+      },
+      {
+       "name": "Redox Reactions",
+       "topics": [
+        "Oxidation Number",
+        "Balancing Redox Reactions",
+        "Redox Reactions and Electrode Processes"
+       ]
+      },
+      {
+       "name": "Organic Chemistry - Some Basic Principles and Techniques",
+       "topics": [
+        "Classification and IUPAC Nomenclature",
+        "Isomerism",
+        "Electronic Effects",
+        "Reaction Intermediates",
+        "Purification and Analysis of Organic Compounds"
+       ]
+      },
+      {
+       "name": "Hydrocarbons",
+       "topics": [
+        "Alkanes",
+        "Alkenes",
+        "Alkynes",
+        "Aromatic Hydrocarbons"
+       ]
+      }
+     ]
+    },
+    {
+     "name": "Biology",
+     "exam_tags": [
+      "cbse",
+      "neet"
+     ],
+     "chapters": [
+      {
+       "name": "The Living World",
+       "topics": [
+        "Diversity in the Living World",
+        "Taxonomic Categories"
+       ]
+      },
+      {
+       "name": "Biological Classification",
+       "topics": [
+        "Kingdom Monera",
+        "Kingdom Protista",
+        "Kingdom Fungi",
+        "Kingdoms Plantae and Animalia",
+        "Viruses, Viroids and Lichens"
+       ]
+      },
+      {
+       "name": "Plant Kingdom",
+       "topics": [
+        "Algae",
+        "Bryophytes",
+        "Pteridophytes",
+        "Gymnosperms",
+        "Angiosperms"
+       ]
+      },
+      {
+       "name": "Animal Kingdom",
+       "topics": [
+        "Basis of Classification",
+        "Classification of Animals"
+       ]
+      },
+      {
+       "name": "Morphology of Flowering Plants",
+       "topics": [
+        "Root, Stem and Leaf",
+        "Inflorescence and Flower",
+        "Fruit and Seed",
+        "Description of Some Important Families"
+       ]
+      },
+      {
+       "name": "Anatomy of Flowering Plants",
+       "topics": [
+        "The Tissue and Tissue Systems",
+        "Anatomy of Dicot and Monocot Plants"
+       ]
+      },
+      {
+       "name": "Structural Organisation in Animals",
+       "topics": [
+        "Frog: Morphology and Anatomy"
+       ]
+      },
+      {
+       "name": "Cell: The Unit of Life",
+       "topics": [
+        "Cell Theory",
+        "Prokaryotic Cells",
+        "Eukaryotic Cells and Organelles"
+       ]
+      },
+      {
+       "name": "Biomolecules",
+       "topics": [
+        "Primary and Secondary Metabolites",
+        "Proteins",
+        "Polysaccharides",
+        "Nucleic Acids",
+        "Enzymes"
+       ]
+      },
+      {
+       "name": "Cell Cycle and Cell Division",
+       "topics": [
+        "Cell Cycle",
+        "Mitosis",
+        "Meiosis"
+       ]
+      },
+      {
+       "name": "Photosynthesis in Higher Plants",
+       "topics": [
+        "Pigments and Light Reaction",
+        "Electron Transport and Photophosphorylation",
+        "Calvin Cycle",
+        "C4 Pathway and Photorespiration"
+       ]
+      },
+      {
+       "name": "Respiration in Plants",
+       "topics": [
+        "Glycolysis",
+        "Fermentation",
+        "Aerobic Respiration",
+        "Respiratory Quotient"
+       ]
+      },
+      {
+       "name": "Plant Growth and Development",
+       "topics": [
+        "Growth",
+        "Differentiation and Development",
+        "Plant Growth Regulators"
+       ]
+      },
+      {
+       "name": "Breathing and Exchange of Gases",
+       "topics": [
+        "Respiratory Organs",
+        "Mechanism of Breathing",
+        "Transport of Gases",
+        "Disorders of Respiratory System"
+       ]
+      },
+      {
+       "name": "Body Fluids and Circulation",
+       "topics": [
+        "Blood and Lymph",
+        "Human Circulatory System",
+        "Cardiac Cycle and ECG",
+        "Disorders of Circulatory System"
+       ]
+      },
+      {
+       "name": "Excretory Products and their Elimination",
+       "topics": [
+        "Human Excretory System",
+        "Urine Formation",
+        "Regulation of Kidney Function"
+       ]
+      },
+      {
+       "name": "Locomotion and Movement",
+       "topics": [
+        "Muscle Contraction",
+        "Skeletal System",
+        "Joints and Disorders"
+       ]
+      },
+      {
+       "name": "Neural Control and Coordination",
+       "topics": [
+        "Neuron and Nerve Impulse",
+        "Central Nervous System",
+        "Reflex Action"
+       ]
+      },
+      {
+       "name": "Chemical Coordination and Integration",
+       "topics": [
+        "Endocrine Glands and Hormones",
+        "Mechanism of Hormone Action"
+       ]
+      }
+     ]
+    },
+    {
+     "name": "Mathematics",
+     "exam_tags": [
+      "cbse",
+      "jee"
+     ],
+     "chapters": [
+      {
+       "name": "Sets",
+       "topics": [
+        "Types of Sets and Subsets",
+        "Venn Diagrams",
+        "Operations on Sets"
+       ]
+      },
+      {
+       "name": "Relations and Functions",
+       "topics": [
+        "Cartesian Product of Sets",
+        "Relations",
+        "Functions"
+       ]
+      },
+      {
+       "name": "Trigonometric Functions",
+       "topics": [
+        "Angles and Radian Measure",
+        "Trigonometric Functions of Real Numbers",
+        "Trigonometric Functions of Sum and Difference"
+       ]
+      },
+      {
+       "name": "Complex Numbers and Quadratic Equations",
+       "topics": [
+        "Algebra of Complex Numbers",
+        "Modulus and Conjugate",
+        "Argand Plane and Polar Representation"
+       ]
+      },
+      {
+       "name": "Linear Inequalities",
+       "topics": [
+        "Algebraic Solutions of Linear Inequalities in One Variable"
+       ]
+      },
+      {
+       "name": "Permutations and Combinations",
+       "topics": [
+        "Fundamental Principle of Counting",
+        "Permutations",
+        "Combinations"
+       ]
+      },
+      {
+       "name": "Binomial Theorem",
+       "topics": [
+        "Binomial Theorem for Positive Integral Indices"
+       ]
+      },
+      {
+       "name": "Sequences and Series",
+       "topics": [
+        "Arithmetic Progression",
+        "Geometric Progression",
+        "Relationship between AM and GM"
+       ]
+      },
+      {
+       "name": "Straight Lines",
+       "topics": [
+        "Slope of a Line",
+        "Various Forms of the Equation of a Line",
+        "Distance of a Point from a Line"
+       ]
+      },
+      {
+       "name": "Conic Sections",
+       "topics": [
+        "Circle",
+        "Parabola",
+        "Ellipse",
+        "Hyperbola"
+       ]
+      },
+      {
+       "name": "Introduction to Three Dimensional Geometry",
+       "topics": [
+        "Coordinate Axes and Planes",
+        "Distance between Two Points"
+       ]
+      },
+      {
+       "name": "Limits and Derivatives",
+       "topics": [
+        "Limits",
+        "Limits of Trigonometric Functions",
+        "Derivatives"
+       ]
+      },
+      {
+       "name": "Statistics",
+       "topics": [
+        "Measures of Dispersion",
+        "Variance and Standard Deviation"
+       ]
+      },
+      {
+       "name": "Probability",
+       "topics": [
+        "Events",
+        "Axiomatic Approach to Probability"
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "name": "Class 12",
+   "code": "class-12",
+   "subjects": [
+    {
+     "name": "Physics",
+     "exam_tags": [
+      "cbse",
+      "jee",
+      "neet"
+     ],
+     "chapters": [
+      {
+       "name": "Electric Charges and Fields",
+       "topics": [
+        "Coulomb's Law",
+        "Electric Field and Field Lines",
+        "Electric Dipole",
+        "Electric Flux and Gauss's Law",
+        "Applications of Gauss's Law"
+       ]
+      },
+      {
+       "name": "Electrostatic Potential and Capacitance",
+       "topics": [
+        "Electrostatic Potential",
+        "Equipotential Surfaces",
+        "Potential Energy of a System of Charges",
+        "Capacitors and Capacitance",
+        "Combination of Capacitors"
+       ]
+      },
+      {
+       "name": "Current Electricity",
+       "topics": [
+        "Ohm's Law and Drift Velocity",
+        "Resistivity",
+        "EMF and Internal Resistance",
+        "Kirchhoff's Rules",
+        "Wheatstone Bridge"
+       ]
+      },
+      {
+       "name": "Moving Charges and Magnetism",
+       "topics": [
+        "Magnetic Force",
+        "Biot-Savart Law",
+        "Ampere's Circuital Law",
+        "Solenoid",
+        "Moving Coil Galvanometer"
+       ]
+      },
+      {
+       "name": "Magnetism and Matter",
+       "topics": [
+        "The Bar Magnet",
+        "Magnetism and Gauss's Law",
+        "Magnetic Properties of Materials"
+       ]
+      },
+      {
+       "name": "Electromagnetic Induction",
+       "topics": [
+        "Faraday's Law of Induction",
+        "Lenz's Law",
+        "Motional EMF",
+        "Inductance",
+        "AC Generator"
+       ]
+      },
+      {
+       "name": "Alternating Current",
+       "topics": [
+        "AC Voltage Applied to R, L and C",
+        "LCR Series Circuit and Resonance",
+        "Power in AC Circuit",
+        "Transformers"
+       ]
+      },
+      {
+       "name": "Electromagnetic Waves",
+       "topics": [
+        "Displacement Current",
+        "Electromagnetic Spectrum"
+       ]
+      },
+      {
+       "name": "Ray Optics and Optical Instruments",
+       "topics": [
+        "Reflection by Spherical Mirrors",
+        "Refraction and Total Internal Reflection",
+        "Refraction by Lenses",
+        "Refraction through a Prism",
+        "Optical Instruments"
+       ]
+      },
+      {
+       "name": "Wave Optics",
+       "topics": [
+        "Huygens Principle",
+        "Interference and Young's Double Slit Experiment",
+        "Diffraction",
+        "Polarisation"
+       ]
+      },
+      {
+       "name": "Dual Nature of Radiation and Matter",
+       "topics": [
+        "Photoelectric Effect",
+        "Einstein's Photoelectric Equation",
+        "Wave Nature of Matter"
+       ]
+      },
+      {
+       "name": "Atoms",
+       "topics": [
+        "Rutherford's Model",
+        "Atomic Spectra",
+        "Bohr Model of the Hydrogen Atom"
+       ]
+      },
+      {
+       "name": "Nuclei",
+       "topics": [
+        "Atomic Masses and Composition of Nucleus",
+        "Mass-Energy and Binding Energy",
+        "Nuclear Force",
+        "Nuclear Fission and Fusion"
+       ]
+      },
+      {
+       "name": "Semiconductor Electronics: Materials, Devices and Simple Circuits",
+       "code": "semiconductor-electronics",
+       "topics": [
+        "Intrinsic and Extrinsic Semiconductors",
+        "p-n Junction",
+        "Semiconductor Diode",
+        "Diode as a Rectifier"
+       ]
+      }
+     ]
+    },
+    {
+     "name": "Chemistry",
+     "exam_tags": [
+      "cbse",
+      "jee",
+      "neet"
+     ],
+     "chapters": [
+      {
+       "name": "Solutions",
+       "topics": [
+        "Expressing Concentration of Solutions",
+        "Vapour Pressure and Raoult's Law",
+        "Colligative Properties",
+        "Abnormal Molar Masses"
+       ]
+      },
+      {
+       "name": "Electrochemistry",
+       "topics": [
+        "Galvanic Cells and Nernst Equation",
+        "Conductance of Electrolytic Solutions",
+        "Electrolytic Cells and Electrolysis",
+        "Batteries and Fuel Cells",
+        "Corrosion"
+       ]
+      },
+      {
+       "name": "Chemical Kinetics",
+       "topics": [
+        "Rate of a Chemical Reaction",
+        "Factors Influencing Rate",
+        "Integrated Rate Equations",
+        "Temperature Dependence and Collision Theory"
+       ]
+      },
+      {
+       "name": "The d- and f-Block Elements",
+       "topics": [
+        "General Properties of Transition Elements",
+        "Important Compounds of Transition Elements",
+        "The Lanthanoids and Actinoids"
+       ]
+      },
+      {
+       "name": "Coordination Compounds",
+       "topics": [
+        "Werner's Theory",
+        "Nomenclature and Isomerism",
+        "Bonding in Coordination Compounds",
+        "Importance and Applications"
+       ]
+      },
+      {
+       "name": "Haloalkanes and Haloarenes",
+       "topics": [
+        "Methods of Preparation",
+        "Physical Properties",
+        "Chemical Reactions and Mechanisms",
+        "Polyhalogen Compounds"
+       ]
+      },
+      {
+       "name": "Alcohols, Phenols and Ethers",
+       "topics": [
+        "Preparation and Properties of Alcohols and Phenols",
+        "Chemical Reactions",
+        "Ethers"
+       ]
+      },
+      {
+       "name": "Aldehydes, Ketones and Carboxylic Acids",
+       "topics": [
+        "Preparation of Aldehydes and Ketones",
+        "Chemical Reactions of Carbonyl Compounds",
+        "Carboxylic Acids"
+       ]
+      },
+      {
+       "name": "Amines",
+       "topics": [
+        "Classification and Preparation of Amines",
+        "Chemical Reactions of Amines",
+        "Diazonium Salts"
+       ]
+      },
+      {
+       "name": "Biomolecules",
+       "topics": [
+        "Carbohydrates",
+        "Proteins",
+        "Enzymes",
+        "Vitamins",
+        "Nucleic Acids",
+        "Hormones"
+       ]
+      }
+     ]
+    },
+    {
+     "name": "Biology",
+     "exam_tags": [
+      "cbse",
+      "neet"
+     ],
+     "chapters": [
+      {
+       "name": "Sexual Reproduction in Flowering Plants",
+       "topics": [
+        "Pre-fertilisation: Structures and Events",
+        "Double Fertilisation",
+        "Post-fertilisation: Structures and Events",
+        "Apomixis and Polyembryony"
+       ]
+      },
+      {
+       "name": "Human Reproduction",
+       "topics": [
+        "Male and Female Reproductive Systems",
+        "Gametogenesis",
+        "Menstrual Cycle",
+        "Fertilisation and Implantation",
+        "Pregnancy and Embryonic Development"
+       ]
+      },
+      {
+       "name": "Reproductive Health",
+       "topics": [
+        "Population Stabilisation and Birth Control",
+        "Sexually Transmitted Infections",
+        "Infertility"
+       ]
+      },
+      {
+       "name": "Principles of Inheritance and Variation",
+       "topics": [
+        "Mendel's Laws of Inheritance",
+        "Inheritance of One and Two Genes",
+        "Sex Determination",
+        "Mutation",
+        "Genetic Disorders"
+       ]
+      },
+      {
+       "name": "Molecular Basis of Inheritance",
+       "topics": [
+        "The DNA",
+        "Replication",
+        "Transcription",
+        "Genetic Code and Translation",
+        "Regulation of Gene Expression",
+        "Human Genome Project and DNA Fingerprinting"
+       ]
+      },
+      {
+       "name": "Evolution",
+       "topics": [
+        "Origin of Life",
+        "Evidences for Evolution",
+        "Mechanism of Evolution",
+        "Hardy-Weinberg Principle",
+        "Origin and Evolution of Man"
+       ]
+      },
+      {
+       "name": "Human Health and Disease",
+       "topics": [
+        "Common Diseases in Humans",
+        "Immunity",
+        "AIDS and Cancer",
+        "Drugs and Alcohol Abuse"
+       ]
+      },
+      {
+       "name": "Microbes in Human Welfare",
+       "topics": [
+        "Microbes in Household and Industrial Products",
+        "Microbes in Sewage Treatment",
+        "Microbes as Biocontrol Agents and Biofertilisers"
+       ]
+      },
+      {
+       "name": "Biotechnology: Principles and Processes",
+       "topics": [
+        "Tools of Recombinant DNA Technology",
+        "Processes of Recombinant DNA Technology"
+       ]
+      },
+      {
+       "name": "Biotechnology and its Applications",
+       "topics": [
+        "Applications in Agriculture",
+        "Applications in Medicine",
+        "Transgenic Animals",
+        "Ethical Issues"
+       ]
+      },
+      {
+       "name": "Organisms and Populations",
+       "topics": [
+        "Populations",
+        "Population Interactions"
+       ]
+      },
+      {
+       "name": "Ecosystem",
+       "topics": [
+        "Ecosystem Structure and Function",
+        "Productivity and Decomposition",
+        "Energy Flow",
+        "Ecological Pyramids"
+       ]
+      },
+      {
+       "name": "Biodiversity and Conservation",
+       "topics": [
+        "Biodiversity",
+        "Loss of Biodiversity",
+        "Biodiversity Conservation"
+       ]
+      }
+     ]
+    },
+    {
+     "name": "Mathematics",
+     "exam_tags": [
+      "cbse",
+      "jee"
+     ],
+     "chapters": [
+      {
+       "name": "Relations and Functions",
+       "topics": [
+        "Types of Relations",
+        "Types of Functions"
+       ]
+      },
+      {
+       "name": "Inverse Trigonometric Functions",
+       "topics": [
+        "Basic Concepts",
+        "Properties of Inverse Trigonometric Functions"
+       ]
+      },
+      {
+       "name": "Matrices",
+       "topics": [
+        "Types of Matrices",
+        "Operations on Matrices",
+        "Transpose, Symmetric and Skew Symmetric Matrices",
+        "Invertible Matrices"
+       ]
+      },
+      {
+       "name": "Determinants",
+       "topics": [
+        "Determinant and Area of a Triangle",
+        "Minors and Cofactors",
+        "Adjoint and Inverse of a Matrix",
+        "Solving Systems of Linear Equations"
+       ]
+      },
+      {
+       "name": "Continuity and Differentiability",
+       "topics": [
+        "Continuity",
+        "Differentiability",
+        "Exponential and Logarithmic Functions",
+        "Second Order Derivatives"
+       ]
+      },
+      {
+       "name": "Application of Derivatives",
+       "topics": [
+        "Rate of Change of Quantities",
+        "Increasing and Decreasing Functions",
+        "Maxima and Minima"
+       ]
+      },
+      {
+       "name": "Integrals",
+       "topics": [
+        "Integration by Substitution",
+        "Integration by Partial Fractions",
+        "Integration by Parts",
+        "Definite Integrals and their Properties"
+       ]
+      },
+      {
+       "name": "Application of Integrals",
+       "topics": [
+        "Area under Simple Curves"
+       ]
+      },
+      {
+       "name": "Differential Equations",
+       "topics": [
+        "Order and Degree",
+        "Variables Separable Method",
+        "Homogeneous Differential Equations",
+        "Linear Differential Equations"
+       ]
+      },
+      {
+       "name": "Vector Algebra",
+       "topics": [
+        "Types of Vectors",
+        "Addition of Vectors",
+        "Scalar Product",
+        "Vector Product"
+       ]
+      },
+      {
+       "name": "Three Dimensional Geometry",
+       "topics": [
+        "Direction Cosines and Ratios",
+        "Equation of a Line in Space",
+        "Angle and Shortest Distance between Lines"
+       ]
+      },
+      {
+       "name": "Linear Programming",
+       "topics": [
+        "Linear Programming Problem and its Mathematical Formulation",
+        "Graphical Method of Solving LPP"
+       ]
+      },
+      {
+       "name": "Probability",
+       "topics": [
+        "Conditional Probability",
+        "Multiplication Theorem",
+        "Bayes' Theorem",
+        "Random Variables and Probability Distributions"
+       ]
+      }
+     ]
+    }
+   ]
+  }
+ ]
+}

@@ -21,7 +21,7 @@ from fastapi.responses import Response
 from app.core.errors import ValidationFailed
 from app.core.pagination import Page, clamp_limit
 from app.modules.auth.service import RequestMeta
-from app.modules.notifications.email import send_email
+from app.modules.notifications.email import delivery_configured, send_email
 from app.modules.rbac import schemas as rbac_schemas
 from app.modules.rbac.deps import (
     AuthContextDep,
@@ -208,7 +208,11 @@ async def invite_user(
     user, message = await users.invite_user(db, guard=guard, payload=payload, meta=_meta(request))
     if message is not None:
         background.add_task(send_email, message)
-    return schemas.InviteUserResponse(user=schemas.UserOut.model_validate(user))
+    return schemas.InviteUserResponse(
+        user=schemas.UserOut.model_validate(user),
+        invitation_sent=message is not None and delivery_configured(),
+        setup_link=message.setup_link if message else None,
+    )
 
 
 @router.post(
@@ -226,7 +230,11 @@ async def resend_invite(
     message = await users.resend_invitation(db, guard=guard, user_id=user_id, meta=_meta(request))
     background.add_task(send_email, message)
     row = await users.get_user(db, guard=guard, user_id=user_id)
-    return schemas.InviteUserResponse(user=schemas.UserOut.model_validate(row))
+    return schemas.InviteUserResponse(
+        user=schemas.UserOut.model_validate(row),
+        invitation_sent=delivery_configured(),
+        setup_link=message.setup_link,
+    )
 
 
 @router.post(

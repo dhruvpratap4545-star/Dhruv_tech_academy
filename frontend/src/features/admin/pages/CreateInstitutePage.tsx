@@ -4,6 +4,7 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 
 import { Alert } from "@/components/Alert";
+import { InviteLink } from "@/features/admin/components/InviteLink";
 import { Button } from "@/components/Button";
 import { Card, CardBody, CardHeader } from "@/components/Card";
 import { SelectField, TextField } from "@/components/Field";
@@ -74,12 +75,19 @@ export function CreateInstitutePage() {
       />
 
       {submit.isSuccess && (
-        <Alert tone="success" title="Institute created">
-          <p>
-            {submit.data.institute.name} is ready. We have emailed {submit.data.admin_email} a code
-            to set their password.
-          </p>
-        </Alert>
+        <>
+          <Alert tone="success" title="Institute created">
+            <p>{submit.data.institute.name} is ready.</p>
+          </Alert>
+          <InviteLink
+            result={{
+              name: `${submit.data.institute.name}'s administrator`,
+              email: submit.data.admin_email,
+              invitationSent: submit.data.invitation_sent,
+              setupLink: submit.data.setup_link,
+            }}
+          />
+        </>
       )}
 
       <form

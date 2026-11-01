@@ -86,7 +86,7 @@ export function RegisterPage() {
           type="password"
           autoComplete="new-password"
           required
-            error={form.formState.errors.password?.message}
+          error={form.formState.errors.password?.message}
           {...form.register("password")}
         />
 

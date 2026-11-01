@@ -193,7 +193,7 @@ function PasswordCard() {
             type="password"
             autoComplete="new-password"
             required
-                error={form.formState.errors.new_password?.message}
+            error={form.formState.errors.new_password?.message}
             {...form.register("new_password")}
           />
 

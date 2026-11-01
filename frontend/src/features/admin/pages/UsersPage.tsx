@@ -3,6 +3,8 @@ import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 
 import { Alert } from "@/components/Alert";
+import type { InviteResult } from "@/features/admin/components/InviteLink";
+import { InviteLink } from "@/features/admin/components/InviteLink";
 import { Badge, StatusBadge } from "@/components/Badge";
 import { Avatar } from "@/components/Logo";
 import { Button } from "@/components/Button";
@@ -79,7 +81,7 @@ export function UsersPage() {
   // Suspension signs the person out immediately and refuses their next sign-in, so it
   // asks first. Re-activation restores access and needs no ceremony.
   const [suspendTarget, setSuspendTarget] = useState<UserSummary | null>(null);
-  const [invited, setInvited] = useState<string | null>(null);
+  const [invited, setInvited] = useState<InviteResult | null>(null);
 
   // Selected ids, for the bulk actions. Held as ids rather than rows so a refetch that
   // returns new objects does not silently empty the selection.
@@ -344,18 +346,7 @@ export function UsersPage() {
       {/* The send happens in the background and can fail — a wrong address, a provider
           rejection — without the request failing. Saying what *should* arrive, and naming
           the recovery, is more honest than a bare "Invited". */}
-      {invited && (
-        <Alert tone="success" title={`${invited} has been invited`}>
-          <p>
-            An email with a 6-digit setup code is on its way, valid for 48 hours. They set their own
-            password with it — nobody else sees it, including you.
-          </p>
-          <p className="mt-1">
-            If it does not arrive, check the address in the list below and use{" "}
-            <strong className="font-semibold">Resend invite</strong> to send a fresh code.
-          </p>
-        </Alert>
-      )}
+      {invited && <InviteLink result={invited} onDismiss={() => setInvited(null)} />}
 
       {imported && (
         <Alert
@@ -426,12 +417,17 @@ export function UsersPage() {
       )}
 
       {resend.isSuccess && (
-        // Dismissible, and cleared on the way out. It used to survive changing the filter
-        // and paging forward, with no way to get rid of it, so it stopped reading as a
-        // response to anything.
-        <Alert tone="success" onDismiss={() => resend.reset()}>
-          <p>A new setup code has been sent.</p>
-        </Alert>
+        // Dismissible, and cleared on the way out, so it keeps reading as a response to
+        // the click that caused it. Carries the fresh link: the old one stopped working.
+        <InviteLink
+          result={{
+            name: resend.data.user.full_name,
+            email: resend.data.user.email,
+            invitationSent: resend.data.invitation_sent,
+            setupLink: resend.data.setup_link,
+          }}
+          onDismiss={() => resend.reset()}
+        />
       )}
       {resend.error && (
         <Alert tone="danger">

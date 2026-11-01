@@ -63,3 +63,39 @@ ROLE_DELETED: Final = "role_deleted"
 PERMISSION_GRANTED: Final = "permission_granted"
 PERMISSION_DENIED_SET: Final = "permission_denied_set"
 PERMISSION_GRANT_REVOKED: Final = "permission_grant_revoked"
+
+# Phase 3, Milestone 1 ----------------------------------------------------------------
+
+FILE_UPLOADED: Final = "file_uploaded"
+
+# AI Control Room. Kill switches especially: "who turned AI off for this school, and when?"
+AI_SETTINGS_UPDATED: Final = "ai_settings_updated"
+AI_MODEL_CREATED: Final = "ai_model_created"
+AI_MODEL_UPDATED: Final = "ai_model_updated"
+AI_FEATURE_UPDATED: Final = "ai_feature_updated"
+AI_BUDGET_UPDATED: Final = "ai_budget_updated"
+AI_ROLE_LIMITS_UPDATED: Final = "ai_role_limits_updated"
+AI_BUDGET_ALERT_SENT: Final = "ai_budget_alert_sent"
+
+# Content Library
+LIBRARY_NODE_CREATED: Final = "library_node_created"
+LIBRARY_NODE_UPDATED: Final = "library_node_updated"
+LIBRARY_NODE_ARCHIVED: Final = "library_node_archived"
+LIBRARY_IMPORTED: Final = "library_imported"
+LIBRARY_ITEM_CREATED: Final = "library_item_created"
+LIBRARY_ITEM_UPDATED: Final = "library_item_updated"
+LIBRARY_ITEM_SUBMITTED: Final = "library_item_submitted"
+LIBRARY_ITEM_PUBLISHED: Final = "library_item_published"
+LIBRARY_ITEM_REJECTED: Final = "library_item_rejected"
+LIBRARY_ITEM_ARCHIVED: Final = "library_item_archived"
+CLASS_SYLLABUS_UPDATED: Final = "class_syllabus_updated"
+
+# Homework Board. `homework_checked` carries old and new marks, so a change of marks is
+# always traceable to a person and a time.
+HOMEWORK_CREATED: Final = "homework_created"
+HOMEWORK_UPDATED: Final = "homework_updated"
+HOMEWORK_PUBLISHED: Final = "homework_published"
+HOMEWORK_ARCHIVED: Final = "homework_archived"
+HOMEWORK_SUBMITTED: Final = "homework_submitted"
+HOMEWORK_CHECKED: Final = "homework_checked"
+HOMEWORK_REMINDED: Final = "homework_reminded"

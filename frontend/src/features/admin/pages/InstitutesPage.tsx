@@ -18,6 +18,7 @@ import {
   fetchSessions,
   instituteKeys,
 } from "@/features/admin/api";
+import { InstituteModules } from "@/features/admin/components/InstituteModules";
 import type { Branch, ClassRow, Institute, Session } from "@/features/auth/types";
 import { useCan } from "@/features/auth/useAuth";
 import { cn } from "@/lib/cn";
@@ -357,6 +358,7 @@ function Detail({
             ["Added", formatDate(institute.created_at)],
           ]}
         />
+        <InstituteModules instituteId={institute.id} />
       </>
     );
   }

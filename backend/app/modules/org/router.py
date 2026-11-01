@@ -9,12 +9,12 @@ from __future__ import annotations
 import uuid
 from typing import Annotated
 
-from fastapi import APIRouter, BackgroundTasks, Depends, Query, Request, status
+from fastapi import APIRouter, BackgroundTasks, Depends, Path, Query, Request, status
 
 from app.core.errors import Forbidden
 from app.core.pagination import Page, clamp_limit
 from app.modules.auth.service import RequestMeta
-from app.modules.notifications.email import send_email
+from app.modules.notifications.email import delivery_configured, send_email
 from app.modules.org import repository as org_repo
 from app.modules.org import schemas
 from app.modules.org import service as org
@@ -126,6 +126,8 @@ async def create_institute_with_admin(
         institute=schemas.InstituteOut.model_validate(institute),
         admin_user_id=admin.id,
         admin_email=admin.email,
+        invitation_sent=message is not None and delivery_configured(),
+        setup_link=message.setup_link if message else None,
     )
 
 
@@ -176,6 +178,46 @@ async def archive_institute(
     )
     await db.commit()
     return schemas.InstituteOut.model_validate(institute)
+
+
+@institutes_router.get(
+    "/{institute_id}/modules",
+    response_model=list[schemas.InstituteModuleOut],
+    summary="Optional modules and whether this institute has them",
+)
+async def list_institute_modules(
+    institute_id: uuid.UUID,
+    db: DbSession,
+    guard: Annotated[Authorized, Depends(require_permission("institute:read"))],
+) -> list[schemas.InstituteModuleOut]:
+    return await org.list_institute_modules(db, guard=guard, institute_id=institute_id)
+
+
+@institutes_router.put(
+    "/{institute_id}/modules/{module_key}",
+    response_model=schemas.InstituteModuleOut,
+    summary="Switch a module on or off for an institute",
+    description="Platform or organisation administrators only. Takes effect on the next "
+    "request: the permission engine refuses a disabled module's actions with 403.",
+)
+async def set_institute_module(
+    institute_id: uuid.UUID,
+    module_key: Annotated[str, Path(max_length=40, pattern="^[a-z_]+$")],
+    payload: schemas.InstituteModuleUpdate,
+    request: Request,
+    db: DbSession,
+    guard: Annotated[Authorized, Depends(require_permission("module:enable"))],
+) -> schemas.InstituteModuleOut:
+    result = await org.set_institute_module(
+        db,
+        guard=guard,
+        institute_id=institute_id,
+        module_key=module_key,
+        enabled=payload.enabled,
+        meta=_meta(request),
+    )
+    await db.commit()
+    return result
 
 
 # ---------------------------------------------------------------- branches and sessions

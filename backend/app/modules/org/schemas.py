@@ -121,6 +121,10 @@ class InstituteWithAdminOut(BaseModel):
     institute: InstituteOut
     admin_user_id: uuid.UUID
     admin_email: str
+    #: See `users.schemas.InviteUserResponse`: false while email is not configured.
+    invitation_sent: bool = True
+    #: The admin's one-time setup link, for sharing by hand. Shown only to the inviter.
+    setup_link: str | None = None
 
 
 # ----------------------------------------------------------------------------- branches
@@ -248,3 +252,19 @@ class EnrollmentOut(OrmModel):
     roll_no: str | None
     status: str
     created_at: datetime
+
+
+# ------------------------------------------------------------------ module switches
+
+
+class InstituteModuleOut(BaseModel):
+    """One optional module and whether this institute has it switched on."""
+
+    key: str
+    name: str
+    description: str | None
+    enabled: bool
+
+
+class InstituteModuleUpdate(StrictModel):
+    enabled: bool

@@ -21,6 +21,7 @@ import logging
 from app.core.config import settings
 from app.core.db import Db, close_db, init_db
 from app.core.logging import configure_logging
+from app.modules.ai.seed import seed_ai
 from app.modules.org.models import Institute
 from app.modules.rbac import catalog
 from app.modules.rbac.models import (
@@ -37,16 +38,27 @@ logger = logging.getLogger(__name__)
 
 
 async def _seed_modules(db: Db) -> None:
+    """Every module in the catalogue, core and optional alike.
+
+    Adding a module row does not switch it on anywhere: an institute gets an optional
+    module only when someone enables it (`PUT /institutes/{id}/modules/{key}`).
+    """
     existing = {m.key: m for m in await db.find(Module, {})}
-    if catalog.CORE_MODULE not in existing:
-        db.add(
-            Module(
-                key=catalog.CORE_MODULE,
-                name="Core platform",
-                description="Authentication, organisation, users and permissions.",
-                is_core=True,
+    for definition in catalog.MODULES:
+        current = existing.get(definition.key)
+        if current is None:
+            db.add(
+                Module(
+                    key=definition.key,
+                    name=definition.name,
+                    description=definition.description,
+                    is_core=definition.is_core,
+                )
             )
-        )
+        else:
+            current.name = definition.name
+            current.description = definition.description
+            current.is_core = definition.is_core
 
 
 async def _seed_permissions(db: Db) -> dict[str, Permission]:
@@ -215,6 +227,7 @@ async def seed() -> None:
     await _seed_role_permissions(db, roles, permissions)
     await _seed_direct_institute(db)
     await _seed_super_admin(db, roles)
+    await seed_ai(db)
     await db.commit()
 
     logger.info(
