@@ -2,6 +2,8 @@ import type { IconName } from "@/components/Icon";
 import type { CurrentUser } from "@/features/auth/types";
 import type { Permission } from "@/lib/permissions";
 import { can } from "@/lib/permissions";
+import { HOMEWORK_NAV } from "@/features/homework/routes";
+import { LIBRARY_NAV } from "@/features/library/routes";
 
 /**
  * Every destination in the console, declared once.
@@ -48,6 +50,11 @@ export const NAVIGATION: NavGroup[] = [
     ],
   },
   {
+    // Phase 3. Empty groups are dropped by `visibleNavigation`.
+    label: "Learning",
+    items: [...LIBRARY_NAV, ...HOMEWORK_NAV],
+  },
+  {
     label: "Administration",
     items: [
       {
@@ -89,6 +96,14 @@ export const NAVIGATION: NavGroup[] = [
         icon: "log",
         permission: "audit:read",
         blurb: "Every security and administrative event, newest first.",
+      },
+      {
+        id: "ai",
+        to: "/ai",
+        label: "AI Control Room",
+        icon: "spark",
+        permission: "ai:usage_read",
+        blurb: "AI providers, budgets, daily limits, kill switches and usage.",
       },
     ],
   },

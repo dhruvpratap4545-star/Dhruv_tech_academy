@@ -4,7 +4,8 @@ The services were written against a session that stages writes and commits them 
 of a use case, and that rolls everything back when the use case raises. ``Db`` keeps that
 contract on MongoDB:
 
-* ``add()``, ``delete()``, ``update_many()`` and ``delete_many()`` only *queue* a write.
+* ``add()``, ``delete()``, ``update_many()``, ``delete_many()`` and ``increment()`` only
+  *queue* a write.
   Nothing reaches the database until ``commit()``, which applies the queue in order. A use
   case that raises half-way has written nothing — the same guarantee a rollback gave — so a
   refused invitation never leaves an orphaned account behind.
@@ -74,8 +75,20 @@ class TimestampedDocument(UuidDocument):
 
 def document_models() -> list[type[Document]]:
     """Every collection Beanie manages. Imported lazily to keep module imports acyclic."""
+    from app.modules.ai.models import (
+        AiBudget,
+        AiCache,
+        AiFeature,
+        AiModel,
+        AiRoleLimit,
+        AiSettings,
+        AiUsage,
+    )
     from app.modules.audit.models import AuditLog
     from app.modules.auth.models import PasswordOtp, RefreshToken
+    from app.modules.files.models import StoredFile
+    from app.modules.homework.models import MODELS as HOMEWORK_MODELS
+    from app.modules.library.models import MODELS as LIBRARY_MODELS
     from app.modules.org.models import (
         AcademicSession,
         Branch,
@@ -119,6 +132,16 @@ def document_models() -> list[type[Document]]:
         UserPermissionGrant,
         InstituteModule,
         AuditLog,
+        StoredFile,
+        AiSettings,
+        AiModel,
+        AiFeature,
+        AiBudget,
+        AiRoleLimit,
+        AiUsage,
+        AiCache,
+        *LIBRARY_MODELS,
+        *HOMEWORK_MODELS,
     ]
 
 
@@ -244,6 +267,15 @@ class _UpdateMany:
 
 
 @dataclass(slots=True)
+class _Increment:
+    model: type[Document]
+    match: dict[str, Any]
+    amounts: dict[str, int]
+    set_values: dict[str, Any]
+    upsert: bool
+
+
+@dataclass(slots=True)
 class _DeleteMany:
     model: type[Document]
     match: dict[str, Any]
@@ -256,7 +288,7 @@ class Db:
 
     def __init__(self) -> None:
         self._identity: dict[tuple[type[Document], Any], Document] = {}
-        self._queue: list[_Insert | _Delete | _UpdateMany | _DeleteMany] = []
+        self._queue: list[_Insert | _Delete | _UpdateMany | _Increment | _DeleteMany] = []
 
     # --------------------------------------------------------------------- tracking
 
@@ -361,6 +393,31 @@ class Db:
     def delete_many(self, model: type[Document], match: Filter) -> None:
         self._queue.append(_DeleteMany(model, dict(match)))
 
+    def increment(
+        self,
+        model: type[Document],
+        match: Filter,
+        amounts: Mapping[str, int],
+        *,
+        set_values: Mapping[str, Any] | None = None,
+        upsert: bool = False,
+    ) -> None:
+        """Queue an atomic ``$inc`` on every matching document.
+
+        Counters cannot go through tracked-document edits: a ``$set`` of "used + 40" written
+        by two requests at once loses one of them, because each read the same starting value.
+        ``$inc`` is applied by the server, so concurrent increments all land. The AI budgets
+        are the reason this exists — every request adds its tokens and paise here.
+
+        ``set_values`` rides along as ``$set`` in the same update (for example appending a
+        sent alert threshold), so a counter and its bookkeeping change together. Like every
+        other write it waits for ``commit()``, so a request that fails increments nothing.
+        """
+        stamped = dict(set_values or {})
+        if issubclass(model, TimestampedDocument):
+            stamped.setdefault("updated_at", utcnow())
+        self._queue.append(_Increment(model, dict(match), dict(amounts), stamped, upsert))
+
     async def flush(self) -> None:
         """Nothing to do: ids are generated client-side, and writes wait for ``commit``."""
 
@@ -396,6 +453,13 @@ class Db:
                 await op.doc.delete()
             elif isinstance(op, _UpdateMany):
                 await op.model.get_pymongo_collection().update_many(op.match, {"$set": op.values})
+            elif isinstance(op, _Increment):
+                update: dict[str, Any] = {"$inc": op.amounts}
+                if op.set_values:
+                    update["$set"] = op.set_values
+                await op.model.get_pymongo_collection().update_many(
+                    op.match, update, upsert=op.upsert
+                )
             else:
                 await op.model.get_pymongo_collection().delete_many(op.match)
         await insert_pending()

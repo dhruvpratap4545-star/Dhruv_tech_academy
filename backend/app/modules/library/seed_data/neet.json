@@ -1,0 +1,54 @@
+{
+  "track": "neet",
+  "name": "NEET (UG)",
+  "source": "National Medical Commission NEET (UG) syllabus as published by NTA (Physics, Chemistry, Biology units)",
+  "as_of": "2026-10-31",
+  "note": "Draft for subject-expert verification (prerequisite 9). Units follow the NMC syllabus; chapters under each unit are its main sub-topics. Check against the notification for the exam year before launch.",
+  "exam_tags": ["neet"],
+  "levels": [
+    {
+      "name": "NEET UG", "code": "neet-ug",
+      "subjects": [
+        {"name": "Physics", "units": [
+          {"name": "Physics and Measurement", "chapters": ["Units of Measurement and SI Units", "Errors in Measurement", "Significant Figures", "Dimensions and Dimensional Analysis"]},
+          {"name": "Kinematics", "chapters": ["Motion in a Straight Line", "Position-Time and Velocity-Time Graphs", "Scalars and Vectors", "Relative Velocity", "Projectile Motion", "Uniform Circular Motion"]},
+          {"name": "Laws of Motion", "chapters": ["Newton's Laws of Motion", "Conservation of Linear Momentum", "Static and Kinetic Friction", "Dynamics of Uniform Circular Motion"]},
+          {"name": "Work, Energy and Power", "chapters": ["Work-Energy Theorem", "Kinetic and Potential Energy", "Conservation of Mechanical Energy", "Elastic and Inelastic Collisions"]},
+          {"name": "Rotational Motion", "chapters": ["Centre of Mass", "Torque and Angular Momentum", "Moment of Inertia and Radius of Gyration", "Rigid Body Rotation and Equilibrium"]},
+          {"name": "Gravitation", "chapters": ["Universal Law of Gravitation", "Acceleration due to Gravity", "Kepler's Laws", "Gravitational Potential Energy", "Escape Velocity and Satellites"]},
+          {"name": "Properties of Solids and Liquids", "chapters": ["Elastic Behaviour and Moduli", "Pressure and Pascal's Law", "Viscosity and Stokes' Law", "Bernoulli's Principle", "Surface Tension", "Thermal Expansion and Calorimetry", "Heat Transfer"]},
+          {"name": "Thermodynamics", "chapters": ["Thermal Equilibrium and Zeroth Law", "First Law of Thermodynamics", "Thermodynamic Processes", "Second Law and Heat Engines"]},
+          {"name": "Kinetic Theory of Gases", "chapters": ["Equation of State of a Perfect Gas", "Kinetic Interpretation of Temperature", "Degrees of Freedom and Equipartition", "Mean Free Path"]},
+          {"name": "Oscillations and Waves", "chapters": ["Simple Harmonic Motion", "Simple Pendulum", "Wave Motion and Speed", "Superposition and Standing Waves", "Beats"]},
+          {"name": "Electrostatics", "chapters": ["Coulomb's Law", "Electric Field and Dipole", "Gauss's Law", "Electric Potential", "Capacitors and Dielectrics"]},
+          {"name": "Current Electricity", "chapters": ["Ohm's Law and Resistivity", "Series and Parallel Resistors", "EMF and Internal Resistance", "Kirchhoff's Laws", "Wheatstone Bridge and Metre Bridge"]},
+          {"name": "Magnetic Effects of Current and Magnetism", "chapters": ["Biot-Savart Law", "Ampere's Law", "Force on Moving Charges and Conductors", "Moving Coil Galvanometer", "Magnetic Dipole and Magnetic Materials"]},
+          {"name": "Electromagnetic Induction and Alternating Currents", "chapters": ["Faraday's and Lenz's Laws", "Self and Mutual Inductance", "AC Circuits and Resonance", "Power in AC Circuits", "AC Generator and Transformer"]},
+          {"name": "Electromagnetic Waves", "chapters": ["Displacement Current", "Electromagnetic Spectrum and Uses"]},
+          {"name": "Optics", "chapters": ["Reflection and Refraction", "Total Internal Reflection", "Lenses and Prisms", "Optical Instruments", "Interference and Young's Experiment", "Diffraction", "Polarisation"]},
+          {"name": "Dual Nature of Matter and Radiation", "chapters": ["Photoelectric Effect", "Matter Waves and de Broglie Relation"]},
+          {"name": "Atoms and Nuclei", "chapters": ["Bohr Model and Hydrogen Spectrum", "Composition and Size of Nucleus", "Mass Defect and Binding Energy", "Nuclear Fission and Fusion"]},
+          {"name": "Electronic Devices", "chapters": ["Semiconductors", "p-n Junction Diode and Rectifier", "Zener Diode", "Logic Gates"]},
+          {"name": "Experimental Skills", "chapters": ["Vernier Callipers and Screw Gauge", "Simple Pendulum", "Metre Scale and Young's Modulus", "Surface Tension and Viscosity", "Specific Heat and Resonance Tube", "Ohm's Law and Metre Bridge", "Focal Length of Mirrors and Lenses", "Characteristic Curves of Diodes"]}
+        ]},
+        {"name": "Chemistry", "units": [
+          {"name": "Physical Chemistry", "chapters": ["Some Basic Concepts in Chemistry", "Atomic Structure", "Chemical Bonding and Molecular Structure", "Chemical Thermodynamics", "Solutions", "Equilibrium", "Redox Reactions and Electrochemistry", "Chemical Kinetics"]},
+          {"name": "Inorganic Chemistry", "chapters": ["Classification of Elements and Periodicity in Properties", "p-Block Elements", "d- and f-Block Elements", "Coordination Compounds"]},
+          {"name": "Organic Chemistry", "chapters": ["Purification and Characterisation of Organic Compounds", "Some Basic Principles of Organic Chemistry", "Hydrocarbons", "Organic Compounds Containing Halogens", "Organic Compounds Containing Oxygen", "Organic Compounds Containing Nitrogen", "Biomolecules", "Principles Related to Practical Chemistry"]}
+        ]},
+        {"name": "Biology", "units": [
+          {"name": "Diversity in Living World", "chapters": ["The Living World and Taxonomy", "Five Kingdom Classification", "Plant Kingdom", "Animal Kingdom"]},
+          {"name": "Structural Organisation in Animals and Plants", "chapters": ["Morphology of Flowering Plants", "Anatomy of Flowering Plants", "Animal Tissues", "Morphology and Anatomy of Frog"]},
+          {"name": "Cell Structure and Function", "chapters": ["Cell: The Unit of Life", "Biomolecules", "Cell Cycle and Cell Division"]},
+          {"name": "Plant Physiology", "chapters": ["Photosynthesis in Higher Plants", "Respiration in Plants", "Plant Growth and Development"]},
+          {"name": "Human Physiology", "chapters": ["Breathing and Exchange of Gases", "Body Fluids and Circulation", "Excretory Products and their Elimination", "Locomotion and Movement", "Neural Control and Coordination", "Chemical Coordination and Integration"]},
+          {"name": "Reproduction", "chapters": ["Sexual Reproduction in Flowering Plants", "Human Reproduction", "Reproductive Health"]},
+          {"name": "Genetics and Evolution", "chapters": ["Principles of Inheritance and Variation", "Molecular Basis of Inheritance", "Evolution"]},
+          {"name": "Biology and Human Welfare", "chapters": ["Human Health and Disease", "Microbes in Human Welfare"]},
+          {"name": "Biotechnology and its Applications", "chapters": ["Biotechnology: Principles and Processes", "Biotechnology and its Applications"]},
+          {"name": "Ecology and Environment", "chapters": ["Organisms and Populations", "Ecosystem", "Biodiversity and its Conservation"]}
+        ]}
+      ]
+    }
+  ]
+}

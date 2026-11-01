@@ -16,3 +16,11 @@ pyjwt[crypto]==2.15.1
 slowapi==0.1.10
 resend==2.49.1
 sentry-sdk[fastapi]==2.71.0
+# Phase 3 M1. HTTP client for the AI provider adapters (Gemini, Anthropic) — plain REST,
+# so no vendor SDK and its transitive dependencies are needed.
+httpx==0.28.1
+# Re-encoding uploaded photos: resize, and strip EXIF so a student's GPS location never
+# reaches storage.
+pillow==13.0.0
+# Private uploads bucket and V4 signed URLs in production. Imported lazily.
+google-cloud-storage==3.17.1

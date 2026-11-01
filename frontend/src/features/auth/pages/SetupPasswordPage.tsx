@@ -1,5 +1,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 
@@ -15,19 +16,33 @@ import { setupSchema } from "@/features/auth/schemas";
 /**
  * First password for an invited user (PRD §4.2).
  *
- * The email can arrive as `?email=` so the person does not have to retype it. The code is
- * never pre-filled from the URL: a link that completes the whole flow would make forwarding
- * the invitation email equivalent to handing over the account.
+ * The email can arrive as `?email=` so the person does not have to retype it.
+ *
+ * The code is pre-filled only from the URL *fragment* (`#code=`), and only the link shown to
+ * the inviter carries one — the link inside the invitation email does not, so forwarding the
+ * email still hands over nothing the code itself does not. A fragment never reaches a server
+ * or a proxy log, and it is wiped from the address bar the moment it is read, so it does not
+ * linger in history or get copied along with the address.
  */
+function takeCodeFromFragment(): string {
+  if (typeof window === "undefined") return "";
+  const code = new URLSearchParams(window.location.hash.slice(1)).get("code") ?? "";
+  if (window.location.hash) {
+    window.history.replaceState(null, "", window.location.pathname + window.location.search);
+  }
+  return /^\d{4,8}$/.test(code) ? code : "";
+}
+
 export function SetupPasswordPage() {
   const navigate = useNavigate();
   const [params] = useSearchParams();
+  const [linkCode] = useState(takeCodeFromFragment);
 
   const form = useForm<SetupValues>({
     resolver: zodResolver(setupSchema),
     defaultValues: {
       email: params.get("email") ?? "",
-      code: "",
+      code: linkCode,
       new_password: "",
       confirm_password: "",
     },
@@ -91,7 +106,7 @@ export function SetupPasswordPage() {
           type="password"
           autoComplete="new-password"
           required
-            error={form.formState.errors.new_password?.message}
+          error={form.formState.errors.new_password?.message}
           {...form.register("new_password")}
         />
 

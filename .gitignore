@@ -41,3 +41,6 @@ env.text
 *.env.text
 secrets.*
 *.secrets
+
+# Local file uploads (STORAGE_BACKEND=local)
+.uploads/

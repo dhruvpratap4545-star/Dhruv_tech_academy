@@ -116,6 +116,18 @@ const PATHS = {
       <path d="M15 10h3a2 2 0 0 1 2 2v9M2 21h20M8 7h3M8 11h3M8 15h3" />
     </>
   ),
+  book: (
+    <>
+      <path d="M4 4.5A1.5 1.5 0 0 1 5.5 3H20v15H5.5A1.5 1.5 0 0 0 4 19.5z" />
+      <path d="M4 19.5A1.5 1.5 0 0 0 5.5 21H20v-3M8 7h8" />
+    </>
+  ),
+  clipboard: (
+    <>
+      <rect x="5" y="4" width="14" height="17" rx="1.5" />
+      <path d="M9 4V3h6v1M9 11l2 2 4-4M9 17h6" />
+    </>
+  ),
 } as const;
 
 export type IconName = keyof typeof PATHS;

@@ -7,8 +7,12 @@ UUID parameter.
 
 from fastapi import APIRouter
 
+from app.modules.ai.router import router as ai_router
 from app.modules.audit.router import router as audit_router
 from app.modules.auth.router import router as auth_router
+from app.modules.files.router import router as files_router
+from app.modules.homework.router import router as homework_router
+from app.modules.library.router import router as library_router
 from app.modules.org.router import (
     branches_router,
     classes_router,
@@ -34,3 +38,7 @@ api_router.include_router(permissions_router, prefix="/permissions", tags=["acce
 api_router.include_router(grants_router, prefix="/users", tags=["access control"])
 api_router.include_router(search_router, prefix="/search", tags=["search"])
 api_router.include_router(audit_router, prefix="/audit-logs", tags=["audit"])
+api_router.include_router(files_router, prefix="/files", tags=["files"])
+api_router.include_router(ai_router, prefix="/ai", tags=["ai control room"])
+api_router.include_router(library_router, prefix="/library", tags=["content library"])
+api_router.include_router(homework_router, prefix="/homework", tags=["homework"])

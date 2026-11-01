@@ -46,7 +46,18 @@ export type Permission =
   | "audit:read"
   | "profile:read"
   | "profile:update"
-  | "platform_admin:manage";
+  | "platform_admin:manage"
+  // Phase 3, Milestone 1
+  | "ai:manage"
+  | "ai:usage_read"
+  | "library:read"
+  | "library:contribute"
+  | "library:manage"
+  | "library:publish"
+  | "homework:manage"
+  | "homework:read"
+  | "homework:submit"
+  | "homework:report";
 
 export function can(user: CurrentUser | null | undefined, permission: Permission): boolean {
   return Boolean(user?.permissions.includes(permission));

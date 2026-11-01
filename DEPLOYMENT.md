@@ -492,6 +492,77 @@ traffic you were hoping for.
 
 ---
 
+## Phase 3 additions (AI Control Room, Content Library, Homework Board)
+
+Do these once, **before** the first deploy that contains Phase 3. Until the bucket and the
+key exist, uploads and AI requests fail with a clear error; nothing else is affected.
+
+### 1. A private uploads bucket
+
+In **Cloud Storage → Buckets → Create**:
+
+| Setting | Value |
+|---|---|
+| Name | `dhruv-prod-uploads` (or change `_GCS_BUCKET` in `cloudbuild.yaml`) |
+| Location | Region `asia-south1` (Mumbai, same as Cloud Run) |
+| Access control | Uniform, with **public access prevention on** |
+| Object versioning | Off |
+| Lifecycle | Delete objects with prefix `tmp/` after 1 day |
+
+Files are never public. The API hands out five-minute signed links.
+
+### 2. Service account permissions
+
+On the Cloud Run service's service account:
+
+- `roles/storage.objectAdmin` **on that bucket only** (not the project);
+- `roles/iam.serviceAccountTokenCreator` **on itself** — Cloud Run has no key file, so signed
+  download links are signed through IAM;
+- `roles/secretmanager.secretAccessor` for the new secrets.
+
+### 3. The Gemini key
+
+Create the key in Google AI Studio on the Dhruv Academy account, with billing attached and
+a spending cap set in Google Cloud Billing. Add it to Secret Manager as `GEMINI_API_KEY` —
+never send it over chat or email — and attach it once:
+
+```bash
+gcloud run services update dhruv-app --region=asia-south1 \
+  --update-secrets=GEMINI_API_KEY=GEMINI_API_KEY:latest
+```
+
+`ANTHROPIC_API_KEY` is optional and attached the same way. The Control Room shows only
+whether each key is configured, never the key.
+
+### 4. New environment variables
+
+| Variable | Production value | Meaning |
+|---|---|---|
+| `GEMINI_API_KEY` | secret | Gemini provider |
+| `ANTHROPIC_API_KEY` | secret, optional | Second provider |
+| `AI_REQUEST_TIMEOUT_SECONDS` | `30` | Provider call timeout |
+| `AI_FAKE_PROVIDER` | `false` | `true` only locally: no external calls |
+| `STORAGE_BACKEND` | `gcs` | `local` only in development |
+| `GCS_BUCKET` | `dhruv-prod-uploads` | The bucket above |
+| `MAX_UPLOAD_MB` | `10` | Per-file limit |
+
+The non-secret ones are set by `cloudbuild.yaml` on every deploy.
+
+### 5. After deploying
+
+1. Run the seed job (step 6) — it adds the `ai`, `library` and `homework` modules, the new
+   permissions and the default AI models, features and daily limits.
+2. Load the syllabus: execute the same job with `seed-syllabus` as its argument.
+3. In the AI Control Room, confirm the model prices against Google's pricing page and set
+   the USD→INR rate, the platform budget and each pilot institute's allocation.
+4. Switch the modules on for the pilot institute (Hierarchy → institute → Modules).
+
+### 6. The weekly parent digest
+
+Create a Cloud Run Job from the same image and secrets with the argument
+`homework-digest`, and a Cloud Scheduler trigger for **Sundays at 18:00 IST**
+(`0 18 * * 0`, time zone `Asia/Kolkata`).
+
 ## A note on `render.yaml`
 
 There is a `render.yaml` in the project. It deploys the same image, the same way, to

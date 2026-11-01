@@ -4,11 +4,19 @@ import { AppShell } from "@/app/layouts/AppShell";
 import { DashboardPage } from "@/app/pages/DashboardPage";
 import { NotFoundPage } from "@/app/pages/NotFoundPage";
 import { AuditPage } from "@/features/admin/pages/AuditPage";
+import { AiBudgetsPage } from "@/features/ai/pages/AiBudgetsPage";
+import { AiDashboardPage } from "@/features/ai/pages/AiDashboardPage";
+import { AiFeaturesPage } from "@/features/ai/pages/AiFeaturesPage";
+import { AiModelsPage } from "@/features/ai/pages/AiModelsPage";
+import { AiPlaygroundPage } from "@/features/ai/pages/AiPlaygroundPage";
+import { AiUsagePage } from "@/features/ai/pages/AiUsagePage";
 import { CreateInstitutePage } from "@/features/admin/pages/CreateInstitutePage";
 import { InstitutesPage } from "@/features/admin/pages/InstitutesPage";
 import { OrganisationsPage } from "@/features/admin/pages/OrganisationsPage";
 import { RolesPage } from "@/features/admin/pages/RolesPage";
 import { UsersPage } from "@/features/admin/pages/UsersPage";
+import { HOMEWORK_ROUTES } from "@/features/homework/routes";
+import { LIBRARY_ROUTES } from "@/features/library/routes";
 import { ForgotPasswordPage } from "@/features/auth/pages/ForgotPasswordPage";
 import { LoginPage } from "@/features/auth/pages/LoginPage";
 import { RegisterPage } from "@/features/auth/pages/RegisterPage";
@@ -102,6 +110,37 @@ export function AppRoutes() {
             </RequirePermission>
           }
         />
+        {/* AI Control Room (Phase 3). Institute admins reach the read side; the
+            configuration tabs need `ai:manage`, which only platform staff hold. */}
+        {(
+          [
+            ["/ai", "ai:usage_read", <AiDashboardPage key="d" />],
+            ["/ai/budgets", "ai:usage_read", <AiBudgetsPage key="b" />],
+            ["/ai/usage", "ai:usage_read", <AiUsagePage key="u" />],
+            ["/ai/models", "ai:manage", <AiModelsPage key="m" />],
+            ["/ai/features", "ai:manage", <AiFeaturesPage key="f" />],
+            ["/ai/playground", "ai:manage", <AiPlaygroundPage key="p" />],
+          ] as const
+        ).map(([path, permission, page]) => (
+          <Route
+            key={path}
+            path={path}
+            element={<RequirePermission permission={permission}>{page}</RequirePermission>}
+          />
+        ))}
+        {[...LIBRARY_ROUTES, ...HOMEWORK_ROUTES].map(({ path, permission, element }) => (
+          <Route
+            key={path}
+            path={path}
+            element={
+              permission ? (
+                <RequirePermission permission={permission}>{element}</RequirePermission>
+              ) : (
+                element
+              )
+            }
+          />
+        ))}
         <Route path="/my-access" element={<MyAccessPage />} />
         <Route path="/settings" element={<SettingsPage />} />
         {/* The old paths still resolve, so a bookmark or an emailed link keeps working. */}

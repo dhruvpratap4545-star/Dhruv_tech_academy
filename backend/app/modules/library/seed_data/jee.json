@@ -1,0 +1,87 @@
+{
+  "track": "jee",
+  "name": "JEE",
+  "source": "NTA JEE (Main) syllabus (Paper 1) and the JEE (Advanced) syllabus published by the organising IIT",
+  "as_of": "2026-10-31",
+  "note": "Draft for subject-expert verification (prerequisite 9). JEE Main follows NTA's units with their main sub-topics as chapters; JEE Advanced follows its own section headings. Check against the information bulletin for the exam year before launch.",
+  "exam_tags": ["jee"],
+  "levels": [
+    {
+      "name": "JEE Main", "code": "jee-main",
+      "subjects": [
+        {"name": "Physics", "units": [
+          {"name": "Units and Measurements", "chapters": ["SI Units", "Errors in Measurement", "Dimensions of Physical Quantities"]},
+          {"name": "Kinematics", "chapters": ["Motion in a Straight Line", "Scalars and Vectors", "Relative Velocity", "Projectile Motion", "Uniform Circular Motion"]},
+          {"name": "Laws of Motion", "chapters": ["Newton's Laws", "Conservation of Linear Momentum", "Friction", "Dynamics of Circular Motion"]},
+          {"name": "Work, Energy and Power", "chapters": ["Work-Energy Theorem", "Conservative and Non-conservative Forces", "Potential Energy of a Spring", "Collisions"]},
+          {"name": "Rotational Motion", "chapters": ["Centre of Mass", "Torque and Angular Momentum", "Moment of Inertia", "Rolling Motion"]},
+          {"name": "Gravitation", "chapters": ["Universal Law of Gravitation", "Acceleration due to Gravity", "Kepler's Laws", "Escape Velocity and Satellites"]},
+          {"name": "Properties of Solids and Liquids", "chapters": ["Elasticity", "Fluid Pressure and Pascal's Law", "Viscosity and Bernoulli's Principle", "Surface Tension", "Heat, Calorimetry and Heat Transfer"]},
+          {"name": "Thermodynamics", "chapters": ["Zeroth and First Laws", "Thermodynamic Processes", "Second Law and Carnot Engine"]},
+          {"name": "Kinetic Theory of Gases", "chapters": ["Equation of State", "Kinetic Interpretation of Temperature", "Equipartition of Energy", "Mean Free Path"]},
+          {"name": "Oscillations and Waves", "chapters": ["Simple Harmonic Motion", "Simple Pendulum", "Wave Motion", "Standing Waves and Beats"]},
+          {"name": "Electrostatics", "chapters": ["Coulomb's Law and Electric Field", "Gauss's Law", "Electric Potential", "Capacitance and Dielectrics"]},
+          {"name": "Current Electricity", "chapters": ["Ohm's Law and Drift Velocity", "Kirchhoff's Laws", "Wheatstone Bridge and Metre Bridge", "Potentiometer"]},
+          {"name": "Magnetic Effects of Current and Magnetism", "chapters": ["Biot-Savart and Ampere's Laws", "Force on Moving Charges", "Galvanometer", "Magnetic Materials"]},
+          {"name": "Electromagnetic Induction and Alternating Currents", "chapters": ["Faraday's and Lenz's Laws", "Inductance", "LCR Circuits and Resonance", "AC Generator and Transformer"]},
+          {"name": "Electromagnetic Waves", "chapters": ["Characteristics and Spectrum of EM Waves"]},
+          {"name": "Optics", "chapters": ["Reflection and Refraction", "Lenses, Prisms and Optical Instruments", "Interference", "Diffraction", "Polarisation"]},
+          {"name": "Dual Nature of Matter and Radiation", "chapters": ["Photoelectric Effect", "de Broglie Relation"]},
+          {"name": "Atoms and Nuclei", "chapters": ["Bohr Model", "Nuclear Binding Energy", "Fission and Fusion"]},
+          {"name": "Electronic Devices", "chapters": ["Semiconductors and Diodes", "Zener Diode", "Logic Gates"]},
+          {"name": "Experimental Skills", "chapters": ["Measuring Instruments", "Mechanics Experiments", "Electricity Experiments", "Optics Experiments"]}
+        ]},
+        {"name": "Chemistry", "units": [
+          {"name": "Physical Chemistry", "chapters": ["Some Basic Concepts in Chemistry", "Atomic Structure", "Chemical Bonding and Molecular Structure", "Chemical Thermodynamics", "Solutions", "Equilibrium", "Redox Reactions and Electrochemistry", "Chemical Kinetics"]},
+          {"name": "Inorganic Chemistry", "chapters": ["Classification of Elements and Periodicity in Properties", "p-Block Elements", "d- and f-Block Elements", "Coordination Compounds"]},
+          {"name": "Organic Chemistry", "chapters": ["Purification and Characterisation of Organic Compounds", "Some Basic Principles of Organic Chemistry", "Hydrocarbons", "Organic Compounds Containing Halogens", "Organic Compounds Containing Oxygen", "Organic Compounds Containing Nitrogen", "Biomolecules", "Principles Related to Practical Chemistry"]}
+        ]},
+        {"name": "Mathematics", "units": [
+          {"name": "Sets, Relations and Functions", "chapters": ["Sets and Operations", "Relations and Equivalence Relations", "Functions and Composition"]},
+          {"name": "Complex Numbers and Quadratic Equations", "chapters": ["Algebra of Complex Numbers", "Argand Plane", "Quadratic Equations and Nature of Roots"]},
+          {"name": "Matrices and Determinants", "chapters": ["Matrix Algebra", "Determinants and their Properties", "Adjoint and Inverse", "Solution of Linear Equations"]},
+          {"name": "Permutations and Combinations", "chapters": ["Fundamental Principle of Counting", "Permutations and Combinations"]},
+          {"name": "Binomial Theorem and its Simple Applications", "code": "binomial-theorem", "chapters": ["Binomial Theorem for Positive Integral Index", "General and Middle Terms"]},
+          {"name": "Sequence and Series", "chapters": ["Arithmetic and Geometric Progressions", "Relation between AM and GM"]},
+          {"name": "Limit, Continuity and Differentiability", "chapters": ["Limits", "Continuity and Differentiability", "Derivatives", "Applications of Derivatives"]},
+          {"name": "Integral Calculus", "chapters": ["Indefinite Integrals", "Definite Integrals", "Area under Curves"]},
+          {"name": "Differential Equations", "chapters": ["Order and Degree", "Variable Separable and Homogeneous Equations", "Linear Differential Equations"]},
+          {"name": "Co-ordinate Geometry", "code": "coordinate-geometry", "chapters": ["Straight Lines", "Circles", "Conic Sections"]},
+          {"name": "Three Dimensional Geometry", "chapters": ["Direction Cosines and Ratios", "Lines in Space", "Skew Lines and Shortest Distance"]},
+          {"name": "Vector Algebra", "chapters": ["Vectors and Scalars", "Scalar and Vector Products"]},
+          {"name": "Statistics and Probability", "chapters": ["Measures of Dispersion", "Probability and Bayes' Theorem", "Probability Distribution of a Random Variate"]},
+          {"name": "Trigonometry", "chapters": ["Trigonometric Identities and Functions", "Inverse Trigonometric Functions"]}
+        ]}
+      ]
+    },
+    {
+      "name": "JEE Advanced", "code": "jee-advanced",
+      "subjects": [
+        {"name": "Physics", "units": [
+          {"name": "General Physics", "code": "general", "chapters": ["Units and Dimensions", "Experimental Errors and Significant Figures", "Experiments in the Syllabus"]},
+          {"name": "Mechanics", "chapters": ["Kinematics", "Newton's Laws and Friction", "Work, Energy and Collisions", "Rotational Dynamics of Rigid Bodies", "Gravitation", "Linear and Angular Simple Harmonic Motion", "Elasticity, Fluids, Viscosity and Surface Tension"]},
+          {"name": "Thermal Physics", "chapters": ["Thermal Expansion and Calorimetry", "Heat Conduction and Radiation", "Kinetic Theory and Ideal Gases", "First and Second Laws of Thermodynamics"]},
+          {"name": "Electricity and Magnetism", "chapters": ["Electrostatics and Gauss's Law", "Capacitance", "Electric Current and Kirchhoff's Laws", "Magnetic Field and Force on Currents", "Electromagnetic Induction", "LCR Circuits"]},
+          {"name": "Wave Motion and Optics", "code": "waves-and-optics", "chapters": ["Wave Motion, Sound and Doppler Effect", "Ray Optics", "Wave Optics: Interference and Diffraction"]},
+          {"name": "Modern Physics", "chapters": ["Atomic Nucleus and Radioactivity", "Photoelectric Effect", "Bohr's Theory and X-rays", "de Broglie Wavelength"]}
+        ]},
+        {"name": "Chemistry", "units": [
+          {"name": "Physical Chemistry", "chapters": ["General Topics and Mole Concept", "Gaseous and Liquid States", "Atomic Structure and Chemical Bonding", "Chemical Thermodynamics", "Chemical and Ionic Equilibrium", "Electrochemistry", "Chemical Kinetics", "Solid State", "Solutions", "Surface Chemistry"]},
+          {"name": "Inorganic Chemistry", "chapters": ["Classification and Periodicity", "Chemical Bonding in Inorganic Compounds", "Hydrogen and s-Block", "p-Block Elements", "d-Block and f-Block Elements", "Coordination Compounds", "Metals and Metallurgy", "Principles of Qualitative Analysis", "Environmental Chemistry"]},
+          {"name": "Organic Chemistry", "chapters": ["Basic Concepts and Isomerism", "Alkanes, Alkenes and Alkynes", "Benzene and Aromatic Compounds", "Alkyl Halides", "Alcohols, Ethers and Phenols", "Aldehydes, Ketones and Carboxylic Acids", "Amines and Diazonium Salts", "Carbohydrates, Amino Acids and Peptides", "Polymers", "Practical Organic Chemistry"]}
+        ]},
+        {"name": "Mathematics", "units": [
+          {"name": "Sets, Relations and Functions", "chapters": ["Sets, Relations and Functions"]},
+          {"name": "Algebra", "chapters": ["Complex Numbers", "Quadratic Equations", "Sequences and Series", "Logarithms", "Permutations and Combinations", "Binomial Theorem"]},
+          {"name": "Matrices", "chapters": ["Matrices and Determinants", "Systems of Linear Equations"]},
+          {"name": "Probability and Statistics", "chapters": ["Probability and Bayes' Theorem", "Measures of Central Tendency and Dispersion"]},
+          {"name": "Trigonometry", "chapters": ["Trigonometric Functions and Equations", "Inverse Trigonometric Functions", "Properties of Triangles"]},
+          {"name": "Analytical Geometry", "chapters": ["Two Dimensions: Lines, Circles and Conics", "Three Dimensions: Lines and Planes"]},
+          {"name": "Differential Calculus", "chapters": ["Limits and Continuity", "Derivatives", "Applications of Derivatives"]},
+          {"name": "Integral Calculus", "chapters": ["Indefinite and Definite Integrals", "Area under Curves", "Differential Equations"]},
+          {"name": "Vectors", "chapters": ["Vector Algebra", "Scalar and Vector Triple Products"]}
+        ]}
+      ]
+    }
+  ]
+}

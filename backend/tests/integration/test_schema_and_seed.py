@@ -86,12 +86,24 @@ async def test_seed_is_idempotent(db: Db, seeded) -> None:
 
 
 async def test_super_admin_holds_every_permission(db: Db, seeded) -> None:
+    """Every permission except `homework:submit`, which belongs to enrolled learners only —
+    a submission from an administrator would have no enrolment behind it."""
     role = await db.find_one(Role, {"key": catalog.SUPER_ADMIN})
     links = await db.find(RolePermission, {"role_id": role.id})
     permissions = await db.find(
         Permission, {"_id": {"$in": [link.permission_id for link in links]}}
     )
-    assert {p.key for p in permissions} == {p.key for p in catalog.PERMISSIONS}
+    expected = {p.key for p in catalog.PERMISSIONS} - {"homework:submit"}
+    assert {p.key for p in permissions} == expected
+
+
+async def test_seed_writes_every_module(db: Db, seeded) -> None:
+    from app.modules.rbac.models import Module
+
+    modules = {m.key: m for m in await db.find(Module, {})}
+    assert set(modules) == {"core", "ai", "library", "homework"}
+    assert modules["core"].is_core is True
+    assert not any(modules[k].is_core for k in ("ai", "library", "homework"))
 
 
 async def test_an_audit_row_with_a_real_ip_serialises(db: Db, seeded) -> None:

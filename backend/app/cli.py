@@ -16,6 +16,8 @@ Run with the application's environment loaded::
     python -m app.cli grant-super-admin someone@example.com
     python -m app.cli revoke-super-admin someone@example.com
     python -m app.cli list-super-admins
+    python -m app.cli seed-syllabus [--track cbse]           # Phase 3, safe to re-run
+    python -m app.cli homework-digest                       # Phase 3, weekly (Sun 18:00 IST)
     ADMIN_PASSWORD=... python -m app.cli set-password someone@example.com
 
 On Cloud Run these are one job, executed with different arguments — see DEPLOYMENT.md.
@@ -312,6 +314,17 @@ def build_parser() -> argparse.ArgumentParser:
         "seed",
         help="Create the roles, permissions and first administrator. Safe to re-run.",
     )
+
+    y = sub.add_parser(
+        "seed-syllabus",
+        help="Load the CBSE, NEET, JEE and UPSC syllabus trees. Adds and renames, never deletes.",
+    )
+    y.add_argument("--track", choices=["cbse", "neet", "jee", "upsc"], default=None)
+
+    sub.add_parser(
+        "homework-digest",
+        help="Email each parent a summary of their children's homework for the last 7 days.",
+    )
     return parser
 
 
@@ -329,6 +342,14 @@ def main(argv: list[str] | None = None) -> None:
                 await seed_platform()
             elif args.command == "set-password":
                 await set_password(args.email)
+            elif args.command == "seed-syllabus":
+                from app.modules.library.commands import seed_syllabus_command
+
+                await seed_syllabus_command(args.track)
+            elif args.command == "homework-digest":
+                from app.modules.homework.commands import homework_digest_command
+
+                await homework_digest_command()
             else:
                 await listing()
         finally:

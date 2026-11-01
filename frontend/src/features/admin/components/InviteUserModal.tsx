@@ -5,6 +5,7 @@ import { useForm, useWatch } from "react-hook-form";
 import { z } from "zod";
 
 import { Alert } from "@/components/Alert";
+import type { InviteResult } from "@/features/admin/components/InviteLink";
 import { Button } from "@/components/Button";
 import { Field, SelectField, TextField } from "@/components/Field";
 import { Modal } from "@/components/Modal";
@@ -50,7 +51,7 @@ export function InviteUserModal({
   open: boolean;
   onClose: () => void;
   /** Called with the invited person's name so the page can confirm what was sent. */
-  onInvited?: (name: string) => void;
+  onInvited?: (result: InviteResult) => void;
 }) {
   const user = useCurrentUser();
   const queryClient = useQueryClient();
@@ -136,7 +137,12 @@ export function InviteUserModal({
     mutationFn: inviteUser,
     onSuccess: async (result) => {
       await queryClient.invalidateQueries({ queryKey: userKeys.all });
-      onInvited?.(result.user.full_name);
+      onInvited?.({
+        name: result.user.full_name,
+        email: result.user.email,
+        invitationSent: result.invitation_sent,
+        setupLink: result.setup_link,
+      });
       form.reset();
       onClose();
     },
@@ -147,7 +153,7 @@ export function InviteUserModal({
       open={open}
       onClose={close}
       title="Invite a user"
-      description="They will get an email with a code to set their own password."
+      description="They get an email with a code to set their own password, and you get a one-time link you can share yourself."
       footer={
         <>
           <Button variant="secondary" onClick={close}>

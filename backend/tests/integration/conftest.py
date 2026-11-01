@@ -106,6 +106,16 @@ async def _clean_process_state() -> AsyncGenerator[None]:
     context_cache.clear()
 
 
+@pytest.fixture(autouse=True)
+def _local_storage(tmp_path_factory):
+    """Uploads go to a throwaway folder, never a real bucket or the developer's .uploads."""
+    from app.core import storage
+
+    storage.set_storage(storage.LocalStorage(tmp_path_factory.mktemp("uploads")))
+    yield
+    storage.set_storage(None)
+
+
 @pytest.fixture
 def outbox() -> MemoryEmailProvider:
     provider = email_module.get_provider()
@@ -125,6 +135,7 @@ async def seeded(db: Db) -> Db:
     await db.commit()
     await seed_module._seed_role_permissions(db, roles, permissions)
     await seed_module._seed_direct_institute(db)
+    await seed_module.seed_ai(db)
     await db.commit()
     return db
 

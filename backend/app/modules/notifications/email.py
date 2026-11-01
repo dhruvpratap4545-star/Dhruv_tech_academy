@@ -26,6 +26,10 @@ class EmailMessage:
     subject: str
     html: str
     text: str
+    #: For an invitation: the same setup link the email carries, so the person who sent the
+    #: invitation can also share it by hand (WhatsApp, in person) while email is not set up
+    #: or did not arrive. Never logged, never part of the message body sent to a provider.
+    setup_link: str | None = None
 
 
 class EmailProvider(ABC):
@@ -121,6 +125,12 @@ _provider: EmailProvider = _default_provider()
 
 def get_provider() -> EmailProvider:
     return _provider
+
+
+def delivery_configured() -> bool:
+    """True when emails actually leave the platform. The console provider only logs them,
+    so an inviter must be told to share the link themselves."""
+    return not isinstance(_provider, ConsoleEmailProvider)
 
 
 def set_provider(provider: EmailProvider) -> None:

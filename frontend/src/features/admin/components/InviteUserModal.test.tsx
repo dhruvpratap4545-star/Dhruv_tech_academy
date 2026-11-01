@@ -87,6 +87,7 @@ beforeEach(() => {
       roles: [],
     },
     invitation_sent: true,
+    setup_link: "http://localhost:5173/set-password?email=ravi%40example.com#code=123456",
   });
 });
 

@@ -1,0 +1,109 @@
+{
+  "track": "upsc",
+  "name": "UPSC CSE",
+  "source": "UPSC Civil Services Examination notification, Appendix I (scheme and syllabus of the Preliminary and Main examinations)",
+  "as_of": "2026-10-31",
+  "note": "Draft for subject-expert verification (prerequisite 9). Prelims GS Paper I and CSAT, Mains Essay and GS Papers I-IV, down to the syllabus topics as worded in the notification. Optional subjects and the qualifying language papers are not included.",
+  "exam_tags": ["upsc"],
+  "levels": [
+    {
+      "name": "Prelims", "code": "prelims",
+      "subjects": [
+        {"name": "General Studies Paper I", "code": "gs-paper-1", "topics": [
+          "Current Events of National and International Importance",
+          "History of India and Indian National Movement",
+          "Indian and World Geography - Physical, Social, Economic Geography of India and the World",
+          "Indian Polity and Governance - Constitution, Political System, Panchayati Raj, Public Policy, Rights Issues",
+          "Economic and Social Development - Sustainable Development, Poverty, Inclusion, Demographics, Social Sector Initiatives",
+          "General Issues on Environmental Ecology, Biodiversity and Climate Change",
+          "General Science"
+        ]},
+        {"name": "General Studies Paper II (CSAT)", "code": "csat", "topics": [
+          "Comprehension",
+          "Interpersonal Skills including Communication Skills",
+          "Logical Reasoning and Analytical Ability",
+          "Decision Making and Problem Solving",
+          "General Mental Ability",
+          "Basic Numeracy",
+          "Data Interpretation"
+        ]}
+      ]
+    },
+    {
+      "name": "Mains", "code": "mains",
+      "subjects": [
+        {"name": "Essay", "topics": ["Essay Writing on Multiple Topics"]},
+        {"name": "General Studies Paper I", "code": "gs-1", "topics": [
+          "Indian Culture - Art Forms, Literature and Architecture from Ancient to Modern Times",
+          "Modern Indian History from the Middle of the Eighteenth Century",
+          "The Freedom Struggle - Stages and Important Contributors",
+          "Post-independence Consolidation and Reorganisation",
+          "History of the World from the 18th Century",
+          "Salient Features of Indian Society and Diversity of India",
+          "Role of Women and Women's Organisations",
+          "Population and Associated Issues, Poverty and Developmental Issues",
+          "Urbanisation, its Problems and Remedies",
+          "Effects of Globalisation on Indian Society",
+          "Social Empowerment, Communalism, Regionalism and Secularism",
+          "Salient Features of World's Physical Geography",
+          "Distribution of Key Natural Resources and Location of Industries",
+          "Important Geophysical Phenomena and Changes in Geographical Features"
+        ]},
+        {"name": "General Studies Paper II", "code": "gs-2", "topics": [
+          "Indian Constitution - Evolution, Features, Amendments and Basic Structure",
+          "Functions and Responsibilities of the Union and the States, Federal Structure",
+          "Separation of Powers and Dispute Redressal Mechanisms",
+          "Comparison of the Indian Constitutional Scheme with Other Countries",
+          "Parliament and State Legislatures",
+          "Executive and Judiciary, Ministries and Pressure Groups",
+          "Salient Features of the Representation of People's Act",
+          "Constitutional Posts and Bodies",
+          "Statutory, Regulatory and Quasi-judicial Bodies",
+          "Government Policies and Interventions for Development",
+          "Development Processes - NGOs, SHGs and Other Stakeholders",
+          "Welfare Schemes for Vulnerable Sections",
+          "Social Sector - Health, Education and Human Resources",
+          "Issues relating to Poverty and Hunger",
+          "Governance, Transparency, Accountability and E-governance",
+          "Role of Civil Services in a Democracy",
+          "India and its Neighbourhood - Relations",
+          "Bilateral, Regional and Global Groupings and Agreements",
+          "Effect of Policies and Politics of Other Countries on India's Interests, Indian Diaspora",
+          "Important International Institutions, Agencies and Fora"
+        ]},
+        {"name": "General Studies Paper III", "code": "gs-3", "topics": [
+          "Indian Economy - Planning, Mobilisation of Resources, Growth, Development and Employment",
+          "Inclusive Growth and Issues Arising from it",
+          "Government Budgeting",
+          "Major Crops, Cropping Patterns, Irrigation and Agricultural Marketing",
+          "Farm Subsidies, Minimum Support Prices and Public Distribution System",
+          "Food Processing and Related Industries",
+          "Land Reforms in India",
+          "Effects of Liberalisation on the Economy and Industrial Policy",
+          "Infrastructure - Energy, Ports, Roads, Airports and Railways",
+          "Investment Models",
+          "Science and Technology - Developments and Applications",
+          "Achievements of Indians in Science and Technology, Indigenisation",
+          "Awareness in IT, Space, Computers, Robotics, Nano-technology, Biotechnology and IPR",
+          "Conservation, Environmental Pollution and Degradation, Environmental Impact Assessment",
+          "Disaster and Disaster Management",
+          "Linkages between Development and Spread of Extremism",
+          "Role of External State and Non-state Actors in Internal Security",
+          "Challenges to Internal Security through Communication Networks, Cyber Security, Money Laundering",
+          "Security Challenges in Border Areas, Organised Crime and Terrorism",
+          "Various Security Forces and Agencies and their Mandate"
+        ]},
+        {"name": "General Studies Paper IV (Ethics, Integrity and Aptitude)", "code": "gs-4", "topics": [
+          "Ethics and Human Interface",
+          "Attitude",
+          "Aptitude and Foundational Values for Civil Service",
+          "Emotional Intelligence",
+          "Contributions of Moral Thinkers and Philosophers",
+          "Public and Civil Service Values and Ethics in Public Administration",
+          "Probity in Governance",
+          "Case Studies"
+        ]}
+      ]
+    }
+  ]
+}
