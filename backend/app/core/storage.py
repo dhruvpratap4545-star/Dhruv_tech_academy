@@ -11,8 +11,10 @@ one is in use: callers ``put`` bytes under a key and later ask for a ``signed_ur
 provider that cannot sign (local disk) returns ``None``, and the download route streams the
 bytes itself instead.
 
-**Keys are never the user's file name.** They are ``{institute_id}/{purpose}/{uuid}``, built
-by the files service. A name chosen by a user is how path traversal and overwrites happen.
+**Keys are never the user's file name.** They are
+``institutes/{institute_id}/{folder}/{YYYY}/{MM}/{uuid}.{ext}``, built by the files service
+(``files.service.storage_key``). A name chosen by a user is how path traversal and
+overwrites happen.
 """
 
 from __future__ import annotations
@@ -25,6 +27,8 @@ from pathlib import Path
 from app.core.config import settings
 
 logger = logging.getLogger(__name__)
+
+CLOUD_PLATFORM_SCOPE = "https://www.googleapis.com/auth/cloud-platform"
 
 
 class StorageProvider(ABC):
@@ -117,20 +121,29 @@ class GcsStorage(StorageProvider):
 
         def sign() -> str:
             import google.auth
+            from google.auth import credentials as google_credentials
             from google.auth.transport import requests as google_requests
 
-            credentials, _ = google.auth.default()
+            options = {
+                "version": "v4",
+                "expiration": timedelta(seconds=ttl_seconds),
+                "method": "GET",
+                "response_disposition": f'inline; filename="{filename}"',
+            }
+            # A scope is required: key-file credentials refuse to refresh without one
+            # ("invalid_scope"), and the metadata server ignores it harmlessly.
+            credentials, _ = google.auth.default(scopes=[CLOUD_PLATFORM_SCOPE])
+            if isinstance(credentials, google_credentials.Signing):
+                # A key file (local development): it holds a private key and signs here.
+                return blob.generate_signed_url(credentials=credentials, **options)
+            # Cloud Run: metadata-server credentials carry no private key. Passing the
+            # account's email and an access token makes the library sign through the IAM
+            # signBlob API instead — hence `serviceAccountTokenCreator` on itself.
             credentials.refresh(google_requests.Request())
-            # Credentials from the metadata server carry no private key. Passing the
-            # service account email and an access token makes the library sign through
-            # IAM instead of failing with "you need a private key to sign credentials".
             return blob.generate_signed_url(
-                version="v4",
-                expiration=timedelta(seconds=ttl_seconds),
-                method="GET",
-                response_disposition=f'inline; filename="{filename}"',
                 service_account_email=getattr(credentials, "service_account_email", None),
                 access_token=credentials.token,
+                **options,
             )
 
         return await anyio.to_thread.run_sync(sign)
@@ -140,6 +153,14 @@ def _default_storage() -> StorageProvider:
     if settings.storage_backend == "gcs":
         if not settings.gcs_bucket:
             raise RuntimeError("STORAGE_BACKEND=gcs needs GCS_BUCKET; see backend/.env.example.")
+        if settings.google_application_credentials:
+            # Settings read `.env` into this object, not into the process environment, and
+            # the Google libraries only look at the environment. Hand the path across once.
+            import os
+
+            os.environ.setdefault(
+                "GOOGLE_APPLICATION_CREDENTIALS", settings.google_application_credentials
+            )
         return GcsStorage(settings.gcs_bucket)
     if settings.is_production:
         # A local folder on Cloud Run loses every upload on the next deploy. Refuse loudly

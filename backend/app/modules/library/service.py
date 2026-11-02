@@ -54,9 +54,8 @@ from app.modules.rbac.context import AuthContext
 from app.modules.rbac.scopes import Scope
 from app.modules.rbac.service import Authorized
 
-#: ``StoredFile.institute_id`` is required, and a master-library upload belongs to no
-#: institute. The nil UUID stands for "the platform" in the object key and the record.
-MASTER_FILE_INSTITUTE = uuid.UUID(int=0)
+#: A master-library upload belongs to no institute; it is filed under the platform.
+MASTER_FILE_INSTITUTE = files.PLATFORM_OWNER
 
 #: Fields copied into a version snapshot — what a reader sees, not the bookkeeping.
 VERSIONED_FIELDS = (

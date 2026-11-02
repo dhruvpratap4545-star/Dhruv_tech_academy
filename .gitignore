@@ -44,3 +44,10 @@ secrets.*
 
 # Local file uploads (STORAGE_BACKEND=local)
 .uploads/
+
+# Google Cloud service-account keys. A key file is a password for the project: it must
+# never be committed. Prefer no key at all (Cloud Run uses its attached service account).
+project-*.json
+*-sa.json
+*service-account*.json
+gcp-*.json
