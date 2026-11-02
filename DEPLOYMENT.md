@@ -497,19 +497,33 @@ traffic you were hoping for.
 Do these once, **before** the first deploy that contains Phase 3. Until the bucket and the
 key exist, uploads and AI requests fail with a clear error; nothing else is affected.
 
-### 1. A private uploads bucket
+### 1. Private uploads buckets
 
-In **Cloud Storage → Buckets → Create**:
+One bucket per environment, so a developer's test uploads never sit beside a student's
+homework. Both exist (created 02-11-2026) with these settings:
 
-| Setting | Value |
-|---|---|
-| Name | `dhruv-prod-uploads` (or change `_GCS_BUCKET` in `cloudbuild.yaml`) |
-| Location | Region `asia-south1` (Mumbai, same as Cloud Run) |
-| Access control | Uniform, with **public access prevention on** |
-| Object versioning | Off |
-| Lifecycle | Delete objects with prefix `tmp/` after 1 day |
+| Setting | `dhruv-prod-uploads` | `dhruv-dev-uploads` |
+|---|---|---|
+| Used by | Cloud Run (`_GCS_BUCKET` in `cloudbuild.yaml`) | Local development (`GCS_BUCKET` in `backend/.env`) |
+| Location | `asia-south1` (Mumbai, same as Cloud Run) | `asia-south1` |
+| Access control | Uniform, **public access prevention enforced** | Same |
+| Labels | `app=dhruv-academy`, `env=production` | `app=dhruv-academy`, `env=development` |
+| Lifecycle | None — student work is kept | Delete objects after 30 days |
 
 Files are never public. The API hands out five-minute signed links.
+
+**Folder layout.** The same in both buckets, built only by `files.service.storage_key` —
+never from a file name a user typed:
+
+```
+institutes/{institute_id}/homework/attachments/{YYYY}/{MM}/{uuid}.pdf|jpg|png
+institutes/{institute_id}/homework/submissions/{YYYY}/{MM}/{uuid}.pdf|jpg|png
+institutes/{institute_id}/library/{YYYY}/{MM}/{uuid}.pdf|jpg|png
+platform/library/{YYYY}/{MM}/{uuid}.pdf|jpg|png        ← master library
+```
+
+The full key is stored on each `stored_files` record, so files uploaded under an older
+layout keep downloading; nothing needs moving.
 
 ### 2. Service account permissions
 

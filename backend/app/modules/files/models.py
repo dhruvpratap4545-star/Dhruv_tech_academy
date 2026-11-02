@@ -26,7 +26,8 @@ class StoredFile(TimestampedDocument):
     content_type: str = Field(max_length=60)
     size: int = Field(ge=0)
     sha256: str = Field(min_length=64, max_length=64)
-    #: `{institute_id}/{purpose}/{uuid}` — never derived from the user's file name.
+    #: `institutes/{institute_id}/{folder}/{YYYY}/{MM}/{uuid}.{ext}`, from
+    #: `files.service.storage_key` — never derived from the user's file name.
     storage_key: str = Field(max_length=200)
     #: Shown back to people and used as the download name. Sanitised on the way in.
     original_name: str = Field(max_length=200)

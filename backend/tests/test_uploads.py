@@ -126,3 +126,31 @@ async def test_local_storage_round_trips_and_refuses_escaping_keys(tmp_path) -> 
     assert await storage.signed_url("inst/x", ttl_seconds=60, filename="a.pdf") is None
     with pytest.raises(ValueError, match="escapes"):
         await storage.put("../outside", b"x", "application/pdf")
+
+
+def test_storage_keys_follow_the_bucket_folder_layout() -> None:
+    import re
+    import uuid
+    from datetime import UTC, datetime
+
+    from app.modules.files.service import PLATFORM_OWNER, storage_key
+
+    institute = uuid.UUID("11111111-2222-3333-4444-555555555555")
+    when = datetime(2026, 11, 2, tzinfo=UTC)
+    tail = r"2026/11/[0-9a-f-]{36}"
+
+    assert re.fullmatch(
+        rf"institutes/{institute}/homework/attachments/{tail}\.pdf",
+        storage_key(institute, "homework_attachment", PDF, now=when),
+    )
+    assert re.fullmatch(
+        rf"institutes/{institute}/homework/submissions/{tail}\.jpg",
+        storage_key(institute, "submission", JPEG, now=when),
+    )
+    assert re.fullmatch(
+        rf"platform/library/{tail}\.png", storage_key(PLATFORM_OWNER, "library", PNG, now=when)
+    )
+    # Two uploads in the same second never share a key.
+    assert storage_key(institute, "library", PDF, now=when) != storage_key(
+        institute, "library", PDF, now=when
+    )

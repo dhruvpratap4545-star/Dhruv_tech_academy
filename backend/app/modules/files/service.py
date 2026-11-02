@@ -15,6 +15,7 @@ from __future__ import annotations
 import logging
 import uuid
 from collections.abc import Awaitable, Callable, Iterable
+from datetime import UTC, datetime
 
 from fastapi import UploadFile
 
@@ -32,6 +33,38 @@ logger = logging.getLogger(__name__)
 
 AccessCheck = Callable[[Db, AuthContext, StoredFile], Awaitable[bool]]
 _access_checks: dict[str, AccessCheck] = {}
+
+#: Stands for "the platform" in ``StoredFile.institute_id`` — a master-library upload
+#: belongs to no institute, and the field is required.
+PLATFORM_OWNER = uuid.UUID(int=0)
+
+#: Bucket folder for each purpose. Readable names, so a person browsing the bucket can tell
+#: what they are looking at; the purpose itself stays the value stored on the record.
+PURPOSE_FOLDERS = {
+    "homework_attachment": "homework/attachments",
+    "submission": "homework/submissions",
+    "library": "library",
+}
+
+#: Extension from the *validated* content type — never from the uploader's file name.
+EXTENSIONS = {"application/pdf": "pdf", "image/jpeg": "jpg", "image/png": "png"}
+
+
+def storage_key(
+    institute_id: uuid.UUID, purpose: str, content_type: str, *, now: datetime | None = None
+) -> str:
+    """Where an upload lives in the bucket.
+
+    ``institutes/{institute_id}/{folder}/{YYYY}/{MM}/{uuid}.{ext}``, or
+    ``platform/{folder}/…`` for master-library files. Every part is generated here, so no
+    user input reaches the key. The month folders keep any one listing short and let an
+    operator find "last month's submissions" without a database query.
+    """
+    when = now or datetime.now(UTC)
+    owner = "platform" if institute_id == PLATFORM_OWNER else f"institutes/{institute_id}"
+    folder = PURPOSE_FOLDERS[purpose]
+    name = f"{uuid.uuid4()}.{EXTENSIONS[content_type]}"
+    return f"{owner}/{folder}/{when:%Y}/{when:%m}/{name}"
 
 
 def register_access(purpose: str, check: AccessCheck) -> None:
@@ -58,12 +91,13 @@ async def store_upload(
 
     The bytes reach storage *before* the unit of work commits. If the request then fails,
     an object is left in the bucket with no document pointing at it — unreachable, because
-    every download starts from the document, and cleaned up by the bucket's lifecycle rule.
+    every download starts from the document. (Orphans are rare and tiny; a sweep comparing the
+    bucket with `stored_files` can remove them if they ever add up.)
     The other order would be worse: a document pointing at bytes that were never written.
     """
     data = await read_limited(upload)
     clean = validate_upload(data, declared_type=upload.content_type, filename=upload.filename)
-    key = f"{institute_id}/{purpose}/{uuid.uuid4()}"
+    key = storage_key(institute_id, purpose, clean.content_type)
     await get_storage().put(key, clean.data, clean.content_type)
 
     stored = StoredFile(

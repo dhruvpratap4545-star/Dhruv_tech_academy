@@ -125,6 +125,9 @@ class Settings(BaseSettings):
     # uploaded in production goes to a private GCS bucket.
     storage_backend: Literal["local", "gcs"] = "local"
     gcs_bucket: str | None = None
+    #: Local development only: path to a service-account key file. Leave unset on Cloud
+    #: Run, which authenticates as the service's attached account with no key at all.
+    google_application_credentials: str | None = None
     local_storage_dir: str = ".uploads"
     max_upload_mb: int = 10
     #: How long a signed download link stays valid. Short, because it is a bearer link.
