@@ -36,6 +36,7 @@ from app.core.errors import AppError, ServiceUnavailable
 from app.modules.ai import budgets as budget_repo
 from app.modules.ai import safety
 from app.modules.ai.models import (
+    ANSWERED,
     SETTINGS_KEY,
     AiBudget,
     AiCache,
@@ -143,12 +144,23 @@ async def complete(
         plan.feature.system_prompt, kids=plan.feature.safety_level == "kids"
     )
     user_text = safety.wrap_user_text(clean)
-    if extra_context:
-        user_text = f"{extra_context.strip()}\n\n{user_text}"
+    extra, extra_redactions = safety.redact(extra_context.strip() if extra_context else "")
+    redactions += extra_redactions
+    if extra:
+        user_text = f"{extra}\n\n{user_text}"
 
-    # 5. cache
+    # 5. cache — keyed on everything that shapes the answer, so a changed prompt, safety
+    # level or token limit is not answered from a stale entry.
+    key = safety.cache_key(
+        feature_key,
+        plan.model_id,
+        clean,
+        system_prompt,
+        plan.feature.safety_level,
+        str(plan.feature.max_output_tokens),
+        extra,
+    )
     if plan.feature.cache_ttl_hours > 0:
-        key = safety.cache_key(feature_key, plan.model_id, clean)
         hit = await db.find_one(AiCache, {"key": key, "expires_at": {"$gt": utcnow()}})
         if hit is not None:
             usage_id = await _record(
@@ -196,6 +208,11 @@ async def complete(
                 "ai provider call failed", extra={"model_id": model_id, "error": str(exc)}
             )
             result = None
+        except Exception:
+            # A bug or an unexpected response shape (e.g. a body that is not JSON) is still
+            # a failed call: try the fallback, and log it as an error rather than a 500.
+            logger.exception("ai provider call raised", extra={"model_id": model_id})
+            result = None
     latency_ms = int((time.monotonic() - started) * 1000)
 
     if result is None or model is None:
@@ -221,7 +238,7 @@ async def complete(
         output_tokens=result.output_tokens,
         cost_paise=paise,
         latency_ms=latency_ms,
-        status="ok",
+        status="blocked" if result.safety_blocked else "ok",
         block_reason="safety" if result.safety_blocked else None,
         fallback_used=fallback_used,
         prompt=clean if settings_row.log_prompts else None,
@@ -230,7 +247,7 @@ async def complete(
     for budget in plan.budgets:
         budget_repo.record_spend(rec, budget, tokens=tokens, paise=paise, feature_key=feature_key)
     if plan.feature.cache_ttl_hours > 0 and not result.safety_blocked:
-        await _store_cache(rec, plan, model.model_id, clean, result, feature_key)
+        await _store_cache(rec, plan, key, model.model_id, result, feature_key)
     await rec.commit()
 
     for budget in plan.budgets:
@@ -289,9 +306,12 @@ async def _check(
     used_today = await db.count(
         AiUsage,
         {
+            # Per institute, like the limit itself: a teacher in two schools has each
+            # school's allowance, not one shared between them.
             "user_id": base["user_id"],
-            "status": {"$in": ["ok", "cached"]},
+            "institute_id": institute_id,
             "created_at": {"$gte": start_of_ist_day(utcnow())},
+            **ANSWERED,
         },
     )
     if used_today >= limit:
@@ -352,13 +372,12 @@ async def _record(base: dict[str, Any], *, status: str, **fields: Any) -> uuid.U
 async def _store_cache(
     rec: Db,
     plan: _Plan,
+    key: str,
     model_id: str,
-    clean_prompt: str,
     result: ProviderResult,
     feature_key: str,
 ) -> None:
     """Upsert, not insert: two students asking the same thing at once both store it."""
-    key = safety.cache_key(feature_key, plan.model_id, clean_prompt)
     expires = utcnow() + timedelta(hours=plan.feature.cache_ttl_hours)
     await AiCache.get_pymongo_collection().update_one(
         {"key": key},

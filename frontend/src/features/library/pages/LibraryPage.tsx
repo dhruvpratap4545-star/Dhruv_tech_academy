@@ -40,7 +40,10 @@ export function LibraryPage() {
     <LibraryLayout title={t("library.title")} description={t("library.description")}>
       <SearchBar filters={filters} onChange={setFilters} />
       {searching ? (
-        <SearchResultsView filters={{ ...filters, q: filters.q.trim() }} />
+        <SearchResultsView
+          filters={{ ...filters, q: filters.q.trim() }}
+          onOpen={() => setFilters({ q: "" })}
+        />
       ) : nodeId ? (
         <NodeView nodeId={nodeId} />
       ) : (
@@ -101,13 +104,14 @@ function SearchBar({
           { value: "", label: t("library.allMediums") },
           { value: "hi", label: t("library.medium.hi") },
           { value: "en", label: t("library.medium.en") },
+          { value: "both", label: t("library.medium.both") },
         ]}
       />
     </Card>
   );
 }
 
-function SearchResultsView({ filters }: { filters: SearchFilters }) {
+function SearchResultsView({ filters, onOpen }: { filters: SearchFilters; onOpen: () => void }) {
   const { t } = useT();
   const results = useQuery({
     queryKey: libraryKeys.search(filters),
@@ -126,7 +130,11 @@ function SearchResultsView({ filters }: { filters: SearchFilters }) {
         <ul className="divide-y divide-line">
           {data.nodes.map((node) => (
             <li key={node.id}>
-              <Link to={`/library/node/${node.id}`} className="block px-4 py-3 hover:bg-surface-2">
+              <Link
+                to={`/library/node/${node.id}`}
+                onClick={onOpen}
+                className="block px-4 py-3 hover:bg-surface-2"
+              >
                 <span className="block text-sm font-medium text-fg">{node.name}</span>
                 <span className="block truncate text-xs text-fg-3">{node.path}</span>
               </Link>
@@ -138,9 +146,15 @@ function SearchResultsView({ filters }: { filters: SearchFilters }) {
         <CardHeader title={t("library.searchItems")} />
         <ul className="divide-y divide-line">
           {data.items.map((item) => (
-            <li key={item.id} className="px-4 py-3">
-              <span className="block text-sm font-medium text-fg">{item.title}</span>
-              <span className="text-xs text-fg-3">{t(`library.kind.${item.kind as "pdf"}`)}</span>
+            <li key={item.id}>
+              <Link
+                to={`/library/node/${item.node_ids[0]}`}
+                onClick={onOpen}
+                className="block px-4 py-3 hover:bg-surface-2"
+              >
+                <span className="block text-sm font-medium text-fg">{item.title}</span>
+                <span className="text-xs text-fg-3">{t(`library.kind.${item.kind as "pdf"}`)}</span>
+              </Link>
             </li>
           ))}
         </ul>

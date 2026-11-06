@@ -187,12 +187,14 @@ async def list_homework(
     "/{homework_id}",
     response_model=schemas.StudentHomeworkOut,
     summary="One homework; for a student, with their own submission",
+    description="A parent gets their linked child's submission; ``student_id`` picks the "
+    "child (404 unless linked and enrolled in the class).",
 )
 async def get_homework(
-    homework_id: uuid.UUID, db: DbSession, guard: Read
+    homework_id: uuid.UUID, db: DbSession, guard: Read, student_id: uuid.UUID | None = None
 ) -> schemas.StudentHomeworkOut:
     return await homework_service.get_homework_detail(
-        db, context=guard.context, homework_id=homework_id
+        db, context=guard.context, homework_id=homework_id, student_id=student_id
     )
 
 

@@ -1,12 +1,13 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
 
 import { Alert } from "@/components/Alert";
 import { Badge } from "@/components/Badge";
 import { Button } from "@/components/Button";
 import { Card, CardBody, CardHeader } from "@/components/Card";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
+import { SelectField } from "@/components/Field";
 import { Spinner } from "@/components/Spinner";
 import type { Column } from "@/components/Table";
 import { Table } from "@/components/Table";
@@ -29,6 +30,7 @@ import {
   StudentStatusBadge,
 } from "@/features/homework/components/StatusBadges";
 import { SubmitForm } from "@/features/homework/components/SubmitForm";
+import { useClassOptions } from "@/features/homework/components/useClassOptions";
 import { canStillSubmit, whatsappUrl } from "@/features/homework/logic";
 import { useCan } from "@/features/auth/useAuth";
 import { useT } from "@/features/i18n/useT";
@@ -38,10 +40,12 @@ import { formatDateTime } from "@/lib/format";
 /** `/homework/:id` — the tracker for a teacher, the work and the submit form for a learner. */
 export function HomeworkDetailPage() {
   const { id } = useParams();
+  // A parent arrives from their child's board with `?student=`; the server checks the link.
+  const studentId = useSearchParams()[0].get("student") ?? undefined;
   const canManage = useCan("homework:manage");
   const detail = useQuery({
-    queryKey: homeworkKeys.detail(id!),
-    queryFn: ({ signal }) => fetchHomework(id!, signal),
+    queryKey: homeworkKeys.detail(id!, studentId),
+    queryFn: ({ signal }) => fetchHomework(id!, signal, studentId),
   });
   if (detail.isLoading) return <Spinner />;
   if (detail.error || !detail.data) {
@@ -56,6 +60,7 @@ export function HomeworkDetailPage() {
 
 function Summary({ homework }: { homework: Homework }) {
   const { t } = useT();
+  const canReadLibrary = useCan("library:read");
   return (
     <Card>
       <CardBody className="space-y-4">
@@ -74,6 +79,14 @@ function Summary({ homework }: { homework: Homework }) {
           <h2 className="text-sm font-semibold text-fg">{t("homework.detail.attachments")}</h2>
           <AttachmentList files={homework.attachments} empty={t("homework.detail.noAttachments")} />
         </section>
+        {homework.node_id && canReadLibrary && (
+          <Link
+            to={`/library/node/${homework.node_id}`}
+            className="inline-block text-sm font-medium text-accent hover:underline"
+          >
+            {t("homework.detail.studyMaterial")}
+          </Link>
+        )}
       </CardBody>
     </Card>
   );
@@ -85,6 +98,9 @@ function TeacherView({ homework }: { homework: Homework }) {
   const queryClient = useQueryClient();
   const [checking, setChecking] = useState<string | null>(null);
   const [archiving, setArchiving] = useState(false);
+  const [copyTo, setCopyTo] = useState<string | null>(null);
+  const { options } = useClassOptions();
+  const sameInstitute = options.filter((o) => o.instituteId === homework.institute_id);
   const tracker = useQuery({
     queryKey: homeworkKeys.tracker(homework.id),
     queryFn: ({ signal }) => fetchTracker(homework.id, signal),
@@ -103,7 +119,7 @@ function TeacherView({ homework }: { homework: Homework }) {
     },
   });
   const duplicate = useMutation({
-    mutationFn: () => duplicateHomework(homework.id),
+    mutationFn: (classId: string) => duplicateHomework(homework.id, classId),
     onSuccess: (copy) => navigate(`/homework/${copy.id}/edit`),
   });
   const remind = useMutation({ mutationFn: () => remindPending(homework.id), onSuccess: refresh });
@@ -143,7 +159,8 @@ function TeacherView({ homework }: { homework: Homework }) {
       key: "check",
       header: "",
       cell: (r) =>
-        r.submission_id ? (
+        // Work sent back for redo is checked again once the student resubmits.
+        r.submission_id && r.student_status !== "redo" ? (
           <Button size="sm" variant="secondary" onClick={() => setChecking(r.submission_id)}>
             {t("homework.tracker.check")}
           </Button>
@@ -169,15 +186,10 @@ function TeacherView({ homework }: { homework: Homework }) {
               {t("homework.action.publish")}
             </Button>
           )}
-          <Button
-            variant="secondary"
-            size="sm"
-            loading={duplicate.isPending}
-            onClick={() => duplicate.mutate()}
-          >
+          <Button variant="secondary" size="sm" onClick={() => setCopyTo(homework.class_id)}>
             {t("homework.action.duplicate")}
           </Button>
-          {homework.status === "published" && (
+          {homework.is_visible && (
             <Button
               variant="secondary"
               size="sm"
@@ -220,7 +232,8 @@ function TeacherView({ homework }: { homework: Homework }) {
               </span>
             }
             actions={
-              homework.status === "published" ? (
+              // Not before students can see it: the server refuses to remind about it.
+              homework.is_visible ? (
                 <Button
                   size="sm"
                   variant="secondary"
@@ -235,6 +248,27 @@ function TeacherView({ homework }: { homework: Homework }) {
           <Table columns={columns} rows={tracker.data.rows} rowKey={(r) => r.student_user_id} />
         </Card>
       )}
+      <ConfirmDialog
+        open={copyTo !== null}
+        onClose={() => setCopyTo(null)}
+        onConfirm={() => copyTo && duplicate.mutate(copyTo)}
+        title={t("homework.action.duplicate")}
+        confirmLabel={t("homework.action.duplicate")}
+        tone="primary"
+        pending={duplicate.isPending}
+        error={duplicate.error?.message ?? null}
+      >
+        <SelectField
+          label={t("homework.duplicate.class")}
+          value={copyTo ?? ""}
+          onChange={(e) => setCopyTo(e.target.value)}
+          options={
+            sameInstitute.some((o) => o.value === homework.class_id)
+              ? sameInstitute
+              : [{ value: homework.class_id, label: homework.class_name }, ...sameInstitute]
+          }
+        />
+      </ConfirmDialog>
       {checking && (
         <CheckModal homework={homework} submissionId={checking} onClose={() => setChecking(null)} />
       )}

@@ -24,6 +24,10 @@ Provider = Literal["gemini", "anthropic", "fake"]
 SafetyLevel = Literal["standard", "kids"]
 OnExceed = Literal["block", "fallback"]
 UsageStatus = Literal["ok", "blocked", "error", "cached"]
+#: Requests a provider answered, including those its own safety filter refused (logged as
+#: ``blocked`` / ``safety``, but still billed): what the daily limit counts and what the
+#: spend breakdowns add up.
+ANSWERED = {"$or": [{"status": {"$in": ["ok", "cached"]}}, {"block_reason": "safety"}]}
 
 SETTINGS_KEY = "global"
 #: Usage rows are kept for 13 months, then removed by MongoDB itself (TTL index).

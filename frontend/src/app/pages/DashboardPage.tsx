@@ -13,22 +13,50 @@ import { useCurrentUser } from "@/features/auth/useAuth";
 import { cn } from "@/lib/cn";
 import { initials } from "@/lib/format";
 import type { Permission } from "@/lib/permissions";
-import { can, ROLE_LABEL, roleScopeLabel, scopeLabel } from "@/lib/permissions";
+import {
+  can,
+  isLearnerOrParentOnly,
+  ROLE_LABEL,
+  roleAssignmentKey,
+  roleScopeLabel,
+  scopeLabel,
+} from "@/lib/permissions";
 
-type Shortcut = { to: string; title: string; description: string; permission?: Permission };
+type Shortcut = {
+  to: string;
+  title: string;
+  description: string;
+  permission?: Permission;
+  /** Administration a student or parent has nothing to do on. */
+  hideFromLearners?: boolean;
+};
 
 const SHORTCUTS: Shortcut[] = [
+  {
+    to: "/homework",
+    title: "Homework",
+    description: "Set, submit or follow homework.",
+    permission: "homework:read",
+  },
+  {
+    to: "/library",
+    title: "Library",
+    description: "Your syllabus and the study material on each topic.",
+    permission: "library:read",
+  },
   {
     to: "/users",
     title: "Manage people",
     description: "Invite someone, change a role, suspend an account.",
     permission: "user:read",
+    hideFromLearners: true,
   },
   {
     to: "/institutes",
     title: "Hierarchy",
     description: "Institutes and the branches inside them.",
     permission: "institute:read",
+    hideFromLearners: true,
   },
   {
     to: "/audit",
@@ -48,8 +76,13 @@ function greeting(): string {
 
 export function DashboardPage() {
   const user = useCurrentUser();
-  const shortcuts = SHORTCUTS.filter((item) => !item.permission || can(user, item.permission));
-  const canSeeStats = can(user, "user:read");
+  const learner = isLearnerOrParentOnly(user);
+  const shortcuts = SHORTCUTS.filter(
+    (item) =>
+      !(item.hideFromLearners && learner) && (!item.permission || can(user, item.permission)),
+  );
+  // People counts are an administrator's view, even where a learner may read a roster.
+  const canSeeStats = can(user, "user:read") && !learner;
 
   // A parent's dashboard is their family, not a set of counts. Asked for on every load
   // because the endpoint answers about the caller: it comes back empty for anybody who is
@@ -179,10 +212,7 @@ export function DashboardPage() {
             {user?.roles.length ? (
               <ul className="space-y-2">
                 {user.roles.map((role) => (
-                  <li
-                    key={`${role.role_key}-${role.branch_id ?? role.institute_id ?? "platform"}`}
-                    className="space-y-0.5"
-                  >
+                  <li key={roleAssignmentKey(role)} className="space-y-0.5">
                     <Badge tone="accent">{ROLE_LABEL[role.role_key] ?? role.role_name}</Badge>
                     <p className="text-xs text-fg-2">{roleScopeLabel(role)}</p>
                   </li>

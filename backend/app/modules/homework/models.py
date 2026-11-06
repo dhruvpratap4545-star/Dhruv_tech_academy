@@ -43,6 +43,9 @@ class Homework(TimestampedDocument):
     total_marks: int | None = Field(default=None, ge=0, le=1000)
     #: When students can first see it. Set on publish; in the future means "scheduled".
     publish_at: datetime | None = None
+    #: When students were emailed about it. Scheduled homework is announced by the
+    #: `homework-notify` command once `publish_at` passes; this stops a second email.
+    notified_at: datetime | None = None
     due_at: datetime
     allow_late: bool = True
     allow_resubmit: bool = True

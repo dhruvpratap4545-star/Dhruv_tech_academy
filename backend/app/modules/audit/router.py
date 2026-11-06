@@ -34,7 +34,16 @@ async def list_audit_logs(
     limit: Annotated[int, Query(ge=1, le=100)] = 20,
 ) -> Page[schemas.AuditLogOut]:
     size = clamp_limit(limit)
+    # An entry records its institute and nothing finer, so only an institute-wide (or
+    # wider) grant can be honoured. A branch-scoped `audit:read` used to be widened to the
+    # whole institute's log — the principal's actions and every other branch included.
     institute_ids = guard.visible_institute_ids()
+    if institute_ids is not None:
+        institute_ids = frozenset(
+            s.institute_id
+            for s in guard.usable_scopes()
+            if s.institute_id is not None and s.branch_id is None
+        )
     rows, next_cursor, total = await audit.list_logs(
         db,
         institute_ids=institute_ids,
@@ -62,7 +71,16 @@ async def signin_stats(
     guard: Annotated[Authorized, Depends(require_permission("audit:read"))],
     days: Annotated[int, Query(ge=1, le=90, description="How many days back to count.")] = 14,
 ) -> schemas.SigninStats:
+    # An entry records its institute and nothing finer, so only an institute-wide (or
+    # wider) grant can be honoured. A branch-scoped `audit:read` used to be widened to the
+    # whole institute's log — the principal's actions and every other branch included.
     institute_ids = guard.visible_institute_ids()
+    if institute_ids is not None:
+        institute_ids = frozenset(
+            s.institute_id
+            for s in guard.usable_scopes()
+            if s.institute_id is not None and s.branch_id is None
+        )
     rows = await audit.daily_signin_counts(db, institute_ids=institute_ids, days=days)
 
     counts: dict[date, dict[str, int]] = defaultdict(lambda: defaultdict(int))

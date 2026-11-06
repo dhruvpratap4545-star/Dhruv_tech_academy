@@ -83,4 +83,18 @@ describe("navigation registry", () => {
     expect(ids(admin)).toContain("ai");
     expect(ids(student)).not.toContain("ai");
   });
+
+  it("hides people and the hierarchy from a student or parent even with read access", () => {
+    const parent = makeUser({
+      roles: [roleAssignment("parent", "inst-1"), roleAssignment("student", "inst-1")],
+      permissions: ["user:read", "institute:read", "homework:read", "library:read"],
+    });
+    const items = visibleNavigation(parent)
+      .flatMap((group) => group.items)
+      .map((item) => item.id);
+    expect(items).not.toContain("users");
+    expect(items).not.toContain("hierarchy");
+    expect(items).toContain("homework");
+    expect(items).toContain("library");
+  });
 });

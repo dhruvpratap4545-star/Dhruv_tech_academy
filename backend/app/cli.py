@@ -18,6 +18,7 @@ Run with the application's environment loaded::
     python -m app.cli list-super-admins
     python -m app.cli seed-syllabus [--track cbse]           # Phase 3, safe to re-run
     python -m app.cli homework-digest                       # Phase 3, weekly (Sun 18:00 IST)
+    python -m app.cli homework-notify                       # every 5-15 min: scheduled homework
     ADMIN_PASSWORD=... python -m app.cli set-password someone@example.com
 
 On Cloud Run these are one job, executed with different arguments — see DEPLOYMENT.md.
@@ -50,6 +51,8 @@ from __future__ import annotations
 import argparse
 import asyncio
 from datetime import UTC, datetime
+
+from pydantic import EmailStr, TypeAdapter, ValidationError
 
 from app.core.db import Db, close_db, ids_in, init_db
 from app.core.logging import configure_logging
@@ -87,6 +90,10 @@ async def grant(email: str, *, create_missing: bool) -> None:
                 f"No account exists for {email}. "
                 f"Re-run with --create to invite them as a new Super Admin."
             )
+        try:  # login rejects reserved domains (.local, .test); such an admin could never sign in
+            TypeAdapter(EmailStr).validate_python(email)
+        except ValidationError as exc:
+            raise SystemExit(f"{email} is not an address the login form accepts.") from exc
         user = User(email=email, full_name="Super Admin", status="invited", password_hash=None)
         db.add(user)
         await db.flush()
@@ -322,6 +329,11 @@ def build_parser() -> argparse.ArgumentParser:
     y.add_argument("--track", choices=["cbse", "neet", "jee", "upsc"], default=None)
 
     sub.add_parser(
+        "homework-notify",
+        help="Email students about scheduled homework whose publish time has passed. "
+        "Run every 5-15 minutes.",
+    )
+    sub.add_parser(
         "homework-digest",
         help="Email each parent a summary of their children's homework for the last 7 days.",
     )
@@ -346,6 +358,10 @@ def main(argv: list[str] | None = None) -> None:
                 from app.modules.library.commands import seed_syllabus_command
 
                 await seed_syllabus_command(args.track)
+            elif args.command == "homework-notify":
+                from app.modules.homework.commands import homework_notify_command
+
+                await homework_notify_command()
             elif args.command == "homework-digest":
                 from app.modules.homework.commands import homework_digest_command
 

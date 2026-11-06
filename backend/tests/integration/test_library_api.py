@@ -642,3 +642,112 @@ async def test_another_institute_cannot_act_on_material_or_versions(
         },
     )
     assert write.status_code == 403
+
+
+# ------------------------------------------------------------------- review fixes
+
+
+async def test_faculty_see_published_and_their_own_material_but_not_colleagues_drafts(
+    client: AsyncClient, world, make_user
+) -> None:
+    colleague = await make_user("faculty", institute_id=world["abc"].id)
+    note = {
+        "institute_id": str(world["abc"].id),
+        "kind": "text",
+        "body": "V = IR",
+        "node_ids": [str(world["ohm"].id)],
+    }
+    pdf_id, _, _ = await _published_pair(client, world)
+    await _as(client, colleague)
+    theirs = (await client.post("/api/v1/library/items", json={**note, "title": "Theirs"})).json()
+    review = (await client.post("/api/v1/library/items", json={**note, "title": "Review"})).json()
+    assert (await client.post(f"/api/v1/library/items/{review['id']}/submit")).status_code == 200
+
+    await _as(client, world["faculty"])
+    own = (await client.post("/api/v1/library/items", json={**note, "title": "Own"})).json()
+    page = await client.get("/api/v1/library/items?limit=100")
+    listed = {i["id"] for i in page.json()["items"]}
+    assert own["id"] in listed and pdf_id in listed
+    assert theirs["id"] not in listed and review["id"] not in listed
+    assert (await client.get(f"/api/v1/library/items/{theirs['id']}")).status_code == 404
+    assert (await client.get(f"/api/v1/library/items/{review['id']}")).status_code == 404
+    assert (await client.post(f"/api/v1/library/items/{own['id']}/submit")).status_code == 200
+    assert (await client.get(f"/api/v1/library/nodes/{world['ohm'].id}")).status_code == 200
+
+    await _as(client, world["abc_admin"])
+    for item_id in (theirs["id"], review["id"], own["id"]):
+        assert (await client.get(f"/api/v1/library/items/{item_id}")).status_code == 200
+
+
+async def test_import_matches_existing_children_by_name_and_never_renames(
+    client: AsyncClient, db: Db, world
+) -> None:
+    writer = TreeWriter(db, None)
+    await writer.load("cbse")
+    maths = writer.ensure(world["c10"], track="cbse", kind="subject", name="Mathematics", code="m")
+    await db.commit()
+    db.update_many(SyllabusNode, {"_id": world["cbse"].id}, {"name": "CBSE (Board)"})
+    await db.commit()
+
+    data = _sheet([["CBSE", "class 10", " MATHEMATICS ", "", "Algebra", "", "", "", ""]])
+    await _as(client, world["platform"])
+    applied = await client.post(
+        "/api/v1/library/import?dry_run=false",
+        files={"file": ("s.xlsx", data, "application/octet-stream")},
+    )
+
+    assert applied.status_code == 200, applied.text
+    assert applied.json()["created"] == 1
+    subjects = await db.find(SyllabusNode, {"parent_id": world["c10"].id, "kind": "subject"})
+    assert sorted(s.name for s in subjects) == ["Mathematics", "Science"]
+    algebra = await db.find_one(SyllabusNode, {"name": "Algebra"})
+    assert algebra.parent_id == maths.id
+    names = {
+        n.id: n.name
+        for n in await db.find(SyllabusNode, {"_id": {"$in": [world["cbse"].id, world["c10"].id]}})
+    }
+    assert names == {world["cbse"].id: "CBSE (Board)", world["c10"].id: "Class 10"}
+
+
+async def test_search_accepts_both_mediums_and_item_hits_carry_their_topics(
+    client: AsyncClient, world
+) -> None:
+    pdf_id, _, _ = await _published_pair(client, world)
+    await _as(client, world["abc_admin"])
+
+    both = await client.get("/api/v1/library/search?q=Ohm&medium=both")
+
+    assert both.status_code == 200, both.text
+    assert any(n["id"] == str(world["ohm"].id) for n in both.json()["nodes"])
+    hit = next(i for i in both.json()["items"] if i["id"] == pdf_id)
+    assert hit["node_ids"] == [str(world["ohm"].id)]
+
+
+async def test_reviewing_at_one_institute_does_not_open_drafts_at_another(
+    client: AsyncClient, world, make_user
+) -> None:
+    """Library admin at XYZ, only a teacher at ABC: ABC colleagues' drafts stay hidden."""
+    colleague = await make_user("faculty", institute_id=world["abc"].id)
+    await _as(client, colleague)
+    draft = await client.post(
+        "/api/v1/library/items",
+        json={
+            "institute_id": str(world["abc"].id),
+            "kind": "text",
+            "title": "Colleague draft",
+            "body": "V = IR",
+            "node_ids": [str(world["ohm"].id)],
+        },
+    )
+    assert draft.status_code == 201, draft.text
+
+    teacher = world["faculty"]
+    await _as(client, world["platform"])
+    promoted = await client.post(
+        f"/api/v1/users/{teacher.id}/roles",
+        json={"role_key": "institute_admin", "institute_id": str(world["xyz"].id)},
+    )
+    assert promoted.status_code == 201, promoted.text
+
+    await _as(client, teacher)
+    assert (await client.get(f"/api/v1/library/items/{draft.json()['id']}")).status_code == 404

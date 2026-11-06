@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
+import { Link } from "react-router-dom";
 
 import { Alert } from "@/components/Alert";
 import { Badge } from "@/components/Badge";
@@ -15,7 +16,9 @@ import {
   archiveOrganisation,
   createOrganisation,
   fetchOrganisations,
+  instituteKeys,
   organisationKeys,
+  restoreOrganisation,
   updateOrganisation,
 } from "@/features/admin/api";
 import type { Organisation } from "@/features/auth/types";
@@ -51,6 +54,16 @@ export function OrganisationsPage() {
     },
   });
 
+  const restore = useMutation({
+    mutationFn: (row: Organisation) => restoreOrganisation(row.id),
+    onSuccess: async () => {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: organisationKeys.all }),
+        queryClient.invalidateQueries({ queryKey: instituteKeys.all }),
+      ]);
+    },
+  });
+
   // Clear the error with the dialog, or a refusal lingers over the next organisation.
   const stopArchiving = () => {
     setArchiving(null);
@@ -82,6 +95,12 @@ export function OrganisationsPage() {
           )
         }
       />
+
+      {restore.error && (
+        <Alert tone="danger" title="Could not restore it" onDismiss={() => restore.reset()}>
+          <p>{restore.error.message}</p>
+        </Alert>
+      )}
 
       {organisations.isLoading ? (
         <div className="flex justify-center py-16">
@@ -122,7 +141,13 @@ export function OrganisationsPage() {
                     {row.contact_email ? ` · ${row.contact_email}` : ""}
                   </p>
                 </div>
-                <div className="flex gap-2">
+                <div className="flex flex-wrap gap-2">
+                  <Link
+                    to={`/institutes?organisation=${row.id}`}
+                    className="inline-flex h-8 items-center rounded-md px-3 text-xs font-semibold text-fg-2 hover:bg-surface-2 hover:text-fg"
+                  >
+                    View institutes
+                  </Link>
                   {canEdit && (
                     <Button
                       size="sm"
@@ -143,6 +168,16 @@ export function OrganisationsPage() {
                       onClick={() => setArchiving(row)}
                     >
                       Archive
+                    </Button>
+                  )}
+                  {canArchive && row.status === "archived" && (
+                    <Button
+                      size="sm"
+                      variant="secondary"
+                      loading={restore.isPending && restore.variables?.id === row.id}
+                      onClick={() => restore.mutate(row)}
+                    >
+                      Restore
                     </Button>
                   )}
                 </div>

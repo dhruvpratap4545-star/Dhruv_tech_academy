@@ -58,6 +58,12 @@ async def test_a_brand_new_address_needs_create(db, run_command):
     assert "nobody@example.com" not in await _holders(db)
 
 
+async def test_create_refuses_an_address_login_would_reject(db, run_command):
+    """A reserved domain (.local) passes a naive check but fails at the login form."""
+    with pytest.raises(SystemExit, match="not an address the login form accepts"):
+        await cli.grant("admin@dhruv.local", create_missing=True)
+
+
 async def test_create_invites_without_setting_a_password(db, run_command):
     """No password is generated here: one produced by a command ends up in shell history
     or a deploy log, and an account created that way is owned by whoever reads it."""

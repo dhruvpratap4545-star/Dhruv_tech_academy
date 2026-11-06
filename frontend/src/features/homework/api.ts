@@ -130,7 +130,7 @@ export type TopicHit = { id: string; name: string; kind: string; track: string; 
 export const homeworkKeys = {
   all: ["homework"] as const,
   list: (filters: HomeworkFilters) => ["homework", "list", filters] as const,
-  detail: (id: string) => ["homework", "detail", id] as const,
+  detail: (id: string, studentId = "") => ["homework", "detail", id, studentId] as const,
   tracker: (id: string) => ["homework", "tracker", id] as const,
   submission: (id: string, sid: string) => ["homework", "submission", id, sid] as const,
   mine: (tab: Tab) => ["homework", "mine", tab] as const,
@@ -141,8 +141,9 @@ export const homeworkKeys = {
 export const fetchHomeworkList = (filters: HomeworkFilters, signal?: AbortSignal) =>
   apiFetch<Page<Homework>>(`/homework${query(filters)}`, { signal });
 
-export const fetchHomework = (id: string, signal?: AbortSignal) =>
-  apiFetch<BoardRow>(`/homework/${id}`, { signal });
+/** `studentId` picks which linked child a parent is looking at; the server checks the link. */
+export const fetchHomework = (id: string, signal?: AbortSignal, studentId?: string) =>
+  apiFetch<BoardRow>(`/homework/${id}${query({ student_id: studentId })}`, { signal });
 
 export const createHomework = (body: HomeworkPayload) =>
   apiFetch<Homework>("/homework", { method: "POST", body });
@@ -167,8 +168,11 @@ export const publishHomework = (id: string, publishAt?: string | null) =>
 export const archiveHomework = (id: string) =>
   apiFetch<Homework>(`/homework/${id}/archive`, { method: "POST" });
 
-export const duplicateHomework = (id: string) =>
-  apiFetch<Homework>(`/homework/${id}/duplicate`, { method: "POST", body: {} });
+export const duplicateHomework = (id: string, classId?: string) =>
+  apiFetch<Homework>(`/homework/${id}/duplicate`, {
+    method: "POST",
+    body: classId ? { class_id: classId } : {},
+  });
 
 export function uploadAttachments(id: string, files: File[]) {
   const form = new FormData();

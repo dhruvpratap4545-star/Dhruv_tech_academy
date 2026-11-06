@@ -97,6 +97,13 @@ class FeatureOut(OrmModel):
     enabled: bool
 
 
+class FeatureName(OrmModel):
+    """What an institute admin needs to share their allocation: no prompt, no model."""
+
+    key: str
+    name: str
+
+
 class FeatureUpdate(StrictModel):
     model_id: str | None = Field(default=None, max_length=80)
     #: Send an empty string to remove the fallback.

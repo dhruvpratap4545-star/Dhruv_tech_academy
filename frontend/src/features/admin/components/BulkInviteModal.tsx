@@ -15,7 +15,7 @@ import {
 } from "@/features/admin/api";
 import type { BulkInviteReport, BulkInviteRow } from "@/features/admin/api";
 import { useCurrentUser } from "@/features/auth/useAuth";
-import { isPlatformStaff } from "@/lib/permissions";
+import { picksInstitute } from "@/lib/permissions";
 
 /**
  * Invite a whole class from a spreadsheet.
@@ -37,7 +37,6 @@ export function BulkInviteModal({
 }) {
   const user = useCurrentUser();
   const queryClient = useQueryClient();
-  const platformStaff = isPlatformStaff(user);
   const fileInput = useRef<HTMLInputElement>(null);
 
   const [file, setFile] = useState<File | null>(null);
@@ -45,9 +44,10 @@ export function BulkInviteModal({
   const [preview, setPreview] = useState<BulkInviteReport | null>(null);
   const [done, setDone] = useState<BulkInviteReport | null>(null);
 
-  // Platform staff pick an institute; anybody with exactly one is pinned to it by the
-  // server, so they are not asked a question with one answer.
-  const needsInstitute = platformStaff || (user?.institute_ids.length ?? 0) > 1;
+  // Platform staff, organisation admins and anybody in several institutes pick one;
+  // anybody with exactly one is pinned to it by the server, so they are not asked a
+  // question with one answer.
+  const needsInstitute = picksInstitute(user);
   const institutes = useQuery({
     queryKey: instituteKeys.list(),
     queryFn: ({ signal }) => fetchInstitutes(signal),

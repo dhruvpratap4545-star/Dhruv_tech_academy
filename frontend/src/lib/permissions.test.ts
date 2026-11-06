@@ -5,7 +5,11 @@ import {
   canAny,
   highestRank,
   isFacultyOnly,
+  isLearnerOrParentOnly,
+  isOrganisationAdmin,
   isPlatformStaff,
+  picksInstitute,
+  roleAssignmentKey,
   ROLE_RANK,
 } from "@/lib/permissions";
 import { makeUser, roleAssignment } from "@/test/utils";
@@ -39,6 +43,71 @@ describe("isPlatformStaff", () => {
   it("is false for a role scoped to one institute", () => {
     const user = makeUser({ roles: [roleAssignment("institute_admin", "inst-a")] });
     expect(isPlatformStaff(user)).toBe(false);
+  });
+
+  it("is false for an organisation-wide role, which names no institute either", () => {
+    const user = makeUser({
+      roles: [roleAssignment("org_admin", null, null, { organisation_id: "org-a" })],
+    });
+    expect(isPlatformStaff(user)).toBe(false);
+    expect(isOrganisationAdmin(user)).toBe(true);
+  });
+
+  it("is true for platform staff who also hold an organisation role", () => {
+    const user = makeUser({
+      roles: [
+        roleAssignment("org_admin", null, null, { organisation_id: "org-a" }),
+        roleAssignment("platform_admin"),
+      ],
+    });
+    expect(isPlatformStaff(user)).toBe(true);
+  });
+});
+
+describe("picksInstitute", () => {
+  it("is false for somebody pinned to one institute", () => {
+    const user = makeUser({
+      roles: [roleAssignment("institute_admin", "inst-a")],
+      institute_ids: ["inst-a"],
+    });
+    expect(picksInstitute(user)).toBe(false);
+  });
+
+  it("is true for an organisation admin and for anybody in several institutes", () => {
+    const orgAdmin = makeUser({
+      roles: [roleAssignment("org_admin", null, null, { organisation_id: "org-a" })],
+    });
+    const twoColleges = makeUser({
+      roles: [
+        roleAssignment("faculty", "inst-a", "b-1"),
+        roleAssignment("faculty", "inst-b", "b-2"),
+      ],
+      institute_ids: ["inst-a", "inst-b"],
+    });
+    expect(picksInstitute(orgAdmin)).toBe(true);
+    expect(picksInstitute(twoColleges)).toBe(true);
+  });
+});
+
+describe("isLearnerOrParentOnly", () => {
+  it("is true only when every role is a student's or a parent's", () => {
+    const family = makeUser({
+      roles: [roleAssignment("student", "inst-a"), roleAssignment("parent", "inst-a")],
+    });
+    const teacherParent = makeUser({
+      roles: [roleAssignment("parent", "inst-a"), roleAssignment("faculty", "inst-a", "b-1")],
+    });
+    expect(isLearnerOrParentOnly(family)).toBe(true);
+    expect(isLearnerOrParentOnly(teacherParent)).toBe(false);
+    expect(isLearnerOrParentOnly(makeUser())).toBe(false);
+  });
+});
+
+describe("roleAssignmentKey", () => {
+  it("tells apart the same role held in two organisations", () => {
+    const a = roleAssignment("org_admin", null, null, { organisation_id: "org-a" });
+    const b = roleAssignment("org_admin", null, null, { organisation_id: "org-b" });
+    expect(roleAssignmentKey(a)).not.toBe(roleAssignmentKey(b));
   });
 });
 

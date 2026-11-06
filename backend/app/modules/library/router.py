@@ -174,7 +174,7 @@ async def search(
     track: Track | None = None,
     class_id: uuid.UUID | None = None,
     kind: Annotated[str | None, Query(max_length=20)] = None,
-    medium: Annotated[str | None, Query(pattern="^(hi|en)$")] = None,
+    medium: Annotated[str | None, Query(pattern="^(hi|en|both)$")] = None,
 ) -> schemas.SearchResults:
     return await library.search(
         db, guard=guard, q=q, track=track, class_id=class_id, kind=kind, medium=medium

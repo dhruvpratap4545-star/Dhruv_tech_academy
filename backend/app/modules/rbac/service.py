@@ -18,7 +18,7 @@ import uuid
 from app.core.db import Db
 from app.core.errors import Forbidden, NotFound
 from app.modules.rbac import repository
-from app.modules.rbac.catalog import FACULTY, STUDENT, grantable_ceiling
+from app.modules.rbac.catalog import FACULTY, PARENT, STUDENT, grantable_ceiling
 from app.modules.rbac.context import AuthContext, build_context, context_cache
 from app.modules.rbac.scopes import PLATFORM, Scope
 
@@ -90,29 +90,55 @@ async def can(
 ) -> bool:
     if not context.can(permission, scope):
         return False
-    if class_id is not None and not await _class_membership_ok(db, context, class_id):
+    if class_id is not None and not await _class_membership_ok(db, context, class_id, scope):
         return False
     return await _module_allows(db, permission, scope)
 
 
-async def _class_membership_ok(db: Db, context: AuthContext, class_id: uuid.UUID) -> bool:
+#: Roles whose reach is a link (taught class, enrolment, guardianship), not a scope.
+MEMBERSHIP_ROLES = frozenset({FACULTY, STUDENT, PARENT})
+
+
+def membership_narrowed(context: AuthContext, scope: Scope) -> bool:
+    """True when every role reaching ``scope`` is one that a link narrows.
+
+    No role there at all (a personal grant) is not narrowed: the grant is the authority.
+    """
+    keys = context.role_keys_at(scope)
+    return bool(keys) and keys <= MEMBERSHIP_ROLES
+
+
+async def _class_membership_ok(
+    db: Db, context: AuthContext, class_id: uuid.UUID, scope: Scope
+) -> bool:
     """PRD §5.2 step 4.
 
-    Only Faculty and Student are membership-gated. An admin holding the permission at
+    Faculty, Student and Parent are membership-gated. An admin holding the permission at
     branch level or above already passed step 3 and needs no link — otherwise an Institute
     Admin could not manage a class they do not personally teach.
+
+    Decided from the roles held *at this class's scope*. It used to look at every role
+    held anywhere, so being an administrator in one institute — or a parent anywhere —
+    lifted the check for a teacher in another.
     """
-    role_keys = {a.role_key for a in context.assignments}
-    is_only_faculty_or_student = role_keys and role_keys <= {FACULTY, STUDENT}
-    if not is_only_faculty_or_student:
+    if not membership_narrowed(context, scope):
         return True
+    role_keys = context.role_keys_at(scope)
     if FACULTY in role_keys and await repository.faculty_teaches_class(
         db, context.user_id, class_id
     ):
         return True
-    return STUDENT in role_keys and await repository.student_enrolled_in_class(
+    if STUDENT in role_keys and await repository.student_enrolled_in_class(
         db, context.user_id, class_id
-    )
+    ):
+        return True
+    if PARENT in role_keys:
+        from app.modules.users import repository as users_repo
+
+        for child in await users_repo.children_of(db, context.user_id):
+            if await repository.student_enrolled_in_class(db, child, class_id):
+                return True
+    return False
 
 
 async def resolve_scope(
@@ -182,6 +208,14 @@ class Authorized:
             },
         )
         raise Forbidden()
+
+    def broad_scopes(self) -> tuple[Scope, ...]:
+        """Usable scopes held in a capacity a link does *not* narrow.
+
+        List endpoints serve these whole; scopes held only as Faculty/Student/Parent are
+        served through the membership links instead.
+        """
+        return tuple(s for s in self.usable_scopes() if not membership_narrowed(self.context, s))
 
     def usable_scopes(self) -> tuple[Scope, ...]:
         """Every scope this permission is held at that an explicit deny has not overlapped.
@@ -271,7 +305,7 @@ class Authorized:
     def covers_whole_institute(scopes: tuple[Scope, ...], institute_id: uuid.UUID) -> bool:
         """True when the grants are institute-wide, so no branch filter is needed."""
         return any(
-            scope.institute_id is None
+            scope.level == PLATFORM
             or (scope.institute_id == institute_id and scope.branch_id is None)
             for scope in scopes
         )

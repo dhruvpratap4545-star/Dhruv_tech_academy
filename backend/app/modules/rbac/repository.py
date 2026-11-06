@@ -13,7 +13,7 @@ from collections.abc import Sequence
 from typing import Any
 
 from app.core.db import Db, ids_in, utcnow
-from app.modules.org.models import Class, ClassEnrollment, ClassFaculty, Institute
+from app.modules.org.models import Branch, Class, ClassEnrollment, ClassFaculty, Institute
 from app.modules.rbac.models import (
     InstituteModule,
     InstituteRolePermission,
@@ -91,6 +91,11 @@ async def load_grants(db: Db, user_id: uuid.UUID) -> Sequence[GrantRow]:
     # MongoDB has no joins, so it is one extra round trip over the institutes named.
     named = {a["institute_id"] for a in assignments if a.get("institute_id")}
     owners = await organisations_of_institutes(db, named)
+
+    # Archiving an institute or branch ends the access of everyone inside it. Without this
+    # an archived college kept working exactly as before for its staff and students.
+    closed = await archived_scopes(db, assignments)
+    assignments = [a for a in assignments if not _in_closed(a, closed)]
 
     # One row per (assignment, permission). A role that currently grants nothing still
     # yields one row with a null permission, naming the assignment and its scope: an
@@ -238,6 +243,10 @@ async def load_personal_grants(db: Db, user_id: uuid.UUID) -> Sequence[PersonalG
         },
     )
     keys = await _permission_keys(db, {g["permission_id"] for g in grants})
+    # Allows inside an archived institute or branch lapse with it; denials stay, because
+    # keeping a block can never widen access.
+    closed = await archived_scopes(db, grants)
+    grants = [g for g in grants if g["effect"] == "deny" or not _in_closed(g, closed)]
     named = {g["institute_id"] for g in grants if g.get("institute_id")}
     owners = await organisations_of_institutes(db, named)
     return [
@@ -265,22 +274,31 @@ async def load_core_modules(db: Db) -> frozenset[str]:
     return frozenset(r["key"] for r in await db.raw(Module, {"is_core": True}, {"key": 1}))
 
 
+def live_module_match(module_key: str) -> dict:
+    """Switched on and not past ``valid_till``. The one definition of "this institute has
+    the module": list filters that only checked ``enabled`` kept serving reads after a
+    subscription lapsed."""
+    return {
+        "module_key": module_key,
+        "enabled": True,
+        # valid_till is stored as an ISO date string, which compares correctly as text.
+        "$or": [{"valid_till": None}, {"valid_till": {"$gte": _today().isoformat()}}],
+    }
+
+
 async def is_module_enabled(db: Db, institute_id: uuid.UUID, module_key: str) -> bool:
     """PRD §5.2 step 5. An absent document means not enabled."""
     return await db.exists(
-        InstituteModule,
-        {
-            "institute_id": institute_id,
-            "module_key": module_key,
-            "enabled": True,
-            # valid_till is stored as an ISO date string, which compares correctly as text.
-            "$or": [{"valid_till": None}, {"valid_till": {"$gte": _today().isoformat()}}],
-        },
+        InstituteModule, {"institute_id": institute_id, **live_module_match(module_key)}
     )
 
 
 def _today():  # pragma: no cover - trivial, kept separate so tests can freeze it
-    return utcnow().date()
+    # Subscriptions are sold by Indian calendar date: a module valid till 31-03 must keep
+    # working until midnight IST, not stop at 05:30 IST the next morning (UTC midnight).
+    from app.modules.audit.service import IST
+
+    return utcnow().astimezone(IST).date()
 
 
 async def faculty_teaches_class(db: Db, user_id: uuid.UUID, class_id: uuid.UUID) -> bool:
@@ -334,13 +352,19 @@ async def find_assignment(
     role_id: uuid.UUID,
     institute_id: uuid.UUID | None,
     branch_id: uuid.UUID | None,
+    organisation_id: uuid.UUID | None = None,
 ) -> UserRoleAssignment | None:
-    """Exact-scope match, so re-granting the same role at the same scope is idempotent."""
+    """Exact-scope match, so re-granting the same role at the same scope is idempotent.
+
+    ``organisation_id`` is part of the match: without it an organisation-wide assignment
+    and a platform-wide one of the same role are indistinguishable.
+    """
     return await db.find_one(
         UserRoleAssignment,
         {
             **_live(user_id),
             "role_id": role_id,
+            "organisation_id": organisation_id,
             "institute_id": institute_id,
             "branch_id": branch_id,
         },
@@ -602,13 +626,39 @@ async def organisation_membership(
 
     rows = await db.raw(
         Institute,
-        {"organisation_id": ids_in(organisation_ids)},
+        # An archived institute is no longer reached through its organisation.
+        {"organisation_id": ids_in(organisation_ids), "status": "active"},
         {"organisation_id": 1},
     )
     found: dict[uuid.UUID, set[uuid.UUID]] = {oid: set() for oid in organisation_ids}
     for row in rows:
         found.setdefault(row["organisation_id"], set()).add(row["_id"])
     return {oid: frozenset(ids) for oid, ids in found.items()}
+
+
+async def archived_scopes(
+    db: Db, rows: Sequence[dict[str, Any]]
+) -> tuple[frozenset[uuid.UUID], frozenset[uuid.UUID]]:
+    """(archived institute ids, archived branch ids) among those the rows name."""
+    institutes = {r["institute_id"] for r in rows if r.get("institute_id")}
+    branches = {r["branch_id"] for r in rows if r.get("branch_id")}
+    closed_institutes = (
+        await db.distinct(
+            Institute, "_id", {"_id": ids_in(institutes), "status": {"$ne": "active"}}
+        )
+        if institutes
+        else []
+    )
+    closed_branches = (
+        await db.distinct(Branch, "_id", {"_id": ids_in(branches), "status": {"$ne": "active"}})
+        if branches
+        else []
+    )
+    return frozenset(closed_institutes), frozenset(closed_branches)
+
+
+def _in_closed(row: dict[str, Any], closed: tuple[frozenset, frozenset]) -> bool:
+    return row.get("institute_id") in closed[0] or row.get("branch_id") in closed[1]
 
 
 async def organisation_of_institute(db: Db, institute_id: uuid.UUID) -> uuid.UUID | None:

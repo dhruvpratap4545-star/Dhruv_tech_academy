@@ -341,7 +341,7 @@ async def import_syllabus(
     """Preview or apply a spreadsheet. Valid rows are applied even when others are not."""
     await authorize(guard, institute_id)
     rows = spreadsheet.read_rows(data)
-    writer = TreeWriter(db, institute_id)
+    writer = TreeWriter(db, institute_id, rename=False)
     problems: list[schemas.ImportProblem] = []
     valid = 0
     for row in rows:
@@ -800,7 +800,7 @@ async def search(
     if track:
         node_match["track"] = track
     if medium:
-        node_match["mediums"] = medium
+        node_match["mediums"] = {"$all": ["hi", "en"]} if medium == "both" else medium
         item_clauses.append({"medium": {"$in": [medium, "both"]}})
     if kind in ("track", "level", "subject", "unit", "chapter", "topic"):
         node_match["kind"] = kind
@@ -833,7 +833,12 @@ async def search(
         ],
         items=[
             schemas.SearchItemHit(
-                id=i.id, title=i.title, kind=i.kind, medium=i.medium, status=i.status
+                id=i.id,
+                title=i.title,
+                kind=i.kind,
+                medium=i.medium,
+                status=i.status,
+                node_ids=i.node_ids,
             )
             for i in items
         ],

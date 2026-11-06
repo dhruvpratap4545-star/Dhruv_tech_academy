@@ -46,12 +46,19 @@ async def list_institutes(
     guard: Annotated[Authorized, Depends(require_permission("institute:read"))],
     search: Annotated[str | None, Query(max_length=120)] = None,
     status_filter: StatusFilter = None,
+    organisation_id: uuid.UUID | None = None,
     cursor: Cursor = None,
     limit: Limit = 20,
 ) -> Page[schemas.InstituteOut]:
     size = clamp_limit(limit)
     rows, next_cursor, total = await org.list_institutes(
-        db, guard=guard, search=search, status=status_filter, cursor=cursor, limit=size
+        db,
+        guard=guard,
+        search=search,
+        status=status_filter,
+        cursor=cursor,
+        limit=size,
+        organisation_id=organisation_id,
     )
     return Page[schemas.InstituteOut](
         items=[schemas.InstituteOut.model_validate(r) for r in rows],
@@ -74,6 +81,7 @@ async def create_institute(
 ) -> schemas.InstituteOut:
     institute = await org.create_institute(db, guard=guard, payload=payload, meta=_meta(request))
     await db.commit()
+    org.forget_organisation_snapshots()
     return schemas.InstituteOut.model_validate(institute)
 
 
@@ -119,7 +127,11 @@ async def create_institute_with_admin(
             institute_id=institute.id,
         ),
         meta=_meta(request),
+        # The institute is not written until commit, so its organisation cannot be looked
+        # up yet. Without this an Organisation Admin's grant would not reach it.
+        institute_organisation_id=institute.organisation_id,
     )
+    org.forget_organisation_snapshots()
     if message is not None:
         background.add_task(send_email, message)
     return schemas.InstituteWithAdminOut(
@@ -158,6 +170,7 @@ async def update_institute(
         db, guard=guard, institute_id=institute_id, payload=payload, meta=_meta(request)
     )
     await db.commit()
+    org.forget_organisation_snapshots()
     return schemas.InstituteOut.model_validate(institute)
 
 
@@ -177,6 +190,26 @@ async def archive_institute(
         db, guard=guard, institute_id=institute_id, meta=_meta(request)
     )
     await db.commit()
+    org.forget_organisation_snapshots()
+    return schemas.InstituteOut.model_validate(institute)
+
+
+@institutes_router.post(
+    "/{institute_id}/restore",
+    response_model=schemas.InstituteOut,
+    summary="Restore an archived institute",
+)
+async def restore_institute(
+    institute_id: uuid.UUID,
+    request: Request,
+    db: DbSession,
+    guard: Annotated[Authorized, Depends(require_permission("institute:archive"))],
+) -> schemas.InstituteOut:
+    institute = await org.restore_institute(
+        db, guard=guard, institute_id=institute_id, meta=_meta(request)
+    )
+    await db.commit()
+    org.forget_organisation_snapshots()
     return schemas.InstituteOut.model_validate(institute)
 
 
@@ -292,6 +325,8 @@ async def update_branch(
         meta=_meta(request),
     )
     await db.commit()
+    if payload.status is not None:
+        org.forget_organisation_snapshots()  # archiving a branch ends access inside it
     return schemas.BranchOut.model_validate(branch)
 
 
@@ -434,6 +469,32 @@ async def update_class(
     return schemas.ClassOut.model_validate(updated)
 
 
+@classes_router.get(
+    "/{class_id}/faculty",
+    response_model=list[schemas.ClassMemberOut],
+    summary="Faculty assigned to a class",
+)
+async def list_class_faculty(
+    class_id: uuid.UUID,
+    db: DbSession,
+    guard: Annotated[Authorized, Depends(require_permission("class:read"))],
+) -> list[schemas.ClassMemberOut]:
+    return await org.list_class_faculty(db, guard=guard, class_id=class_id)
+
+
+@classes_router.get(
+    "/{class_id}/students",
+    response_model=list[schemas.ClassMemberOut],
+    summary="Students enrolled in a class",
+)
+async def list_class_students(
+    class_id: uuid.UUID,
+    db: DbSession,
+    guard: Annotated[Authorized, Depends(require_permission("enrollment:manage"))],
+) -> list[schemas.ClassMemberOut]:
+    return await org.list_class_students(db, guard=guard, class_id=class_id)
+
+
 @classes_router.post(
     "/{class_id}/faculty",
     response_model=schemas.ClassFacultyOut,
@@ -523,10 +584,10 @@ async def unenrol_student(
 async def list_organisations(
     db: DbSession,
     guard: Annotated[Authorized, Depends(require_permission("organisation:read"))],
-    search: str | None = None,
-    status_filter: Annotated[str | None, Query(alias="status")] = None,
-    cursor: str | None = None,
-    limit: int | None = None,
+    search: Annotated[str | None, Query(max_length=120)] = None,
+    status_filter: StatusFilter = None,
+    cursor: Cursor = None,
+    limit: Limit = 20,
 ) -> Page[schemas.OrganisationOut]:
     size = clamp_limit(limit)
     rows, next_cursor, total, counts = await org.list_organisations(
@@ -615,6 +676,23 @@ async def archive_organisation(
     guard: Annotated[Authorized, Depends(require_permission("organisation:archive"))],
 ) -> schemas.OrganisationOut:
     row = await org.archive_organisation(
+        db, guard=guard, organisation_id=organisation_id, meta=_meta(request)
+    )
+    return schemas.OrganisationOut.model_validate(row)
+
+
+@organisations_router.post(
+    "/{organisation_id}/restore",
+    response_model=schemas.OrganisationOut,
+    summary="Restore an archived organisation",
+)
+async def restore_organisation(
+    organisation_id: uuid.UUID,
+    request: Request,
+    db: DbSession,
+    guard: Annotated[Authorized, Depends(require_permission("organisation:archive"))],
+) -> schemas.OrganisationOut:
+    row = await org.restore_organisation(
         db, guard=guard, organisation_id=organisation_id, meta=_meta(request)
     )
     return schemas.OrganisationOut.model_validate(row)

@@ -133,6 +133,7 @@ export const aiKeys = {
   providers: ["ai", "providers"] as const,
   models: ["ai", "models"] as const,
   features: ["ai", "features"] as const,
+  featureNames: ["ai", "features", "names"] as const,
   platformBudget: ["ai", "budgets", "platform"] as const,
   instituteBudgets: ["ai", "budgets", "institutes"] as const,
   roleLimits: (instituteId?: string) => ["ai", "role-limits", instituteId ?? "platform"] as const,
@@ -158,6 +159,9 @@ export const updateModel = (
 
 export const fetchFeatures = (signal?: AbortSignal) =>
   apiFetch<AiFeature[]>("/ai/features", { signal });
+/** Key and name only: readable with `ai:usage_read`, unlike the full feature list. */
+export const fetchFeatureNames = (signal?: AbortSignal) =>
+  apiFetch<Pick<AiFeature, "key" | "name">[]>("/ai/features/names", { signal });
 export const updateFeature = (key: string, body: Partial<Omit<AiFeature, "key" | "name">>) =>
   apiFetch<AiFeature>(`/ai/features/${key}`, { method: "PATCH", body });
 

@@ -25,7 +25,7 @@ from app.modules.rbac import repository as rbac_repo
 from app.modules.rbac import service as rbac
 from app.modules.rbac.catalog import FACULTY, PARENT, ROLES_BY_KEY, STUDENT
 from app.modules.rbac.models import UserRoleAssignment
-from app.modules.rbac.scopes import Scope
+from app.modules.rbac.scopes import ORGANISATION, Scope
 from app.modules.rbac.service import Authorized
 from app.modules.users import repository as repo
 from app.modules.users import schemas
@@ -192,6 +192,7 @@ async def invite_user(
     payload: schemas.InviteUserRequest,
     meta: RequestMeta,
     commit: bool = True,
+    institute_organisation_id: uuid.UUID | None = None,
 ) -> tuple[User, EmailMessage | None]:
     """PRD §4.2. Creates an ``invited`` user, grants the role, emails a setup code.
 
@@ -202,9 +203,19 @@ async def invite_user(
     attaching a guardian invites the adult *and* writes the link, and the two must land
     together or a parent exists with no child and no way to be found.
     """
-    scope = await _scope_of(
-        db, payload.institute_id, payload.branch_id, getattr(payload, "organisation_id", None)
-    )
+    if institute_organisation_id is not None and payload.institute_id is not None:
+        # An institute created in this same request: it is not written yet, so its
+        # organisation cannot be looked up and the caller supplies it.
+        scope = await rbac.resolve_scope(
+            db,
+            institute_id=payload.institute_id,
+            branch_id=payload.branch_id,
+            organisation_id=institute_organisation_id,
+        )
+    else:
+        scope = await _scope_of(
+            db, payload.institute_id, payload.branch_id, payload.organisation_id
+        )
     await guard.ensure(scope)
 
     role = await _require_role(db, payload.role_key)
@@ -329,6 +340,15 @@ async def resend_invitation(
 # ------------------------------------------------------------------------------- roles
 
 
+def _own_organisation(scope: Scope) -> uuid.UUID | None:
+    """The organisation an assignment row stores: only for an organisation-level scope.
+
+    An institute scope carries its organisation as *path*, but the row records one level
+    only (``_one_level_only``) — the path is re-derived when grants are loaded.
+    """
+    return scope.organisation_id if scope.level == ORGANISATION else None
+
+
 async def _grant_role(
     db: Db,
     *,
@@ -343,6 +363,7 @@ async def _grant_role(
         role_id=role.id,
         institute_id=scope.institute_id,
         branch_id=scope.branch_id,
+        organisation_id=_own_organisation(scope),
     )
     if existing is not None:
         return existing
@@ -350,6 +371,9 @@ async def _grant_role(
     assignment = UserRoleAssignment(
         user_id=user_id,
         role_id=role.id,
+        # Must be stored. Dropping it turned an organisation role into one with no scope
+        # at all, which the engine reads as platform-wide.
+        organisation_id=_own_organisation(scope),
         institute_id=scope.institute_id,
         branch_id=scope.branch_id,
         granted_by=granted_by,
@@ -447,6 +471,7 @@ async def revoke_role(
         role_id=role.id,
         institute_id=scope.institute_id,
         branch_id=scope.branch_id,
+        organisation_id=_own_organisation(scope),
     )
     if assignment is None:
         raise NotFound("That person does not hold this role here.")
@@ -793,14 +818,35 @@ async def list_users(
     the list as well as the per-row check, or the rows somebody blocked show up anyway.
     """
     scopes = guard.usable_scopes()
+    broad = guard.broad_scopes()
     role_keys = {a.role_key for a in guard.context.assignments}
 
     # Faculty see only students of the classes they teach; a parent sees only the children
     # they are the recorded guardian of. Both are membership narrowings on top of a role
     # whose permission list is institute-wide — without them, "Parent" would mean "may
     # read every child in the school", which is the opposite of what the word means.
-    if role_keys and role_keys <= MEMBERSHIP_NARROWED_ROLES:
+    #
+    # Decided per scope: an administrator in one place who teaches in another sees the
+    # first place whole and only their students in the second.
+    if len(broad) < len(scopes):
         user_ids = await _membership_visible_ids(db, guard.user_id, role_keys)
+        if broad:
+            wide = _visible_scope(guard, broad, institute_id)
+            if wide is None:  # platform-wide: the membership adds nobody new
+                user_ids = None
+            else:
+                user_ids = user_ids | frozenset(await repo.visible_user_ids(db, wide) or ())
+        if user_ids is None:
+            return await repo.list_users(
+                db,
+                scope=None,
+                search=search,
+                status=status,
+                role_key=role_key,
+                cursor=cursor,
+                limit=limit,
+                include_total=include_total,
+            )
         return await repo.list_users(
             db,
             scope=None,
@@ -943,7 +989,9 @@ async def build_overview(db: Db, *, guard: Authorized) -> schemas.OverviewOut:
 
     # `usable_scopes`, not raw grants: a deny has to narrow the counts as well as the
     # rows, or the tiles quietly report on people the caller may not see.
-    scopes = guard.usable_scopes()
+    # ponytail: someone who administers one place and teaches in another is counted over
+    # the administered scopes only; their linked students elsewhere are not added.
+    scopes = guard.broad_scopes() or guard.usable_scopes()
 
     # Exactly the test `list_users` applies, and for the same reason. Holding platform
     # staff *status* is not enough on its own: an explicit deny on `user:read` removes the
@@ -962,7 +1010,7 @@ async def build_overview(db: Db, *, guard: Authorized) -> schemas.OverviewOut:
     # that disagrees with the list below it is worse than no number, because the reader has
     # no way to tell which one is lying.
     role_keys = {a.role_key for a in guard.context.assignments}
-    if role_keys and role_keys <= MEMBERSHIP_NARROWED_ROLES:
+    if scopes and not guard.broad_scopes():
         visible_ids = await _membership_visible_ids(db, guard.user_id, role_keys)
         base["_id"] = ids_in(visible_ids | {guard.user_id})
     elif scope is not None:
@@ -1036,6 +1084,7 @@ async def link_guardian(
     payload: schemas.GuardianLinkRequest,
     meta: RequestMeta,
     commit: bool = True,
+    institute_organisation_id: uuid.UUID | None = None,
 ) -> tuple[User, EmailMessage | None]:
     """Attach an adult to a learner, inviting them if they are new.
 

@@ -122,6 +122,15 @@ async def list_features(db: DbSession, guard: Manage) -> list[schemas.FeatureOut
     return [schemas.FeatureOut.model_validate(f) for f in await ai.list_features(db)]
 
 
+@router.get(
+    "/features/names",
+    response_model=list[schemas.FeatureName],
+    summary="AI feature keys and names, for sharing an allocation between features",
+)
+async def list_feature_names(db: DbSession, guard: UsageRead) -> list[schemas.FeatureName]:
+    return [schemas.FeatureName.model_validate(f) for f in await ai.list_features(db)]
+
+
 @router.patch(
     "/features/{key}",
     response_model=schemas.FeatureOut,

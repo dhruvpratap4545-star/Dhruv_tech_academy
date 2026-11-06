@@ -50,9 +50,12 @@ async def list_institutes(
     cursor: str | None = None,
     limit: int = 20,
     include_total: bool = True,
+    organisation_id: uuid.UUID | None = None,
 ) -> tuple[Sequence[Institute], str | None, int]:
     """``visible_ids=None`` means platform staff, who see every institute."""
     match: dict[str, Any] = {}
+    if organisation_id is not None:
+        match["organisation_id"] = organisation_id
     if visible_ids is not None:
         if not visible_ids:
             return [], None, 0
@@ -242,14 +245,25 @@ async def list_classes(
     branch_id: uuid.UUID | None = None,
     session_id: uuid.UUID | None = None,
     class_ids: frozenset[uuid.UUID] | None = None,
+    branch_ids: frozenset[uuid.UUID] | None = None,
+    also_class_ids: frozenset[uuid.UUID] = frozenset(),
     status: str | None = None,
     cursor: str | None = None,
     limit: int = 20,
 ) -> tuple[Sequence[Class], str | None, int]:
-    """``class_ids`` restricts to a faculty's assigned classes or a student's enrolments."""
+    """``class_ids`` restricts to a faculty's assigned classes or a student's enrolments.
+
+    ``branch_ids`` restricts to the branches a caller administers; ``also_class_ids`` adds
+    the classes they are linked to elsewhere in the institute.
+    """
     match: dict[str, Any] = {"institute_id": institute_id}
     if branch_id is not None:
         match["branch_id"] = branch_id
+    if branch_ids is not None:
+        reach: list[dict[str, Any]] = [{"branch_id": ids_in(branch_ids)}]
+        if also_class_ids:
+            reach.append({"_id": ids_in(also_class_ids)})
+        match["$or"] = reach
     if session_id is not None:
         match["academic_session_id"] = session_id
     if class_ids is not None:

@@ -54,7 +54,9 @@ export function ChildrenPage() {
       )}
       {board.isLoading && <Spinner />}
       {board.error && <Alert tone="danger">{board.error.message}</Alert>}
-      {board.data && <BoardList rows={board.data} empty={t("homework.mine.empty")} />}
+      {board.data && (
+        <BoardList rows={board.data} empty={t("homework.mine.empty")} studentId={childId} />
+      )}
     </HomeworkLayout>
   );
 }

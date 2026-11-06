@@ -12,6 +12,8 @@ vi.mock("@/features/auth/api", () => ({
 
 vi.mock("@/features/admin/api", () => ({
   userKeys: { all: ["users"], list: () => ["users", "list"] },
+  organisationKeys: { all: ["organisations"], list: () => ["organisations", "list"] },
+  fetchOrganisations: vi.fn(),
   instituteKeys: {
     all: ["institutes"],
     list: () => ["institutes", "list"],
@@ -25,12 +27,29 @@ vi.mock("@/features/admin/api", () => ({
 }));
 
 const { fetchAssignableRoles } = await import("@/features/auth/api");
-const { fetchBranches, fetchClasses, fetchInstitutes, inviteUser } =
+const { fetchBranches, fetchClasses, fetchInstitutes, fetchOrganisations, inviteUser } =
   await import("@/features/admin/api");
 
 const INSTITUTE_ID = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa";
 const BRANCH_ID = "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb";
 const CLASS_ID = "cccccccc-cccc-4ccc-8ccc-cccccccccccc";
+const OTHER_INSTITUTE_ID = "dddddddd-dddd-4ddd-8ddd-dddddddddddd";
+const ORG_ID = "eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee";
+
+function institute(id: string, name: string) {
+  return {
+    id,
+    organisation_id: null,
+    name,
+    code: name.toUpperCase(),
+    type: "college" as const,
+    status: "active" as const,
+    contact_email: null,
+    logo_url: null,
+    is_system: false,
+    created_at: "2026-01-01T00:00:00Z",
+  };
+}
 
 /** HTMLDialogElement is not implemented in jsdom. */
 beforeEach(() => {
@@ -42,6 +61,23 @@ beforeEach(() => {
   });
 
   vi.mocked(fetchInstitutes).mockResolvedValue({ items: [], next_cursor: null, total: 0 });
+  vi.mocked(fetchOrganisations).mockResolvedValue({
+    items: [
+      {
+        id: ORG_ID,
+        name: "JSPM Group",
+        code: "JSPM",
+        status: "active",
+        contact_email: null,
+        logo_url: null,
+        institute_count: 2,
+        created_at: "2026-01-01T00:00:00Z",
+      },
+    ],
+    next_cursor: null,
+    total: 1,
+  });
+  vi.mocked(inviteUser).mockReset();
   vi.mocked(fetchBranches).mockResolvedValue({
     items: [
       {
@@ -234,5 +270,129 @@ describe("InviteUserModal", () => {
     await userEvent.click(screen.getByRole("button", { name: /Send invitation/i }));
 
     expect(await screen.findByText(/at or above your own level/i)).toBeInTheDocument();
+  });
+
+  it("asks for an organisation, and sends it, for an organisation-wide role", async () => {
+    vi.mocked(fetchAssignableRoles).mockResolvedValue([
+      { key: "org_admin", name: "Organisation Admin", scope_level: "organisation", rank: 80 },
+    ]);
+    const platformAdmin = makeUser({
+      permissions: ["user:invite", "role:assign"],
+      roles: [roleAssignment("platform_admin")],
+    });
+
+    open(platformAdmin);
+    await userEvent.type(await screen.findByRole("textbox", { name: "Full name" }), "Meera Joshi");
+    await userEvent.type(
+      screen.getByRole("textbox", { name: "Email address" }),
+      "meera@jspm.example",
+    );
+    await userEvent.selectOptions(await roleSelect(), "org_admin");
+
+    // No institute or branch: an organisation role names neither.
+    const organisation = await screen.findByRole("combobox", { name: "Organisation" });
+    expect(screen.queryByRole("combobox", { name: "Institute" })).not.toBeInTheDocument();
+    await screen.findByRole("option", { name: /JSPM Group/ });
+    await userEvent.selectOptions(organisation, ORG_ID);
+    await userEvent.click(screen.getByRole("button", { name: /Send invitation/i }));
+
+    await waitFor(() => expect(inviteUser).toHaveBeenCalled());
+    const body = vi.mocked(inviteUser).mock.calls[0]![0];
+    expect(body).toMatchObject({ role_key: "org_admin", organisation_id: ORG_ID });
+    expect(body.institute_id).toBeUndefined();
+  });
+
+  it("gives a custom branch-scoped role a branch field from its scope level", async () => {
+    vi.mocked(fetchAssignableRoles).mockResolvedValue([
+      { key: "abc.lab_assistant", name: "Lab Assistant", scope_level: "branch", rank: 25 },
+    ]);
+    open();
+    await userEvent.selectOptions(await roleSelect(), "abc.lab_assistant");
+    expect(await screen.findByRole("combobox", { name: "Branch" })).toBeInTheDocument();
+  });
+
+  it("lets an administrator of several institutes choose which one, and sends it", async () => {
+    vi.mocked(fetchAssignableRoles).mockResolvedValue([
+      { key: "student", name: "Student", scope_level: "institute", rank: 10 },
+    ]);
+    vi.mocked(fetchInstitutes).mockResolvedValue({
+      items: [institute(INSTITUTE_ID, "Abc"), institute(OTHER_INSTITUTE_ID, "Xyz")],
+      next_cursor: null,
+      total: 2,
+    });
+    const twoColleges = makeUser({
+      permissions: ["user:invite"],
+      roles: [
+        roleAssignment("institute_admin", INSTITUTE_ID),
+        roleAssignment("institute_admin", OTHER_INSTITUTE_ID),
+      ],
+      institute_ids: [INSTITUTE_ID, OTHER_INSTITUTE_ID],
+    });
+
+    open(twoColleges);
+    await userEvent.type(await screen.findByRole("textbox", { name: "Full name" }), "Ravi Kumar");
+    await userEvent.type(
+      screen.getByRole("textbox", { name: "Email address" }),
+      "ravi@example.com",
+    );
+    await userEvent.selectOptions(await roleSelect(), "student");
+
+    const picker = await screen.findByRole("combobox", { name: "Institute" });
+    await screen.findByRole("option", { name: /Xyz/ });
+    // Without a choice the form refuses rather than sending no institute at all.
+    await userEvent.click(screen.getByRole("button", { name: /Send invitation/i }));
+    expect(await screen.findByText("Choose an institute.")).toBeInTheDocument();
+    expect(inviteUser).not.toHaveBeenCalled();
+
+    await userEvent.selectOptions(picker, OTHER_INSTITUTE_ID);
+    await userEvent.click(screen.getByRole("button", { name: /Send invitation/i }));
+    await waitFor(() => expect(inviteUser).toHaveBeenCalled());
+    expect(vi.mocked(inviteUser).mock.calls[0]![0]).toMatchObject({
+      institute_id: OTHER_INSTITUTE_ID,
+    });
+  });
+
+  it("gives an Organisation Admin an institute picker from the institutes they can see", async () => {
+    vi.mocked(fetchAssignableRoles).mockResolvedValue([
+      { key: "institute_admin", name: "Institute Admin", scope_level: "institute", rank: 70 },
+    ]);
+    vi.mocked(fetchInstitutes).mockResolvedValue({
+      items: [institute(INSTITUTE_ID, "Abc")],
+      next_cursor: null,
+      total: 1,
+    });
+    const orgAdmin = makeUser({
+      permissions: ["user:invite"],
+      roles: [roleAssignment("org_admin", null, null, { organisation_id: ORG_ID })],
+    });
+
+    open(orgAdmin);
+    await userEvent.selectOptions(await roleSelect(), "institute_admin");
+    expect(await screen.findByRole("combobox", { name: "Institute" })).toBeInTheDocument();
+    expect(await screen.findByRole("option", { name: /Abc/ })).toBeInTheDocument();
+  });
+
+  it("makes a teacher name one of their classes", async () => {
+    vi.mocked(fetchAssignableRoles).mockResolvedValue([
+      { key: "student", name: "Student", scope_level: "institute", rank: 10 },
+    ]);
+    const teacher = makeUser({
+      permissions: ["user:invite"],
+      roles: [roleAssignment("faculty", INSTITUTE_ID, BRANCH_ID)],
+      institute_ids: [INSTITUTE_ID],
+    });
+
+    open(teacher);
+    await userEvent.type(await screen.findByRole("textbox", { name: "Full name" }), "Ravi Kumar");
+    await userEvent.type(
+      screen.getByRole("textbox", { name: "Email address" }),
+      "ravi@example.com",
+    );
+    await userEvent.selectOptions(await roleSelect(), "student");
+    await screen.findByText(/MCA 1st Year/);
+    await userEvent.click(screen.getByRole("button", { name: /Send invitation/i }));
+
+    expect(await screen.findByText(/at least one of your classes/i)).toBeInTheDocument();
+    expect(inviteUser).not.toHaveBeenCalled();
   });
 });

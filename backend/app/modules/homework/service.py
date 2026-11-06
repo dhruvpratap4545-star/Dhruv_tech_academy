@@ -217,7 +217,10 @@ async def create_homework(
     messages: list[EmailMessage] = []
     if status == "published":
         _record(db, guard.user_id, meta, events.HOMEWORK_PUBLISHED, homework)
-        messages = await _publish_messages(db, homework)
+        # Scheduled homework is announced when its time comes (`send_scheduled_notices`),
+        # not at creation — telling students about work they cannot open yet.
+        if publish_at is not None and publish_at <= utcnow():
+            messages = await _publish_messages(db, homework)
     return homework, messages
 
 
@@ -415,13 +418,42 @@ async def list_homework(
 
 
 async def get_homework_detail(
-    db: Db, *, context: AuthContext, homework_id: uuid.UUID
+    db: Db,
+    *,
+    context: AuthContext,
+    homework_id: uuid.UUID,
+    student_id: uuid.UUID | None = None,
 ) -> schemas.StudentHomeworkOut:
-    """One homework. For a student, their own submission and status come with it."""
+    """One homework. For a student, their own submission and status come with it; for a
+    parent, those of the linked child in this class (``student_id`` picks one of several).
+    """
+    from app.modules.users import repository as users_repo
+
     now = utcnow()
     homework = await access.require_readable(db, context, homework_id, now)
+    if student_id is not None and student_id != context.user_id:
+        linked = await users_repo.guardian_link(db, context.user_id, student_id)
+        if linked is None or not await rbac_repo.student_enrolled_in_class(
+            db, student_id, homework.class_id
+        ):
+            raise NotFound("That learner does not exist.")
+    elif student_id is None and not await rbac_repo.student_enrolled_in_class(
+        db, context.user_id, homework.class_id
+    ):
+        children = await users_repo.children_of(db, context.user_id)
+        in_class = await db.distinct(
+            ClassEnrollment,
+            "student_user_id",
+            {
+                "class_id": homework.class_id,
+                "student_user_id": ids_in(children),
+                "status": "active",
+            },
+        )
+        student_id = min(in_class) if in_class else None
     submission = await db.find_one(
-        HomeworkSubmission, {"homework_id": homework.id, "student_user_id": context.user_id}
+        HomeworkSubmission,
+        {"homework_id": homework.id, "student_user_id": student_id or context.user_id},
     )
     out = (await present(db, [homework]))[0]
     return schemas.StudentHomeworkOut(
@@ -556,6 +588,8 @@ async def check_submission(
     )
     if submission is None:
         raise NotFound("That submission does not exist.")
+    if submission.status == "redo":
+        raise Conflict("This was sent back for redo. Check it after the student resubmits.")
     if (
         payload.marks is not None
         and homework.total_marks is not None
@@ -564,11 +598,13 @@ async def check_submission(
         raise ValidationFailed(f"Marks cannot be more than {homework.total_marks}.")
     old_marks, old_status = submission.marks, submission.status
     submission.status = "redo" if payload.redo else "checked"
-    if payload.marks is not None:
+    # A field sent as null (or blank) clears it; a field left out keeps its value.
+    sent = payload.model_fields_set
+    if "marks" in sent:
         submission.marks = payload.marks
-    if payload.grade is not None:
+    if "grade" in sent:
         submission.grade = payload.grade or None
-    if payload.remark is not None:
+    if "remark" in sent:
         submission.remark = payload.remark or None
     submission.checked_by = guard.user_id
     submission.checked_at = utcnow()
@@ -723,11 +759,19 @@ async def submit(
     else:
         submission = existing
         submission.text = text
-        submission.file_ids = file_ids
+        if file_ids:  # new files replace the old ones; a text-only resubmit keeps them
+            submission.file_ids = file_ids
         submission.submitted_at = now
         submission.is_late = late
         submission.attempts += 1
         submission.status = "submitted"
+        # A redo is a fresh piece of work: the previous check no longer describes it, and
+        # leaving it showed the old marks against an unchecked resubmission.
+        submission.marks = None
+        submission.grade = None
+        submission.remark = None
+        submission.checked_by = None
+        submission.checked_at = None
     _record(
         db,
         guard.user_id,
@@ -782,6 +826,7 @@ async def _publish_messages(db: Db, homework: Homework) -> list[EmailMessage]:
     from app.modules.notifications.templates import homework_published
 
     klass = await db.get(Class, homework.class_id)
+    homework.notified_at = utcnow()
     return [
         homework_published(
             s["email"],
@@ -820,3 +865,34 @@ async def _submission_readable(db: Db, context: AuthContext, stored: StoredFile)
 
 files.register_access("homework_attachment", _attachment_readable)
 files.register_access("submission", _submission_readable)
+
+
+async def send_scheduled_notices(db: Db) -> int:
+    """Email students about scheduled homework whose publish time has passed.
+
+    Run every few minutes by a scheduler (``python -m app.cli homework-notify``). Only the
+    last day is looked at, so homework published before this existed is never announced
+    late, and a scheduler that was down for an hour catches up.
+
+    Sent before being marked, per homework: a crash part-way re-sends one homework's
+    emails rather than silently dropping them — the same choice the digest makes.
+    """
+    from app.modules.notifications.email import send_email
+
+    now = utcnow()
+    due = await db.find(
+        Homework,
+        {
+            "status": "published",
+            "notified_at": None,
+            "publish_at": {"$lte": now, "$gte": now - timedelta(days=1)},
+            "institute_id": ids_in(await access.enabled_institutes(db)),
+        },
+    )
+    sent = 0
+    for homework in due:
+        for message in await _publish_messages(db, homework):
+            await send_email(message)
+            sent += 1
+        await db.commit()
+    return sent

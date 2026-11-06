@@ -90,6 +90,9 @@ class InstituteUpdate(StrictModel):
     type: InstituteType | None = None
     contact_email: EmailStr | None = None
     logo_url: str | None = Field(default=None, max_length=255)
+    #: Move the institute into an organisation, or send ``null`` to make it standalone.
+    #: Platform staff only: it changes who administers the institute. Left out = unchanged.
+    organisation_id: uuid.UUID | None = None
 
 
 class InstituteOut(OrmModel):
@@ -243,6 +246,18 @@ class ClassFacultyOut(OrmModel):
 class EnrollmentCreate(StrictModel):
     user_id: uuid.UUID
     roll_no: str | None = Field(default=None, max_length=40)
+
+
+class ClassMemberOut(BaseModel):
+    """One person on a class roster, with the name needed to show them."""
+
+    user_id: uuid.UUID
+    full_name: str
+    email: str
+    subject: str | None = None
+    is_class_teacher: bool = False
+    roll_no: str | None = None
+    status: str | None = None
 
 
 class EnrollmentOut(OrmModel):

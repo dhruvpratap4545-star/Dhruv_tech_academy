@@ -19,7 +19,9 @@ import type { UserFilters } from "@/features/admin/api";
 import type { BulkInviteReport, BulkStatusResponse } from "@/features/admin/api";
 import {
   bulkUpdateStatus,
+  fetchInstitutes,
   fetchUsers,
+  instituteKeys,
   resendInvite,
   updateUserStatus,
   userKeys,
@@ -32,8 +34,9 @@ import { InviteUserModal } from "@/features/admin/components/InviteUserModal";
 import { UserAccessModal } from "@/features/admin/components/UserAccessModal";
 import type { UserSummary } from "@/features/auth/types";
 import { useCan, useCurrentUser } from "@/features/auth/useAuth";
+import { cn } from "@/lib/cn";
 import { formatRelative, initials } from "@/lib/format";
-import { ROLE_LABEL, roleScopeLabel } from "@/lib/permissions";
+import { picksInstitute, ROLE_LABEL, roleAssignmentKey, roleScopeLabel } from "@/lib/permissions";
 
 /** Debounce so typing a name does not fire a request per keystroke. */
 function useDebounced<T>(value: T, delay = 300): T {
@@ -89,6 +92,7 @@ export function UsersPage() {
   const [bulkIntent, setBulkIntent] = useState<"active" | "suspended" | null>(null);
   const [bulkSummary, setBulkSummary] = useState<BulkStatusResponse | null>(null);
   const [role, setRole] = useState("");
+  const [instituteId, setInstituteId] = useState("");
   const [cursors, setCursors] = useState<(string | null)[]>([null]);
   const [pageIndex, setPageIndex] = useState(0);
 
@@ -98,7 +102,7 @@ export function UsersPage() {
   // meaningless against the new one. Adjusted during render rather than in an effect —
   // React re-renders immediately without committing the stale page, so there is no flash
   // of the wrong results and no cascading effect.
-  const filterKey = `${debouncedSearch}|${status}|${role}`;
+  const filterKey = `${debouncedSearch}|${status}|${role}|${instituteId}`;
 
   // Changing filters *or page* changes who is on screen. Keeping a selection across that
   // would mean acting on people the administrator can no longer see, which is exactly the
@@ -129,11 +133,24 @@ export function UsersPage() {
       search: debouncedSearch || undefined,
       status: status || undefined,
       role_key: role || undefined,
+      institute_id: instituteId || undefined,
       cursor: cursors[pageIndex] ?? undefined,
       limit: PAGE_SIZE,
     }),
-    [debouncedSearch, status, role, cursors, pageIndex],
+    [debouncedSearch, status, role, instituteId, cursors, pageIndex],
   );
+
+  // The institute filter only means something to somebody who sees more than one.
+  const institutes = useQuery({
+    queryKey: instituteKeys.list(),
+    queryFn: ({ signal }) => fetchInstitutes(signal),
+    enabled: picksInstitute(me),
+  });
+  const instituteOptions = (institutes.data?.items ?? []).map((row) => ({
+    value: row.id,
+    label: row.name,
+  }));
+  const showInstituteFilter = instituteOptions.length > 1;
 
   const users = useQuery({
     queryKey: userKeys.list(filters),
@@ -230,7 +247,7 @@ export function UsersPage() {
         <div className="flex flex-wrap gap-1">
           {row.roles.length === 0 && <span className="text-xs text-fg-3">—</span>}
           {row.roles.map((role) => (
-            <Badge key={`${role.role_key}-${role.branch_id ?? role.institute_id ?? "platform"}`}>
+            <Badge key={roleAssignmentKey(role)}>
               {ROLE_LABEL[role.role_key] ?? role.role_name}
             </Badge>
           ))}
@@ -320,7 +337,7 @@ export function UsersPage() {
   ];
 
   const hasNext = Boolean(users.data?.next_cursor);
-  const filtering = Boolean(search || status || role);
+  const filtering = Boolean(search || status || role || instituteId);
 
   return (
     <div className="space-y-6">
@@ -441,7 +458,14 @@ export function UsersPage() {
       )}
 
       <Card>
-        <div className="grid gap-3 border-b border-line p-4 sm:grid-cols-2 lg:grid-cols-[1fr_11rem_11rem]">
+        <div
+          className={cn(
+            "grid gap-3 border-b border-line p-4 sm:grid-cols-2",
+            showInstituteFilter
+              ? "lg:grid-cols-[1fr_13rem_11rem_11rem]"
+              : "lg:grid-cols-[1fr_11rem_11rem]",
+          )}
+        >
           <TextField
             label="Search"
             type="search"
@@ -458,6 +482,15 @@ export function UsersPage() {
               }
             }}
           />
+          {showInstituteFilter && (
+            <SelectField
+              label="Institute"
+              placeholder="All institutes"
+              value={instituteId}
+              onChange={(event) => setInstituteId(event.target.value)}
+              options={instituteOptions}
+            />
+          )}
           <SelectField
             label="Role"
             placeholder="All roles"
@@ -466,6 +499,7 @@ export function UsersPage() {
             options={[
               { value: "super_admin", label: "Super Admin" },
               { value: "platform_admin", label: "Platform Admin" },
+              { value: "org_admin", label: "Organisation Admin" },
               { value: "institute_admin", label: "Institute Admin" },
               { value: "branch_admin", label: "Branch Admin" },
               { value: "faculty", label: "Faculty" },

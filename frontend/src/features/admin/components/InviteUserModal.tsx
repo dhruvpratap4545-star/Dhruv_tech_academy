@@ -13,13 +13,20 @@ import { fetchAssignableRoles } from "@/features/auth/api";
 import { email as emailSchema } from "@/features/auth/schemas";
 import type { RoleKey } from "@/features/auth/types";
 import { useCurrentUser } from "@/features/auth/useAuth";
-import { isPlatformStaff, ROLE_REQUIREMENTS } from "@/lib/permissions";
+import {
+  isFacultyOnly,
+  organisationIds,
+  picksInstitute,
+  ROLE_REQUIREMENTS,
+} from "@/lib/permissions";
 import {
   fetchBranches,
   fetchClasses,
   fetchInstitutes,
+  fetchOrganisations,
   instituteKeys,
   inviteUser,
+  organisationKeys,
   userKeys,
 } from "@/features/admin/api";
 
@@ -27,6 +34,7 @@ const schema = z.object({
   full_name: z.string().min(2, "Enter their full name.").max(120, "That name is too long."),
   email: emailSchema,
   role_key: z.string().min(1, "Please choose a role."),
+  organisation_id: z.string(),
   institute_id: z.string(),
   branch_id: z.string(),
   class_ids: z.array(z.string()),
@@ -42,6 +50,10 @@ type Values = z.infer<typeof schema>;
  * mean reimplementing PRD §3.1 in two places and letting them drift — and the backend
  * rejects anything it did not offer, so a client-side guess would only produce confusing
  * 403s. The form shapes itself to the chosen role; the server is still the real check.
+ *
+ * Which scope fields appear comes from the chosen role's `scope_level` in that same
+ * catalogue, so a custom role is asked for exactly what it needs — a hardcoded table of
+ * built-in keys gave custom roles no fields at all, and the server then refused them.
  */
 export function InviteUserModal({
   open,
@@ -55,7 +67,11 @@ export function InviteUserModal({
 }) {
   const user = useCurrentUser();
   const queryClient = useQueryClient();
-  const platformStaff = isPlatformStaff(user);
+  // Platform staff, organisation admins and anybody in several institutes choose one;
+  // somebody pinned to a single institute has it filled in.
+  const choosesInstitute = picksInstitute(user);
+  // A teacher's authority is the classes they teach, so the server wants one named.
+  const facultyInviter = isFacultyOnly(user);
 
   /**
    * Empty the form on the way out, not only after a successful send.
@@ -78,6 +94,7 @@ export function InviteUserModal({
       full_name: "",
       email: "",
       role_key: "",
+      organisation_id: "",
       institute_id: "",
       branch_id: "",
       class_ids: [],
@@ -89,10 +106,10 @@ export function InviteUserModal({
   // entirely. useWatch subscribes properly and keeps the compiler engaged.
   const control = form.control;
   const roleKey = (useWatch({ control, name: "role_key" }) ?? "") as RoleKey | "";
+  const organisationId = useWatch({ control, name: "organisation_id" }) ?? "";
   const instituteId = useWatch({ control, name: "institute_id" }) ?? "";
   const branchId = useWatch({ control, name: "branch_id" }) ?? "";
   const selectedClasses = useWatch({ control, name: "class_ids" }) ?? [];
-  const requirements = roleKey ? ROLE_REQUIREMENTS[roleKey] : null;
 
   const roles = useQuery({
     queryKey: ["assignable-roles", "invite"],
@@ -100,38 +117,86 @@ export function InviteUserModal({
     enabled: open,
   });
 
-  // Platform staff pick an institute; everyone else is pinned to their own, so the field
-  // is not shown and the value is filled in from /me.
+  const chosen = roles.data?.find((role) => role.key === roleKey);
+  const needsOrganisation = chosen?.scope_level === "organisation";
+  const needsInstitute = chosen?.scope_level === "institute" || chosen?.scope_level === "branch";
+  const needsBranch = chosen?.scope_level === "branch";
+  // Classes are offered for the built-ins that sit in classes (students, teachers), and
+  // demanded whenever the inviter is a teacher.
+  const classMode: "none" | "optional" | "required" = !needsInstitute
+    ? "none"
+    : facultyInviter
+      ? "required"
+      : (ROLE_REQUIREMENTS[roleKey]?.classes ?? "none");
+
+  const organisations = useQuery({
+    queryKey: organisationKeys.list(),
+    queryFn: ({ signal }) => fetchOrganisations(signal),
+    enabled: open && needsOrganisation,
+  });
+
   const institutes = useQuery({
     queryKey: instituteKeys.list(),
     queryFn: ({ signal }) => fetchInstitutes(signal),
-    enabled: open && platformStaff,
+    enabled: open && choosesInstitute && needsInstitute,
   });
 
   const branches = useQuery({
     queryKey: instituteKeys.branches(instituteId),
     queryFn: ({ signal }) => fetchBranches(instituteId, signal),
-    enabled: open && Boolean(instituteId) && Boolean(requirements?.branch),
+    enabled: open && Boolean(instituteId) && needsBranch,
   });
 
+  // For a teacher the server narrows this to the classes they teach.
   const classes = useQuery({
     queryKey: instituteKeys.classes(instituteId, branchId || undefined),
     queryFn: ({ signal }) => fetchClasses(instituteId, branchId || undefined, signal),
-    enabled: open && Boolean(instituteId) && requirements?.classes !== "none",
+    enabled: open && Boolean(instituteId) && classMode !== "none",
   });
 
   // A single-institute user never sees the picker, so seed it from their own assignments.
+  // Likewise an organisation admin running exactly one organisation.
   useEffect(() => {
-    if (!platformStaff && user?.institute_ids.length === 1 && !form.getValues("institute_id")) {
+    if (!choosesInstitute && user?.institute_ids.length === 1 && !form.getValues("institute_id")) {
       form.setValue("institute_id", user.institute_ids[0]!);
     }
-  }, [platformStaff, user, form]);
+    const myOrganisations = organisationIds(user);
+    if (myOrganisations.length === 1 && !form.getValues("organisation_id")) {
+      form.setValue("organisation_id", myOrganisations[0]!);
+    }
+  }, [choosesInstitute, user, form]);
 
   // Changing the role changes which fields apply; stale values would be submitted silently.
   useEffect(() => {
-    if (requirements && !requirements.branch) form.setValue("branch_id", "");
-    if (requirements?.classes === "none") form.setValue("class_ids", []);
-  }, [requirements, form]);
+    if (!chosen) return;
+    if (!needsBranch) form.setValue("branch_id", "");
+    if (classMode === "none") form.setValue("class_ids", []);
+  }, [chosen, needsBranch, classMode, form]);
+
+  /** The scope fields depend on the role, so they are checked here rather than in zod. */
+  const send = (values: Values) => {
+    const missing: [keyof Values, string][] = [];
+    if (needsOrganisation && !values.organisation_id)
+      missing.push(["organisation_id", "Choose an organisation."]);
+    if (needsInstitute && !values.institute_id)
+      missing.push(["institute_id", "Choose an institute."]);
+    if (needsBranch && !values.branch_id) missing.push(["branch_id", "Choose a branch."]);
+    if (classMode === "required" && values.class_ids.length === 0)
+      missing.push(["class_ids", "Choose at least one of your classes."]);
+    if (missing.length > 0) {
+      for (const [name, message] of missing) form.setError(name, { message });
+      return;
+    }
+    submit.mutate({
+      full_name: values.full_name,
+      email: values.email,
+      role_key: values.role_key as RoleKey,
+      organisation_id: needsOrganisation ? values.organisation_id : undefined,
+      institute_id: needsInstitute ? values.institute_id || undefined : undefined,
+      branch_id: needsBranch ? values.branch_id || undefined : undefined,
+      class_ids: values.class_ids.length ? values.class_ids : undefined,
+    });
+  };
 
   const submit = useMutation({
     mutationFn: inviteUser,
@@ -165,21 +230,7 @@ export function InviteUserModal({
         </>
       }
     >
-      <form
-        id="invite-form"
-        noValidate
-        className="space-y-4"
-        onSubmit={form.handleSubmit((values) =>
-          submit.mutate({
-            full_name: values.full_name,
-            email: values.email,
-            role_key: values.role_key as RoleKey,
-            institute_id: values.institute_id || undefined,
-            branch_id: values.branch_id || undefined,
-            class_ids: values.class_ids.length ? values.class_ids : undefined,
-          }),
-        )}
-      >
+      <form id="invite-form" noValidate className="space-y-4" onSubmit={form.handleSubmit(send)}>
         {submit.error && (
           <Alert tone="danger" title="Could not send the invitation">
             <p>{submit.error.message}</p>
@@ -221,7 +272,24 @@ export function InviteUserModal({
           </Alert>
         )}
 
-        {platformStaff && requirements?.institute && (
+        {needsOrganisation && (
+          <SelectField
+            label="Organisation"
+            required
+            placeholder={organisations.isLoading ? "Loading…" : "Choose an organisation"}
+            hint={`${chosen?.name} applies across every institute in one organisation.`}
+            disabled={organisations.isLoading}
+            options={(organisations.data?.items ?? [])
+              .filter((item) => item.status === "active")
+              .map((item) => ({ value: item.id, label: `${item.name} (${item.code})` }))}
+            error={form.formState.errors.organisation_id?.message}
+            {...form.register("organisation_id")}
+            // Controlled: it may be preselected before the options have arrived.
+            value={organisationId}
+          />
+        )}
+
+        {choosesInstitute && needsInstitute && (
           <SelectField
             label="Institute"
             required
@@ -235,7 +303,7 @@ export function InviteUserModal({
           />
         )}
 
-        {requirements?.branch && (
+        {needsBranch && (
           <SelectField
             label="Branch"
             required
@@ -251,13 +319,17 @@ export function InviteUserModal({
           />
         )}
 
-        {requirements && requirements.classes !== "none" && (
+        {classMode !== "none" && (
           <Field
             label="Classes"
+            required={classMode === "required"}
+            error={form.formState.errors.class_ids?.message}
             hint={
-              roleKey === "student"
-                ? "Choose the classes this student will join."
-                : "Choose the classes this teacher will take."
+              classMode === "required"
+                ? "Choose at least one of the classes you teach."
+                : roleKey === "student"
+                  ? "Choose the classes this student will join."
+                  : "Choose the classes this teacher will take."
             }
           >
             {() => (
@@ -279,7 +351,7 @@ export function InviteUserModal({
                         const next = event.target.checked
                           ? [...selectedClasses, item.id]
                           : selectedClasses.filter((id) => id !== item.id);
-                        form.setValue("class_ids", next);
+                        form.setValue("class_ids", next, { shouldValidate: true });
                       }}
                       className="size-4 accent-[var(--primary)]"
                     />

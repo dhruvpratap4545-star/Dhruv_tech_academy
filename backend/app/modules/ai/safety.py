@@ -78,6 +78,8 @@ def normalise(text: str) -> str:
     return " ".join(text.split()).lower()
 
 
-def cache_key(feature_key: str, model_id: str, prompt: str) -> str:
-    material = "\x1f".join((feature_key, model_id, normalise(prompt)))
+def cache_key(feature_key: str, model_id: str, prompt: str, *context: str) -> str:
+    """``context`` is everything else that shapes the answer: system prompt, safety level,
+    token limit, the feature's extra material. Changing any of them misses the cache."""
+    material = "\x1f".join((feature_key, model_id, normalise(prompt), *context))
     return hashlib.sha256(material.encode()).hexdigest()

@@ -67,7 +67,14 @@ export type LinkedNode = { id: string; name: string; kind: string; track: string
 export type SearchResults = {
   query: string;
   nodes: LinkedNode[];
-  items: { id: string; title: string; kind: string; medium: string; status: string }[];
+  items: {
+    id: string;
+    title: string;
+    kind: string;
+    medium: string;
+    status: string;
+    node_ids: string[];
+  }[];
 };
 
 export type MySyllabus = {

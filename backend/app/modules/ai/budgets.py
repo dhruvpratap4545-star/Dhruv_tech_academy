@@ -17,7 +17,7 @@ from pymongo.errors import DuplicateKeyError
 
 from app.core.db import Db, ids_in, utcnow
 from app.modules.ai.models import AiBudget
-from app.modules.ai.pricing import crossed_thresholds, month_key
+from app.modules.ai.pricing import crossed_thresholds, fullest, month_key
 
 logger = logging.getLogger(__name__)
 
@@ -168,10 +168,11 @@ async def send_threshold_alerts(budget_id: uuid.UUID, thresholds: list[int]) -> 
     raw = await collection.find_one({"_id": budget_id})
     if raw is None:
         return
-    limit, used = (
-        (raw.get("limit_paise"), raw.get("used_paise", 0))
-        if raw.get("limit_paise")
-        else (raw.get("limit_tokens"), raw.get("used_tokens", 0))
+    used, limit = fullest(
+        raw.get("used_paise", 0),
+        raw.get("limit_paise"),
+        raw.get("used_tokens", 0),
+        raw.get("limit_tokens"),
     )
     for threshold in crossed_thresholds(used, limit, thresholds, raw.get("alerts_sent", [])):
         claimed = await collection.update_one(

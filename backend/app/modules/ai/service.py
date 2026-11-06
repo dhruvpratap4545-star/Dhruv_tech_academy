@@ -23,6 +23,7 @@ from app.core.pagination import paginate
 from app.modules.ai import budgets as budget_repo
 from app.modules.ai import schemas
 from app.modules.ai.models import (
+    ANSWERED,
     SETTINGS_KEY,
     AiBudget,
     AiFeature,
@@ -31,7 +32,7 @@ from app.modules.ai.models import (
     AiSettings,
     AiUsage,
 )
-from app.modules.ai.pricing import IST, month_key, percent_used, start_of_ist_day
+from app.modules.ai.pricing import IST, fullest, month_key, percent_used, start_of_ist_day
 from app.modules.ai.providers import PROVIDER_NAMES
 from app.modules.ai.seed import ROLE_LIMITS, UNLISTED_ROLE_LIMIT
 from app.modules.audit import events
@@ -189,10 +190,15 @@ async def update_feature(
     for field in ("model_id", "fallback_model_id"):
         if changed.get(field) and not await db.exists(AiModel, {"model_id": changed[field]}):
             raise ValidationFailed("Choose a model that is registered in Providers & Models.")
+    # The prompt itself is not copied into the audit row: it can be long, and the row
+    # only needs to say that it changed. Every other field records its old and new value.
+    values = {
+        f: {"from": getattr(feature, f), "to": v}
+        for f, v in changed.items()
+        if f != "system_prompt"
+    }
     for field, value in changed.items():
         setattr(feature, field, value)
-    # The prompt itself is not copied into the audit row: it can be long, and the row
-    # only needs to say that it changed.
     _audit(
         db,
         guard,
@@ -200,7 +206,7 @@ async def update_feature(
         events.AI_FEATURE_UPDATED,
         target_type="ai_feature",
         target_id=feature.id,
-        extra={"key": key, "fields": sorted(changed)},
+        extra={"key": key, "fields": sorted(changed), "changes": values},
     )
     return feature
 
@@ -234,8 +240,9 @@ def budget_out(
             enabled=True,
             configured=False,
         )
-    limit = budget.limit_paise if budget.limit_paise else budget.limit_tokens
-    used = budget.used_paise if budget.limit_paise else budget.used_tokens
+    used, limit = fullest(
+        budget.used_paise, budget.limit_paise, budget.used_tokens, budget.limit_tokens
+    )
     return schemas.BudgetOut(
         scope=budget.scope,
         institute_id=budget.institute_id,
@@ -293,14 +300,22 @@ async def update_platform_budget(
     return budget
 
 
+_NOT_NULLABLE = frozenset({"on_exceed", "enabled", "feature_limits", "disabled_features"})
+
+
 def _apply_limits(budget: AiBudget, changed: dict[str, Any]) -> None:
     """Raising a limit re-arms the alerts above the new usage level, so a budget topped up
     after an 80% alert warns again when it reaches 80% of the new figure."""
     for field, value in changed.items():
+        # `null` for a limit means "no limit"; for these it means nothing and used to be
+        # written as-is, after which summing `feature_limits` raised a 500.
+        if value is None and field in _NOT_NULLABLE:
+            continue
         setattr(budget, field, value)
     if "limit_paise" in changed or "limit_tokens" in changed:
-        limit = budget.limit_paise if budget.limit_paise else budget.limit_tokens
-        used = budget.used_paise if budget.limit_paise else budget.used_tokens
+        used, limit = fullest(
+            budget.used_paise, budget.limit_paise, budget.used_tokens, budget.limit_tokens
+        )
         percent = percent_used(used, limit) or 0
         budget.alerts_sent = [t for t in budget.alerts_sent if t <= percent]
 
@@ -524,7 +539,7 @@ async def _grouped(db: Db, match: dict[str, Any], field: str) -> list[dict[str, 
     return await db.aggregate(
         AiUsage,
         [
-            {"$match": {**match, "status": {"$in": ["ok", "cached"]}}},
+            {"$match": {**match, **ANSWERED}},
             {
                 "$group": {
                     "_id": f"${field}",
@@ -548,6 +563,13 @@ async def usage_summary(
     never a per-day or per-institute loop.
     """
     visible = guard.visible_institute_ids()
+    if institute_id is not None and visible is not None and institute_id not in visible:
+        # Checked before anything is read: the budget block below is not filtered by the
+        # usage match, so another institute's allocation and spend leaked through it.
+        raise NotFound("That institute does not exist.")
+    if institute_id is None and visible is not None and len(visible) == 1:
+        # An institute's own administrator: their allocation is the budget to show.
+        (institute_id,) = visible
     now = utcnow()
     today = start_of_ist_day(now)
     month_start = today.replace(day=1)
@@ -568,7 +590,7 @@ async def usage_summary(
     days = await db.aggregate(
         AiUsage,
         [
-            {"$match": {**since(trend_start), "status": {"$in": ["ok", "cached"]}}},
+            {"$match": {**since(trend_start), **ANSWERED}},
             {
                 "$group": {
                     "_id": {
@@ -651,8 +673,8 @@ async def export_usage(db: Db, *, guard: Authorized, **filters: Any) -> bytes:
         match,
         {"prompt": 0},
         sort=[("created_at", -1)],
+        limit=EXPORT_MAX_ROWS,
     )
-    rows = rows[:EXPORT_MAX_ROWS]
     names = {
         r["_id"]: r["name"]
         for r in await db.raw(

@@ -57,6 +57,15 @@ def percent_used(used: int, limit: int | None) -> float | None:
     return used * 100 / limit
 
 
+def fullest(
+    used_paise: int, limit_paise: int | None, used_tokens: int, limit_tokens: int | None
+) -> tuple[int, int | None]:
+    """The (used, limit) pair nearer its cap. A budget with both a rupee and a token limit
+    blocks on whichever runs out first, so its percentage and alerts must follow that one."""
+    pairs = [(used_paise, limit_paise), (used_tokens, limit_tokens)]
+    return max(pairs, key=lambda pair: percent_used(*pair) or 0)
+
+
 def crossed_thresholds(
     used: int, limit: int | None, thresholds: list[int], already_sent: list[int]
 ) -> list[int]:
