@@ -14,7 +14,8 @@ import { HomeworkLayout } from "@/features/homework/components/HomeworkLayout";
 import { useClassOptions } from "@/features/homework/components/useClassOptions";
 import { useT } from "@/features/i18n/useT";
 
-const percent = (rate: number) => `${Math.round(rate * 1000) / 10}%`;
+/** The server already sends a percentage (0–100), rounded to one decimal. */
+const percent = (rate: number) => `${Math.round(rate * 10) / 10}%`;
 
 /** Completion by class, subject and teacher, with an Excel export of the same filters. */
 export function ReportsPage() {

@@ -69,6 +69,9 @@ export function SubmitForm({
         camera
         disabled={send.isPending}
       />
+      {existing && existing.files.length > 0 && (
+        <p className="text-xs text-fg-2">{t("homework.submit.keepFiles")}</p>
+      )}
       {problem && <Alert tone="warning">{problem}</Alert>}
       {send.error instanceof ApiError && <Alert tone="danger">{send.error.message}</Alert>}
       {send.isSuccess && <Alert tone="success">{t("homework.submit.done")}</Alert>}

@@ -361,12 +361,15 @@ class Db:
         projection: Mapping[str, Any],
         *,
         sort: Sort | None = None,
+        limit: int | None = None,
     ) -> list[dict[str, Any]]:
         """Selected fields only, as plain dicts — for joins and lookups where loading and
         validating whole documents would be waste."""
         cursor = model.get_pymongo_collection().find(dict(match), dict(projection))
         if sort:
             cursor = cursor.sort(list(sort))
+        if limit:
+            cursor = cursor.limit(limit)
         return await cursor.to_list()
 
     # ----------------------------------------------------------------------- writes

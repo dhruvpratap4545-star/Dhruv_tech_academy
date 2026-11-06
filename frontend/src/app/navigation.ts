@@ -1,7 +1,7 @@
 import type { IconName } from "@/components/Icon";
 import type { CurrentUser } from "@/features/auth/types";
 import type { Permission } from "@/lib/permissions";
-import { can } from "@/lib/permissions";
+import { can, isLearnerOrParentOnly } from "@/lib/permissions";
 import { HOMEWORK_NAV } from "@/features/homework/routes";
 import { LIBRARY_NAV } from "@/features/library/routes";
 
@@ -25,6 +25,12 @@ export type NavItem = {
   permission?: Permission;
   /** One line explaining what the page is for, shown on "My access". */
   blurb: string;
+  /**
+   * Administration screens a student or parent may technically read a corner of (their
+   * own class, their child) but has nothing to do on. Hidden when every role they hold is
+   * a learner's or a parent's.
+   */
+  hideFromLearners?: boolean;
 };
 
 export type NavGroup = { label: string; items: NavItem[] };
@@ -71,6 +77,7 @@ export const NAVIGATION: NavGroup[] = [
         label: "Hierarchy",
         icon: "org",
         permission: "institute:read",
+        hideFromLearners: true,
         blurb: "Institutes, branches, academic sessions and classes.",
       },
       {
@@ -79,6 +86,7 @@ export const NAVIGATION: NavGroup[] = [
         label: "Users",
         icon: "users",
         permission: "user:read",
+        hideFromLearners: true,
         blurb: "Everyone in your scope: invite, change role, suspend.",
       },
       {
@@ -125,6 +133,7 @@ export const NAVIGATION: NavGroup[] = [
 export const ALL_NAV_ITEMS: NavItem[] = NAVIGATION.flatMap((group) => group.items);
 
 export function isReachable(user: CurrentUser | null | undefined, item: NavItem): boolean {
+  if (item.hideFromLearners && isLearnerOrParentOnly(user)) return false;
   return !item.permission || can(user, item.permission);
 }
 

@@ -15,28 +15,38 @@ import {
   fetchBranches,
   fetchClasses,
   fetchInstitutes,
+  fetchOrganisations,
   fetchSessions,
   instituteKeys,
+  organisationKeys,
 } from "@/features/admin/api";
+import { ClassMembers } from "@/features/admin/components/ClassMembers";
+import {
+  BranchActions,
+  ClassActions,
+  InstituteActions,
+  SessionList,
+} from "@/features/admin/components/HierarchyActions";
 import { InstituteModules } from "@/features/admin/components/InstituteModules";
-import type { Branch, ClassRow, Institute, Session } from "@/features/auth/types";
-import { useCan } from "@/features/auth/useAuth";
+import type { Branch, ClassRow, Institute, Organisation, Session } from "@/features/auth/types";
+import { useCan, useCurrentUser } from "@/features/auth/useAuth";
 import { cn } from "@/lib/cn";
 import { formatDate } from "@/lib/format";
+import { isPlatformStaff } from "@/lib/permissions";
 
 /**
- * The organisation, as a tree: Platform → Institute → Branch → Session → Class.
+ * The organisation, as a tree: Platform → Organisation → Institute → Branch → Session →
+ * Class.
  *
  * A tree rather than a table because the hierarchy *is* the information — it is what
  * decides who can see what, and a flat list of institutes next to a flat list of branches
- * never shows you that. Selecting a node shows its detail beside it.
+ * never shows you that. Selecting a node shows its detail beside it, with whatever
+ * management actions the person's permissions allow (PRD §12).
  *
- * Read-only apart from "Add institute". Full branch, session and class management is a
- * later milestone (PRD §12), so this shows the structure that exists rather than
- * pretending to screens that do not.
+ * Archived branches and classes stay in the tree, marked, so they can be restored.
  */
 
-type NodeKind = "platform" | "institute" | "branch" | "session" | "class";
+type NodeKind = "platform" | "organisation" | "institute" | "branch" | "session" | "class";
 
 type TreeNode = {
   key: string;
@@ -44,12 +54,15 @@ type TreeNode = {
   label: string;
   sub?: string;
   depth: number;
+  archived?: boolean;
+  organisationId?: string | null;
   instituteId?: string;
   branchId?: string;
 };
 
 const LEVEL_WORD: Record<NodeKind, string> = {
   platform: "Platform",
+  organisation: "Organisation",
   institute: "Institute",
   branch: "Branch",
   session: "Session",
@@ -58,6 +71,7 @@ const LEVEL_WORD: Record<NodeKind, string> = {
 
 const LEVEL_ICON: Record<NodeKind, IconName> = {
   platform: "org",
+  organisation: "building",
   institute: "building",
   branch: "org",
   session: "calendar",
@@ -66,6 +80,13 @@ const LEVEL_ICON: Record<NodeKind, IconName> = {
 
 export function InstitutesPage() {
   const canCreate = useCan("institute:create");
+  const platformStaff = isPlatformStaff(useCurrentUser());
+  // Each level is only asked for by somebody who may read it. Students and parents lack
+  // some of these, and requests they are bound to be refused only fill the log with 403s.
+  const canReadOrganisations = useCan("organisation:read");
+  const canReadBranches = useCan("branch:read");
+  const canReadSessions = useCan("session:read");
+  const canReadClasses = useCan("class:read");
   const [params, setParams] = useSearchParams();
   const [selected, setSelected] = useState<string | null>(null);
 
@@ -73,29 +94,39 @@ export function InstitutesPage() {
     queryKey: instituteKeys.list(),
     queryFn: ({ signal }) => fetchInstitutes(signal),
   });
+  const organisations = useQuery({
+    queryKey: organisationKeys.list(),
+    queryFn: ({ signal }) => fetchOrganisations(signal),
+    enabled: canReadOrganisations,
+  });
 
   const rows = institutes.data?.items ?? [];
+  const organisationRows = organisations.data?.items ?? [];
 
   // Branches, sessions and classes for every visible institute, fetched in parallel.
   // Usually one institute; for platform staff a handful. `useQueries` keeps each one
   // independently cached rather than refetching the lot when any single institute changes.
+  // Archived branches and classes included, so they can be restored from here.
   const branchQueries = useQueries({
     queries: rows.map((institute) => ({
-      queryKey: instituteKeys.branches(institute.id),
-      queryFn: ({ signal }: { signal: AbortSignal }) => fetchBranches(institute.id, signal),
+      queryKey: instituteKeys.branches(institute.id, "all"),
+      queryFn: ({ signal }: { signal: AbortSignal }) => fetchBranches(institute.id, signal, "all"),
+      enabled: canReadBranches,
     })),
   });
   const sessionQueries = useQueries({
     queries: rows.map((institute) => ({
       queryKey: instituteKeys.sessions(institute.id),
       queryFn: ({ signal }: { signal: AbortSignal }) => fetchSessions(institute.id, signal),
+      enabled: canReadSessions,
     })),
   });
   const classQueries = useQueries({
     queries: rows.map((institute) => ({
-      queryKey: instituteKeys.classes(institute.id),
+      queryKey: instituteKeys.classes(institute.id, undefined, "all"),
       queryFn: ({ signal }: { signal: AbortSignal }) =>
-        fetchClasses(institute.id, undefined, signal),
+        fetchClasses(institute.id, undefined, signal, "all"),
+      enabled: canReadClasses,
     })),
   });
 
@@ -111,14 +142,17 @@ export function InstitutesPage() {
     ]),
   );
 
-  const nodes = buildTree(rows, byInstitute);
+  const nodes = buildTree(rows, byInstitute, organisationRows, platformStaff);
 
-  // A link from search carries ?institute= / ?branch=; honour it once, then let clicks win.
+  // A link from search or the organisations page carries ?institute= / ?branch= /
+  // ?organisation=; honour it once, then let clicks win.
   const wanted = params.get("branch")
     ? `branch:${params.get("branch")}`
     : params.get("institute")
       ? `institute:${params.get("institute")}`
-      : null;
+      : params.get("organisation")
+        ? `organisation:${params.get("organisation")}`
+        : null;
   const activeKey =
     selected ?? (wanted && nodes.some((n) => n.key === wanted) ? wanted : nodes[0]?.key) ?? null;
   const active = nodes.find((node) => node.key === activeKey) ?? null;
@@ -136,7 +170,7 @@ export function InstitutesPage() {
       <PageHeader
         eyebrow="Administration"
         title="Hierarchy"
-        description="Platform → Institute → Branch → Academic session → Class. Each level only sees inside itself. Nothing is deleted; items are archived so history stays correct."
+        description="Platform → Organisation → Institute → Branch → Academic session → Class. Each level only sees inside itself. Nothing is deleted; items are archived so history stays correct."
         actions={
           canCreate && (
             <Link
@@ -174,7 +208,11 @@ export function InstitutesPage() {
                   aria-level={node.depth + 1}
                   onClick={() => {
                     setSelected(node.key);
-                    if (params.has("institute") || params.has("branch"))
+                    if (
+                      params.has("institute") ||
+                      params.has("branch") ||
+                      params.has("organisation")
+                    )
                       setParams({}, { replace: true });
                   }}
                   style={{ paddingLeft: `${0.75 + node.depth * 0.9}rem` }}
@@ -183,10 +221,14 @@ export function InstitutesPage() {
                     node.key === activeKey
                       ? "bg-accent-soft font-semibold text-accent-ink"
                       : "text-fg-2 hover:bg-surface-2 hover:text-fg",
+                    node.archived && "opacity-60",
                   )}
                 >
                   <Icon name={LEVEL_ICON[node.kind]} className="size-4 shrink-0 opacity-70" />
-                  <span className="min-w-0 flex-1 truncate">{node.label}</span>
+                  <span className="min-w-0 flex-1 truncate">
+                    {node.label}
+                    {node.archived && " (archived)"}
+                  </span>
                   <span className="shrink-0 text-[0.65rem] font-semibold tracking-wide text-fg-3 uppercase">
                     {LEVEL_WORD[node.kind]}
                   </span>
@@ -197,7 +239,13 @@ export function InstitutesPage() {
 
           <Card className="self-start">
             {active ? (
-              <Detail node={active} data={byInstitute} nodes={nodes} onSelect={setSelected} />
+              <Detail
+                node={active}
+                data={byInstitute}
+                nodes={nodes}
+                organisations={organisationRows}
+                onSelect={setSelected}
+              />
             ) : (
               <div className="px-4 py-10 text-center text-sm text-fg-2">
                 You do not belong to any institute yet.
@@ -217,79 +265,152 @@ type InstituteBundle = {
   classes: ClassRow[];
 };
 
-function buildTree(institutes: Institute[], data: Map<string, InstituteBundle>): TreeNode[] {
+function buildTree(
+  institutes: Institute[],
+  data: Map<string, InstituteBundle>,
+  organisations: Organisation[],
+  platformStaff: boolean,
+): TreeNode[] {
   const nodes: TreeNode[] = [];
-  // The platform row only earns its place when there is more than one institute to sit
-  // under it; for a single-institute admin it is a row that says nothing.
-  if (institutes.length > 1) {
+  // The platform row only earns its place for platform staff with more than one institute
+  // to sit under it; for anybody else it is a row that says nothing.
+  const showPlatform = platformStaff && institutes.length > 1;
+  if (showPlatform) {
     nodes.push({ key: "platform", kind: "platform", label: "Dhruv Online Academy", depth: 0 });
   }
-  const base = institutes.length > 1 ? 1 : 0;
+  const top = showPlatform ? 1 : 0;
 
-  for (const institute of institutes) {
-    const bundle = data.get(institute.id);
+  // Group by organisation once the person can read any. Every organisation they can read
+  // is listed, even an empty one, so "View institutes" always lands; without that read
+  // there are no names to group under, and a row saying "Organisation" says nothing.
+  const grouped = organisations.length > 0;
+  const groups: { id: string | null; label: string; archived?: boolean }[] = grouped
+    ? [
+        ...organisations.map((row) => ({
+          id: row.id,
+          label: row.name,
+          archived: row.status === "archived",
+        })),
+        ...[...new Set(institutes.map((row) => row.organisation_id))]
+          .filter((id): id is string => Boolean(id) && !organisations.some((o) => o.id === id))
+          .map((id) => ({ id, label: "Organisation" })),
+        ...(institutes.some((row) => !row.organisation_id)
+          ? [{ id: null, label: "Standalone" }]
+          : []),
+      ]
+    : [{ id: null, label: "" }];
+  const base = top + (grouped ? 1 : 0);
+
+  for (const group of groups) {
+    if (grouped) {
+      nodes.push({
+        key: `organisation:${group.id ?? "standalone"}`,
+        kind: "organisation",
+        label: group.label,
+        depth: top,
+        archived: group.archived,
+        organisationId: group.id,
+      });
+    }
+    const members = grouped
+      ? institutes.filter((row) => (row.organisation_id ?? null) === group.id)
+      : institutes;
+    for (const institute of members) pushInstitute(nodes, institute, data, base);
+  }
+  return nodes;
+}
+
+function pushInstitute(
+  nodes: TreeNode[],
+  institute: Institute,
+  data: Map<string, InstituteBundle>,
+  base: number,
+) {
+  const bundle = data.get(institute.id);
+  nodes.push({
+    key: `institute:${institute.id}`,
+    kind: "institute",
+    label: institute.name,
+    sub: institute.code,
+    depth: base,
+    archived: institute.status === "archived",
+    instituteId: institute.id,
+  });
+
+  for (const branch of bundle?.branches ?? []) {
     nodes.push({
-      key: `institute:${institute.id}`,
-      kind: "institute",
-      label: institute.name,
-      sub: institute.code,
-      depth: base,
+      key: `branch:${branch.id}`,
+      kind: "branch",
+      label: branch.name,
+      sub: branch.code,
+      depth: base + 1,
+      archived: branch.status === "archived",
       instituteId: institute.id,
+      branchId: branch.id,
     });
 
-    for (const branch of bundle?.branches ?? []) {
+    // Teachers may read classes but not sessions; with no session to hang them under,
+    // their classes would vanish from the tree, so list them straight under the branch.
+    if (!bundle?.sessions.length) {
+      for (const row of (bundle?.classes ?? []).filter((c) => c.branch_id === branch.id)) {
+        nodes.push({
+          key: `class:${row.id}`,
+          kind: "class",
+          label: row.name,
+          sub: row.code,
+          depth: base + 2,
+          archived: row.status === "archived",
+          instituteId: institute.id,
+          branchId: branch.id,
+        });
+      }
+    }
+
+    // Only the current session is expanded. Showing every past year turns a readable
+    // tree into a scroll, and the answer people want is "what is running now".
+    for (const session of (bundle?.sessions ?? []).filter((s) => s.is_current)) {
       nodes.push({
-        key: `branch:${branch.id}`,
-        kind: "branch",
-        label: branch.name,
-        sub: branch.code,
-        depth: base + 1,
+        key: `session:${branch.id}:${session.id}`,
+        kind: "session",
+        label: session.name,
+        depth: base + 2,
         instituteId: institute.id,
         branchId: branch.id,
       });
 
-      // Only the current session is expanded. Showing every past year turns a readable
-      // tree into a scroll, and the answer people want is "what is running now".
-      for (const session of (bundle?.sessions ?? []).filter((s) => s.is_current)) {
+      for (const row of (bundle?.classes ?? []).filter(
+        (c) => c.branch_id === branch.id && c.academic_session_id === session.id,
+      )) {
         nodes.push({
-          key: `session:${branch.id}:${session.id}`,
-          kind: "session",
-          label: session.name,
-          depth: base + 2,
+          key: `class:${row.id}`,
+          kind: "class",
+          label: row.name,
+          sub: row.code,
+          depth: base + 3,
+          archived: row.status === "archived",
           instituteId: institute.id,
           branchId: branch.id,
         });
-
-        for (const row of (bundle?.classes ?? []).filter(
-          (c) => c.branch_id === branch.id && c.academic_session_id === session.id,
-        )) {
-          nodes.push({
-            key: `class:${row.id}`,
-            kind: "class",
-            label: row.name,
-            sub: row.code,
-            depth: base + 3,
-            instituteId: institute.id,
-            branchId: branch.id,
-          });
-        }
       }
     }
   }
-  return nodes;
 }
 
 function Detail({
   node,
   data,
   nodes,
+  organisations,
   onSelect,
 }: {
   node: TreeNode;
   data: Map<string, InstituteBundle>;
   nodes: TreeNode[];
+  organisations: Organisation[];
   onSelect: (key: string) => void;
 }) {
+  const canReadSessions = useCan("session:read");
+  const canReadBranches = useCan("branch:read");
   const bundle = node.instituteId ? data.get(node.instituteId) : undefined;
 
   /**
@@ -333,8 +454,37 @@ function Detail({
     );
   }
 
+  if (node.kind === "organisation") {
+    const organisation = organisations.find((row) => row.id === node.organisationId);
+    const members = [...data.values()]
+      .map((b) => b.institute)
+      .filter((row) => (row.organisation_id ?? null) === (node.organisationId ?? null));
+    return (
+      <>
+        <Head
+          title={node.label}
+          kind="organisation"
+          trail={trail}
+          badge={organisation ? <StatusBadge status={organisation.status} /> : undefined}
+        />
+        <Facts
+          rows={[
+            ...(organisation
+              ? ([
+                  ["Code", organisation.code],
+                  ["Contact", organisation.contact_email ?? "—"],
+                ] as [string, string][])
+              : []),
+            ["Institutes", members.map((row) => row.name).join(", ") || "None yet"],
+          ]}
+        />
+      </>
+    );
+  }
+
   if (node.kind === "institute" && bundle) {
     const { institute, branches, sessions, classes } = bundle;
+    const organisation = organisations.find((row) => row.id === institute.organisation_id);
     return (
       <>
         <Head
@@ -343,21 +493,31 @@ function Detail({
           trail={trail}
           badge={<StatusBadge status={institute.status} />}
         />
+        <InstituteActions institute={institute} organisations={organisations} />
         <Facts
           rows={[
             ["Type", institute.type],
             ["Code", institute.code],
-            ["Contact", institute.contact_email ?? "—"],
-            ["Branches", branches.map((b) => b.name).join(", ") || "None yet"],
             [
-              "Sessions",
-              sessions.map((s) => `${s.name}${s.is_current ? " (current)" : ""}`).join(", ") ||
-                "None yet",
+              "Organisation",
+              // Without organisation:read the name is unknown; say what is known.
+              institute.organisation_id
+                ? (organisation?.name ?? "Part of an organisation")
+                : "Standalone",
             ],
+            ["Contact", institute.contact_email ?? "—"],
+            // "None yet" would be a lie to someone who simply may not read branches.
+            ...(canReadBranches
+              ? ([["Branches", branches.map((b) => b.name).join(", ") || "None yet"]] as [
+                  string,
+                  string,
+                ][])
+              : []),
             ["Classes", String(classes.length)],
             ["Added", formatDate(institute.created_at)],
           ]}
         />
+        {canReadSessions && <SessionList institute={institute} sessions={sessions} />}
         <InstituteModules instituteId={institute.id} />
       </>
     );
@@ -375,6 +535,7 @@ function Detail({
           trail={trail}
           badge={<StatusBadge status={branch.status} />}
         />
+        <BranchActions branch={branch} sessions={bundle.sessions} />
         <Facts
           rows={[
             ["Code", branch.code],
@@ -419,12 +580,15 @@ function Detail({
           trail={trail}
           badge={<StatusBadge status={row.status} />}
         />
+        <ClassActions row={row} />
         <Facts
           rows={[
             ["Code", row.code],
+            ["Section", row.section ?? "—"],
             ["Branch", branch?.name ?? "—"],
           ]}
         />
+        <ClassMembers row={row} />
       </>
     );
   }

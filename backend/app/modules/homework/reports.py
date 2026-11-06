@@ -90,12 +90,24 @@ async def _load(
     }
     rows = await db.find(Homework, match, sort=[("due_at", 1)], limit=5000)
     ids = [r.id for r in rows]
+    class_ids = list({r.class_id for r in rows})
+    enrolled = await db.aggregate(
+        ClassEnrollment,
+        [
+            {"$match": {"class_id": {"$in": class_ids}, "status": "active"}},
+            {"$group": {"_id": "$class_id", "students": {"$push": "$student_user_id"}}},
+        ],
+    )
+    sizes = {g["_id"]: len(g["students"]) for g in enrolled}
+    # Only submissions from students still in the class count, because `expected` is the
+    # class as it is today — counting leavers pushed completion past 100%.
+    current = list({s for g in enrolled for s in g["students"]})
     received = {
         g["_id"]: {"submitted": g["n"], "late": g["late"]}
         for g in await db.aggregate(
             HomeworkSubmission,
             [
-                {"$match": {"homework_id": {"$in": ids}}},
+                {"$match": {"homework_id": {"$in": ids}, "student_user_id": {"$in": current}}},
                 {
                     "$group": {
                         "_id": "$homework_id",
@@ -103,17 +115,6 @@ async def _load(
                         "late": {"$sum": {"$cond": ["$is_late", 1, 0]}},
                     }
                 },
-            ],
-        )
-    }
-    class_ids = list({r.class_id for r in rows})
-    sizes = {
-        g["_id"]: g["n"]
-        for g in await db.aggregate(
-            ClassEnrollment,
-            [
-                {"$match": {"class_id": {"$in": class_ids}, "status": "active"}},
-                {"$group": {"_id": "$class_id", "n": {"$sum": 1}}},
             ],
         )
     }

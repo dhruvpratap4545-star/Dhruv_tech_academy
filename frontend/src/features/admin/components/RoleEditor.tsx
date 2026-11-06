@@ -18,6 +18,7 @@ import type { RoleRemoval } from "@/features/admin/api";
 import type { PermissionInfo, Role } from "@/features/auth/types";
 import { useAuth } from "@/features/auth/useAuth";
 import { cn } from "@/lib/cn";
+import { picksInstitute } from "@/lib/permissions";
 
 /**
  * Create or edit a role belonging to one institute.
@@ -71,15 +72,16 @@ export function RoleEditor({
   const myInstitutes = (user?.roles ?? [])
     .filter((role) => role.institute_id)
     .map((role) => ({ id: role.institute_id!, name: role.institute_name ?? "Institute" }));
-  const isPlatformStaff = (user?.roles ?? []).some((role) => role.institute_id === null);
+  // Organisation Admins and multi-institute administrators get the server's list too.
+  const listsInstitutes = picksInstitute(user);
 
   const everyInstitute = useQuery({
     queryKey: instituteKeys.list(),
     queryFn: ({ signal }) => fetchInstitutes(signal),
-    enabled: isPlatformStaff && role === null,
+    enabled: listsInstitutes && role === null,
   });
 
-  const institutes = isPlatformStaff
+  const institutes = listsInstitutes
     ? (everyInstitute.data?.items ?? []).map((row) => ({ id: row.id, name: row.name }))
     : [...new Map(myInstitutes.map((row) => [row.id, row])).values()];
   const myRank = user?.roles.length ? Math.max(...user.roles.map((r) => r.rank)) : 0;

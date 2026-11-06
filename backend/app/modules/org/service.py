@@ -33,6 +33,21 @@ from app.modules.rbac.scopes import Scope
 from app.modules.rbac.service import Authorized
 
 
+def _require_active(row, word: str) -> None:
+    """Nothing new is added under something archived."""
+    if row.status != "active":
+        raise ValidationFailed(f"That {word} is archived.")
+
+
+async def _ensure_also(guard: Authorized, permission: str, scope: Scope) -> None:
+    """A second permission on the same route — archiving through the update endpoint.
+
+    Without it ``branch:archive`` / ``class:archive`` were shown in the matrix and checked
+    nowhere: removing them from a role changed nothing.
+    """
+    await Authorized(guard._db, guard.context, permission).ensure(scope)
+
+
 async def _require_institute(db: Db, institute_id: uuid.UUID) -> Institute:
     institute = await repo.get_institute(db, institute_id)
     if institute is None:
@@ -60,12 +75,18 @@ async def _require_class(db: Db, class_id: uuid.UUID) -> Class:
 async def create_institute(
     db: Db, *, guard: Authorized, payload: schemas.InstituteCreate, meta: RequestMeta
 ) -> Institute:
-    await guard.ensure(Scope())  # institute:create is platform-only (PRD §5.3)
+    # Platform staff create anywhere. An Organisation Admin creates only inside their own
+    # organisation: `Scope(organisation_id=None)` is the platform, so a standalone institute
+    # still needs platform authority.
+    if payload.organisation_id is not None:
+        await _require_active_organisation(db, payload.organisation_id)
+    await guard.ensure(Scope(organisation_id=payload.organisation_id))
 
     if await repo.institute_code_taken(db, payload.code):
         raise Conflict("An institute with that code already exists.")
 
     institute = Institute(
+        organisation_id=payload.organisation_id,
         name=payload.name,
         code=payload.code,
         type=payload.type,
@@ -86,9 +107,38 @@ async def create_institute(
         institute_id=institute.id,
         ip=meta.ip,
         user_agent=meta.user_agent,
-        extra={"code": institute.code, "type": institute.type},
+        extra={
+            "code": institute.code,
+            "type": institute.type,
+            "organisation_id": str(institute.organisation_id)
+            if institute.organisation_id
+            else None,
+        },
     )
     return institute
+
+
+async def _require_active_organisation(db: Db, organisation_id: uuid.UUID) -> Organisation:
+    organisation = await repo.get_organisation(db, organisation_id)
+    if organisation is None:
+        raise NotFound("That organisation does not exist.")
+    if organisation.status != "active":
+        raise ValidationFailed("That organisation is archived.")
+    return organisation
+
+
+def forget_organisation_snapshots() -> None:
+    """Drop every cached permission context.
+
+    A context holds a snapshot of which institutes sit in each organisation, so adding,
+    moving or archiving an institute changes what Organisation Admins (and everyone inside
+    the institute) may reach. Call after the change is committed.
+    """
+    # ponytail: clears the whole per-process cache; these events are rare. Per-organisation
+    # invalidation if they ever become frequent. Other instances catch up within the TTL.
+    from app.modules.rbac.context import context_cache
+
+    context_cache.clear()
 
 
 async def enable_core_modules(db: Db, institute_id: uuid.UUID) -> None:
@@ -112,6 +162,19 @@ async def update_institute(
     institute = await _require_institute(db, institute_id)
 
     changed = payload.model_dump(exclude_unset=True, exclude_none=True)
+    changed.pop("organisation_id", None)
+    if "organisation_id" in payload.model_fields_set:
+        target = payload.organisation_id
+        if target != institute.organisation_id:
+            # Moving an institute changes who administers it, so it needs platform
+            # authority — an Organisation Admin cannot pull a college into their group.
+            await guard.ensure(Scope())
+            if institute.is_system:
+                raise Forbidden("The built-in Direct institute cannot join an organisation.")
+            if target is not None:
+                await _require_active_organisation(db, target)
+            institute.organisation_id = target
+            changed["organisation_id"] = target
     for field, value in changed.items():
         setattr(institute, field, value)
 
@@ -151,6 +214,27 @@ async def archive_institute(
     return institute
 
 
+async def restore_institute(
+    db: Db, *, guard: Authorized, institute_id: uuid.UUID, meta: RequestMeta
+) -> Institute:
+    await guard.ensure(Scope())
+    institute = await _require_institute(db, institute_id)
+    if institute.organisation_id is not None:
+        await _require_active_organisation(db, institute.organisation_id)
+    institute.status = "active"
+    audit.record(
+        db,
+        action=events.INSTITUTE_RESTORED,
+        actor_user_id=guard.user_id,
+        target_type="institute",
+        target_id=institute.id,
+        institute_id=institute.id,
+        ip=meta.ip,
+        user_agent=meta.user_agent,
+    )
+    return institute
+
+
 async def list_institutes(
     db: Db,
     *,
@@ -160,6 +244,7 @@ async def list_institutes(
     cursor: str | None,
     limit: int,
     include_total: bool = True,
+    organisation_id: uuid.UUID | None = None,
 ) -> tuple[Sequence[Institute], str | None, int]:
     """Platform staff see everything; everyone else sees only institutes they hold a role in.
 
@@ -178,6 +263,7 @@ async def list_institutes(
         cursor=cursor,
         limit=limit,
         include_total=include_total,
+        organisation_id=organisation_id,
     )
 
 
@@ -192,7 +278,10 @@ async def get_institute(db: Db, *, guard: Authorized, institute_id: uuid.UUID) -
     `guard.ensure` is deliberately not used: it answers 403, which is the leak.
     """
     institute = await _require_institute(db, institute_id)
-    if not guard.context.can(guard.permission, Scope(institute_id=institute_id)):
+    # Same rule as the list: a branch-level reader (branch admin, teacher, student) sees
+    # their own institute in `GET /institutes`, so opening it must not answer 404.
+    visible = guard.visible_institute_ids()
+    if visible is not None and institute_id not in visible:
         raise NotFound("That institute does not exist.")
     return institute
 
@@ -209,7 +298,7 @@ async def create_branch(
     meta: RequestMeta,
 ) -> Branch:
     await guard.ensure(Scope(institute_id=institute_id))
-    await _require_institute(db, institute_id)
+    _require_active(await _require_institute(db, institute_id), "institute")
 
     if await repo.branch_code_taken(db, institute_id, payload.code):
         raise Conflict("A branch with that code already exists in this institute.")
@@ -247,11 +336,14 @@ async def update_branch(
     payload: schemas.BranchUpdate,
     meta: RequestMeta,
 ) -> Branch:
-    await guard.ensure(Scope(institute_id=institute_id, branch_id=branch_id))
+    scope = Scope(institute_id=institute_id, branch_id=branch_id)
+    await guard.ensure(scope)
     branch = await _require_branch(db, institute_id, branch_id)
 
     changed = payload.model_dump(exclude_unset=True, exclude_none=True)
     archiving = changed.get("status") == "archived" and branch.status != "archived"
+    if changed.get("status", branch.status) != branch.status:
+        await _ensure_also(guard, "branch:archive", scope)
     for field, value in changed.items():
         setattr(branch, field, value)
 
@@ -308,7 +400,7 @@ async def create_session(
     meta: RequestMeta,
 ) -> AcademicSession:
     await guard.ensure(Scope(institute_id=institute_id))
-    await _require_institute(db, institute_id)
+    _require_active(await _require_institute(db, institute_id), "institute")
 
     if await repo.session_name_taken(db, institute_id, payload.name):
         raise Conflict("An academic session with that name already exists.")
@@ -402,6 +494,7 @@ async def create_class(
     if branch is None:
         raise NotFound("That branch does not exist.")
     await guard.ensure(Scope(institute_id=branch.institute_id, branch_id=branch_id))
+    _require_active(branch, "branch")
 
     session = await repo.get_session(
         db, payload.academic_session_id, institute_id=branch.institute_id
@@ -446,10 +539,13 @@ async def update_class(
     meta: RequestMeta,
 ) -> Class:
     target = await _require_class(db, class_id)
-    await guard.ensure(Scope(institute_id=target.institute_id, branch_id=target.branch_id))
+    scope = Scope(institute_id=target.institute_id, branch_id=target.branch_id)
+    await guard.ensure(scope)
 
     changed = payload.model_dump(exclude_unset=True, exclude_none=True)
     archiving = changed.get("status") == "archived" and target.status != "archived"
+    if changed.get("status", target.status) != target.status:
+        await _ensure_also(guard, "class:archive", scope)
     for field, value in changed.items():
         setattr(target, field, value)
 
@@ -478,40 +574,64 @@ async def list_classes(
     cursor: str | None,
     limit: int,
 ) -> tuple[Sequence[Class], str | None, int]:
-    """Faculty and students see only the classes they are linked to (PRD §5.3 ``class:read``)."""
-    from app.modules.rbac import repository as rbac_repo
-    from app.modules.rbac.catalog import FACULTY, STUDENT
+    """Faculty, students and parents see only the classes they are linked to (PRD §5.3).
+
+    Narrowed per scope: wherever the caller acts only as Faculty/Student/Parent they see
+    their linked classes; wherever they hold an administrative role they see that scope's
+    classes. Someone can be both, in different branches or institutes.
+    """
+    from app.modules.rbac.service import membership_narrowed
 
     scopes = await guard.ensure_within(institute_id)
+    broad = tuple(s for s in scopes if not membership_narrowed(guard.context, s))
 
-    # Narrow to the branches the caller's grants cover, unless they asked for one
-    # explicitly — in which case it must be inside those grants.
-    if not guard.covers_whole_institute(scopes, institute_id):
-        allowed_branches = frozenset(s.branch_id for s in scopes if s.branch_id)
-        if branch_id is not None and branch_id not in allowed_branches:
-            raise Forbidden()
-        if branch_id is None and len(allowed_branches) == 1:
-            branch_id = next(iter(allowed_branches))
+    if branch_id is not None and not any(
+        s.level == "platform" or s.branch_id in (None, branch_id) for s in scopes
+    ):
+        raise Forbidden()
 
-    role_keys = {a.role_key for a in guard.context.assignments}
-    class_ids: frozenset[uuid.UUID] | None = None
-    if role_keys and role_keys <= {FACULTY, STUDENT}:
-        class_ids = frozenset()
-        if FACULTY in role_keys:
-            class_ids |= await rbac_repo.faculty_class_ids(db, guard.user_id)
-        if STUDENT in role_keys:
-            class_ids |= await rbac_repo.student_class_ids(db, guard.user_id)
+    linked: frozenset[uuid.UUID] = frozenset()
+    if len(broad) < len(scopes):
+        linked = await linked_class_ids(db, guard.context)
+
+    if not broad:
+        branch_ids, class_ids = None, linked
+    elif guard.covers_whole_institute(broad, institute_id):
+        branch_ids, class_ids = None, None
+    else:
+        branch_ids, class_ids = frozenset(s.branch_id for s in broad if s.branch_id), None
 
     return await repo.list_classes(
         db,
         institute_id=institute_id,
         branch_id=branch_id,
+        branch_ids=branch_ids,
+        also_class_ids=linked if branch_ids is not None else frozenset(),
         session_id=session_id,
         class_ids=class_ids,
         status=status,
         cursor=cursor,
         limit=limit,
     )
+
+
+async def linked_class_ids(db: Db, context) -> frozenset[uuid.UUID]:
+    """Classes someone reaches through a link: taught, enrolled in, or a child's."""
+    from app.modules.rbac import repository as rbac_repo
+    from app.modules.rbac.catalog import FACULTY, PARENT, STUDENT
+
+    role_keys = {a.role_key for a in context.assignments}
+    found: set[uuid.UUID] = set()
+    if FACULTY in role_keys:
+        found |= await rbac_repo.faculty_class_ids(db, context.user_id)
+    if STUDENT in role_keys:
+        found |= await rbac_repo.student_class_ids(db, context.user_id)
+    if PARENT in role_keys:
+        from app.modules.users import repository as users_repo
+
+        for child in await users_repo.children_of(db, context.user_id):
+            found |= await rbac_repo.student_class_ids(db, child)
+    return frozenset(found)
 
 
 # ------------------------------------------------------------- faculty and enrolment
@@ -527,7 +647,8 @@ async def assign_faculty(
 ) -> ClassFaculty:
     target = await _require_class(db, class_id)
     await guard.ensure(Scope(institute_id=target.institute_id, branch_id=target.branch_id))
-    await _require_user_in_institute(db, payload.user_id, target.institute_id)
+    _require_active(target, "class")
+    await _require_user_in_institute(db, payload.user_id, target.institute_id, staff=True)
 
     existing = await repo.get_class_faculty(db, class_id, payload.user_id)
     if existing is not None:
@@ -599,7 +720,8 @@ async def enrol_student(
     await guard.ensure(
         Scope(institute_id=target.institute_id, branch_id=target.branch_id), class_id=class_id
     )
-    await _require_user_in_institute(db, payload.user_id, target.institute_id)
+    _require_active(target, "class")
+    await _require_user_in_institute(db, payload.user_id, target.institute_id, student=True)
 
     existing = await repo.get_enrollment(db, class_id, payload.user_id)
     if existing is not None:
@@ -666,16 +788,87 @@ def _record_enrolment(
     )
 
 
-async def _require_user_in_institute(db: Db, user_id: uuid.UUID, institute_id: uuid.UUID) -> None:
-    """Cross-tenant guard: you cannot attach a user from another institute to your class."""
-    from app.modules.rbac.models import UserRoleAssignment
+async def _require_user_in_institute(
+    db: Db,
+    user_id: uuid.UUID,
+    institute_id: uuid.UUID,
+    *,
+    staff: bool = False,
+    student: bool = False,
+) -> None:
+    """Cross-tenant guard: you cannot attach a user from another institute to your class.
 
-    member = await db.exists(
+    ``student`` requires the Student role there, ``staff`` any role other than Student or
+    Parent — otherwise a student could be put on a class as its teacher, or the principal
+    enrolled as a pupil.
+    """
+    from app.modules.rbac.catalog import PARENT, STUDENT
+    from app.modules.rbac.models import Role, UserRoleAssignment
+
+    role_ids = await db.distinct(
         UserRoleAssignment,
+        "role_id",
         {"user_id": user_id, "institute_id": institute_id, "revoked_at": None},
     )
-    if not member:
+    if not role_ids:
         raise NotFound("That user is not part of this institute.")
+    keys = set(await db.distinct(Role, "key", {"_id": {"$in": role_ids}}))
+    if student and STUDENT not in keys:
+        raise ValidationFailed("Only someone with the Student role here can be enrolled.")
+    if staff and not keys - {STUDENT, PARENT}:
+        raise ValidationFailed("Only staff of this institute can be assigned to teach a class.")
+
+
+async def list_class_faculty(
+    db: Db, *, guard: Authorized, class_id: uuid.UUID
+) -> list[schemas.ClassMemberOut]:
+    target = await _require_class(db, class_id)
+    await guard.ensure(
+        Scope(institute_id=target.institute_id, branch_id=target.branch_id), class_id=class_id
+    )
+    links = await db.find(ClassFaculty, {"class_id": class_id})
+    people = await _people(db, [link.faculty_user_id for link in links])
+    return [
+        schemas.ClassMemberOut(
+            user_id=link.faculty_user_id,
+            full_name=people[link.faculty_user_id].full_name,
+            email=people[link.faculty_user_id].email,
+            subject=link.subject,
+            is_class_teacher=link.is_class_teacher,
+        )
+        for link in links
+        if link.faculty_user_id in people
+    ]
+
+
+async def list_class_students(
+    db: Db, *, guard: Authorized, class_id: uuid.UUID
+) -> list[schemas.ClassMemberOut]:
+    target = await _require_class(db, class_id)
+    await guard.ensure(
+        Scope(institute_id=target.institute_id, branch_id=target.branch_id), class_id=class_id
+    )
+    rows = await db.find(ClassEnrollment, {"class_id": class_id, "status": "active"})
+    people = await _people(db, [row.student_user_id for row in rows])
+    return [
+        schemas.ClassMemberOut(
+            user_id=row.student_user_id,
+            full_name=people[row.student_user_id].full_name,
+            email=people[row.student_user_id].email,
+            roll_no=row.roll_no,
+            status=row.status,
+        )
+        for row in rows
+        if row.student_user_id in people
+    ]
+
+
+async def _people(db: Db, ids: list[uuid.UUID]) -> dict:
+    from app.modules.users.models import User
+
+    if not ids:
+        return {}
+    return {u.id: u for u in await db.find(User, {"_id": {"$in": ids}})}
 
 
 # ------------------------------------------------------------------------ organisations
@@ -815,6 +1008,29 @@ async def archive_organisation(
     audit.record(
         db,
         action=events.ORGANISATION_ARCHIVED,
+        actor_user_id=guard.user_id,
+        target_type="organisation",
+        target_id=organisation.id,
+        ip=meta.ip,
+        user_agent=meta.user_agent,
+    )
+    await db.commit()
+    return organisation
+
+
+async def restore_organisation(
+    db: Db,
+    *,
+    guard: Authorized,
+    organisation_id: uuid.UUID,
+    meta: RequestMeta,
+) -> Organisation:
+    await guard.ensure(Scope())
+    organisation = await get_organisation(db, guard=guard, organisation_id=organisation_id)
+    organisation.status = "active"
+    audit.record(
+        db,
+        action=events.ORGANISATION_RESTORED,
         actor_user_id=guard.user_id,
         target_type="organisation",
         target_id=organisation.id,

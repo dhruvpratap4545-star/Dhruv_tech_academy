@@ -571,11 +571,47 @@ The non-secret ones are set by `cloudbuild.yaml` on every deploy.
    the USD→INR rate, the platform budget and each pilot institute's allocation.
 4. Switch the modules on for the pilot institute (Hierarchy → institute → Modules).
 
-### 6. The weekly parent digest
+### 6. Scheduled jobs: homework notices and the weekly parent digest
 
-Create a Cloud Run Job from the same image and secrets with the argument
-`homework-digest`, and a Cloud Scheduler trigger for **Sundays at 18:00 IST**
-(`0 18 * * 0`, time zone `Asia/Kolkata`).
+Two commands must run on a timer, or their emails are never sent:
+
+| Job | Command | When | Without it |
+|---|---|---|---|
+| `dhruv-homework-notify` | `homework-notify` | every 10 minutes | Homework scheduled for later appears on the board but students are never emailed |
+| `dhruv-homework-digest` | `homework-digest` | Sundays 18:00 IST | Parents get no weekly summary |
+
+`homework-notify` is safe to run again (each notice is sent once). `homework-digest` is not:
+running it twice in a week emails parents twice, so do not trigger it by hand after Sunday's run.
+
+```bash
+IMAGE=$(gcloud run services describe dhruv-app --format='value(spec.template.spec.containers[0].image)')
+PROJECT=$(gcloud config get-value project)
+SA=dhruv-scheduler@$PROJECT.iam.gserviceaccount.com
+gcloud iam service-accounts create dhruv-scheduler --display-name="Dhruv scheduled jobs"
+gcloud projects add-iam-policy-binding "$PROJECT" --member="serviceAccount:$SA" --role=roles/run.invoker
+
+for JOB in homework-notify homework-digest; do
+  gcloud run jobs create dhruv-$JOB \
+    --image="$IMAGE" --region=asia-south1 --command=python --args=-m,app.cli,$JOB \
+    --set-env-vars=ENVIRONMENT=production,MONGODB_DB_NAME=dhruv,FRONTEND_URL=https://dhruvonlineacademy.com \
+    --set-secrets=MONGODB_URL=MONGODB_URL:latest,JWT_PRIVATE_KEY=JWT_PRIVATE_KEY:latest,JWT_PUBLIC_KEY=JWT_PUBLIC_KEY:latest,OTP_PEPPER=OTP_PEPPER:latest,RESEND_API_KEY=RESEND_API_KEY:latest
+done
+
+gcloud scheduler jobs create http dhruv-homework-notify --location=asia-south1 \
+  --schedule="*/10 * * * *" --time-zone=Asia/Kolkata --http-method=POST \
+  --uri="https://run.googleapis.com/v2/projects/$PROJECT/locations/asia-south1/jobs/dhruv-homework-notify:run" \
+  --oauth-service-account-email="$SA"
+
+gcloud scheduler jobs create http dhruv-homework-digest --location=asia-south1 \
+  --schedule="0 18 * * 0" --time-zone=Asia/Kolkata --http-method=POST \
+  --uri="https://run.googleapis.com/v2/projects/$PROJECT/locations/asia-south1/jobs/dhruv-homework-digest:run" \
+  --oauth-service-account-email="$SA"
+```
+
+`RESEND_API_KEY` is required here: without it both jobs only write the emails to the log.
+After each deploy, point the jobs at the new image
+(`gcloud run jobs update dhruv-<job> --image="$IMAGE" --region=asia-south1`), as for
+`dhruv-admin`.
 
 ## A note on `render.yaml`
 

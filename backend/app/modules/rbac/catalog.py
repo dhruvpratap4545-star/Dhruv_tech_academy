@@ -247,9 +247,12 @@ ROLE_PERMISSIONS: dict[str, tuple[str, ...]] = {
     BRANCH_ADMIN: (
         "institute:read",
         "branch:read",
-        "session:create",
+        # `session:create` / `session:update` are deliberately not here. An academic
+        # session is institute-wide — making one "current" changes it for every branch —
+        # and every session endpoint checks at institute scope, so the grant could never
+        # be used. The Institute Admin creates sessions; Branch Admins create classes in
+        # them.
         "session:read",
-        "session:update",
         "class:create",
         "class:read",
         "class:update",

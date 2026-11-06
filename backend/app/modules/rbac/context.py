@@ -88,9 +88,19 @@ class AuthContext:
 
     @property
     def institute_ids(self) -> frozenset[uuid.UUID]:
-        return frozenset(
+        """Every institute a role reaches — through an organisation role too.
+
+        An Organisation Admin's assignment names no institute, so without the expansion
+        their institutes' custom roles, the roles they may hand out and their institute
+        count were all empty.
+        """
+        direct = {
             a.scope.institute_id for a in self.assignments if a.scope.institute_id is not None
-        )
+        }
+        for a in self.assignments:
+            if a.scope.level == ORGANISATION:
+                direct |= self.institutes_of(a.scope.organisation_id)
+        return frozenset(direct)
 
     @property
     def primary_institute_id(self) -> uuid.UUID | None:
@@ -166,6 +176,18 @@ class AuthContext:
         """
         reaching = [a for a in self.assignments if self._assignment_reaches(a.scope, target)]
         return max(reaching, key=lambda a: a.rank, default=None)
+
+    def role_keys_at(self, target: Scope) -> frozenset[str]:
+        """Every role whose assignment reaches ``target`` — the capacities somebody acts in
+        *there*.
+
+        Membership narrowing (Faculty to their classes, Parent to their children) must be
+        decided per place, not from every role held anywhere: an Institute Admin of one
+        college who teaches at another is a teacher at the second, not its administrator.
+        """
+        return frozenset(
+            a.role_key for a in self.assignments if self._assignment_reaches(a.scope, target)
+        )
 
     def _assignment_reaches(self, held: Scope, target: Scope) -> bool:
         """Does an assignment at ``held`` cover ``target``?

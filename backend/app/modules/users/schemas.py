@@ -39,6 +39,9 @@ class InviteUserRequest(StrictModel):
     full_name: Name
     email: EmailStr
     role_key: str = Field(max_length=40)
+    #: For an organisation-level role (Organisation Admin). Mutually exclusive with
+    #: ``institute_id``.
+    organisation_id: uuid.UUID | None = None
     institute_id: uuid.UUID | None = None
     branch_id: uuid.UUID | None = None
     phone: str | None = Field(default=None, max_length=20)

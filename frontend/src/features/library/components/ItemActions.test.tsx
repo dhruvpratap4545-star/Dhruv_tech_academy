@@ -28,7 +28,7 @@ function item(status: ContentItem["status"]): ContentItem {
     source: null,
     status,
     version: 1,
-    created_by: "u1",
+    created_by: makeUser().id,
     reviewed_by: null,
     review_note: null,
     published_at: null,
@@ -44,6 +44,19 @@ describe("ItemActions", () => {
     });
     expect(screen.getByRole("button", { name: "Send for review" })).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Publish" })).not.toBeInTheDocument();
+  });
+
+  it("hides send for review on someone else's draft unless the reader manages", () => {
+    const other = { ...item("draft"), created_by: "someone-else" };
+    const { unmount } = renderWithProviders(<ItemActions item={other} onHistory={() => {}} />, {
+      user: makeUser({ permissions: ["library:read", "library:contribute"] }),
+    });
+    expect(screen.queryByRole("button", { name: "Send for review" })).not.toBeInTheDocument();
+    unmount();
+    renderWithProviders(<ItemActions item={other} onHistory={() => {}} />, {
+      user: makeUser({ permissions: ["library:read", "library:manage"] }),
+    });
+    expect(screen.getByRole("button", { name: "Send for review" })).toBeInTheDocument();
   });
 
   it("hides publish from a faculty member looking at an item under review", () => {

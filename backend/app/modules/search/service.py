@@ -23,8 +23,8 @@ from urllib.parse import quote
 from app.core.db import Db
 from app.modules.org import repository as org_repo
 from app.modules.org import service as org
-from app.modules.rbac.catalog import FACULTY, STUDENT
 from app.modules.rbac.context import AuthContext
+from app.modules.rbac.scopes import PLATFORM, Scope
 from app.modules.rbac.service import Authorized
 from app.modules.search import schemas
 from app.modules.users import service as users
@@ -42,7 +42,9 @@ def _guard(db: Db, context: AuthContext, permission: str) -> Authorized | None:
 
 
 async def _scope_sets(
-    guard: Authorized, institute_ids: frozenset[uuid.UUID] | None
+    guard: Authorized,
+    institute_ids: frozenset[uuid.UUID] | None,
+    scopes: tuple[Scope, ...] | None = None,
 ) -> tuple[frozenset[uuid.UUID] | None, frozenset[uuid.UUID] | None]:
     """Turn the caller's usable grants into (institute ids, branch ids) filters.
 
@@ -50,8 +52,11 @@ async def _scope_sets(
     *every* grant is branch-scoped — one institute-wide grant makes branch filtering wrong,
     because it legitimately covers branches the caller holds no named grant on.
     """
-    scopes = guard.usable_scopes()
-    if any(s.institute_id is None for s in scopes):
+    scopes = guard.usable_scopes() if scopes is None else scopes
+    # `level == PLATFORM`, not "no institute id": an organisation grant has no institute
+    # id either, and reading it as platform-wide handed an Organisation Admin every
+    # institute's branches and classes.
+    if any(s.level == PLATFORM for s in scopes):
         return None, None
     institutes = frozenset(s.institute_id for s in scopes if s.institute_id)
     if institute_ids is not None:
@@ -169,20 +174,16 @@ async def _classes(db: Db, context: AuthContext, term: str) -> list[schemas.Sear
     guard = _guard(db, context, "class:read")
     if guard is None:
         return []
-    from app.modules.rbac import repository as rbac_repo
-
-    institutes, branches = await _scope_sets(guard, None)
-
-    # Faculty and students are pinned to the classes they are actually attached to —
-    # the same rule ``list_classes`` applies, for the same reason.
-    role_keys = {a.role_key for a in context.assignments}
+    # Faculty, students and parents are pinned to the classes they are linked to — the
+    # same rule ``list_classes`` applies, decided per scope for the same reason.
+    # ponytail: a mixed admin+teacher searches their administered scopes only.
+    broad = guard.broad_scopes()
     class_ids: frozenset[uuid.UUID] | None = None
-    if role_keys and role_keys <= {FACULTY, STUDENT}:
-        class_ids = frozenset()
-        if FACULTY in role_keys:
-            class_ids |= await rbac_repo.faculty_class_ids(db, context.user_id)
-        if STUDENT in role_keys:
-            class_ids |= await rbac_repo.student_class_ids(db, context.user_id)
+    if broad:
+        institutes, branches = await _scope_sets(guard, None, broad)
+    else:
+        institutes, branches = None, None
+        class_ids = await org.linked_class_ids(db, context)
 
     rows = await org_repo.search_classes(
         db,

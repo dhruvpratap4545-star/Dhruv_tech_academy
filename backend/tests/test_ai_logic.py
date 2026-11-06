@@ -11,6 +11,7 @@ from app.modules.ai.pricing import (
     cost_paise,
     crossed_thresholds,
     format_inr,
+    fullest,
     month_key,
     previous_month_key,
     start_of_ist_day,
@@ -217,3 +218,18 @@ def test_tests_never_use_a_real_provider() -> None:
     from app.modules.ai.providers import get_provider
 
     assert get_provider("gemini").name == "fake"
+
+
+def test_cache_keys_change_with_system_prompt_safety_and_context() -> None:
+    a = safety.cache_key("notes", "m1", "q", "prompt", "standard", "1024", "")
+    assert a != safety.cache_key("notes", "m1", "q", "other prompt", "standard", "1024", "")
+    assert a != safety.cache_key("notes", "m1", "q", "prompt", "kids", "1024", "")
+    assert a != safety.cache_key("notes", "m1", "q", "prompt", "standard", "512", "")
+    assert a != safety.cache_key("notes", "m1", "q", "prompt", "standard", "1024", "chapter")
+
+
+def test_a_budget_with_two_limits_follows_the_fuller_one() -> None:
+    assert fullest(10, 1000, 90, 100) == (90, 100)
+    assert fullest(900, 1000, 10, 100) == (900, 1000)
+    assert fullest(5, None, 90, 100) == (90, 100)
+    assert fullest(5, 1000, 90, None) == (5, 1000)

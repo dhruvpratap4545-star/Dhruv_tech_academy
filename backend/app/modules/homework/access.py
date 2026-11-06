@@ -36,15 +36,9 @@ from app.modules.rbac.catalog import FACULTY, HOMEWORK_MODULE, PARENT, STUDENT
 from app.modules.rbac.context import AuthContext
 from app.modules.rbac.models import InstituteModule
 from app.modules.rbac.scopes import PLATFORM
-from app.modules.rbac.service import Authorized
+from app.modules.rbac.service import Authorized, membership_narrowed
 
-MEMBERSHIP_ROLES = frozenset({FACULTY, STUDENT, PARENT})
 NOTHING: dict[str, Any] = {"_id": {"$in": []}}
-
-
-def membership_only(context: AuthContext) -> bool:
-    keys = {a.role_key for a in context.assignments}
-    return bool(keys) and keys <= MEMBERSHIP_ROLES
 
 
 def learner_visible(now: datetime) -> dict[str, Any]:
@@ -53,7 +47,7 @@ def learner_visible(now: datetime) -> dict[str, Any]:
 
 async def enabled_institutes(db: Db) -> list[uuid.UUID]:
     return await db.distinct(
-        InstituteModule, "institute_id", {"module_key": HOMEWORK_MODULE, "enabled": True}
+        InstituteModule, "institute_id", rbac_repo.live_module_match(HOMEWORK_MODULE)
     )
 
 
@@ -77,8 +71,13 @@ async def reader_match(db: Db, context: AuthContext, now: datetime) -> dict[str,
     if not context.holds("homework:read"):
         return NOTHING
     keys = {a.role_key for a in context.assignments}
-
-    if membership_only(context):
+    scopes = Authorized(db, context, "homework:read").usable_scopes()
+    if any(s.level == PLATFORM for s in scopes):
+        match: dict[str, Any] = {}
+    else:
+        # Membership links first (taught classes, own and children's classes), then every
+        # scope held in an administrative capacity. Decided per scope, so an admin of one
+        # institute who teaches in another sees only their own classes in the second.
         clauses: list[dict[str, Any]] = []
         if FACULTY in keys:
             taught = await rbac_repo.faculty_class_ids(db, context.user_id)
@@ -90,25 +89,16 @@ async def reader_match(db: Db, context: AuthContext, now: datetime) -> dict[str,
             learner_classes |= await children_class_ids(db, context.user_id)
         if learner_classes:
             clauses.append({"class_id": ids_in(learner_classes), **learner_visible(now)})
+        for s in scopes:
+            if s.institute_id is None or membership_narrowed(context, s):
+                continue  # organisation grants are already spread to their institutes
+            clause: dict[str, Any] = {"institute_id": s.institute_id}
+            if s.branch_id is not None:
+                clause["branch_id"] = s.branch_id
+            clauses.append(clause)
         if not clauses:
             return NOTHING
-        match: dict[str, Any] = {"$or": clauses}
-    else:
-        scopes = Authorized(db, context, "homework:read").usable_scopes()
-        if any(s.level == PLATFORM for s in scopes):
-            match = {}
-        else:
-            clauses = []
-            for s in scopes:
-                if s.institute_id is None:
-                    continue  # an organisation grant is already spread to its institutes
-                clause: dict[str, Any] = {"institute_id": s.institute_id}
-                if s.branch_id is not None:
-                    clause["branch_id"] = s.branch_id
-                clauses.append(clause)
-            if not clauses:
-                return NOTHING
-            match = {"$or": clauses}
+        match = {"$or": clauses}
 
     gate = {"institute_id": ids_in(await enabled_institutes(db))}
     return {"$and": [match, gate]} if match else gate
@@ -132,7 +122,7 @@ async def can_manage_class(db: Db, context: AuthContext, class_id: uuid.UUID) ->
         return False
     if not await rbac.can(db, context, "homework:manage", scope, class_id=class_id):
         return False
-    if membership_only(context):
+    if membership_narrowed(context, scope):
         return await rbac_repo.faculty_teaches_class(db, context.user_id, class_id)
     return True
 
@@ -157,7 +147,7 @@ async def require_manageable(
         raise NotFound("That homework does not exist.")
     if (
         edit
-        and membership_only(context)
+        and membership_narrowed(context, await rbac.resolve_class_scope(db, homework.class_id))
         and homework.created_by != context.user_id
         and not await is_class_teacher(db, context.user_id, homework.class_id)
     ):

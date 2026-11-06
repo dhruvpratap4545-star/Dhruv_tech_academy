@@ -172,6 +172,7 @@ class SearchItemHit(BaseModel):
     kind: str
     medium: str
     status: str
+    node_ids: list[uuid.UUID] = []
 
 
 class SearchResults(BaseModel):

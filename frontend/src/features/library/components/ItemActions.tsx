@@ -6,7 +6,7 @@ import { Button } from "@/components/Button";
 import { TextField } from "@/components/Field";
 import type { ContentItem } from "@/features/library/api";
 import { itemAction, libraryKeys } from "@/features/library/api";
-import { useCan } from "@/features/auth/useAuth";
+import { useCan, useCurrentUser } from "@/features/auth/useAuth";
 import { useT } from "@/features/i18n/useT";
 import { ApiError } from "@/lib/api";
 
@@ -15,6 +15,8 @@ export function ItemActions({ item, onHistory }: { item: ContentItem; onHistory:
   const { t } = useT();
   const canPublish = useCan("library:publish");
   const canManage = useCan("library:manage");
+  // The server lets only the author or a manager send a draft for review.
+  const canSubmit = useCurrentUser()?.id === item.created_by || canManage;
   const queryClient = useQueryClient();
   const [note, setNote] = useState("");
   const act = useMutation({
@@ -36,7 +38,7 @@ export function ItemActions({ item, onHistory }: { item: ContentItem; onHistory:
         />
       )}
       <div className="flex flex-wrap gap-2">
-        {item.status === "draft" && (
+        {item.status === "draft" && canSubmit && (
           <Button size="sm" loading={act.isPending} onClick={() => act.mutate("submit")}>
             {t("library.review.submit")}
           </Button>

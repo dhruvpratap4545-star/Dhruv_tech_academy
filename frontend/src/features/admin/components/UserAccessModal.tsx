@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueries, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 
 import { Alert } from "@/components/Alert";
@@ -12,12 +12,71 @@ import {
   accessKeys,
   createGrant,
   fetchGrants,
+  fetchInstitutes,
   fetchPermissions,
+  instituteKeys,
   revokeGrant,
 } from "@/features/admin/api";
-import type { UserSummary } from "@/features/auth/types";
+import type { Institute, UserSummary } from "@/features/auth/types";
+import { useCurrentUser } from "@/features/auth/useAuth";
 import { cn } from "@/lib/cn";
 import { formatDate } from "@/lib/format";
+import { isPlatformStaff } from "@/lib/permissions";
+
+/** Where an exception applies. A personal grant names an institute, a branch, or neither. */
+type GrantScope = {
+  value: string;
+  label: string;
+  instituteId: string | null;
+  branchId: string | null;
+};
+
+/**
+ * The places an exception for this person can sit: each institute and branch their roles
+ * cover. A grant cannot name an organisation, so an organisation-wide role offers each of
+ * that organisation's institutes instead. "Platform-wide" is for platform staff only —
+ * anybody else sending no scope would be refused.
+ */
+function grantScopes(
+  user: UserSummary,
+  orgInstitutes: Map<string, Institute[]>,
+  platformAdmin: boolean,
+): GrantScope[] {
+  const scopes = new Map<string, GrantScope>();
+  const addInstitute = (id: string, name: string | null) =>
+    scopes.set(id, {
+      value: id,
+      label: `${name ?? "Institute"} (whole institute)`,
+      instituteId: id,
+      branchId: null,
+    });
+
+  for (const role of user.roles) {
+    if (role.institute_id && role.branch_id) {
+      scopes.set(`${role.institute_id}:${role.branch_id}`, {
+        value: `${role.institute_id}:${role.branch_id}`,
+        label: `${role.institute_name ?? "Institute"} · ${role.branch_name ?? "Branch"} (branch only)`,
+        instituteId: role.institute_id,
+        branchId: role.branch_id,
+      });
+    }
+    if (role.institute_id) addInstitute(role.institute_id, role.institute_name);
+    else if (role.organisation_id) {
+      for (const row of orgInstitutes.get(role.organisation_id) ?? []) {
+        addInstitute(row.id, row.name);
+      }
+    }
+  }
+  if (platformAdmin) {
+    scopes.set("platform", {
+      value: "platform",
+      label: "Platform-wide",
+      instituteId: null,
+      branchId: null,
+    });
+  }
+  return [...scopes.values()];
+}
 
 /**
  * One person's exceptions: extra permissions, or blocks.
@@ -44,7 +103,28 @@ export function UserAccessModal({
   onClose: () => void;
 }) {
   const queryClient = useQueryClient();
+  const me = useCurrentUser();
   const [adding, setAdding] = useState(false);
+
+  // An organisation-wide role names no institute, and a grant must name one: fetch the
+  // institutes of each organisation they hold a role across, so those can be offered.
+  const orgIds = [
+    ...new Set(
+      (user?.roles ?? [])
+        .filter((role) => !role.institute_id && role.organisation_id)
+        .map((role) => role.organisation_id!),
+    ),
+  ];
+  const orgInstituteQueries = useQueries({
+    queries: orgIds.map((orgId) => ({
+      queryKey: instituteKeys.list(orgId),
+      queryFn: ({ signal }: { signal: AbortSignal }) => fetchInstitutes(signal, orgId),
+      enabled: open,
+    })),
+  });
+  const orgInstitutes = new Map(
+    orgIds.map((orgId, index) => [orgId, orgInstituteQueries[index]?.data?.items ?? []]),
+  );
 
   const grants = useQuery({
     queryKey: accessKeys.grants(user?.id ?? ""),
@@ -66,9 +146,9 @@ export function UserAccessModal({
 
   if (!user) return null;
 
-  // The scope to attach a grant to: the person's own institute, since an exception is
-  // meaningless outside the place their role already applies.
-  const scope = user.roles[0];
+  // The scopes a grant can attach to: the places their roles already apply, since an
+  // exception is meaningless outside them. The first is the default.
+  const scopes = grantScopes(user, orgInstitutes, isPlatformStaff(me));
 
   return (
     <Modal
@@ -155,8 +235,7 @@ export function UserAccessModal({
         {adding ? (
           <GrantForm
             userId={user.id}
-            instituteId={scope?.institute_id ?? null}
-            branchId={scope?.branch_id ?? null}
+            scopes={scopes}
             permissions={permissions.data ?? []}
             onDone={() => {
               setAdding(false);
@@ -177,15 +256,13 @@ export function UserAccessModal({
 
 function GrantForm({
   userId,
-  instituteId,
-  branchId,
+  scopes,
   permissions,
   onDone,
   onCancel,
 }: {
   userId: string;
-  instituteId: string | null;
-  branchId: string | null;
+  scopes: GrantScope[];
   permissions: { key: string; description: string; group: string }[];
   onDone: () => void;
   onCancel: () => void;
@@ -194,15 +271,17 @@ function GrantForm({
   const [effect, setEffect] = useState<"allow" | "deny">("allow");
   const [reason, setReason] = useState("");
   const [expiresAt, setExpiresAt] = useState("");
-  const [applyToBranch, setApplyToBranch] = useState(Boolean(branchId));
+  const [scopeValue, setScopeValue] = useState("");
+  // Default to the first, which may only arrive once an organisation's institutes load.
+  const scope = scopes.find((row) => row.value === scopeValue) ?? scopes[0];
 
   const save = useMutation({
     mutationFn: () =>
       createGrant(userId, {
         permission,
         effect,
-        institute_id: instituteId ?? undefined,
-        branch_id: applyToBranch && branchId ? branchId : undefined,
+        institute_id: scope?.instituteId ?? undefined,
+        branch_id: scope?.branchId ?? undefined,
         reason,
         // A date input gives a local date; the end of that day is what "until the 20th"
         // means to a person, so the grant lasts through it rather than expiring at 00:00.
@@ -211,7 +290,7 @@ function GrantForm({
     onSuccess: onDone,
   });
 
-  const valid = permission && reason.trim().length >= 4;
+  const valid = permission && reason.trim().length >= 4 && Boolean(scope);
 
   return (
     <div className="space-y-3 rounded-md border border-accent/40 bg-accent-soft/30 p-3">
@@ -255,18 +334,24 @@ function GrantForm({
           value={expiresAt}
           onChange={(event) => setExpiresAt(event.target.value)}
         />
-        {branchId && (
+        {scopes.length > 1 && (
           <SelectField
             label="Applies to"
-            value={applyToBranch ? "branch" : "institute"}
-            onChange={(event) => setApplyToBranch(event.target.value === "branch")}
-            options={[
-              { value: "branch", label: "Their branch only" },
-              { value: "institute", label: "The whole institute" },
-            ]}
+            value={scope?.value ?? ""}
+            onChange={(event) => setScopeValue(event.target.value)}
+            options={scopes.map((row) => ({ value: row.value, label: row.label }))}
           />
         )}
       </div>
+
+      {scopes.length === 0 && (
+        <Alert tone="warning">
+          <p>
+            This person holds no role in an institute or branch, so there is nowhere for an
+            exception to apply. Give them a role first.
+          </p>
+        </Alert>
+      )}
 
       {save.error && (
         <Alert tone="danger">

@@ -1,12 +1,20 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useState } from "react";
 
 import { Alert } from "@/components/Alert";
 import { Card, CardBody, CardHeader } from "@/components/Card";
+import { SelectField } from "@/components/Field";
 import { Spinner } from "@/components/Spinner";
 import type { Column } from "@/components/Table";
 import { Table } from "@/components/Table";
 import type { UsageGroup } from "@/features/ai/api";
-import { aiKeys, fetchSettings, fetchSummary, updateSettings } from "@/features/ai/api";
+import {
+  aiKeys,
+  fetchInstituteBudgets,
+  fetchSettings,
+  fetchSummary,
+  updateSettings,
+} from "@/features/ai/api";
 import { AiLayout } from "@/features/ai/components/AiLayout";
 import { BudgetBar, StatTile, Switch, TrendChart } from "@/features/ai/components/widgets";
 import { useCan } from "@/features/auth/useAuth";
@@ -17,9 +25,16 @@ import { formatRupees } from "@/lib/format";
 export function AiDashboardPage() {
   const { t } = useT();
   const canManage = useCan("ai:manage");
+  // One institute: the backend shows its allocation. Several (an organisation's admin, or
+  // platform staff): pick one to see its allocation, or "All" for the combined figures.
+  const [instituteId, setInstituteId] = useState("");
+  const institutes = useQuery({
+    queryKey: aiKeys.instituteBudgets,
+    queryFn: ({ signal }) => fetchInstituteBudgets(signal),
+  });
   const summary = useQuery({
-    queryKey: aiKeys.summary(),
-    queryFn: ({ signal }) => fetchSummary(undefined, signal),
+    queryKey: aiKeys.summary(instituteId || undefined),
+    queryFn: ({ signal }) => fetchSummary(instituteId || undefined, signal),
   });
 
   const groupColumns: Column<UsageGroup>[] = [
@@ -46,6 +61,20 @@ export function AiDashboardPage() {
   return (
     <AiLayout title={t("ai.dashboard.title")} description={t("ai.dashboard.description")}>
       {canManage && <GlobalSwitch />}
+      {(institutes.data?.length ?? 0) > 1 && (
+        <SelectField
+          label="Institute"
+          value={instituteId}
+          onChange={(event) => setInstituteId(event.target.value)}
+          options={[
+            { value: "", label: t("common.all") },
+            ...(institutes.data ?? []).map((b) => ({
+              value: b.institute_id ?? "",
+              label: b.institute_name ?? "",
+            })),
+          ]}
+        />
+      )}
       {summary.isLoading && <Spinner />}
       {summary.error && <Alert tone="danger">{summary.error.message}</Alert>}
       {data && (

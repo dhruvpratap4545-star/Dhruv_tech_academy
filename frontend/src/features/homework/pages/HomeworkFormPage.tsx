@@ -23,6 +23,7 @@ import { HomeworkLayout } from "@/features/homework/components/HomeworkLayout";
 import { useClassOptions } from "@/features/homework/components/useClassOptions";
 import { MAX_SUBMISSION_FILES, toIstInput } from "@/features/homework/logic";
 import { useT } from "@/features/i18n/useT";
+import { fetchNode, libraryKeys } from "@/features/library/api";
 import { ApiError } from "@/lib/api";
 
 type PublishMode = HomeworkPayload["publish"];
@@ -58,9 +59,19 @@ function HomeworkForm({ homework }: { homework: Homework | null }) {
     allow_late: homework?.allow_late ?? true,
     allow_resubmit: homework?.allow_resubmit ?? true,
   });
+  // The saved topic arrives as an id; its name is looked up so the form shows a word.
+  const linked = useQuery({
+    queryKey: libraryKeys.node(homework?.node_id ?? ""),
+    queryFn: ({ signal }) => fetchNode(homework!.node_id!, signal),
+    enabled: Boolean(homework?.node_id),
+  });
   const [topic, setTopic] = useState<{ id: string; label: string } | null>(
-    homework?.node_id ? { id: homework.node_id, label: homework.node_id } : null,
+    homework?.node_id ? { id: homework.node_id, label: "" } : null,
   );
+  const topicShown = topic && {
+    ...topic,
+    label: topic.label || (linked.isLoading ? "…" : (linked.data?.node.name ?? topic.id)),
+  };
   const [keptAttachments, setKept] = useState(homework?.attachments ?? []);
   const [files, setFiles] = useState<File[]>([]);
   const [problem, setProblem] = useState<string | null>(null);
@@ -166,7 +177,7 @@ function HomeworkForm({ homework }: { homework: Homework | null }) {
                 className="w-full rounded-lg border border-line bg-surface p-3 text-sm text-fg"
               />
             </label>
-            <TopicPicker value={topic} onChange={setTopic} />
+            <TopicPicker value={topicShown} onChange={setTopic} />
             <div className="grid gap-3 sm:grid-cols-3">
               <SelectField
                 label={t("homework.form.medium")}

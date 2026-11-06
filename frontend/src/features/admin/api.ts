@@ -52,6 +52,8 @@ export type InvitePayload = {
   full_name: string;
   email: string;
   role_key: RoleKey;
+  /** For an organisation-wide role. Mutually exclusive with `institute_id`. */
+  organisation_id?: string;
   institute_id?: string;
   branch_id?: string;
   phone?: string;
@@ -166,14 +168,25 @@ export function archiveOrganisation(organisationId: string) {
   return apiFetch<Organisation>(`/organisations/${organisationId}/archive`, { method: "POST" });
 }
 
+export function restoreOrganisation(organisationId: string) {
+  return apiFetch<Organisation>(`/organisations/${organisationId}/restore`, { method: "POST" });
+}
+
 export const instituteKeys = {
   all: ["institutes"] as const,
-  list: () => ["institutes", "list"] as const,
-  branches: (instituteId: string) => ["institutes", instituteId, "branches"] as const,
+  /** Every visible institute, or only one organisation's. Both share the "list" prefix. */
+  list: (organisationId?: string) =>
+    organisationId
+      ? (["institutes", "list", organisationId] as const)
+      : (["institutes", "list"] as const),
+  branches: (instituteId: string, status: "active" | "all" = "active") =>
+    ["institutes", instituteId, "branches", status] as const,
   sessions: (instituteId: string) => ["institutes", instituteId, "sessions"] as const,
-  classes: (instituteId: string, branchId?: string) =>
-    ["institutes", instituteId, "classes", branchId ?? "all"] as const,
+  classes: (instituteId: string, branchId?: string, status: "active" | "all" = "active") =>
+    ["institutes", instituteId, "classes", branchId ?? "all", status] as const,
   modules: (instituteId: string) => ["institutes", instituteId, "modules"] as const,
+  faculty: (classId: string) => ["institutes", "class", classId, "faculty"] as const,
+  students: (classId: string) => ["institutes", "class", classId, "students"] as const,
 };
 
 /** One optional module and whether an institute has it switched on (Phase 3). */
@@ -195,15 +208,150 @@ export function setInstituteModule(instituteId: string, key: string, enabled: bo
   });
 }
 
-export function fetchInstitutes(signal?: AbortSignal) {
-  return apiFetch<Page<Institute>>(`/institutes${query({ limit: 100 })}`, { signal });
-}
-
-export function fetchBranches(instituteId: string, signal?: AbortSignal) {
-  return apiFetch<Page<Branch>>(
-    `/institutes/${instituteId}/branches${query({ limit: 100, status: "active" })}`,
+export function fetchInstitutes(signal?: AbortSignal, organisationId?: string) {
+  return apiFetch<Page<Institute>>(
+    `/institutes${query({ limit: 100, organisation_id: organisationId })}`,
     { signal },
   );
+}
+
+export type InstituteUpdate = {
+  name?: string;
+  type?: Institute["type"];
+  contact_email?: string | null;
+  /** Platform staff only; null detaches the institute from its organisation. */
+  organisation_id?: string | null;
+};
+
+export function updateInstitute(instituteId: string, body: InstituteUpdate) {
+  return apiFetch<Institute>(`/institutes/${instituteId}`, { method: "PATCH", body });
+}
+
+export function archiveInstitute(instituteId: string) {
+  return apiFetch<Institute>(`/institutes/${instituteId}/archive`, { method: "POST" });
+}
+
+export function restoreInstitute(instituteId: string) {
+  return apiFetch<Institute>(`/institutes/${instituteId}/restore`, { method: "POST" });
+}
+
+/**
+ * Branches of one institute. Active only by default; pass `"all"` where archived ones must
+ * stay visible so they can be restored.
+ */
+export function fetchBranches(
+  instituteId: string,
+  signal?: AbortSignal,
+  status: "active" | "all" = "active",
+) {
+  return apiFetch<Page<Branch>>(
+    `/institutes/${instituteId}/branches${query({
+      limit: 100,
+      status: status === "all" ? undefined : status,
+    })}`,
+    { signal },
+  );
+}
+
+export type BranchPayload = { name: string; code: string; city?: string; address?: string };
+
+export function createBranch(instituteId: string, body: BranchPayload) {
+  return apiFetch<Branch>(`/institutes/${instituteId}/branches`, { method: "POST", body });
+}
+
+export function updateBranch(
+  instituteId: string,
+  branchId: string,
+  body: { name?: string; city?: string; address?: string; status?: "active" | "archived" },
+) {
+  return apiFetch<Branch>(`/institutes/${instituteId}/branches/${branchId}`, {
+    method: "PATCH",
+    body,
+  });
+}
+
+export type SessionPayload = {
+  name: string;
+  /** YYYY-MM-DD */
+  start_date: string;
+  end_date: string;
+  is_current: boolean;
+};
+
+export function createSession(instituteId: string, body: SessionPayload) {
+  return apiFetch<Session>(`/institutes/${instituteId}/sessions`, { method: "POST", body });
+}
+
+export function updateSession(
+  instituteId: string,
+  sessionId: string,
+  body: Partial<SessionPayload>,
+) {
+  return apiFetch<Session>(`/institutes/${instituteId}/sessions/${sessionId}`, {
+    method: "PATCH",
+    body,
+  });
+}
+
+export type ClassPayload = {
+  name: string;
+  code: string;
+  academic_session_id: string;
+  section?: string;
+};
+
+export function createClass(branchId: string, body: ClassPayload) {
+  return apiFetch<ClassRow>(`/branches/${branchId}/classes`, { method: "POST", body });
+}
+
+export function updateClass(
+  classId: string,
+  body: { name?: string; section?: string; status?: "active" | "archived" },
+) {
+  return apiFetch<ClassRow>(`/classes/${classId}`, { method: "PATCH", body });
+}
+
+export type ClassFacultyMember = {
+  user_id: string;
+  full_name: string;
+  email: string;
+  subject: string | null;
+  is_class_teacher: boolean;
+};
+
+export type ClassStudent = {
+  user_id: string;
+  full_name: string;
+  email: string;
+  roll_no: string | null;
+  status: string;
+};
+
+export function fetchClassFaculty(classId: string, signal?: AbortSignal) {
+  return apiFetch<ClassFacultyMember[]>(`/classes/${classId}/faculty`, { signal });
+}
+
+export function assignClassFaculty(
+  classId: string,
+  body: { user_id: string; subject?: string; is_class_teacher?: boolean },
+) {
+  return apiFetch<unknown>(`/classes/${classId}/faculty`, { method: "POST", body });
+}
+
+export function removeClassFaculty(classId: string, userId: string) {
+  return apiFetch<void>(`/classes/${classId}/faculty/${userId}`, { method: "DELETE" });
+}
+
+export function fetchClassStudents(classId: string, signal?: AbortSignal) {
+  return apiFetch<ClassStudent[]>(`/classes/${classId}/students`, { signal });
+}
+
+export function enrolStudent(classId: string, body: { user_id: string; roll_no?: string }) {
+  return apiFetch<unknown>(`/classes/${classId}/students`, { method: "POST", body });
+}
+
+export function removeStudent(classId: string, userId: string) {
+  return apiFetch<void>(`/classes/${classId}/students/${userId}`, { method: "DELETE" });
 }
 
 export function fetchSessions(instituteId: string, signal?: AbortSignal) {
@@ -212,9 +360,18 @@ export function fetchSessions(instituteId: string, signal?: AbortSignal) {
   });
 }
 
-export function fetchClasses(instituteId: string, branchId?: string, signal?: AbortSignal) {
+export function fetchClasses(
+  instituteId: string,
+  branchId?: string,
+  signal?: AbortSignal,
+  status: "active" | "all" = "active",
+) {
   return apiFetch<Page<ClassRow>>(
-    `/institutes/${instituteId}/classes${query({ limit: 100, status: "active", branch_id: branchId })}`,
+    `/institutes/${instituteId}/classes${query({
+      limit: 100,
+      status: status === "all" ? undefined : status,
+      branch_id: branchId,
+    })}`,
     { signal },
   );
 }
@@ -224,6 +381,7 @@ export type CreateInstituteWithAdminPayload = {
     name: string;
     code: string;
     type: "school" | "college" | "coaching" | "academy";
+    organisation_id?: string;
     contact_email?: string;
   };
   admin_full_name: string;

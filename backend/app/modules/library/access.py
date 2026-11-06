@@ -3,8 +3,11 @@
 Three kinds of reader, decided once per request:
 
 * **Platform staff** (``library:read`` at platform scope) see everything, in every state.
-* **Institute staff** see the published master library plus everything in their own
-  institutes' libraries, drafts included — a reviewer has to see what they are reviewing.
+* **Institute reviewers** (holding ``library:manage`` or ``library:publish``) see the
+  published master library plus everything in their own institutes' libraries, drafts
+  included — a reviewer has to see what they are reviewing.
+* **Other institute staff** (faculty, custom roles) see published material plus whatever
+  they created themselves, in any state — never a colleague's draft.
 * **Students and parents** see published material only, and only inside the parts of the
   syllabus linked to their classes (a parent: their children's classes). This is the same
   membership narrowing the users module applies to ``user:read``: the permission is held
@@ -39,6 +42,10 @@ class Reader:
     #: Institutes the reader reaches with the module switched on.
     institute_ids: frozenset[uuid.UUID]
     narrowed: bool
+    #: Institutes where the reader holds ``library:manage`` or ``library:publish`` and so
+    #: sees drafts. Per institute: an admin at one school who only teaches at another must
+    #: not see the second school's drafts.
+    review_institute_ids: frozenset[uuid.UUID] = frozenset()
     #: For narrowed readers: every node inside their linked subtrees, and the nodes above
     #: them (so the tree can be browsed down to the linked level).
     subtree_ids: frozenset[uuid.UUID] = frozenset()
@@ -59,7 +66,7 @@ async def enabled_institutes(db: Db, institute_ids: frozenset[uuid.UUID]) -> fro
     enabled = await db.distinct(
         InstituteModule,
         "institute_id",
-        {"institute_id": ids_in(institute_ids), "module_key": LIBRARY_MODULE, "enabled": True},
+        {"institute_id": ids_in(institute_ids), **rbac_repo.live_module_match(LIBRARY_MODULE)},
     )
     return frozenset(enabled)
 
@@ -105,7 +112,17 @@ async def resolve_reader(db: Db, guard: Authorized) -> Reader:
     role_keys = {a.role_key for a in guard.context.assignments}
     if not (role_keys and role_keys <= NARROWED_ROLES):
         return Reader(
-            user_id=guard.user_id, platform=False, institute_ids=institutes, narrowed=False
+            user_id=guard.user_id,
+            platform=False,
+            institute_ids=institutes,
+            narrowed=False,
+            review_institute_ids=institutes
+            & frozenset().union(
+                *(
+                    Authorized(guard._db, guard.context, key).visible_institute_ids() or ()
+                    for key in ("library:manage", "library:publish")
+                )
+            ),
         )
 
     classes = await linked_class_ids(db, guard.user_id, role_keys)
@@ -148,8 +165,10 @@ def item_filter(reader: Reader) -> dict[str, Any]:
             "node_ids": {"$in": list(reader.subtree_ids)},
         }
     return {
+        **reader.library_filter(),
         "$or": [
-            {"institute_id": None, "status": "published"},
-            {"institute_id": {"$in": list(reader.institute_ids)}},
-        ]
+            {"status": "published"},
+            {"created_by": reader.user_id},
+            {"institute_id": {"$in": list(reader.review_institute_ids)}},
+        ],
     }

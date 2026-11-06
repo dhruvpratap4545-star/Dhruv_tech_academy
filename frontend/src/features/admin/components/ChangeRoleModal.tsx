@@ -19,7 +19,8 @@ import {
 } from "@/features/admin/api";
 import { fetchAssignableRoles } from "@/features/auth/api";
 import type { AssignableRole, RoleAssignment, RoleKey, UserSummary } from "@/features/auth/types";
-import { ROLE_LABEL, roleScopeLabel } from "@/lib/permissions";
+import { useCan } from "@/features/auth/useAuth";
+import { ROLE_LABEL, roleAssignmentKey, roleScopeLabel } from "@/lib/permissions";
 
 /**
  * Add a role to somebody, or take one away (PRD §4.5, §3.1).
@@ -54,6 +55,7 @@ export function ChangeRoleModal({
   onClose: () => void;
 }) {
   const queryClient = useQueryClient();
+  const canRevoke = useCan("role:revoke");
   const [roleKey, setRoleKey] = useState("");
   const [organisationId, setOrganisationId] = useState("");
   const [instituteId, setInstituteId] = useState("");
@@ -142,6 +144,9 @@ export function ChangeRoleModal({
     mutationFn: (role: RoleAssignment) =>
       revokeRole(user!.id, {
         role_key: role.role_key,
+        // An organisation role is identified by its organisation; without it the server
+        // cannot tell which assignment is meant and refuses the revoke.
+        organisation_id: role.organisation_id ?? undefined,
         institute_id: role.institute_id ?? undefined,
         branch_id: role.branch_id ?? undefined,
       }),
@@ -195,7 +200,7 @@ export function ChangeRoleModal({
               <ul className="space-y-2">
                 {held.map((role) => (
                   <li
-                    key={`${role.role_key}-${role.branch_id ?? role.institute_id ?? "platform"}`}
+                    key={roleAssignmentKey(role)}
                     className="flex items-center justify-between gap-3 rounded-lg border border-line px-3 py-2"
                   >
                     <div className="min-w-0">
@@ -204,14 +209,16 @@ export function ChangeRoleModal({
                       </p>
                       <p className="truncate text-xs text-fg-2">{roleScopeLabel(role)}</p>
                     </div>
-                    <Button
-                      size="sm"
-                      variant="danger"
-                      loading={take.isPending && take.variables === role}
-                      onClick={() => take.mutate(role)}
-                    >
-                      Remove
-                    </Button>
+                    {canRevoke && (
+                      <Button
+                        size="sm"
+                        variant="danger"
+                        loading={take.isPending && take.variables === role}
+                        onClick={() => take.mutate(role)}
+                      >
+                        Remove
+                      </Button>
+                    )}
                   </li>
                 ))}
               </ul>

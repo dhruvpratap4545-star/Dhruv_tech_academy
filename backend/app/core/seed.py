@@ -18,6 +18,8 @@ from __future__ import annotations
 import asyncio
 import logging
 
+from pydantic import EmailStr, TypeAdapter, ValidationError
+
 from app.core.config import settings
 from app.core.db import Db, close_db, init_db
 from app.core.logging import configure_logging
@@ -191,6 +193,13 @@ async def _seed_super_admin(db: Db, roles: dict[str, Role]) -> None:
     email = (settings.seed_superadmin_email or "").strip().lower()
     if not email:
         logger.warning("SEED_SUPERADMIN_EMAIL is not set; no Super Admin was created")
+        return
+    try:
+        # The same check the login form applies: an address it rejects (e.g. a reserved
+        # domain such as .local) would create an administrator who can never sign in.
+        TypeAdapter(EmailStr).validate_python(email)
+    except ValidationError:
+        logger.error("SEED_SUPERADMIN_EMAIL would be refused at login; no Super Admin created")
         return
 
     role = roles.get(catalog.SUPER_ADMIN)

@@ -12,7 +12,7 @@ import { Table } from "@/components/Table";
 import type { AiBudget } from "@/features/ai/api";
 import {
   aiKeys,
-  fetchFeatures,
+  fetchFeatureNames,
   fetchInstituteBudgets,
   fetchPlatformBudget,
   fetchRoleLimits,
@@ -209,15 +209,9 @@ function EditAllocation({
   const { t } = useT();
   const queryClient = useQueryClient();
   const features = useQuery({
-    queryKey: aiKeys.features,
-    queryFn: ({ signal }) => fetchFeatures(signal),
-    enabled: canManage,
+    queryKey: aiKeys.featureNames,
+    queryFn: ({ signal }) => fetchFeatureNames(signal),
   });
-  const featureKeys = canManage
-    ? (features.data ?? []).map((f) => f.key)
-    : Array.from(
-        new Set(["playground", ...Object.keys(budget.feature_limits), ...budget.disabled_features]),
-      );
   const [limit, setLimit] = useState(paiseToRupees(budget.limit_paise));
   const [onExceed, setOnExceed] = useState(budget.on_exceed);
   const [shares, setShares] = useState<Record<string, string>>(
@@ -283,11 +277,11 @@ function EditAllocation({
         )}
         <div className="space-y-2">
           <p className="text-sm font-medium text-fg">Share by feature (₹ per month)</p>
-          {featureKeys.map((key) => (
+          {(features.data ?? []).map(({ key, name }) => (
             <div key={key} className="flex items-end gap-3">
               <div className="flex-1">
                 <TextField
-                  label={humanise(key)}
+                  label={name || humanise(key)}
                   inputMode="decimal"
                   value={shares[key] ?? ""}
                   onChange={(event) => setShares({ ...shares, [key]: event.target.value })}

@@ -77,6 +77,7 @@ export function canAny(user: CurrentUser | null | undefined, permissions: Permis
 export const ROLE_RANK: Record<string, number> = {
   super_admin: 100,
   platform_admin: 90,
+  org_admin: 80,
   institute_admin: 70,
   branch_admin: 50,
   faculty: 30,
@@ -123,9 +124,58 @@ export function highestRank(user: CurrentUser | null | undefined): number {
   return Math.max(...user.roles.map((role) => role.rank));
 }
 
-/** True when the user holds a platform-scoped role — they see every institute. */
+/**
+ * True when the user holds a platform-scoped role — they see every institute.
+ *
+ * A platform role names neither an institute nor an organisation. Testing only for "no
+ * institute" also matched organisation-wide roles, which name no institute either, and
+ * handed an Organisation Admin the platform-only choices.
+ */
 export function isPlatformStaff(user: CurrentUser | null | undefined): boolean {
-  return Boolean(user?.roles.some((role) => role.institute_id === null));
+  return Boolean(
+    user?.roles.some((role) => role.institute_id === null && role.organisation_id === null),
+  );
+}
+
+/** True when the user holds a role across a whole organisation (and so several institutes). */
+export function isOrganisationAdmin(user: CurrentUser | null | undefined): boolean {
+  return Boolean(user?.roles.some((role) => role.institute_id === null && role.organisation_id));
+}
+
+/** The organisations the user holds an organisation-wide role in. */
+export function organisationIds(user: CurrentUser | null | undefined): string[] {
+  return [
+    ...new Set(
+      (user?.roles ?? [])
+        .filter((role) => role.institute_id === null && role.organisation_id)
+        .map((role) => role.organisation_id!),
+    ),
+  ];
+}
+
+/**
+ * Should the user pick an institute rather than have it filled in?
+ *
+ * Platform staff and organisation admins see several institutes through a role that names
+ * none of them, and an administrator may hold roles in more than one. Only somebody pinned
+ * to exactly one institute can have it filled in for them.
+ */
+export function picksInstitute(user: CurrentUser | null | undefined): boolean {
+  return (
+    isPlatformStaff(user) || isOrganisationAdmin(user) || (user?.institute_ids.length ?? 0) > 1
+  );
+}
+
+/**
+ * Is every role this person holds a learner's or a parent's?
+ *
+ * They have read access to bits of the structure (their own class, their child's), but the
+ * people and hierarchy screens are administration, and offering them only shows a page of
+ * things they cannot change.
+ */
+export function isLearnerOrParentOnly(user: CurrentUser | null | undefined): boolean {
+  if (!user || user.roles.length === 0) return false;
+  return user.roles.every((role) => role.role_key === "student" || role.role_key === "parent");
 }
 
 /**
@@ -162,6 +212,19 @@ export function roleScopeLabel(role: {
   }
   if (role.organisation_id) return role.organisation_name ?? "Organisation";
   return "Platform";
+}
+
+/**
+ * A stable React key for one role assignment. The same role can be held in two
+ * organisations, which name no institute or branch, so the organisation is part of it.
+ */
+export function roleAssignmentKey(role: {
+  role_key: string;
+  organisation_id?: string | null;
+  institute_id: string | null;
+  branch_id: string | null;
+}): string {
+  return `${role.role_key}-${role.branch_id ?? role.institute_id ?? role.organisation_id ?? "platform"}`;
 }
 
 /** The caller's own scope, for the sidebar. Their most senior role wins. */

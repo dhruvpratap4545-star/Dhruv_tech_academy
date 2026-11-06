@@ -24,6 +24,7 @@ import { RoleEditor } from "@/features/admin/components/RoleEditor";
 import type { PermissionInfo, Role } from "@/features/auth/types";
 import { useAuth, useCan } from "@/features/auth/useAuth";
 import { cn } from "@/lib/cn";
+import { isPlatformStaff, picksInstitute } from "@/lib/permissions";
 
 /**
  * What every role allows, as a matrix — and the roles this institute has defined itself.
@@ -62,14 +63,19 @@ export function RolesPage() {
   // it was true of somebody with no roles at all, and false for a Super Admin who also
   // happens to hold a role at one college — who would then lose both the platform view and
   // the full institute list, which is the exact failure this selector exists to fix.
-  const isPlatformStaff = (user?.roles ?? []).some((role) => role.institute_id === null);
+  //
+  // An organisation role names no institute either, so the test is "names neither". An
+  // Organisation Admin, or anybody holding roles in several institutes, gets the list the
+  // server says they can see rather than the handful their own assignments name.
+  const platformStaff = isPlatformStaff(user);
+  const listsInstitutes = picksInstitute(user);
   const allInstitutes = useQuery({
     queryKey: instituteKeys.list(),
     queryFn: ({ signal }) => fetchInstitutes(signal),
-    enabled: isPlatformStaff,
+    enabled: listsInstitutes,
   });
 
-  const choices = isPlatformStaff
+  const choices = listsInstitutes
     ? (allInstitutes.data?.items ?? []).map((row) => ({ id: row.id, name: row.name }))
     : dedupe(myInstitutes);
 
@@ -77,7 +83,7 @@ export function RolesPage() {
   // belongs to them. Everyone else starts on their own institute, which is the only view
   // that answers the question they came here with.
   const [instituteId, setInstituteId] = useState<string>("");
-  const effectiveId = instituteId || (isPlatformStaff ? "" : (choices[0]?.id ?? ""));
+  const effectiveId = instituteId || (platformStaff ? "" : (choices[0]?.id ?? ""));
   const viewing = effectiveId || undefined;
 
   const queryClient = useQueryClient();
@@ -167,7 +173,7 @@ export function RolesPage() {
         }
       />
 
-      {(choices.length > 1 || isPlatformStaff) && (
+      {(choices.length > 1 || platformStaff) && (
         <Card className="animate-fade flex flex-wrap items-center gap-3 p-4">
           <span className="text-sm font-medium text-fg">Showing permissions for</span>
           <select
@@ -179,7 +185,7 @@ export function RolesPage() {
             {/* Platform staff only. An institute administrator has no business reading the
                 platform-wide definitions, and offering the option would hand them a view
                 where everything is locked for reasons that are not theirs. */}
-            {isPlatformStaff && <option value="">Platform-wide definitions</option>}
+            {platformStaff && <option value="">Platform-wide definitions</option>}
             {choices.map((row) => (
               <option key={row.id} value={row.id}>
                 {row.name}
