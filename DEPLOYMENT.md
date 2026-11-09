@@ -571,6 +571,15 @@ The non-secret ones are set by `cloudbuild.yaml` on every deploy.
    the USD→INR rate, the platform budget and each pilot institute's allocation.
 4. Switch the modules on for the pilot institute (Hierarchy → institute → Modules).
 
+**Syllabus import from PDF or photo** (added 09-11-2026) is the `syllabus_import` AI
+feature. The seed is insert-only, so run the seed job once more after the release that
+brings it, or the Syllabus Manager's "From a PDF or photo (AI)" tab answers "This AI feature
+is switched off". It runs through the gateway like any AI use: an institute's import counts
+against its AI budget, and the AI module must be on for that institute (the master library
+uses the platform budget). A typical syllabus PDF costs ₹1–3 to read; the same file read
+again within 24 hours comes from the cache at no cost. Only syllabus documents should be
+uploaded here — the file goes to the AI provider as it is, so redaction cannot reach inside.
+
 ### 6. Scheduled jobs: homework notices and the weekly parent digest
 
 Two commands must run on a timer, or their emails are never sent:

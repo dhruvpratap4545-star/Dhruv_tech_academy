@@ -215,12 +215,22 @@ export function query(params: Record<string, string | number | boolean | null | 
  * render as a bare error page in a new tab rather than as a message on the screen the
  * person is looking at.
  */
-export async function apiDownload(path: string, filename: string): Promise<void> {
+export async function apiDownload(
+  path: string,
+  filename: string,
+  /** A JSON body makes it a POST — for a file built from what is on screen. */
+  body?: unknown,
+): Promise<void> {
   let response: Response;
   try {
     response = await fetch(`${BASE_URL}${path}`, {
+      method: body === undefined ? "GET" : "POST",
       credentials: "include",
-      headers: { "X-Requested-With": "XMLHttpRequest" },
+      headers: {
+        "X-Requested-With": "XMLHttpRequest",
+        ...(body === undefined ? {} : { "Content-Type": "application/json" }),
+      },
+      body: body === undefined ? undefined : JSON.stringify(body),
     });
   } catch (cause) {
     throw networkError(cause);

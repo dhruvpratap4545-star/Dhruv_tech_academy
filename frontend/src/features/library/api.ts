@@ -98,6 +98,40 @@ export type ImportResult = {
   by_kind: Record<string, number>;
 };
 
+/** One row in the import template's columns, as text — what the AI reading returns. */
+export type ImportRowCells = {
+  track: string;
+  level: string;
+  subject: string;
+  unit: string;
+  chapter: string;
+  topic: string;
+  medium: string;
+  difficulty: string;
+  exam_tags: string;
+  problems?: string[];
+};
+
+export type AiExtractResult = {
+  file_name: string;
+  model_id: string;
+  status: "ok" | "cached";
+  cost_paise: number;
+  input_tokens: number;
+  output_tokens: number;
+  missing_papers: string[];
+  rows: ImportRowCells[];
+};
+
+export type AiReadOptions = {
+  track: Track;
+  instituteId?: string | null;
+  level?: string;
+  medium: "Hindi" | "English" | "Both";
+  difficulty?: "" | "Easy" | "Medium" | "Hard";
+  examTags?: string;
+};
+
 export type NodeInput = {
   parent_id?: string | null;
   institute_id?: string | null;
@@ -172,6 +206,34 @@ export function importSyllabus(file: File, dryRun: boolean, instituteId?: string
     body: form,
   });
 }
+
+/** Sends the document to the AI and returns rows for review. Saves nothing. */
+export function readSyllabusWithAi(file: File, options: AiReadOptions) {
+  const form = new FormData();
+  form.append("file", file);
+  form.append("track", options.track);
+  form.append("medium", options.medium);
+  if (options.instituteId) form.append("institute_id", options.instituteId);
+  if (options.level?.trim()) form.append("level", options.level.trim());
+  if (options.difficulty) form.append("difficulty", options.difficulty);
+  if (options.examTags?.trim()) form.append("exam_tags", options.examTags.trim());
+  return apiFetch<AiExtractResult>("/library/import/ai", { method: "POST", body: form });
+}
+
+/** The server's findings stay on screen; only the cells go back to it. */
+const withoutProblems = (rows: ImportRowCells[]) =>
+  rows.map((row) => ({ ...row, problems: undefined }));
+
+export const importRows = (rows: ImportRowCells[], dryRun: boolean, instituteId?: string | null) =>
+  apiFetch<ImportResult>(`/library/import/rows${query({ dry_run: dryRun })}`, {
+    method: "POST",
+    body: { institute_id: instituteId || null, rows: withoutProblems(rows) },
+  });
+
+export const downloadRowsAsExcel = (rows: ImportRowCells[]) =>
+  apiDownload("/library/import/rows/xlsx", "syllabus-from-ai.xlsx", {
+    rows: withoutProblems(rows),
+  });
 
 export const searchLibrary = (filters: SearchFilters, signal?: AbortSignal) =>
   apiFetch<SearchResults>(`/library/search${query(filters)}`, { signal });

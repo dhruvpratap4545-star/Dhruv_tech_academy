@@ -108,7 +108,7 @@ class FeatureUpdate(StrictModel):
     model_id: str | None = Field(default=None, max_length=80)
     #: Send an empty string to remove the fallback.
     fallback_model_id: str | None = Field(default=None, max_length=80)
-    max_output_tokens: int | None = Field(default=None, ge=16, le=16384)
+    max_output_tokens: int | None = Field(default=None, ge=16, le=65536)
     system_prompt: str | None = Field(default=None, max_length=8000)
     safety_level: SafetyLevel | None = None
     cache_ttl_hours: int | None = Field(default=None, ge=0, le=24 * 30)

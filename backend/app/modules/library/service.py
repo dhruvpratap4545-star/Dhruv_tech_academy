@@ -341,6 +341,37 @@ async def import_syllabus(
     """Preview or apply a spreadsheet. Valid rows are applied even when others are not."""
     await authorize(guard, institute_id)
     rows = spreadsheet.read_rows(data)
+    return await _apply_rows(
+        db, guard=guard, rows=rows, institute_id=institute_id, dry_run=dry_run, meta=meta
+    )
+
+
+async def import_rows(
+    db: Db,
+    *,
+    guard: Authorized,
+    cells: list[dict[str, str]],
+    institute_id: uuid.UUID | None,
+    dry_run: bool,
+    meta: RequestMeta,
+) -> schemas.ImportResult:
+    """The same import, from rows sent as JSON — the reviewed result of an AI import."""
+    await authorize(guard, institute_id)
+    rows = spreadsheet.rows_from_cells(cells)
+    return await _apply_rows(
+        db, guard=guard, rows=rows, institute_id=institute_id, dry_run=dry_run, meta=meta
+    )
+
+
+async def _apply_rows(
+    db: Db,
+    *,
+    guard: Authorized,
+    rows: list[spreadsheet.ImportRow],
+    institute_id: uuid.UUID | None,
+    dry_run: bool,
+    meta: RequestMeta,
+) -> schemas.ImportResult:
     writer = TreeWriter(db, institute_id, rename=False)
     problems: list[schemas.ImportProblem] = []
     valid = 0
