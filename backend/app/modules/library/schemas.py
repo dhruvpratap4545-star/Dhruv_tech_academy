@@ -222,6 +222,45 @@ class ImportProblem(BaseModel):
     messages: list[str]
 
 
+class ImportRowCells(BaseModel):
+    """One row in the template's columns, as text. Checked by the same rules as Excel."""
+
+    track: str = Field(default="", max_length=20)
+    level: str = Field(default="", max_length=300)
+    subject: str = Field(default="", max_length=300)
+    unit: str = Field(default="", max_length=300)
+    chapter: str = Field(default="", max_length=300)
+    topic: str = Field(default="", max_length=300)
+    medium: str = Field(default="", max_length=20)
+    difficulty: str = Field(default="", max_length=20)
+    exam_tags: str = Field(default="", max_length=300)
+    #: Filled in on the way out only: what the import would refuse about this row.
+    problems: list[str] = Field(default_factory=list)
+
+
+class ImportRowsIn(BaseModel):
+    institute_id: uuid.UUID | None = None
+    rows: list[ImportRowCells] = Field(min_length=1, max_length=5000)
+
+
+class RowsToExcelIn(BaseModel):
+    rows: list[ImportRowCells] = Field(min_length=1, max_length=5000)
+
+
+class AiExtractResult(BaseModel):
+    file_name: str
+    model_id: str
+    #: ``ok``, or ``cached`` when the same file was read recently (no cost).
+    status: str
+    cost_paise: int
+    input_tokens: int
+    output_tokens: int
+    #: Papers the document names that the outline does not contain. Non-empty means the
+    #: reading is incomplete: read again, or add them by hand before importing.
+    missing_papers: list[str] = Field(default_factory=list)
+    rows: list[ImportRowCells]
+
+
 class ImportResult(BaseModel):
     dry_run: bool
     rows_total: int

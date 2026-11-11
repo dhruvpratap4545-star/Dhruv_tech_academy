@@ -10,6 +10,8 @@ an access log or an error message that quotes the URL.
 
 from __future__ import annotations
 
+import base64
+
 import httpx
 
 from app.core.config import settings
@@ -32,10 +34,26 @@ def safety_settings(level: str) -> list[dict[str, str]]:
 
 
 def build_body(request: ProviderRequest) -> dict:
+    # Files first, then the instruction: Gemini reads a document more reliably when the
+    # question about it comes after it.
+    parts: list[dict] = [
+        {
+            "inline_data": {
+                "mime_type": attachment.content_type,
+                "data": base64.b64encode(attachment.data).decode("ascii"),
+            }
+        }
+        for attachment in request.attachments
+    ]
+    parts.append({"text": request.user_text})
+    generation: dict = {"maxOutputTokens": request.max_output_tokens}
+    if request.json_schema is not None:
+        generation["responseMimeType"] = "application/json"
+        generation["responseJsonSchema"] = request.json_schema
     return {
         "systemInstruction": {"parts": [{"text": request.system_prompt}]},
-        "contents": [{"role": "user", "parts": [{"text": request.user_text}]}],
-        "generationConfig": {"maxOutputTokens": request.max_output_tokens},
+        "contents": [{"role": "user", "parts": parts}],
+        "generationConfig": generation,
         "safetySettings": safety_settings(request.safety_level),
     }
 
@@ -75,7 +93,8 @@ class GeminiProvider(AiProvider):
             raise ProviderError("GEMINI_API_KEY is not configured")
         url = f"{BASE_URL}/models/{request.model_id}:generateContent"
         try:
-            async with httpx.AsyncClient(timeout=settings.ai_request_timeout_seconds) as client:
+            timeout = request.timeout_seconds or settings.ai_request_timeout_seconds
+            async with httpx.AsyncClient(timeout=timeout) as client:
                 response = await client.post(
                     url,
                     json=build_body(request),

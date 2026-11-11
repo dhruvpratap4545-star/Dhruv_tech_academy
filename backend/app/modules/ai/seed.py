@@ -38,6 +38,26 @@ FEATURES: tuple[dict, ...] = (
         "safety_level": "standard",
         "cache_ttl_hours": 0,
     },
+    {
+        "key": "syllabus_import",
+        "name": "Syllabus import from PDF or photo (Library)",
+        "model_id": DEFAULT_MODEL,
+        "fallback_model_id": FALLBACK_MODEL,
+        # A full exam syllabus runs to several hundred topics; the answer is compact JSON.
+        "max_output_tokens": 32768,
+        "system_prompt": (
+            "You turn an Indian exam or school syllabus document into a structured outline "
+            "for a content library. Copy the document's own structure: levels (a class, "
+            "stage or exam paper group), subjects or papers, units or sections, optional "
+            "chapters, and topics. Topics are short names of what is studied (2-12 words), "
+            "split from the document's lists; do not invent topics, merge sections, or "
+            "summarise. Write every name in English; if the document is in Hindi, translate "
+            "the names. Leave out instructions, marks, exam patterns and dates."
+        ),
+        "safety_level": "standard",
+        # The same file uploaded twice is answered from the cache at no cost.
+        "cache_ttl_hours": 24,
+    },
 )
 
 #: Platform defaults from the implementation plan. Admins of every kind get 200.

@@ -16,6 +16,15 @@ class ProviderError(Exception):
     the fallback model. The message is for logs only and never shown to a user."""
 
 
+@dataclass(slots=True, frozen=True)
+class Attachment:
+    """A file sent alongside the prompt — a syllabus PDF, a photo of a page. Only types the
+    upload validator accepts (PDF, JPEG, PNG) ever reach a provider."""
+
+    content_type: str
+    data: bytes
+
+
 @dataclass(slots=True)
 class ProviderRequest:
     model_id: str
@@ -23,6 +32,12 @@ class ProviderRequest:
     user_text: str
     max_output_tokens: int
     safety_level: str = "standard"
+    attachments: tuple[Attachment, ...] = ()
+    #: A JSON Schema the answer must follow. Providers that support structured output
+    #: enforce it; the others are told in the prompt, and the caller validates either way.
+    json_schema: dict | None = None
+    #: Overrides ``AI_REQUEST_TIMEOUT_SECONDS`` for a call known to be slow (a long document).
+    timeout_seconds: float | None = None
 
 
 @dataclass(slots=True)

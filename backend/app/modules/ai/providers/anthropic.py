@@ -3,10 +3,19 @@ when ``ANTHROPIC_API_KEY`` is configured."""
 
 from __future__ import annotations
 
+import base64
+import json
+
 import httpx
 
 from app.core.config import settings
-from app.modules.ai.providers import AiProvider, ProviderError, ProviderRequest, ProviderResult
+from app.modules.ai.providers import (
+    AiProvider,
+    Attachment,
+    ProviderError,
+    ProviderRequest,
+    ProviderResult,
+)
 
 URL = "https://api.anthropic.com/v1/messages"
 API_VERSION = "2023-06-01"
@@ -31,6 +40,36 @@ def parse_response(data: dict) -> ProviderResult:
     )
 
 
+def _block(attachment: Attachment) -> dict:
+    kind = "document" if attachment.content_type == "application/pdf" else "image"
+    return {
+        "type": kind,
+        "source": {
+            "type": "base64",
+            "media_type": attachment.content_type,
+            "data": base64.b64encode(attachment.data).decode("ascii"),
+        },
+    }
+
+
+def build_body(request: ProviderRequest) -> dict:
+    text = request.user_text
+    if request.json_schema is not None:
+        # No schema enforcement here: say it in the prompt, and the caller validates.
+        text += "\n\nReply with JSON only, matching this JSON Schema:\n" + json.dumps(
+            request.json_schema, separators=(",", ":")
+        )
+    content: list[dict] | str = text
+    if request.attachments:
+        content = [*(_block(a) for a in request.attachments), {"type": "text", "text": text}]
+    return {
+        "model": request.model_id,
+        "max_tokens": request.max_output_tokens,
+        "system": request.system_prompt,
+        "messages": [{"role": "user", "content": content}],
+    }
+
+
 class AnthropicProvider(AiProvider):
     name = "anthropic"
 
@@ -40,17 +79,12 @@ class AnthropicProvider(AiProvider):
     async def complete(self, request: ProviderRequest) -> ProviderResult:
         if not self.configured():
             raise ProviderError("ANTHROPIC_API_KEY is not configured")
-        body = {
-            "model": request.model_id,
-            "max_tokens": request.max_output_tokens,
-            "system": request.system_prompt,
-            "messages": [{"role": "user", "content": request.user_text}],
-        }
         try:
-            async with httpx.AsyncClient(timeout=settings.ai_request_timeout_seconds) as client:
+            timeout = request.timeout_seconds or settings.ai_request_timeout_seconds
+            async with httpx.AsyncClient(timeout=timeout) as client:
                 response = await client.post(
                     URL,
-                    json=body,
+                    json=build_body(request),
                     headers={
                         "x-api-key": settings.anthropic_api_key.get_secret_value(),
                         "anthropic-version": API_VERSION,

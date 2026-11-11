@@ -5,14 +5,55 @@ import { Alert } from "@/components/Alert";
 import { Button } from "@/components/Button";
 import type { ImportResult } from "@/features/library/api";
 import { downloadImportTemplate, importSyllabus, libraryKeys } from "@/features/library/api";
+import { AiImport } from "@/features/library/components/AiImport";
 import { useT } from "@/features/i18n/useT";
 import { ApiError } from "@/lib/api";
+import { cn } from "@/lib/cn";
+
+const MODES = [
+  { value: "excel", label: "library.import.modeExcel" },
+  { value: "ai", label: "library.import.modeAi" },
+] as const;
+
+/** Two ways in: the spreadsheet template, or a PDF or photo read by AI. */
+export function ImportWizard({ instituteId }: { instituteId: string | null }) {
+  const { t } = useT();
+  const [mode, setMode] = useState<(typeof MODES)[number]["value"]>("excel");
+  return (
+    <div className="space-y-3">
+      <div role="tablist" aria-label={t("library.import.title")} className="flex gap-1">
+        {MODES.map((item) => (
+          <button
+            key={item.value}
+            type="button"
+            role="tab"
+            aria-selected={mode === item.value}
+            onClick={() => setMode(item.value)}
+            className={cn(
+              "rounded-lg px-3 py-2 text-sm font-medium whitespace-nowrap",
+              mode === item.value
+                ? "bg-accent text-accent-fg"
+                : "text-fg-2 hover:bg-surface-2 hover:text-fg",
+            )}
+          >
+            {t(item.label)}
+          </button>
+        ))}
+      </div>
+      {mode === "excel" ? (
+        <SpreadsheetImport instituteId={instituteId} />
+      ) : (
+        <AiImport instituteId={instituteId} />
+      )}
+    </div>
+  );
+}
 
 /**
  * Template → upload → preview with row errors → import. The preview is a dry run on the
  * server, so what it reports is exactly what the import will do.
  */
-export function ImportWizard({ instituteId }: { instituteId: string | null }) {
+function SpreadsheetImport({ instituteId }: { instituteId: string | null }) {
   const { t } = useT();
   const queryClient = useQueryClient();
   const [file, setFile] = useState<File | null>(null);

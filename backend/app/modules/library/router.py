@@ -16,7 +16,7 @@ from fastapi import APIRouter, Depends, File, Form, Query, Request, Response, Up
 from app.core.errors import ValidationFailed
 from app.core.pagination import Page, clamp_limit
 from app.modules.auth.service import RequestMeta
-from app.modules.library import schemas, spreadsheet
+from app.modules.library import ai_import, schemas, spreadsheet
 from app.modules.library import service as library
 from app.modules.library.models import ItemStatus, Track
 from app.modules.rbac.deps import DbSession, client_ip, require_permission, user_agent
@@ -161,6 +161,74 @@ async def import_syllabus(
     if not dry_run:
         await db.commit()
     return result
+
+
+@router.post(
+    "/import/ai",
+    response_model=schemas.AiExtractResult,
+    summary="Read a syllabus PDF or photo into import rows, with AI",
+    description="Nothing is saved: the rows come back for review, then go to "
+    "`POST /import/rows`. Runs as the `syllabus_import` AI feature, so the AI switches, "
+    "budgets and daily limits apply and the call appears in the usage log.",
+)
+async def import_with_ai(
+    db: DbSession,
+    guard: Manage,
+    file: Annotated[UploadFile, File(description="The syllabus: PDF, JPG or PNG")],
+    track: Annotated[Track, Form()],
+    institute_id: Annotated[uuid.UUID | None, Form()] = None,
+    level: Annotated[str | None, Form(max_length=120)] = None,
+    medium: Annotated[str, Form(pattern="^(Hindi|English|Both)$")] = "Both",
+    difficulty: Annotated[str, Form(pattern="^(|Easy|Medium|Hard)$")] = "",
+    exam_tags: Annotated[str, Form(max_length=200)] = "",
+) -> schemas.AiExtractResult:
+    return await ai_import.extract(
+        db,
+        guard=guard,
+        upload=file,
+        track=track,
+        institute_id=institute_id,
+        level_hint=(level or "").strip() or None,
+        medium=medium,
+        difficulty=difficulty,
+        exam_tags=exam_tags,
+    )
+
+
+@router.post(
+    "/import/rows",
+    response_model=schemas.ImportResult,
+    summary="Preview or apply reviewed rows",
+    description="The JSON form of `POST /import`, for rows reviewed on screen. Same checks, "
+    "same matching on track and code path, `dry_run=true` by default.",
+)
+async def import_rows(
+    request: Request,
+    db: DbSession,
+    guard: Manage,
+    payload: schemas.ImportRowsIn,
+    dry_run: Annotated[bool, Query()] = True,
+) -> schemas.ImportResult:
+    result = await library.import_rows(
+        db,
+        guard=guard,
+        cells=[row.model_dump(exclude={"problems"}) for row in payload.rows],
+        institute_id=payload.institute_id,
+        dry_run=dry_run,
+        meta=_meta(request),
+    )
+    if not dry_run:
+        await db.commit()
+    return result
+
+
+@router.post("/import/rows/xlsx", summary="Download reviewed rows as an import spreadsheet")
+async def rows_to_excel(guard: Manage, payload: schemas.RowsToExcelIn) -> Response:
+    return Response(
+        content=spreadsheet.write_rows([row.model_dump() for row in payload.rows]),
+        media_type=XLSX,
+        headers={"Content-Disposition": 'attachment; filename="syllabus-from-ai.xlsx"'},
+    )
 
 
 # ------------------------------------------------------------------------------- search

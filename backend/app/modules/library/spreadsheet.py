@@ -156,6 +156,36 @@ def read_rows(data: bytes) -> list[ImportRow]:
     return parsed
 
 
+def rows_from_cells(rows: list[dict[str, str]]) -> list[ImportRow]:
+    """Rows that arrive as JSON — the AI import's reviewed preview — checked exactly as a
+    spreadsheet's are. Numbered from 1, the order the reviewer saw them in."""
+    if len(rows) > MAX_ROWS:
+        raise ValidationFailed(f"An import can have at most {MAX_ROWS} rows. Please split it.")
+    parsed = []
+    for number, cells in enumerate(rows, start=1):
+        cleaned = {key: _clean(cells.get(key)) for key in COLUMNS.values()}
+        if any(cleaned.values()):
+            parsed.append(validate_row(number, cleaned))
+    return parsed
+
+
+def write_rows(rows: list[dict[str, str]]) -> bytes:
+    """The same rows as an editable workbook in the template's layout, so a reviewer who
+    prefers Excel can finish the job there and import the file as usual."""
+    book = Workbook()
+    sheet = book.active
+    sheet.title = "Syllabus"
+    sheet.append(TEMPLATE_HEADERS)
+    for cells in rows:
+        sheet.append([_clean(cells.get(key)) for key in COLUMNS.values()])
+    for column, width in zip("ABCDEFGHI", (10, 30, 30, 36, 30, 50, 10, 12, 20), strict=True):
+        sheet.column_dimensions[column].width = width
+    sheet.freeze_panes = "A2"
+    out = io.BytesIO()
+    book.save(out)
+    return out.getvalue()
+
+
 def template() -> bytes:
     book = Workbook()
     sheet = book.active

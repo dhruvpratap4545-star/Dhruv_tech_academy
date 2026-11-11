@@ -80,7 +80,7 @@ class AiFeature(TimestampedDocument):
     name: str = Field(max_length=120)
     model_id: str = Field(max_length=80)
     fallback_model_id: str | None = Field(default=None, max_length=80)
-    max_output_tokens: int = Field(default=1024, ge=16, le=16384)
+    max_output_tokens: int = Field(default=1024, ge=16, le=65536)
     system_prompt: str = Field(default="", max_length=8000)
     safety_level: SafetyLevel = "standard"
     #: 0 turns caching off for this feature.

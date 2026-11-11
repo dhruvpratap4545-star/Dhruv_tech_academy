@@ -8,6 +8,8 @@ from app.modules.ai.providers import AiProvider, ProviderError, ProviderRequest,
 FAIL_MARKER = "__fail__"
 #: Fails only on the named model, so a fallback to a different model succeeds.
 FAIL_PRIMARY_MARKER = "__fail_primary__"
+#: What Gemini charges for one image or PDF page, near enough for tests.
+ATTACHMENT_TOKENS = 258
 
 
 def count_tokens(text: str) -> int:
@@ -31,6 +33,8 @@ class FakeProvider(AiProvider):
         ]
         return ProviderResult(
             text=text,
-            input_tokens=count_tokens(request.system_prompt) + count_tokens(request.user_text),
+            input_tokens=count_tokens(request.system_prompt)
+            + count_tokens(request.user_text)
+            + ATTACHMENT_TOKENS * len(request.attachments),
             output_tokens=count_tokens(text),
         )

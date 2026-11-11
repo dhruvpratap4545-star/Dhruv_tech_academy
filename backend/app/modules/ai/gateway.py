@@ -24,6 +24,8 @@ spending cap is also set in Google Cloud billing.
 
 from __future__ import annotations
 
+import hashlib
+import json
 import logging
 import time
 import uuid
@@ -47,7 +49,13 @@ from app.modules.ai.models import (
     AiUsage,
 )
 from app.modules.ai.pricing import cost_paise, start_of_ist_day
-from app.modules.ai.providers import ProviderError, ProviderRequest, ProviderResult, get_provider
+from app.modules.ai.providers import (
+    Attachment,
+    ProviderError,
+    ProviderRequest,
+    ProviderResult,
+    get_provider,
+)
 from app.modules.ai.seed import UNLISTED_ROLE_LIMIT
 from app.modules.rbac.context import AuthContext
 from app.modules.rbac.scopes import Scope
@@ -113,11 +121,17 @@ async def complete(
     feature_key: str,
     prompt: str,
     extra_context: str | None = None,
+    attachments: tuple[Attachment, ...] = (),
+    json_schema: dict | None = None,
+    timeout_seconds: float | None = None,
 ) -> AiResult:
     """Run one prompt through every control, and return the answer or raise.
 
     ``extra_context`` is trusted material the *feature* adds (a chapter's text, a question
     paper), placed outside the user delimiters. ``prompt`` is what the person typed.
+    ``attachments`` are files the feature sends as they are (a syllabus PDF): redaction
+    cannot reach inside them, so a feature must only attach documents meant for the
+    platform, never a student's work. ``json_schema`` asks for a structured answer.
     Raises ``AiUnavailable``, ``AiDailyLimit``, ``AiBudgetExhausted`` or
     ``ServiceUnavailable``; every one of them is recorded in the usage log first.
     """
@@ -159,6 +173,8 @@ async def complete(
         plan.feature.safety_level,
         str(plan.feature.max_output_tokens),
         extra,
+        *(hashlib.sha256(a.data).hexdigest() for a in attachments),
+        json.dumps(json_schema, sort_keys=True) if json_schema else "",
     )
     if plan.feature.cache_ttl_hours > 0:
         hit = await db.find_one(AiCache, {"key": key, "expires_at": {"$gt": utcnow()}})
@@ -200,6 +216,9 @@ async def complete(
                     user_text=user_text,
                     max_output_tokens=plan.feature.max_output_tokens,
                     safety_level=plan.feature.safety_level,
+                    attachments=attachments,
+                    json_schema=json_schema,
+                    timeout_seconds=timeout_seconds,
                 )
             )
             break

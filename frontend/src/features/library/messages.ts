@@ -70,7 +70,7 @@ export const LIBRARY_EN = {
   "library.kindName.chapter": "Chapter",
   "library.kindName.topic": "Topic",
   // Import
-  "library.import.title": "Import from a spreadsheet",
+  "library.import.title": "Import a syllabus",
   "library.import.description":
     "Columns: Track, Level, Subject, Unit, Chapter, Topic, Medium, Difficulty, Exam tags. Re-importing a file is safe.",
   "library.import.template": "Download template",
@@ -81,6 +81,37 @@ export const LIBRARY_EN = {
     "{valid} of {total} rows are valid: {created} new, {updated} renamed, {unchanged} unchanged.",
   "library.import.done": "Imported: {created} new, {updated} renamed, {unchanged} unchanged.",
   "library.import.row": "Row {row}",
+  "library.import.modeExcel": "From a spreadsheet",
+  "library.import.modeAi": "From a PDF or photo (AI)",
+  // Import with AI
+  "library.ai.description":
+    "Upload the syllabus as a PDF or a photo. AI reads it into rows you can correct here before anything is saved.",
+  "library.ai.file": "Syllabus (PDF, JPG or PNG)",
+  "library.ai.track": "Track",
+  "library.ai.level": "Level name (optional)",
+  "library.ai.levelHint":
+    "For example Class 10 or Semester 8. Leave empty to use the names in the document.",
+  "library.ai.medium": "Medium",
+  "library.ai.difficulty": "Difficulty (optional)",
+  "library.ai.difficultyNone": "Not set",
+  "library.ai.examTags": "Exam tags (optional)",
+  "library.ai.examTagsHint": "Separated by commas, for example upsc, geoscientist",
+  "library.ai.read": "Read with AI",
+  "library.ai.reading": "Reading the syllabus. This can take up to two minutes.",
+  "library.ai.result": "{rows} rows read from {file} by {model}, cost ₹{cost}.",
+  "library.ai.cached": "{rows} rows read from {file}, from the cache at no cost.",
+  "library.ai.missing":
+    "These papers are in the document but were not read: {papers}. Read it again, or add them before importing.",
+  "library.ai.problems":
+    "{count} rows need a fix before they can be imported. They are highlighted.",
+  "library.ai.reviewHint":
+    "Check the rows. Correct any name or remove a row, then check and import.",
+  "library.ai.remove": "Remove row {row}",
+  "library.ai.download": "Download as Excel",
+  "library.ai.check": "Check rows",
+  "library.ai.startOver": "Start over",
+  "library.ai.showing": "Showing {shown} of {total} rows.",
+  "library.ai.showAll": "Show all",
   // Class syllabus
   "library.classSyllabus.title": "Class syllabus",
   "library.classSyllabus.description":
@@ -198,7 +229,7 @@ export const LIBRARY_HI: Partial<Record<keyof typeof LIBRARY_EN, string>> = {
   "library.kindName.unit": "इकाई",
   "library.kindName.chapter": "अध्याय",
   "library.kindName.topic": "प्रकरण",
-  "library.import.title": "स्प्रेडशीट से आयात करें",
+  "library.import.title": "सिलेबस आयात करें",
   "library.import.description":
     "कॉलम: Track, Level, Subject, Unit, Chapter, Topic, Medium, Difficulty, Exam tags। फ़ाइल दोबारा आयात करना सुरक्षित है।",
   "library.import.template": "टेम्पलेट डाउनलोड करें",
@@ -209,6 +240,35 @@ export const LIBRARY_HI: Partial<Record<keyof typeof LIBRARY_EN, string>> = {
     "{total} में से {valid} पंक्तियाँ सही हैं: {created} नई, {updated} नाम बदले, {unchanged} बिना बदलाव।",
   "library.import.done": "आयात हुआ: {created} नई, {updated} नाम बदले, {unchanged} बिना बदलाव।",
   "library.import.row": "पंक्ति {row}",
+  "library.import.modeExcel": "स्प्रेडशीट से",
+  "library.import.modeAi": "PDF या फ़ोटो से (AI)",
+  "library.ai.description":
+    "सिलेबस PDF या फ़ोटो के रूप में अपलोड करें। AI इसे पंक्तियों में पढ़ता है, जिन्हें आप सहेजने से पहले यहीं सुधार सकते हैं।",
+  "library.ai.file": "सिलेबस (PDF, JPG या PNG)",
+  "library.ai.track": "ट्रैक",
+  "library.ai.level": "स्तर का नाम (वैकल्पिक)",
+  "library.ai.levelHint":
+    "जैसे कक्षा 10 या सेमेस्टर 8। खाली छोड़ें तो दस्तावेज़ के नाम लिए जाएँगे।",
+  "library.ai.medium": "माध्यम",
+  "library.ai.difficulty": "कठिनाई (वैकल्पिक)",
+  "library.ai.difficultyNone": "तय नहीं",
+  "library.ai.examTags": "परीक्षा टैग (वैकल्पिक)",
+  "library.ai.examTagsHint": "अल्पविराम से अलग करें, जैसे upsc, geoscientist",
+  "library.ai.read": "AI से पढ़ें",
+  "library.ai.reading": "सिलेबस पढ़ा जा रहा है। इसमें दो मिनट तक लग सकते हैं।",
+  "library.ai.result": "{file} से {rows} पंक्तियाँ {model} ने पढ़ीं, लागत ₹{cost}।",
+  "library.ai.cached": "{file} से {rows} पंक्तियाँ कैश से पढ़ी गईं, कोई लागत नहीं।",
+  "library.ai.missing":
+    "ये पेपर दस्तावेज़ में हैं पर पढ़े नहीं गए: {papers}। दोबारा पढ़ें, या आयात से पहले इन्हें जोड़ें।",
+  "library.ai.problems": "{count} पंक्तियों में सुधार ज़रूरी है। वे हाइलाइट की गई हैं।",
+  "library.ai.reviewHint":
+    "पंक्तियाँ जाँचें। कोई नाम सुधारें या पंक्ति हटाएँ, फिर जाँचें और आयात करें।",
+  "library.ai.remove": "पंक्ति {row} हटाएँ",
+  "library.ai.download": "Excel में डाउनलोड करें",
+  "library.ai.check": "पंक्तियाँ जाँचें",
+  "library.ai.startOver": "फिर से शुरू करें",
+  "library.ai.showing": "{total} में से {shown} पंक्तियाँ दिख रही हैं।",
+  "library.ai.showAll": "सभी दिखाएँ",
   "library.classSyllabus.title": "कक्षा का पाठ्यक्रम",
   "library.classSyllabus.description":
     "कक्षा को उसके पाठ्यक्रम से जोड़ें, जैसे कक्षा 10-A को CBSE › कक्षा 10 से। विद्यार्थी केवल जुड़ा हुआ भाग देखते हैं।",
