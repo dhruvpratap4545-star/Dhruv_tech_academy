@@ -15,8 +15,11 @@ jobs:
       mongo:
         image: mongo:8.0
         ports: ["27017:27017"]
+        # The health command is passed through to Docker as written: YAML block scalars do
+        # not process escapes, so a backslash-escaped quote here reaches mongosh literally
+        # and fails as a syntax error. Single quotes inside, double quotes outside.
         options: >-
-          --health-cmd "mongosh --quiet --eval 'db.adminCommand(\"ping\").ok'"
+          --health-cmd "mongosh --quiet --eval 'db.adminCommand({ ping: 1 }).ok'"
           --health-interval 5s --health-timeout 5s --health-retries 10
     env:
       ENVIRONMENT: test
