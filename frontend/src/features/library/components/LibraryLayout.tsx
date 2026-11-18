@@ -11,7 +11,6 @@ import { cn } from "@/lib/cn";
 
 const TABS: { to: string; label: MessageKey; permission: Permission }[] = [
   { to: "/library", label: "library.nav.library", permission: "library:read" },
-  { to: "/library/review", label: "library.nav.review", permission: "library:contribute" },
   { to: "/library/manage", label: "library.nav.manage", permission: "library:manage" },
 ];
 

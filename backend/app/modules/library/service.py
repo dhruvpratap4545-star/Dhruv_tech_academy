@@ -9,8 +9,10 @@ Write rules, enforced here and nowhere else:
   institute (``ensure_within``). A Branch Admin holds ``library:manage`` at their branch,
   and the syllabus belongs to the institute as a whole, so asking for institute-level
   authority would lock every branch head out of a job the role matrix gives them.
-* Faculty **contribute**: they create drafts and submit them for review, and edit only their
-  own drafts. ``library:publish`` moves ``in_review`` → ``published``; nothing else does.
+* Faculty **contribute**: they add sections (one level at a time, Track › Level › Subject ›
+  Topic) and material, and change or archive only what they added themselves. Material is
+  published the moment it is added; the old draft → review → publish transitions remain
+  only for items written before that.
 * Every edit to a published item snapshots the previous state into ``content_item_versions``.
 
 Reads go through ``access.resolve_reader``; anything a reader may not see is a 404.
@@ -44,6 +46,7 @@ from app.modules.library.rules import (
     check_https_link,
     check_kind,
     child_path,
+    next_kind,
     normalise_code,
     parse_video_url,
     slugify,
@@ -198,7 +201,10 @@ async def create_node(
         track = payload.track
 
     await authorize(guard, institute_id)
-    check_kind(parent.kind if parent else None, payload.kind)
+    kind = payload.kind or next_kind(parent.kind if parent else None)
+    if kind is None:
+        raise ValidationFailed("Nothing can be added below a topic.")
+    check_kind(parent.kind if parent else None, kind)
     code = normalise_code(payload.code or payload.name)
     path = child_path(parent.code_path if parent else None, code)
     if await db.exists(SyllabusNode, {"code_path": path, "institute_id": institute_id}):
@@ -212,11 +218,12 @@ async def create_node(
         track=track,
         parent_id=parent.id if parent else None,
         ancestors=[*parent.ancestors, parent.id] if parent else [],
-        kind=payload.kind,
+        kind=kind,
         name=payload.name,
         code=code,
         code_path=path,
         order=(last.order + 1) if last else 0,
+        created_by=guard.user_id,
         mediums=list(payload.mediums),
         difficulty=payload.difficulty,
         exam_tags=sorted({slugify(t, max_length=20) for t in payload.exam_tags} - {""}),
@@ -235,10 +242,25 @@ async def create_node(
     return node
 
 
+async def may_manage(db: Db, guard: Authorized, institute_id: uuid.UUID | None) -> bool:
+    """Does the caller hold ``library:manage`` for this library (not just contribute)?"""
+    if not guard.context.holds("library:manage"):
+        return False
+    try:
+        await authorize(Authorized(db, guard.context, "library:manage"), institute_id)
+    except Forbidden:
+        return False
+    return True
+
+
 async def _node_for_write(db: Db, guard: Authorized, node_id: uuid.UUID) -> SyllabusNode:
+    """Library managers may change any section of their library; a teacher only the
+    sections they added themselves, so one teacher cannot rename another's work."""
     reader = await resolve_reader(db, guard)
     node = await _require_node(db, reader, node_id)
     await authorize(guard, node.institute_id)
+    if not await may_manage(db, guard, node.institute_id) and node.created_by != guard.user_id:
+        raise Forbidden("You can only change sections you added yourself.")
     return node
 
 
@@ -495,6 +517,7 @@ async def create_item(
         source=payload.source,
         created_by=guard.user_id,
         **_link_fields(payload.kind, payload.url, payload.body),
+        **_published_now(guard.user_id),
     )
     db.add(item)
     _audit_item(db, guard.user_id, meta, events.LIBRARY_ITEM_CREATED, item)
@@ -543,6 +566,81 @@ async def upload_item(
         author=(author or "").strip()[:120] or None,
         source=(source or "").strip()[:200] or None,
         created_by=guard.user_id,
+        **_published_now(guard.user_id),
+    )
+    db.add(item)
+    _audit_item(db, guard.user_id, meta, events.LIBRARY_ITEM_CREATED, item)
+    return item
+
+
+def _published_now(user_id: uuid.UUID) -> dict[str, Any]:
+    """Material is visible the moment it is added; there is no review step."""
+    return {"status": "published", "published_at": utcnow(), "reviewed_by": user_id}
+
+
+def library_upload_limit() -> int:
+    from app.core.config import settings
+
+    return settings.max_library_upload_mb * 1024 * 1024
+
+
+async def start_upload(
+    db: Db, *, guard: Authorized, payload: schemas.UploadStart
+) -> schemas.UploadTicket:
+    """A presigned link to put one document straight into the bucket.
+
+    Nothing is visible yet: the record is ``pending`` until ``item_from_upload`` has checked
+    the bytes. With ``upload_url`` null (local disk cannot sign), the browser falls back to
+    ``POST /library/items/upload``.
+    """
+    await authorize(guard, payload.institute_id)
+    limit = library_upload_limit()
+    ticket = await files.start_direct_upload(
+        db,
+        institute_id=payload.institute_id or MASTER_FILE_INSTITUTE,
+        purpose="library",
+        user_id=guard.user_id,
+        file_name=payload.file_name,
+        content_type=payload.content_type,
+        size=payload.size,
+        limit_bytes=limit,
+    )
+    if ticket is None:
+        return schemas.UploadTicket(file_id=None, upload_url=None, max_bytes=limit)
+    return schemas.UploadTicket(
+        file_id=ticket.file.id, upload_url=ticket.url, headers=ticket.headers, max_bytes=limit
+    )
+
+
+async def item_from_upload(
+    db: Db, *, guard: Authorized, payload: schemas.ItemFromUpload, meta: RequestMeta
+) -> ContentItem:
+    """Check the uploaded bytes, then file the document under its topic, visible at once."""
+    await authorize(guard, payload.institute_id)
+    linked = await _check_nodes(db, payload.node_ids, payload.institute_id)
+    stored = await files.finish_direct_upload(
+        db,
+        file_id=payload.file_id,
+        user_id=guard.user_id,
+        purpose="library",
+        limit_bytes=library_upload_limit(),
+        ip=meta.ip,
+        user_agent=meta.user_agent,
+    )
+    if stored.institute_id != (payload.institute_id or MASTER_FILE_INSTITUTE):
+        raise ValidationFailed("That file was uploaded for a different library.")
+    stored.status = "attached"
+    item = ContentItem(
+        institute_id=payload.institute_id,
+        title=payload.title.strip(),
+        kind="pdf" if stored.content_type == "application/pdf" else "image",
+        file_id=stored.id,
+        node_ids=linked,
+        medium=payload.medium,
+        author=(payload.author or "").strip()[:120] or None,
+        source=(payload.source or "").strip()[:200] or None,
+        created_by=guard.user_id,
+        **_published_now(guard.user_id),
     )
     db.add(item)
     _audit_item(db, guard.user_id, meta, events.LIBRARY_ITEM_CREATED, item)
@@ -634,10 +732,10 @@ def _snapshot(db: Db, item: ContentItem, editor: uuid.UUID) -> None:
 async def update_item(
     db: Db, *, guard: Authorized, item_id: uuid.UUID, payload: schemas.ItemUpdate, meta: RequestMeta
 ) -> ContentItem:
-    """Contributors edit their own drafts; managers edit anything in their library."""
+    """Teachers edit what they added; library managers edit anything in their library."""
     reader = await resolve_reader(db, guard)
     item = await _require_item(db, reader, item_id)
-    own_draft = item.created_by == guard.user_id and item.status == "draft"
+    own_draft = item.created_by == guard.user_id
     if own_draft:
         await authorize(guard, item.institute_id)
     else:
@@ -761,6 +859,7 @@ async def archive_item(
         to="archived",
         action=events.LIBRARY_ITEM_ARCHIVED,
         meta=meta,
+        creator_may=True,
     )
 
 

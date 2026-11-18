@@ -1,117 +1,38 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 
 import { Alert } from "@/components/Alert";
 import { Button } from "@/components/Button";
-import { Card, CardBody, CardHeader } from "@/components/Card";
 import { SelectField, TextField } from "@/components/Field";
 import { FileUpload } from "@/components/FileUpload";
-import { Icon } from "@/components/Icon";
 import { Modal } from "@/components/Modal";
-import { Spinner } from "@/components/Spinner";
-import { EmptyState } from "@/components/Table";
-import type { ContentItem, ItemKind, LinkedNode, Medium } from "@/features/library/api";
-import {
-  createItem,
-  fetchItems,
-  fetchVersions,
-  libraryKeys,
-  uploadItem,
-} from "@/features/library/api";
-import { ItemActions } from "@/features/library/components/ItemActions";
-import { LibraryLayout } from "@/features/library/components/LibraryLayout";
-import { MaterialCard } from "@/features/library/components/MaterialCard";
+import type { ItemKind, LinkedNode, Medium } from "@/features/library/api";
+import { createItem, libraryKeys, uploadDocument } from "@/features/library/api";
 import { TopicPicker } from "@/features/library/components/TopicPicker";
 import { validateMaterial } from "@/features/library/material";
 import { useOwnerOptions } from "@/features/library/useOwnerOptions";
-import { useCan } from "@/features/auth/useAuth";
 import { useT } from "@/features/i18n/useT";
 import { ApiError } from "@/lib/api";
-import { formatDateTime } from "@/lib/format";
 
 /**
- * Material & review. Contributors (faculty and up) add material as drafts and send it for
- * review; holders of `library:publish` see the queue and publish or send it back.
+ * Add a document, video, link or note to the library, filed under the section that is open
+ * (more can be added). PDFs and images go straight to storage on a presigned link; the
+ * item is published the moment the server has checked the file.
  */
-export function MaterialReviewPage() {
-  const { t } = useT();
-  const canPublish = useCan("library:publish");
-  const [adding, setAdding] = useState(false);
-  const [history, setHistory] = useState<ContentItem | null>(null);
-
-  return (
-    <LibraryLayout
-      title={t("library.review.title")}
-      description={t("library.review.description")}
-      actions={
-        <Button icon={<Icon name="plus" />} onClick={() => setAdding(true)}>
-          {t("library.review.add")}
-        </Button>
-      }
-    >
-      {canPublish && (
-        <ItemSection
-          title={t("library.review.queue")}
-          empty={t("library.review.emptyQueue")}
-          filters={{ status: "in_review" }}
-          onHistory={setHistory}
-        />
-      )}
-      <ItemSection
-        title={t("library.review.mine")}
-        empty={t("library.review.emptyMine")}
-        filters={{ mine: true }}
-        onHistory={setHistory}
-      />
-      {adding && <MaterialForm onClose={() => setAdding(false)} />}
-      {history && <HistoryModal item={history} onClose={() => setHistory(null)} />}
-    </LibraryLayout>
-  );
-}
-
-function ItemSection({
-  title,
-  empty,
-  filters,
-  onHistory,
+export function AddMaterialModal({
+  topics: initialTopics,
+  onClose,
 }: {
-  title: string;
-  empty: string;
-  filters: { status?: "in_review"; mine?: boolean };
-  onHistory: (item: ContentItem) => void;
+  topics: LinkedNode[];
+  onClose: () => void;
 }) {
-  const items = useQuery({
-    queryKey: libraryKeys.items({ ...filters, limit: 50 }),
-    queryFn: ({ signal }) => fetchItems({ ...filters, limit: 50 }, signal),
-  });
-  return (
-    <section className="space-y-3">
-      <h2 className="font-display text-lg font-bold text-fg">{title}</h2>
-      {items.isLoading && <Spinner />}
-      {items.error && <Alert tone="danger">{items.error.message}</Alert>}
-      {items.data && items.data.items.length === 0 && <EmptyState title={empty} />}
-      <div className="grid gap-3 lg:grid-cols-2">
-        {(items.data?.items ?? []).map((item) => (
-          <MaterialCard
-            key={item.id}
-            item={item}
-            showStatus
-            actions={<ItemActions item={item} onHistory={() => onHistory(item)} />}
-          />
-        ))}
-      </div>
-    </section>
-  );
-}
-
-function MaterialForm({ onClose }: { onClose: () => void }) {
   const { t } = useT();
   const queryClient = useQueryClient();
   const owners = useOwnerOptions();
   const [owner, setOwner] = useState<string | null>(null);
   const [kind, setKind] = useState<ItemKind>("pdf");
   const [title, setTitle] = useState("");
-  const [topics, setTopics] = useState<LinkedNode[]>([]);
+  const [topics, setTopics] = useState<LinkedNode[]>(initialTopics);
   const [medium, setMedium] = useState<Medium>("en");
   const [url, setUrl] = useState("");
   const [body, setBody] = useState("");
@@ -125,7 +46,7 @@ function MaterialForm({ onClose }: { onClose: () => void }) {
     mutationFn: () => {
       const node_ids = topics.map((n) => n.id);
       if (kind === "pdf" || kind === "image") {
-        return uploadItem({
+        return uploadDocument({
           file: files[0]!,
           title: title.trim(),
           node_ids,
@@ -172,6 +93,7 @@ function MaterialForm({ onClose }: { onClose: () => void }) {
       onClose={onClose}
       size="lg"
       title={t("library.review.add")}
+      description={t("library.form.visibleAtOnce")}
       footer={
         <>
           <Button variant="secondary" onClick={onClose}>
@@ -275,46 +197,6 @@ function MaterialForm({ onClose }: { onClose: () => void }) {
         {problem && <Alert tone="warning">{t(problem)}</Alert>}
         {save.error instanceof ApiError && <Alert tone="danger">{save.error.message}</Alert>}
       </div>
-    </Modal>
-  );
-}
-
-function HistoryModal({ item, onClose }: { item: ContentItem; onClose: () => void }) {
-  const { t } = useT();
-  const versions = useQuery({
-    queryKey: libraryKeys.versions(item.id),
-    queryFn: ({ signal }) => fetchVersions(item.id, signal),
-  });
-  return (
-    <Modal open onClose={onClose} title={`${t("library.review.history")}: ${item.title}`}>
-      {versions.isLoading && <Spinner />}
-      {versions.data && versions.data.length === 0 && (
-        <p className="text-sm text-fg-2">{t("library.review.noHistory")}</p>
-      )}
-      <ul className="space-y-2">
-        {(versions.data ?? []).map((v) => (
-          <li key={v.id}>
-            <Card>
-              <CardHeader
-                title={t("library.review.version", { version: v.version })}
-                description={formatDateTime(v.created_at)}
-              />
-              <CardBody>
-                <dl className="space-y-1 text-xs">
-                  {Object.entries(v.fields)
-                    .filter(([, value]) => value !== null && typeof value !== "object")
-                    .map(([key, value]) => (
-                      <div key={key} className="flex gap-2">
-                        <dt className="w-24 shrink-0 text-fg-3">{key}</dt>
-                        <dd className="min-w-0 break-words text-fg">{String(value)}</dd>
-                      </div>
-                    ))}
-                </dl>
-              </CardBody>
-            </Card>
-          </li>
-        ))}
-      </ul>
     </Modal>
   );
 }

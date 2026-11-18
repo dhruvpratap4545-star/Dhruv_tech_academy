@@ -21,3 +21,18 @@ async def seed_syllabus_command(track: str | None) -> None:
             f"{name}: {counts['created']} created, {counts['updated']} updated, "
             f"{counts['unchanged']} unchanged (source: {counts['source']}, as of {counts['as_of']})"
         )
+
+
+async def flatten_syllabus_command() -> None:
+    from app.modules.library.flatten import flatten_to_four_levels
+
+    await init_db()
+    try:
+        counts = await flatten_to_four_levels()
+    finally:
+        await close_db()
+    print(
+        f"{counts['moved']} sections moved, {counts['archived']} archived, "
+        f"{counts['items_relinked']} materials and {counts['class_links_moved']} class links "
+        "re-pointed."
+    )

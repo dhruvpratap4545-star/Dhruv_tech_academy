@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { embedUrl, fileUrl, safeHref, validateMaterial } from "@/features/library/material";
-import { childKinds } from "@/features/library/tree";
+import { nextLevel } from "@/features/library/tree";
 
 describe("embedUrl", () => {
   it("builds privacy-friendly embeds from validated ids", () => {
@@ -66,11 +66,13 @@ describe("validateMaterial", () => {
   });
 });
 
-describe("childKinds", () => {
-  it("follows the syllabus levels, with units optional", () => {
-    expect(childKinds("track")).toEqual(["level"]);
-    expect(childKinds("subject")).toEqual(["unit", "chapter"]);
-    expect(childKinds("chapter")).toEqual(["topic"]);
-    expect(childKinds("topic")).toEqual([]);
+describe("nextLevel", () => {
+  it("walks the four fixed levels and stops below a topic", () => {
+    expect(nextLevel(null)).toBe("track");
+    expect(nextLevel("track")).toBe("level");
+    expect(nextLevel("level")).toBe("subject");
+    expect(nextLevel("subject")).toBe("topic");
+    expect(nextLevel("topic")).toBeNull();
+    expect(nextLevel("chapter")).toBeNull();
   });
 });

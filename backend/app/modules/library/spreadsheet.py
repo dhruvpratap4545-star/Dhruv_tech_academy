@@ -1,9 +1,9 @@
 """Reading and writing the syllabus import spreadsheet.
 
-One row is one path through the tree — Track › Level › Subject › (Unit) › (Chapter) ›
-(Topic). Rows that share a prefix share those nodes, so a content team can paste a whole
-board's syllabus from Excel with one row per topic. Like the bulk invite, a bad row is
-reported by its Excel row number and the rest are still read.
+One row is one path through the tree — Track › Level › Subject › (Topic). Rows that share a
+prefix share those nodes, so a content team can paste a whole board's syllabus from Excel
+with one row per topic. Like the bulk invite, a bad row is reported by its Excel row number
+and the rest are still read.
 
 Nothing here touches the database.
 """
@@ -38,14 +38,16 @@ TEMPLATE_HEADERS: Final = [
     "Track",
     "Level",
     "Subject",
-    "Unit",
-    "Chapter",
     "Topic",
     "Medium",
     "Difficulty",
     "Exam tags",
 ]
-PATH_KINDS: Final = ("level", "subject", "unit", "chapter", "topic")
+#: The template's columns, in order. ``unit`` and ``chapter`` stay in ``COLUMNS`` only so an
+#: old six-level file is recognised and explained rather than silently half-imported.
+TEMPLATE_KEYS: Final = ("track", "level", "subject", "topic", "medium", "difficulty", "exam_tags")
+PATH_KINDS: Final = ("level", "subject", "topic")
+LEGACY_KINDS: Final = ("unit", "chapter")
 _TRACK_NAMES: Final = {
     "cbse": "CBSE",
     "neet": "NEET",
@@ -107,8 +109,11 @@ def validate_row(number: int, cells: dict[str, str]) -> ImportRow:
     for required in ("level", "subject"):
         if required not in present:
             row.problems.append(f"{required.title()} is required.")
-    if "topic" in present and "chapter" not in present and "unit" not in present:
-        row.problems.append("A topic needs the chapter or unit it belongs to.")
+    if any(cells.get(kind) for kind in LEGACY_KINDS):
+        row.problems.append(
+            "The Unit and Chapter columns are no longer used: the library has four levels "
+            "(Track, Level, Subject, Topic). Put the chapter's name in Topic."
+        )
 
     medium = cells.get("medium", "").lower()
     if medium not in _MEDIUMS:
@@ -177,8 +182,8 @@ def write_rows(rows: list[dict[str, str]]) -> bytes:
     sheet.title = "Syllabus"
     sheet.append(TEMPLATE_HEADERS)
     for cells in rows:
-        sheet.append([_clean(cells.get(key)) for key in COLUMNS.values()])
-    for column, width in zip("ABCDEFGHI", (10, 30, 30, 36, 30, 50, 10, 12, 20), strict=True):
+        sheet.append([_clean(cells.get(key)) for key in TEMPLATE_KEYS])
+    for column, width in zip("ABCDEFG", (10, 30, 30, 50, 10, 12, 20), strict=True):
         sheet.column_dimensions[column].width = width
     sheet.freeze_panes = "A2"
     out = io.BytesIO()
@@ -191,13 +196,9 @@ def template() -> bytes:
     sheet = book.active
     sheet.title = "Syllabus"
     sheet.append(TEMPLATE_HEADERS)
-    sheet.append(
-        ["CBSE", "Class 10", "Science", "", "Electricity", "Ohm's Law", "Both", "Medium", "cbse"]
-    )
-    sheet.append(
-        ["CBSE", "Class 10", "Science", "", "Electricity", "Resistance in Series", "Both", "", ""]
-    )
-    for column, width in zip("ABCDEFGHI", (10, 14, 18, 18, 30, 30, 10, 12, 16), strict=True):
+    sheet.append(["NEET", "Class 11", "Physics", "Laws of Motion", "Both", "Medium", "neet"])
+    sheet.append(["NEET", "Class 11", "Physics", "Work, Energy and Power", "Both", "", ""])
+    for column, width in zip("ABCDEFG", (10, 14, 18, 36, 10, 12, 16), strict=True):
         sheet.column_dimensions[column].width = width
     out = io.BytesIO()
     book.save(out)

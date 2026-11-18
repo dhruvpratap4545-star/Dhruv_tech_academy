@@ -6,10 +6,12 @@ import pytest
 
 from app.core.errors import ValidationFailed
 from app.modules.library import seed, spreadsheet
+from app.modules.library.models import KIND_ORDER
 from app.modules.library.rules import (
     check_https_link,
     check_kind,
     child_path,
+    next_kind,
     normalise_code,
     parse_video_url,
     slugify,
@@ -41,18 +43,30 @@ def test_code_paths_chain_from_the_track() -> None:
     assert child_path("cbse/class-10", "science") == "cbse/class-10/science"
 
 
-def test_kinds_must_deepen_and_tracks_are_roots() -> None:
+def test_the_four_levels_go_in_order_and_tracks_are_roots() -> None:
     check_kind(None, "track")
     check_kind("track", "level")
-    check_kind("subject", "topic")  # units and chapters may be skipped
+    check_kind("level", "subject")
+    check_kind("subject", "topic")
     for parent, kind in [
         (None, "level"),
-        ("chapter", "unit"),
+        ("track", "subject"),  # no level may be skipped
+        ("subject", "chapter"),  # units and chapters are gone
         ("level", "track"),
-        ("topic", "topic"),
+        ("topic", "topic"),  # nothing below a topic
     ]:
         with pytest.raises(ValidationFailed):
             check_kind(parent, kind)
+
+
+def test_the_next_level_is_known_from_the_parent() -> None:
+    assert [next_kind(k) for k in (None, "track", "level", "subject", "topic")] == [
+        "track",
+        "level",
+        "subject",
+        "topic",
+        None,
+    ]
 
 
 @pytest.mark.parametrize(
@@ -110,8 +124,7 @@ def test_an_import_row_is_validated_with_every_problem_reported() -> None:
             "track": "CBSE",
             "level": "Class 10",
             "subject": "Science",
-            "chapter": "Electricity",
-            "topic": "Ohm's Law",
+            "topic": "Electricity",
             "medium": "Both",
             "difficulty": "Medium",
             "exam_tags": "CBSE, JEE",
@@ -119,7 +132,7 @@ def test_an_import_row_is_validated_with_every_problem_reported() -> None:
     )
     assert good.problems == []
     assert good.track == "cbse"
-    assert [k for k, _ in good.path] == ["level", "subject", "chapter", "topic"]
+    assert [k for k, _ in good.path] == ["level", "subject", "topic"]
     assert good.mediums == ["hi", "en"] and good.difficulty == "medium"
     assert good.exam_tags == ["cbse", "jee"]
 
@@ -128,6 +141,7 @@ def test_an_import_row_is_validated_with_every_problem_reported() -> None:
         {
             "track": "ICSE",
             "subject": "Science",
+            "chapter": "Electricity",
             "topic": "Ohm",
             "medium": "French",
             "difficulty": "x",
@@ -137,7 +151,7 @@ def test_an_import_row_is_validated_with_every_problem_reported() -> None:
     for expected in (
         "Track must be",
         "Level is required",
-        "topic needs",
+        "no longer used",
         "Medium must",
         "Difficulty",
     ):
@@ -161,10 +175,12 @@ def test_every_seed_file_records_its_source_and_has_valid_kinds(track: str) -> N
     assert data["track"] == track
     assert data["source"] and data["as_of"] and "verification" in data["note"]
 
+    # The files keep the textbooks' deeper shape (units, chapters); the seed folds it onto
+    # four levels. Here each child need only sit below its parent in that older order.
     def walk(kind: str, spec: dict) -> int:
         count = 0
         for child in seed.children_of(spec):
-            check_kind(kind, child["kind"])
+            assert KIND_ORDER.index(child["kind"]) > KIND_ORDER.index(kind), child["name"]
             assert slugify(child.get("code") or child["name"]), child["name"]
             count += 1 + walk(child["kind"], child)
         return count

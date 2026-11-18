@@ -1,11 +1,10 @@
-import type { NodeKind } from "@/features/library/api";
+import type { Level, NodeKind } from "@/features/library/api";
+import { LEVELS } from "@/features/library/api";
 
-const KINDS: NodeKind[] = ["track", "level", "subject", "unit", "chapter", "topic"];
-
-/** Kinds that may sit directly below `parent`. A unit is optional, so a subject can hold
- * chapters directly. */
-export function childKinds(parent: NodeKind): NodeKind[] {
-  const index = KINDS.indexOf(parent);
-  if (parent === "subject") return ["unit", "chapter"];
-  return index >= 0 && index < KINDS.length - 1 ? [KINDS[index + 1]!] : [];
+/** The one level that sits directly below `parent` (`null` for the top), or none below a
+ * topic. A section from before the four levels (a unit or chapter) takes nothing new. */
+export function nextLevel(parent: NodeKind | null): Level | null {
+  if (parent === null) return "track";
+  const index = LEVELS.indexOf(parent as Level);
+  return index >= 0 && index < LEVELS.length - 1 ? LEVELS[index + 1]! : null;
 }

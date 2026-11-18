@@ -31,8 +31,9 @@ class StoredFile(TimestampedDocument):
     storage_key: str = Field(max_length=200)
     #: Shown back to people and used as the download name. Sanitised on the way in.
     original_name: str = Field(max_length=200)
-    #: `uploaded` until a homework, submission or library item references it.
-    status: Literal["uploaded", "attached"] = "uploaded"
+    #: `pending` while a presigned upload is in flight (the bytes are not checked yet and
+    #: nothing may use it), `uploaded` once checked, `attached` once something references it.
+    status: Literal["pending", "uploaded", "attached"] = "uploaded"
 
     class Settings:
         name = "stored_files"

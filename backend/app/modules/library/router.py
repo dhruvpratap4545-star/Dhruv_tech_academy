@@ -68,9 +68,16 @@ async def get_node(node_id: uuid.UUID, db: DbSession, guard: Read) -> schemas.No
     return await library.get_node(db, guard=guard, node_id=node_id)
 
 
-@router.post("/nodes", response_model=schemas.NodeOut, status_code=201, summary="Add a node")
+@router.post(
+    "/nodes",
+    response_model=schemas.NodeOut,
+    status_code=201,
+    summary="Add a section",
+    description="Track › Level › Subject › Topic. Without `kind`, the next level below the "
+    "parent is used. Teachers may add sections to their institute's library.",
+)
 async def create_node(
-    payload: schemas.NodeCreate, request: Request, db: DbSession, guard: Manage
+    payload: schemas.NodeCreate, request: Request, db: DbSession, guard: Contribute
 ) -> schemas.NodeOut:
     node = await library.create_node(db, guard=guard, payload=payload, meta=_meta(request))
     await db.commit()
@@ -83,7 +90,7 @@ async def update_node(
     payload: schemas.NodeUpdate,
     request: Request,
     db: DbSession,
-    guard: Manage,
+    guard: Contribute,
 ) -> schemas.NodeOut:
     node = await library.update_node(
         db, guard=guard, node_id=node_id, payload=payload, meta=_meta(request)
@@ -99,7 +106,7 @@ async def update_node(
     description="Refused with 409 while any part of it still has material that is not archived.",
 )
 async def archive_node(
-    node_id: uuid.UUID, request: Request, db: DbSession, guard: Manage
+    node_id: uuid.UUID, request: Request, db: DbSession, guard: Contribute
 ) -> schemas.NodeOut:
     node = await library.archive_node(db, guard=guard, node_id=node_id, meta=_meta(request))
     await db.commit()
@@ -330,6 +337,36 @@ async def upload_item(
     return (await library.item_outs(db, [item]))[0]
 
 
+@router.post(
+    "/uploads",
+    response_model=schemas.UploadTicket,
+    summary="Get a presigned link to upload a document",
+    description="The browser PUTs the file to `upload_url` with `headers`, then calls "
+    "`POST /library/items/from-upload`. `upload_url` null: this server cannot sign; send the "
+    "file to `POST /library/items/upload` instead.",
+)
+async def start_upload(
+    payload: schemas.UploadStart, db: DbSession, guard: Contribute
+) -> schemas.UploadTicket:
+    ticket = await library.start_upload(db, guard=guard, payload=payload)
+    await db.commit()
+    return ticket
+
+
+@router.post(
+    "/items/from-upload",
+    response_model=schemas.ItemOut,
+    status_code=201,
+    summary="File an uploaded document under its topic (visible at once)",
+)
+async def item_from_upload(
+    payload: schemas.ItemFromUpload, request: Request, db: DbSession, guard: Contribute
+) -> schemas.ItemOut:
+    item = await library.item_from_upload(db, guard=guard, payload=payload, meta=_meta(request))
+    await db.commit()
+    return (await library.item_outs(db, [item]))[0]
+
+
 @router.patch("/items/{item_id}", response_model=schemas.ItemOut, summary="Edit material")
 async def update_item(
     item_id: uuid.UUID,
@@ -398,7 +435,7 @@ async def reject_item(
 
 @router.post("/items/{item_id}/archive", response_model=schemas.ItemOut, summary="Archive")
 async def archive_item(
-    item_id: uuid.UUID, request: Request, db: DbSession, guard: Manage
+    item_id: uuid.UUID, request: Request, db: DbSession, guard: Contribute
 ) -> schemas.ItemOut:
     item = await library.archive_item(db, guard=guard, item_id=item_id, meta=_meta(request))
     await db.commit()
