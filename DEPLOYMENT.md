@@ -162,7 +162,7 @@ Now store each secret. Repeat this for every value, replacing the name each time
 printf '%s' 'THE VALUE' | gcloud secrets create MONGODB_URL --data-file=-
 ```
 
-The five secrets:
+The six secrets:
 
 | Name | Value |
 |---|---|
@@ -171,6 +171,7 @@ The five secrets:
 | `JWT_PUBLIC_KEY` | the public key printed in step 3 |
 | `OTP_PEPPER` | the random string from step 3 |
 | `RESEND_API_KEY` | the key from step 2 |
+| `GEMINI_API_KEY` | a Gemini API key from [Google AI Studio](https://aistudio.google.com/apikey). Without it every AI feature — syllabus import included — answers "The AI service is not responding" |
 
 For the two keys, which run over several lines, read them from the file instead:
 
@@ -202,7 +203,7 @@ gcloud run deploy dhruv-app \
   --port=8000 --no-cpu-throttling --max-instances=4 --min-instances=0 \
   --memory=1Gi --cpu=1 --timeout=300 \
   --set-env-vars="^##^ENVIRONMENT=production##MONGODB_DB_NAME=dhruv##FRONTEND_URL=https://dhruvonlineacademy.com##JWT_KEY_ID=k1##SEED_SUPERADMIN_EMAIL=admin@example.com##EMAIL_FROM=Dhruv Online Academy <noreply@dhruvonlineacademy.com>" \
-  --set-secrets=MONGODB_URL=MONGODB_URL:latest,JWT_PRIVATE_KEY=JWT_PRIVATE_KEY:latest,JWT_PUBLIC_KEY=JWT_PUBLIC_KEY:latest,OTP_PEPPER=OTP_PEPPER:latest,RESEND_API_KEY=RESEND_API_KEY:latest
+  --set-secrets=MONGODB_URL=MONGODB_URL:latest,JWT_PRIVATE_KEY=JWT_PRIVATE_KEY:latest,JWT_PUBLIC_KEY=JWT_PUBLIC_KEY:latest,OTP_PEPPER=OTP_PEPPER:latest,RESEND_API_KEY=RESEND_API_KEY:latest,GEMINI_API_KEY=GEMINI_API_KEY:latest
 ```
 
 The `^##^` at the front changes the separator from a comma to `##`. Without it, gcloud
@@ -218,6 +219,10 @@ The secrets go on in that same command rather than afterwards, because the appli
 refuses to start without the signing keys — it signs and verifies a throwaway token at
 boot so that a broken key fails the deploy instead of surfacing as a 500 on somebody's
 first login. Deploy without them and the revision never turns healthy.
+
+A secret attached to the service must also be readable by it. `--set-secrets` grants
+nothing: if the revision fails with a Secret Manager permission error, give the service
+account access to that secret, the same way `ADMIN_PASSWORD` is handled further down.
 
 `cloudbuild.yaml` is for *later* deploys, once this one has worked — it only replaces the
 image, and Cloud Run keeps the settings and secrets you attached here.
@@ -559,6 +564,8 @@ whether each key is configured, never the key.
 | `STORAGE_BACKEND` | `gcs` | `local` only in development |
 | `GCS_BUCKET` | `dhruv-prod-uploads` | The bucket above |
 | `MAX_UPLOAD_MB` | `10` | Per-file limit |
+| `MAX_LIBRARY_UPLOAD_MB` | `50` | Library documents (uploaded straight to the bucket) |
+| `UPLOAD_URL_TTL_SECONDS` | `900` | How long a presigned upload link stays valid |
 
 The non-secret ones are set by `cloudbuild.yaml` on every deploy.
 
@@ -579,6 +586,39 @@ against its AI budget, and the AI module must be on for that institute (the mast
 uses the platform budget). A typical syllabus PDF costs ₹1–3 to read; the same file read
 again within 24 hours comes from the cache at no cost. Only syllabus documents should be
 uploaded here — the file goes to the AI provider as it is, so redaction cannot reach inside.
+(Since 18-11-2026 this tab is hidden: the library is built by hand or from the spreadsheet.)
+
+### 5a. Library: four levels and direct uploads (18-11-2026)
+
+The library now has exactly four levels — **Track › Level › Subject › Topic** — chosen from
+a section bar of four dropdowns. Teachers add a missing level, subject or topic in place and
+add material to whatever is open; it is published at once (no review queue).
+
+1. **Move existing data onto four levels**, once, after deploying. Units are dropped (their
+   chapters move up under the subject), chapters become topics, and anything below a topic
+   is archived with its material and class links moved up to the topic. Nothing is deleted;
+   running it again does nothing. Execute the job with `flatten-syllabus` as its argument
+   (`seed-syllabus` also runs it first).
+2. **Let the browser upload to the bucket.** Documents go straight from the browser to GCS
+   on a presigned `PUT`, then the API reads them back and checks them (real type, size,
+   EXIF stripped) before filing them — a file that fails is deleted. The bucket must accept
+   that `PUT` from the site's origin, once per bucket:
+
+   ```bash
+   cat > cors.json <<'JSON'
+   [{"origin": ["https://app.example.com"],
+     "method": ["PUT"],
+     "responseHeader": ["Content-Type", "x-goog-content-length-range"],
+     "maxAgeSeconds": 3600}]
+   JSON
+   gcloud storage buckets update gs://dhruv-prod-uploads --cors-file=cors.json
+   ```
+
+   Put the real site address in `origin` (and `http://localhost:5173` on
+   `dhruv-dev-uploads`). The page's Content-Security-Policy already allows
+   `https://storage.googleapis.com` in `connect-src`. Without CORS the upload fails in the
+   browser; where storage cannot sign (local disk), the app uploads through the API
+   instead, as before.
 
 ### 6. Scheduled jobs: homework notices and the weekly parent digest
 

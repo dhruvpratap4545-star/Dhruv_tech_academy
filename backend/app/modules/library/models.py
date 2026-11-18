@@ -29,13 +29,20 @@ from pymongo import ASCENDING, IndexModel
 from app.core.db import TimestampedDocument, UuidDocument, utcnow
 
 Track = Literal["cbse", "neet", "jee", "upsc", "custom"]
+#: ``unit`` and ``chapter`` are only ever read from data written before the library moved to
+#: four fixed levels; ``flatten.flatten_to_four_levels`` converts them, and nothing creates
+#: them any more.
 NodeKind = Literal["track", "level", "subject", "unit", "chapter", "topic"]
 ItemKind = Literal["pdf", "image", "video_link", "link", "text"]
 ItemStatus = Literal["draft", "in_review", "published", "archived"]
 
 TRACKS: tuple[str, ...] = ("cbse", "neet", "jee", "upsc", "custom")
-#: Outermost first. A child must sit deeper than its parent; levels may be skipped (a unit
-#: is optional, and an exam syllabus may go straight from subject to topic).
+#: The four levels of every syllabus, outermost first: NEET › Class 11 › Physics › Laws of
+#: Motion. Fixed on purpose — a learner searching for a topic always walks the same four
+#: steps, whichever track or institute the syllabus came from. A child sits exactly one
+#: level below its parent.
+LEVELS: tuple[str, ...] = ("track", "level", "subject", "topic")
+#: Every kind ever stored, outermost first, legacy ones included.
 KIND_ORDER: tuple[str, ...] = ("track", "level", "subject", "unit", "chapter", "topic")
 MEDIUMS: tuple[str, ...] = ("hi", "en")
 
@@ -54,6 +61,9 @@ class SyllabusNode(TimestampedDocument):
     difficulty: Literal["easy", "medium", "hard"] | None = None
     exam_tags: list[str] = Field(default_factory=list)
     status: Literal["active", "archived"] = "active"
+    #: Who added the section. A teacher may rename or archive only the sections they added;
+    #: library managers may change any. Null for seeded and imported nodes.
+    created_by: uuid.UUID | None = None
 
     class Settings:
         name = "syllabus_nodes"
@@ -78,7 +88,11 @@ class SyllabusNode(TimestampedDocument):
 
 
 class ContentItem(TimestampedDocument):
-    """One piece of study material, linked to one or more topics or chapters."""
+    """One document or link, filed under a section of the syllabus (usually a topic).
+
+    Material is visible as soon as it is added (``published``). ``draft`` and ``in_review``
+    remain only for items written before that change.
+    """
 
     institute_id: uuid.UUID | None = None
     title: str = Field(min_length=2, max_length=200)

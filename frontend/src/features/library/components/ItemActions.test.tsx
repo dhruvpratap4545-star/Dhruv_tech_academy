@@ -38,51 +38,42 @@ function item(status: ContentItem["status"]): ContentItem {
 }
 
 describe("ItemActions", () => {
-  it("lets a contributor send a draft for review but not publish", () => {
-    renderWithProviders(<ItemActions item={item("draft")} onHistory={() => {}} />, {
+  it("lets the person who added material remove it, with no review step", () => {
+    renderWithProviders(<ItemActions item={item("published")} onHistory={() => {}} />, {
       user: makeUser({ permissions: ["library:read", "library:contribute"] }),
     });
-    expect(screen.getByRole("button", { name: "Send for review" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Remove" })).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Publish" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Send for review" })).not.toBeInTheDocument();
   });
 
-  it("hides send for review on someone else's draft unless the reader manages", () => {
-    const other = { ...item("draft"), created_by: "someone-else" };
-    const { unmount } = renderWithProviders(<ItemActions item={other} onHistory={() => {}} />, {
+  it("hides remove on a colleague's material unless the reader manages the library", () => {
+    const other = { ...item("published"), created_by: "someone-else" };
+    const { unmount } = renderWithProviders(<ItemActions item={other} />, {
       user: makeUser({ permissions: ["library:read", "library:contribute"] }),
     });
-    expect(screen.queryByRole("button", { name: "Send for review" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Remove" })).not.toBeInTheDocument();
     unmount();
-    renderWithProviders(<ItemActions item={other} onHistory={() => {}} />, {
+    renderWithProviders(<ItemActions item={other} />, {
       user: makeUser({ permissions: ["library:read", "library:manage"] }),
     });
-    expect(screen.getByRole("button", { name: "Send for review" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Remove" })).toBeInTheDocument();
   });
 
-  it("hides publish from a faculty member looking at an item under review", () => {
-    renderWithProviders(<ItemActions item={item("in_review")} onHistory={() => {}} />, {
-      user: makeUser({ permissions: ["library:read", "library:contribute"] }),
-    });
-    expect(screen.queryByRole("button", { name: "Publish" })).not.toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: "Send back" })).not.toBeInTheDocument();
-  });
-
-  it("offers publish and send back to a reviewer", () => {
-    renderWithProviders(<ItemActions item={item("in_review")} onHistory={() => {}} />, {
+  it("lets a reviewer publish a draft left from the old review flow", () => {
+    renderWithProviders(<ItemActions item={item("in_review")} />, {
       user: makeUser({ permissions: ["library:read", "library:publish", "library:manage"] }),
     });
     expect(screen.getByRole("button", { name: "Publish" })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Send back" })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Archive" })).toBeInTheDocument();
   });
 
   it("shows the Hindi labels when Hindi is chosen", () => {
-    renderWithProviders(<ItemActions item={item("draft")} onHistory={() => {}} />, {
+    renderWithProviders(<ItemActions item={item("published")} />, {
       user: makeUser({
         permissions: ["library:contribute"],
         preferences: { theme: "system", language: "hi" },
       }),
     });
-    expect(screen.getByRole("button", { name: "समीक्षा के लिए भेजें" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "हटाएँ" })).toBeInTheDocument();
   });
 });

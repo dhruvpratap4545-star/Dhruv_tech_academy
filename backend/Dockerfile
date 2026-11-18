@@ -1,17 +1,17 @@
-# Portable image (PRD §10.7). Render builds from requirements.txt directly, but this
-# keeps the app runnable on GCP/AWS without changes.
+# API-only image, deployed to Cloud Run as `dhruv-api`. Build context is backend/:
+#   docker build -t dhruv-api backend
+# The web app is a separate service (frontend/Dockerfile) that proxies /api/* here, so the
+# browser sees one origin.
 FROM python:3.12-slim
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
-    PIP_NO_CACHE_DIR=1
+    PIP_NO_CACHE_DIR=1 \
+    PIP_DISABLE_PIP_VERSION_CHECK=1
 
 WORKDIR /app
 
-RUN apt-get update \
-    && apt-get install -y --no-install-recommends build-essential libpq-dev curl \
-    && rm -rf /var/lib/apt/lists/*
-
+# Every dependency ships a manylinux wheel for 3.12, so no compiler or libpq is needed.
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
@@ -20,8 +20,7 @@ COPY . .
 RUN useradd --create-home --uid 10001 appuser && chown -R appuser /app
 USER appuser
 
-EXPOSE 8000
-HEALTHCHECK --interval=30s --timeout=5s --start-period=10s \
-    CMD curl -fsS http://localhost:8000/healthz || exit 1
-
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--proxy-headers"]
+# Cloud Run injects PORT (the service's container port). The script runs the seed first
+# when RUN_MIGRATIONS_ON_START=1.
+EXPOSE 8080
+CMD ["sh", "scripts/start.sh"]

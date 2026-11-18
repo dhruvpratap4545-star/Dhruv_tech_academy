@@ -51,19 +51,20 @@ def _flatten(outline=OUTLINE, *, level_hint=None):
 
 
 def _path(row: dict[str, str]) -> tuple[str, ...]:
-    return (row["subject"], row["unit"], row["chapter"], row["topic"])
+    assert row["unit"] == row["chapter"] == ""  # four levels: those columns stay empty
+    return (row["subject"], row["topic"])
 
 
-def test_flatten_gives_one_row_per_topic_and_keeps_empty_branches() -> None:
+def test_flatten_folds_everything_below_a_subject_into_topics() -> None:
     rows = _flatten()
 
     assert [_path(r) for r in rows] == [
-        ("Paper II - Geology", "1. Mineralogy", "", "Bravais lattices"),
-        ("Paper II - Geology", "1. Mineralogy", "", "Isomorphism"),
-        ("Paper II - Geology", "2. Stratigraphy", "Archaean", "Dharwar craton"),
-        ("Paper II - Geology", "2. Stratigraphy", "Proterozoic", ""),
-        ("Paper II - Geology", "3. Field Work", "", ""),
-        ("Paper III - Chemistry", "", "", ""),
+        ("Paper II - Geology", "Bravais lattices"),
+        ("Paper II - Geology", "Isomorphism"),
+        ("Paper II - Geology", "Archaean"),
+        ("Paper II - Geology", "Proterozoic"),
+        ("Paper II - Geology", "3. Field Work"),
+        ("Paper III - Chemistry", ""),
     ]
     assert {r["track"] for r in rows} == {"upsc"}
     assert {r["difficulty"] for r in rows} == {"Hard"}
@@ -102,8 +103,8 @@ def test_flatten_skips_repeats_and_junk_the_model_may_return() -> None:
     }
 
     assert [_path(r) for r in _flatten(outline)] == [
-        ("Science", "Light", "", "Reflection"),
-        ("Science", "Light", "", "7"),
+        ("Science", "Reflection"),
+        ("Science", "7"),
     ]
 
 
@@ -136,7 +137,6 @@ def test_reviewed_rows_round_trip_through_excel() -> None:
     assert parsed[0].path == [
         ("level", "Prelims (Stage I)"),
         ("subject", "Paper II - Geology"),
-        ("unit", "1. Mineralogy"),
         ("topic", "Bravais lattices"),
     ]
 

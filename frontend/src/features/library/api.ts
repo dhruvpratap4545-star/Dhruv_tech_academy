@@ -1,10 +1,15 @@
 /** Content Library API (`/library`). Shapes mirror backend/app/modules/library/schemas.py. */
 
 import type { Page } from "@/lib/api";
-import { apiDownload, apiFetch, query } from "@/lib/api";
+import { ApiError, apiDownload, apiFetch, query } from "@/lib/api";
 
 export type Track = "cbse" | "neet" | "jee" | "upsc" | "custom";
-export type NodeKind = "track" | "level" | "subject" | "unit" | "chapter" | "topic";
+/** The four levels every syllabus has, outermost first: NEET › Class 11 › Physics › Laws of
+ * Motion. `unit` and `chapter` exist only in data written before the library moved to four
+ * levels; nothing creates them any more. */
+export const LEVELS = ["track", "level", "subject", "topic"] as const;
+export type Level = (typeof LEVELS)[number];
+export type NodeKind = Level | "unit" | "chapter";
 export type ItemKind = "pdf" | "image" | "video_link" | "link" | "text";
 export type ItemStatus = "draft" | "in_review" | "published" | "archived";
 export type Medium = "hi" | "en" | "both";
@@ -22,6 +27,8 @@ export type SyllabusNode = {
   difficulty: string | null;
   exam_tags: string[];
   status: string;
+  /** Who added it. A teacher may rename or archive only the sections they added. */
+  created_by: string | null;
   child_count: number;
 };
 
@@ -136,7 +143,8 @@ export type NodeInput = {
   parent_id?: string | null;
   institute_id?: string | null;
   track?: Track | null;
-  kind: NodeKind;
+  /** Left out, the server uses the level below the parent. */
+  kind?: Level;
   name: string;
   code?: string | null;
   mediums?: ("hi" | "en")[];
@@ -252,7 +260,7 @@ export const fetchItems = (
 export const createItem = (body: ItemInput) =>
   apiFetch<ContentItem>("/library/items", { method: "POST", body });
 
-export function uploadItem(input: {
+export type DocumentInput = {
   file: File;
   title: string;
   node_ids: string[];
@@ -260,7 +268,72 @@ export function uploadItem(input: {
   institute_id?: string | null;
   author?: string;
   source?: string;
-}) {
+};
+
+/** A presigned link to put one document straight into storage. */
+export type UploadTicket = {
+  file_id: string | null;
+  upload_url: string | null;
+  headers: Record<string, string>;
+  max_bytes: number;
+};
+
+export const startUpload = (input: {
+  file_name: string;
+  content_type: string;
+  size: number;
+  institute_id?: string | null;
+}) => apiFetch<UploadTicket>("/library/uploads", { method: "POST", body: input });
+
+export const itemFromUpload = (body: {
+  file_id: string;
+  title: string;
+  node_ids: string[];
+  medium: Medium;
+  institute_id?: string | null;
+  author?: string | null;
+  source?: string | null;
+}) => apiFetch<ContentItem>("/library/items/from-upload", { method: "POST", body });
+
+/** The browser's PUT to the bucket. Not `apiFetch`: it goes to storage, not to the API, and
+ * must carry exactly the signed headers and no cookies. */
+async function putToStorage(url: string, headers: Record<string, string>, file: File) {
+  const response = await fetch(url, { method: "PUT", headers, body: file, credentials: "omit" });
+  if (!response.ok) {
+    throw new ApiError(
+      response.status,
+      "upload_failed",
+      "The file could not be uploaded. Please try again.",
+    );
+  }
+}
+
+/**
+ * Upload a PDF or image as material. The file goes straight to storage on a presigned link,
+ * then the server checks it and files it under its topics, visible at once. Where storage
+ * cannot sign (local development), it goes through the API instead.
+ */
+export async function uploadDocument(input: DocumentInput): Promise<ContentItem> {
+  const ticket = await startUpload({
+    file_name: input.file.name,
+    content_type: input.file.type || "application/octet-stream",
+    size: input.file.size,
+    institute_id: input.institute_id ?? null,
+  });
+  if (!ticket.upload_url || !ticket.file_id) return uploadItem(input);
+  await putToStorage(ticket.upload_url, ticket.headers, input.file);
+  return itemFromUpload({
+    file_id: ticket.file_id,
+    title: input.title,
+    node_ids: input.node_ids,
+    medium: input.medium,
+    institute_id: input.institute_id ?? null,
+    author: input.author || null,
+    source: input.source || null,
+  });
+}
+
+export function uploadItem(input: DocumentInput) {
   const form = new FormData();
   form.append("file", input.file);
   form.append("title", input.title);

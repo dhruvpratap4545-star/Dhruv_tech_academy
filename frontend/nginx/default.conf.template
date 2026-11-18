@@ -1,0 +1,81 @@
+# Rendered at container start by the nginx image's envsubst step. NGINX_ENVSUBST_FILTER
+# limits substitution to PORT and BACKEND_HOST; every $nginx_variable is left alone.
+#
+# Serves the built web app and proxies /api/* to the API service, so the browser talks to
+# one origin: the SameSite=Lax auth cookies always travel and there is no CORS. Two
+# *.run.app URLs would be different sites (run.app is a public suffix) and lose the cookies.
+
+# The caller's address as Google's front end saw it: the last X-Forwarded-For entry. Earlier
+# entries are whatever the client sent, so they are discarded rather than passed on.
+map $http_x_forwarded_for $client_ip {
+    "~(?<last>[^,\s]+)\s*$" $last;
+    default                 $remote_addr;
+}
+
+server {
+    listen ${PORT};
+    server_name _;
+    root /usr/share/nginx/html;
+    server_tokens off;
+
+    # Cloud Run's metadata server answers DNS. Resolving per request keeps up with the
+    # API's *.run.app addresses, which change.
+    resolver 169.254.169.254 valid=60s ipv6=off;
+
+    gzip on;
+    gzip_types text/css application/javascript application/json image/svg+xml;
+    gzip_min_length 1024;
+
+    location /api/ {
+        include /etc/nginx/snippets/security-headers.conf;
+        set $backend https://${BACKEND_HOST};
+        proxy_pass $backend;
+        proxy_http_version 1.1;
+        proxy_ssl_server_name on;
+        proxy_ssl_name ${BACKEND_HOST};
+        proxy_set_header Host ${BACKEND_HOST};
+        proxy_set_header X-Forwarded-For $client_ip;
+        proxy_set_header X-Forwarded-Proto https;
+        # A redirect from the API names its own host; keep the browser on this one.
+        proxy_redirect https://${BACKEND_HOST}/ /;
+        client_max_body_size 2m;
+        proxy_read_timeout 60s;
+    }
+
+    # Vite fingerprints everything under assets/, so a changed file always gets a new name.
+    # A missing bundle must be a 404, not HTML the browser tries to run as JS.
+    location /assets/ {
+        include /etc/nginx/snippets/security-headers.conf;
+        # No `always`: a 404 for a bundle from an older deploy must not be cached for a year.
+        add_header Cache-Control "public, max-age=31536000, immutable";
+        try_files $uri =404;
+    }
+
+    # The shell must never be cached, or a deploy would leave browsers asking for old bundles.
+    location = /index.html {
+        include /etc/nginx/snippets/security-headers.conf;
+        include /etc/nginx/snippets/csp.conf;
+        add_header Cache-Control "no-cache" always;
+    }
+
+    # Files that decide what every other file does: a service worker cached for an hour
+    # keeps serving the previous app; a stale manifest keeps the old name and icons on a
+    # home screen. Revalidated on every request, as in backend/app/core/spa.py.
+    location = /sw.js {
+        include /etc/nginx/snippets/security-headers.conf;
+        add_header Cache-Control "no-cache" always;
+    }
+
+    location = /manifest.webmanifest {
+        include /etc/nginx/snippets/security-headers.conf;
+        add_header Cache-Control "no-cache" always;
+        types { application/manifest+json webmanifest; }
+    }
+
+    # Files from public/, then client-side routes, which get the shell.
+    location / {
+        include /etc/nginx/snippets/security-headers.conf;
+        add_header Cache-Control "public, max-age=3600" always;
+        try_files $uri /index.html;
+    }
+}

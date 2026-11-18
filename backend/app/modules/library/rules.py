@@ -9,7 +9,7 @@ from typing import Final
 from urllib.parse import parse_qs, urlparse
 
 from app.core.errors import ValidationFailed
-from app.modules.library.models import KIND_ORDER
+from app.modules.library.models import LEVELS
 
 _NON_CODE: Final = re.compile(r"[^a-z0-9]+")
 _YOUTUBE_ID: Final = re.compile(r"^[A-Za-z0-9_-]{11}$")
@@ -42,15 +42,30 @@ def child_path(parent_path: str | None, code: str) -> str:
 
 
 def check_kind(parent_kind: str | None, kind: str) -> None:
-    """A track is always a root; anything else sits strictly deeper than its parent."""
+    """Track › Level › Subject › Topic, exactly one step at a time.
+
+    A track is always a root, and every other section sits exactly one level below its
+    parent: no skipped levels, no deeper nesting. The fixed shape is what keeps the four
+    section dropdowns meaningful — a level is always a level, whatever the track.
+    """
     if parent_kind is None:
         if kind != "track":
-            raise ValidationFailed("A top-level node must be a track.")
+            raise ValidationFailed("A top-level section must be a track, such as NEET or UPSC.")
         return
-    if kind == "track":
-        raise ValidationFailed("A track cannot sit inside another node.")
-    if KIND_ORDER.index(kind) <= KIND_ORDER.index(parent_kind):
-        raise ValidationFailed(f"A {kind} cannot sit inside a {parent_kind}.")
+    if parent_kind not in LEVELS or parent_kind == LEVELS[-1]:
+        raise ValidationFailed("Nothing can be added below a topic.")
+    expected = LEVELS[LEVELS.index(parent_kind) + 1]
+    if kind != expected:
+        raise ValidationFailed(f"Inside a {parent_kind} you can only add a {expected}.")
+
+
+def next_kind(parent_kind: str | None) -> str | None:
+    """The kind a new section under this parent must be, or ``None`` below a topic."""
+    if parent_kind is None:
+        return LEVELS[0]
+    if parent_kind not in LEVELS or parent_kind == LEVELS[-1]:
+        return None
+    return LEVELS[LEVELS.index(parent_kind) + 1]
 
 
 @dataclass(frozen=True, slots=True)

@@ -130,6 +130,11 @@ class Settings(BaseSettings):
     google_application_credentials: str | None = None
     local_storage_dir: str = ".uploads"
     max_upload_mb: int = 10
+    #: Library documents go straight from the browser to the bucket (a presigned upload),
+    #: so they are not held to Cloud Run's 32 MB request limit and may be larger.
+    max_library_upload_mb: int = 50
+    #: How long a presigned upload link stays valid.
+    upload_url_ttl_seconds: int = 900
     #: How long a signed download link stays valid. Short, because it is a bearer link.
     signed_url_ttl_seconds: int = 300
 

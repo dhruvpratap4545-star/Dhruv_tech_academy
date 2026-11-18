@@ -17,6 +17,7 @@ Run with the application's environment loaded::
     python -m app.cli revoke-super-admin someone@example.com
     python -m app.cli list-super-admins
     python -m app.cli seed-syllabus [--track cbse]           # Phase 3, safe to re-run
+    python -m app.cli flatten-syllabus                       # one-off, safe to re-run
     python -m app.cli homework-digest                       # Phase 3, weekly (Sun 18:00 IST)
     python -m app.cli homework-notify                       # every 5-15 min: scheduled homework
     ADMIN_PASSWORD=... python -m app.cli set-password someone@example.com
@@ -329,6 +330,11 @@ def build_parser() -> argparse.ArgumentParser:
     y.add_argument("--track", choices=["cbse", "neet", "jee", "upsc"], default=None)
 
     sub.add_parser(
+        "flatten-syllabus",
+        help="Move every syllabus onto Track > Level > Subject > Topic. Safe to re-run.",
+    )
+
+    sub.add_parser(
         "homework-notify",
         help="Email students about scheduled homework whose publish time has passed. "
         "Run every 5-15 minutes.",
@@ -358,6 +364,10 @@ def main(argv: list[str] | None = None) -> None:
                 from app.modules.library.commands import seed_syllabus_command
 
                 await seed_syllabus_command(args.track)
+            elif args.command == "flatten-syllabus":
+                from app.modules.library.commands import flatten_syllabus_command
+
+                await flatten_syllabus_command()
             elif args.command == "homework-notify":
                 from app.modules.homework.commands import homework_notify_command
 

@@ -57,6 +57,12 @@ def max_bytes() -> int:
     return settings.max_upload_mb * 1024 * 1024
 
 
+def normalise_type(declared: str | None) -> str:
+    """The declared type in the form ``ALLOWED_TYPES`` uses, or ``""``."""
+    value = (declared or "").split(";", 1)[0].strip().lower()
+    return _DECLARED_ALIASES.get(value, value)
+
+
 def sniff(data: bytes) -> str | None:
     """The real type of the file from its first bytes, or ``None`` if it is none of ours."""
     if data.startswith(b"%PDF-"):
@@ -103,12 +109,19 @@ def _reencode(data: bytes, content_type: str) -> bytes:
         raise ValidationFailed("That image could not be read. Please try another photo.") from exc
 
 
-def validate_upload(data: bytes, *, declared_type: str | None, filename: str | None) -> CleanFile:
+def validate_upload(
+    data: bytes,
+    *,
+    declared_type: str | None,
+    filename: str | None,
+    limit_bytes: int | None = None,
+) -> CleanFile:
     """Check, clean and hash one upload. ``data`` may be at most one byte over the limit."""
+    limit = limit_bytes or max_bytes()
     if not data:
         raise ValidationFailed("That file is empty.")
-    if len(data) > max_bytes():
-        raise ValidationFailed(f"Files can be at most {settings.max_upload_mb} MB.")
+    if len(data) > limit:
+        raise ValidationFailed(f"Files can be at most {limit // (1024 * 1024)} MB.")
 
     actual = sniff(data)
     if actual is None:

@@ -1,0 +1,8 @@
+# Build context for frontend/Dockerfile. Keep local artefacts and secrets out of the image.
+node_modules
+dist
+.vite
+*.tsbuildinfo
+.env
+.env.*
+!.env.example

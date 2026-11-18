@@ -39,6 +39,8 @@ class NodeOut(OrmModel):
     difficulty: str | None
     exam_tags: list[str]
     status: str
+    #: Who added it; a teacher may rename or archive only their own sections.
+    created_by: uuid.UUID | None = None
     #: Filled where it matters for browsing: does this node have children to open?
     child_count: int = 0
 
@@ -60,7 +62,9 @@ class NodeCreate(StrictModel):
     #: Omit for the master library (platform only). Ignored when it must follow the parent.
     institute_id: uuid.UUID | None = None
     track: Track | None = None
-    kind: NodeKind
+    #: Optional: the four levels are fixed, so the server knows what comes below the parent
+    #: (a track, then a level, a subject, a topic). Sent only to double-check.
+    kind: NodeKind | None = None
     name: str = Field(min_length=1, max_length=200)
     code: str | None = Field(default=None, max_length=80)
     mediums: list[Medium] = Field(default_factory=lambda: ["hi", "en"], min_length=1)
@@ -124,6 +128,37 @@ class ItemCreate(StrictModel):
     url: str | None = Field(default=None, max_length=500)
     body: str | None = Field(default=None, max_length=20_000)
     node_ids: list[uuid.UUID] = Field(min_length=1, max_length=20)
+    medium: Literal["hi", "en", "both"] = "en"
+    author: str | None = Field(default=None, max_length=120)
+    source: str | None = Field(default=None, max_length=200)
+
+
+class UploadStart(StrictModel):
+    """Ask for a presigned upload link for one library document."""
+
+    file_name: str = Field(min_length=1, max_length=200)
+    content_type: str = Field(min_length=1, max_length=100)
+    size: int = Field(gt=0)
+    institute_id: uuid.UUID | None = None
+
+
+class UploadTicket(BaseModel):
+    """Where the browser PUTs the file. ``upload_url`` null means this server cannot sign
+    (local development): send the file to ``POST /library/items/upload`` instead."""
+
+    file_id: uuid.UUID | None
+    upload_url: str | None
+    headers: dict[str, str] = Field(default_factory=dict)
+    max_bytes: int
+
+
+class ItemFromUpload(StrictModel):
+    """Create the document's record once its bytes are in the bucket."""
+
+    file_id: uuid.UUID
+    title: str = Field(min_length=2, max_length=200)
+    node_ids: list[uuid.UUID] = Field(min_length=1, max_length=20)
+    institute_id: uuid.UUID | None = None
     medium: Literal["hi", "en", "both"] = "en"
     author: str | None = Field(default=None, max_length=120)
     source: str | None = Field(default=None, max_length=200)

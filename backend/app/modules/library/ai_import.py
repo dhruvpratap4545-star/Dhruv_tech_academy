@@ -190,9 +190,9 @@ def flatten(
 ) -> list[dict[str, str]]:
     """One row per topic, exactly as a person would fill the template.
 
-    A unit or chapter with no topics still gets a row, so it is not lost. Repeated paths
-    are kept once. With a single level and a ``level_hint``, the hint names the level —
-    the reviewer knows better than the document what the level is called on the platform.
+    Repeated paths are kept once. With a single level and a ``level_hint``, the hint names
+    the level — the reviewer knows better than the document what the level is called on
+    the platform.
     """
     levels = _names(outline.get("levels"))
     rename = bool(level_hint) and len(levels) == 1
@@ -200,9 +200,9 @@ def flatten(
     rows: list[dict[str, str]] = []
     seen: set[tuple[str, ...]] = set()
 
-    def add(*path: str) -> None:
-        level, subject, unit, chapter, topic = (" ".join(p.split()) for p in path)
-        key = (level.lower(), subject.lower(), unit.lower(), chapter.lower(), topic.lower())
+    def add(level: str, subject: str, topic: str) -> None:
+        level, subject, topic = (" ".join(p.split()) for p in (level, subject, topic))
+        key = (level.lower(), subject.lower(), topic.lower())
         if key in seen:
             return
         seen.add(key)
@@ -211,8 +211,8 @@ def flatten(
                 "track": track,
                 "level": level,
                 "subject": subject,
-                "unit": unit,
-                "chapter": chapter,
+                "unit": "",
+                "chapter": "",
                 "topic": topic,
                 "medium": medium,
                 "difficulty": difficulty,
@@ -220,27 +220,24 @@ def flatten(
             }
         )
 
+    # Four levels: whatever the document nests below a subject, the deepest named heading
+    # a learner would search for (a chapter, else a unit's topics, else the unit) is a topic.
     for level in levels:
         level_name = str(level_hint if rename else level["name"])
         for subject in _names(level.get("subjects")):
             subject_name = str(subject["name"])
             units = _names(subject.get("units"))
             if not units:
-                add(level_name, subject_name, "", "", "")
+                add(level_name, subject_name, "")
             for unit in units:
-                unit_name = str(unit["name"])
-                topics = _topics(unit.get("topics"))
                 chapters = _names(unit.get("chapters"))
-                for topic in topics:
-                    add(level_name, subject_name, unit_name, "", topic)
+                topics = _topics(unit.get("topics"))
                 for chapter in chapters:
-                    chapter_topics = _topics(chapter.get("topics"))
-                    for topic in chapter_topics:
-                        add(level_name, subject_name, unit_name, str(chapter["name"]), topic)
-                    if not chapter_topics:
-                        add(level_name, subject_name, unit_name, str(chapter["name"]), "")
-                if not topics and not chapters:
-                    add(level_name, subject_name, unit_name, "", "")
+                    add(level_name, subject_name, str(chapter["name"]))
+                for topic in topics:
+                    add(level_name, subject_name, topic)
+                if not chapters and not topics:
+                    add(level_name, subject_name, str(unit["name"]))
     return rows
 
 

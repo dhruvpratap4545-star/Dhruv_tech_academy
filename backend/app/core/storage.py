@@ -19,6 +19,7 @@ overwrites happen.
 
 from __future__ import annotations
 
+import contextlib
 import logging
 from abc import ABC, abstractmethod
 from datetime import timedelta
@@ -41,6 +42,18 @@ class StorageProvider(ABC):
     @abstractmethod
     async def signed_url(self, key: str, *, ttl_seconds: int, filename: str) -> str | None:
         """A short-lived link to the object, or ``None`` if this provider cannot sign."""
+
+    async def signed_upload_url(
+        self, key: str, *, content_type: str, max_bytes: int, ttl_seconds: int
+    ) -> tuple[str, dict[str, str]] | None:
+        """A short-lived link the browser can PUT one object to, with the headers it must
+        send; ``None`` when this provider cannot sign, and the caller uploads through the
+        API instead."""
+        return None
+
+    @abstractmethod
+    async def delete(self, key: str) -> None:
+        """Remove an object. Missing objects are not an error."""
 
 
 class LocalStorage(StorageProvider):
@@ -71,6 +84,12 @@ class LocalStorage(StorageProvider):
 
     async def signed_url(self, key: str, *, ttl_seconds: int, filename: str) -> str | None:
         return None
+
+    async def delete(self, key: str) -> None:
+        import anyio
+
+        path = self._path(key)
+        await anyio.to_thread.run_sync(lambda: path.unlink(missing_ok=True))
 
 
 def _write(path: Path, data: bytes) -> None:
@@ -147,6 +166,57 @@ class GcsStorage(StorageProvider):
             )
 
         return await anyio.to_thread.run_sync(sign)
+
+    async def signed_upload_url(
+        self, key: str, *, content_type: str, max_bytes: int, ttl_seconds: int
+    ) -> tuple[str, dict[str, str]] | None:
+        """A V4 signed PUT for exactly this key and content type.
+
+        ``x-goog-content-length-range`` is signed into the URL, so GCS itself refuses a body
+        larger than the limit — the browser cannot upload more than it was allowed to, even
+        by editing the request. The type is signed too, so the object cannot be stored as
+        anything else. The bytes are still checked after upload (``files.service``).
+        """
+        import anyio
+
+        blob = self._get_bucket().blob(key)
+        headers = {"Content-Type": content_type, "x-goog-content-length-range": f"0,{max_bytes}"}
+
+        def sign() -> str:
+            import google.auth
+            from google.auth import credentials as google_credentials
+            from google.auth.transport import requests as google_requests
+
+            options = {
+                "version": "v4",
+                "expiration": timedelta(seconds=ttl_seconds),
+                "method": "PUT",
+                "content_type": content_type,
+                "headers": {"x-goog-content-length-range": f"0,{max_bytes}"},
+            }
+            credentials, _ = google.auth.default(scopes=[CLOUD_PLATFORM_SCOPE])
+            if isinstance(credentials, google_credentials.Signing):
+                return blob.generate_signed_url(credentials=credentials, **options)
+            credentials.refresh(google_requests.Request())
+            return blob.generate_signed_url(
+                service_account_email=getattr(credentials, "service_account_email", None),
+                access_token=credentials.token,
+                **options,
+            )
+
+        return await anyio.to_thread.run_sync(sign), headers
+
+    async def delete(self, key: str) -> None:
+        import anyio
+        from google.api_core.exceptions import NotFound as GcsNotFound
+
+        blob = self._get_bucket().blob(key)
+
+        def remove() -> None:
+            with contextlib.suppress(GcsNotFound):
+                blob.delete()
+
+        await anyio.to_thread.run_sync(remove)
 
 
 def _default_storage() -> StorageProvider:

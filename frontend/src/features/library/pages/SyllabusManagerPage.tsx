@@ -11,7 +11,7 @@ import { Icon } from "@/components/Icon";
 import { Modal } from "@/components/Modal";
 import { Spinner } from "@/components/Spinner";
 import { fetchClasses, fetchInstitutes, instituteKeys } from "@/features/admin/api";
-import type { NodeKind, SyllabusNode, Track } from "@/features/library/api";
+import type { SyllabusNode, Track } from "@/features/library/api";
 import {
   archiveNode,
   createNode,
@@ -23,7 +23,7 @@ import {
 import { ClassSyllabusPicker } from "@/features/library/components/ClassSyllabusPicker";
 import { ImportWizard } from "@/features/library/components/ImportWizard";
 import { LibraryLayout } from "@/features/library/components/LibraryLayout";
-import { childKinds } from "@/features/library/tree";
+import { nextLevel } from "@/features/library/tree";
 import { useOwnerOptions } from "@/features/library/useOwnerOptions";
 import { useT } from "@/features/i18n/useT";
 import { ApiError } from "@/lib/api";
@@ -36,7 +36,8 @@ type Dialog =
   | null;
 
 /**
- * Syllabus Manager: the tree, edited in place. Children load when a node is opened, so
+ * Syllabus Manager: the tree, edited in place. Four fixed levels — Track › Level ›
+ * Subject › Topic — so "Add below" always adds the one level that comes next. Children load when a node is opened, so
  * the CBSE track's thousand nodes are never fetched at once.
  */
 export function SyllabusManagerPage() {
@@ -165,7 +166,7 @@ function TreeRow({
       }),
   });
   const archived = node.status === "archived";
-  const canHaveChildren = childKinds(node.kind).length > 0;
+  const canHaveChildren = nextLevel(node.kind) !== null;
 
   return (
     <li style={{ paddingLeft: depth ? 12 : 0 }}>
@@ -258,8 +259,7 @@ function AddNodeModal({
 }) {
   const { t } = useT();
   const queryClient = useQueryClient();
-  const kinds = parent ? childKinds(parent.kind) : (["track"] as NodeKind[]);
-  const [kind, setKind] = useState<NodeKind>(kinds[0]!);
+  const kind = nextLevel(parent?.kind ?? null) ?? "topic";
   const [name, setName] = useState("");
   const [code, setCode] = useState("");
   const [track, setTrack] = useState<Track>("custom");
@@ -317,14 +317,9 @@ function AddNodeModal({
             }))}
           />
         )}
-        {kinds.length > 1 && (
-          <SelectField
-            label={t("library.manage.kindLabel")}
-            value={kind}
-            onChange={(e) => setKind(e.target.value as NodeKind)}
-            options={kinds.map((k) => ({ value: k, label: t(`library.kindName.${k}`) }))}
-          />
-        )}
+        <p className="text-sm text-fg-2">
+          {t("library.manage.addingLevel", { level: t(`library.kindName.${kind}`) })}
+        </p>
         <TextField
           label={t("library.manage.name")}
           value={name}

@@ -15,6 +15,7 @@ from __future__ import annotations
 import logging
 import uuid
 from collections.abc import Awaitable, Callable, Iterable
+from dataclasses import dataclass
 from datetime import UTC, datetime
 
 from fastapi import UploadFile
@@ -26,7 +27,13 @@ from app.core.storage import get_storage
 from app.modules.audit import events
 from app.modules.audit import service as audit
 from app.modules.files.models import StoredFile
-from app.modules.files.validation import max_bytes, validate_upload
+from app.modules.files.validation import (
+    ALLOWED_TYPES,
+    max_bytes,
+    normalise_type,
+    safe_name,
+    validate_upload,
+)
 from app.modules.rbac.context import AuthContext
 
 logger = logging.getLogger(__name__)
@@ -118,6 +125,124 @@ async def store_upload(
         target_type="file",
         target_id=stored.id,
         institute_id=institute_id,
+        ip=ip,
+        user_agent=user_agent,
+        extra={"purpose": purpose, "size": stored.size, "content_type": stored.content_type},
+    )
+    return stored
+
+
+@dataclass(slots=True)
+class DirectUpload:
+    file: StoredFile
+    url: str
+    headers: dict[str, str]
+
+
+async def start_direct_upload(
+    db: Db,
+    *,
+    institute_id: uuid.UUID,
+    purpose: str,
+    user_id: uuid.UUID,
+    file_name: str,
+    content_type: str,
+    size: int,
+    limit_bytes: int,
+) -> DirectUpload | None:
+    """Reserve a key and hand back a presigned PUT, or ``None`` if storage cannot sign.
+
+    The record starts ``pending`` with the size and type the browser *declared*; nothing can
+    use it until ``finish_direct_upload`` has read the bytes that actually arrived. A
+    ``None`` (local disk) means the caller uploads through the API as before.
+    """
+    declared = normalise_type(content_type)
+    if declared not in ALLOWED_TYPES:
+        raise ValidationFailed("Only PDF, JPG and PNG files can be uploaded.")
+    if size <= 0:
+        raise ValidationFailed("That file is empty.")
+    if size > limit_bytes:
+        raise ValidationFailed(f"Files can be at most {limit_bytes // (1024 * 1024)} MB.")
+    key = storage_key(institute_id, purpose, declared)
+    signed = await get_storage().signed_upload_url(
+        key,
+        content_type=declared,
+        max_bytes=limit_bytes,
+        ttl_seconds=settings.upload_url_ttl_seconds,
+    )
+    if signed is None:
+        return None
+    stored = StoredFile(
+        institute_id=institute_id,
+        uploaded_by=user_id,
+        purpose=purpose,  # type: ignore[arg-type]
+        content_type=declared,
+        size=size,
+        sha256="0" * 64,  # unknown until the bytes are read in `finish_direct_upload`
+        storage_key=key,
+        original_name=safe_name(file_name, declared),
+        status="pending",
+    )
+    db.add(stored)
+    url, headers = signed
+    return DirectUpload(file=stored, url=url, headers=headers)
+
+
+async def finish_direct_upload(
+    db: Db,
+    *,
+    file_id: uuid.UUID,
+    user_id: uuid.UUID,
+    purpose: str,
+    limit_bytes: int,
+    ip: str | None = None,
+    user_agent: str | None = None,
+) -> StoredFile:
+    """Check what the browser actually uploaded, exactly as an API upload is checked.
+
+    The object is read back and run through ``validate_upload``: real type from the bytes,
+    size limit, and images re-encoded to strip EXIF (the cleaned image replaces the
+    original). Anything that fails is deleted from the bucket and its record removed, so a
+    renamed ``.exe`` never becomes downloadable library material.
+    """
+    stored = await db.get(StoredFile, file_id)
+    if (
+        stored is None
+        or stored.uploaded_by != user_id
+        or stored.purpose != purpose
+        or stored.status != "pending"
+    ):
+        raise NotFound("That upload does not exist. Please upload the file again.")
+    storage = get_storage()
+    try:
+        data = await storage.open(stored.storage_key)
+    except Exception as exc:  # missing object: the PUT never completed
+        raise ValidationFailed("The file did not finish uploading. Please try again.") from exc
+    try:
+        clean = validate_upload(
+            data,
+            declared_type=stored.content_type,
+            filename=stored.original_name,
+            limit_bytes=limit_bytes,
+        )
+    except ValidationFailed:
+        await storage.delete(stored.storage_key)
+        await db.delete(stored)
+        await db.commit()
+        raise
+    if clean.data is not data:
+        await storage.put(stored.storage_key, clean.data, clean.content_type)
+    stored.content_type = clean.content_type
+    stored.size = len(clean.data)
+    stored.sha256 = clean.sha256
+    stored.status = "uploaded"
+    audit.record(
+        db,
+        action=events.FILE_UPLOADED,
+        actor_user_id=user_id,
+        target_type="file",
+        target_id=stored.id,
+        institute_id=stored.institute_id,
         ip=ip,
         user_agent=user_agent,
         extra={"purpose": purpose, "size": stored.size, "content_type": stored.content_type},
